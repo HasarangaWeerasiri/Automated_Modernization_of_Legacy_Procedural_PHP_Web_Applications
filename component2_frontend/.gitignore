@@ -1,0 +1,35 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+.ruff_cache/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker volumes
+mysql_data/
+
+# Cloned legacy apps (keep the sql/ subfolder for auto-import dumps)
+legacy-apps/*/
+!legacy-apps/sql/
+
+# Generated output
+output/generated/

@@ -1,0 +1,81 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Product Catalog API (Mock Contract)",
+    "version": "0.1.0",
+    "description": "Mock OpenAPI contract standing in for the real output of Component 1. Deliberately omits the 'sku' field that mocks/sample_ast.json's presentation layer (node n17) reads, so Step 4 (reconcile) has a genuine mismatch to detect and flag."
+  },
+  "servers": [
+    { "url": "http://localhost:3000" }
+  ],
+  "security": [
+    { "bearerAuth": [] }
+  ],
+  "paths": {
+    "/api/products": {
+      "get": {
+        "operationId": "listProducts",
+        "summary": "List products, optionally filtered by category",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of products, with optional admin statistics.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["products"],
+                  "properties": {
+                    "products": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Product" }
+                    },
+                    "admin_stats": { "$ref": "#/components/schemas/AdminStats" }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "required": ["id", "name", "price"],
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "price": { "type": "number" }
+        }
+      },
+      "AdminStats": {
+        "type": "object",
+        "required": ["total", "avg_price"],
+        "properties": {
+          "total": { "type": "integer" },
+          "avg_price": { "type": "number" }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

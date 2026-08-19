@@ -1,0 +1,175 @@
+{
+  "source_file": "product_listing.php",
+  "description": "Mock AST for a flat, procedural product-listing page. Modeled after the kind of output the Static Analysis Core is expected to produce: a flat node list (not a nested tree) where structure is expressed via parent/children id references, and every node is tagged with a 'concern' so downstream steps can isolate presentation from logic/data-access.",
+  "nodes": [
+    {
+      "id": "n1",
+      "type": "assignment",
+      "concern": "data_access",
+      "line": 4,
+      "target": "$category",
+      "source": "$_GET['category']",
+      "children": []
+    },
+    {
+      "id": "n2",
+      "type": "function_call",
+      "concern": "data_access",
+      "line": 6,
+      "callee": "mysqli_query",
+      "args": ["$conn", "SELECT id, name, price FROM products WHERE category = ?"],
+      "assignedTo": "$productsResult",
+      "queryResultId": "productsResult",
+      "children": []
+    },
+    {
+      "id": "n3",
+      "type": "if",
+      "concern": "logic",
+      "line": 10,
+      "condition": "isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === true",
+      "conditionKind": "session_check",
+      "sessionKey": "is_admin",
+      "children": ["n4", "n5"]
+    },
+    {
+      "id": "n4",
+      "type": "function_call",
+      "concern": "data_access",
+      "line": 12,
+      "callee": "mysqli_query",
+      "args": ["$conn", "SELECT COUNT(*) AS total, AVG(price) AS avg_price FROM products"],
+      "assignedTo": "$adminStatsResult",
+      "queryResultId": "adminStatsResult",
+      "children": []
+    },
+    {
+      "id": "n5",
+      "type": "inline_html",
+      "concern": "presentation",
+      "line": 15,
+      "html": "<div class=\"admin-stats\">",
+      "children": ["n6", "n7", "n8"]
+    },
+    {
+      "id": "n6",
+      "type": "echo",
+      "concern": "presentation",
+      "line": 16,
+      "expression": "$adminStatsRow['total']",
+      "dataSource": "adminStatsResult",
+      "field": "total",
+      "children": []
+    },
+    {
+      "id": "n7",
+      "type": "echo",
+      "concern": "presentation",
+      "line": 17,
+      "expression": "$adminStatsRow['avg_price']",
+      "dataSource": "adminStatsResult",
+      "field": "avg_price",
+      "children": []
+    },
+    {
+      "id": "n8",
+      "type": "inline_html",
+      "concern": "presentation",
+      "line": 18,
+      "html": "</div>",
+      "children": []
+    },
+    {
+      "id": "n9",
+      "type": "inline_html",
+      "concern": "presentation",
+      "line": 22,
+      "html": "<div class=\"product-grid\">",
+      "children": ["n10"]
+    },
+    {
+      "id": "n10",
+      "type": "while",
+      "concern": "logic",
+      "line": 23,
+      "condition": "$product = mysqli_fetch_assoc($productsResult)",
+      "loopOver": "productsResult",
+      "children": ["n11", "n12", "n13", "n14", "n15", "n16"]
+    },
+    {
+      "id": "n11",
+      "type": "inline_html",
+      "concern": "presentation",
+      "line": 24,
+      "html": "<div class=\"product-card\">",
+      "children": []
+    },
+    {
+      "id": "n12",
+      "type": "inline_html",
+      "concern": "presentation",
+      "line": 25,
+      "html": "<h3>",
+      "children": []
+    },
+    {
+      "id": "n13",
+      "type": "echo",
+      "concern": "presentation",
+      "line": 25,
+      "expression": "$product['name']",
+      "dataSource": "productsResult",
+      "field": "name",
+      "children": []
+    },
+    {
+      "id": "n14",
+      "type": "inline_html",
+      "concern": "presentation",
+      "line": 26,
+      "html": "</h3><p class=\"price\">$",
+      "children": []
+    },
+    {
+      "id": "n15",
+      "type": "echo",
+      "concern": "presentation",
+      "line": 26,
+      "expression": "number_format($product['price'], 2)",
+      "dataSource": "productsResult",
+      "field": "price",
+      "children": []
+    },
+    {
+      "id": "n16",
+      "type": "inline_html",
+      "concern": "presentation",
+      "line": 27,
+      "html": "</p><span class=\"sku\">",
+      "children": ["n17"]
+    },
+    {
+      "id": "n17",
+      "type": "echo",
+      "concern": "presentation",
+      "line": 27,
+      "expression": "$product['sku']",
+      "dataSource": "productsResult",
+      "field": "sku",
+      "children": []
+    },
+    {
+      "id": "n18",
+      "type": "inline_html",
+      "concern": "presentation",
+      "line": 29,
+      "html": "</span></div></div>",
+      "children": []
+    }
+  ],
+  "notes": {
+    "n3_n4_n5": "if-block wrapping presentation output (admin-only stats panel) -> should infer a conditional component gated on a session flag.",
+    "n10": "while-loop containing echo statements over $productsResult -> should infer a repeating list/card component.",
+    "n17_mismatch_hint": "n17 reads 'sku' from productsResult. The mock OpenAPI contract's product schema intentionally omits 'sku' so reconciliation (Step 4) has a real mismatch to flag."
+  }
+}
