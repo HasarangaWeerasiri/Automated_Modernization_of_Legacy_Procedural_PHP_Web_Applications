@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "labels": {
+    "t001#00001": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "t001#00002": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R08",
+      "reason": "display_conditional"
+    }
+  }
+}

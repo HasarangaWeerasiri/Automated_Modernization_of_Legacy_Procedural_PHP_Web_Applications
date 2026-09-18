@@ -33,3 +33,4 @@ legacy-apps/*/
 
 # Generated output
 output/generated/
+output/stage*_*.json

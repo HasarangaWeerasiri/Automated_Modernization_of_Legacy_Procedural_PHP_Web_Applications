@@ -1,0 +1,36 @@
+{
+  "entrypoint": "hand-written: unlabelled.php (test fixture: one output node has no label)",
+  "schemaVersion": "1.0",
+  "sequence": [
+    {
+      "id": "t001#00001",
+      "kind": "Stmt_InlineHTML",
+      "raw": "<p>",
+      "enclosedBy": []
+    },
+    {
+      "id": "t001#00005",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "\"Welcome\"",
+          "var": null,
+          "path": null,
+          "sourceKind": "literal",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "t001#00002",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "t001#00003"
+        }
+      ]
+    }
+  ],
+  "queries": {}
+}
