@@ -9,6 +9,7 @@ Three layers:
 
 import copy
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -98,6 +99,14 @@ def test_every_node_the_timeline_mentions_is_labelled(name, timelines, labels):
     assert mentioned == set(labels[name])
 
 
+@pytest.mark.parametrize("name", NAMES)
+def test_label_format_matches_backend_spelling(name, labels):
+    for node_id, lab in labels[name].items():
+        assert re.fullmatch(r"R\d{2}", lab["ruleId"]), node_id
+        assert lab["basis"] in ("rule", "abstained"), node_id
+        assert (lab["basis"] == "abstained") == (lab["concern"] == "undecided"), node_id
+
+
 def test_legacy_fixture_still_loads():
     assert load_legacy_ast(MOCKS / "sample_ast.json")["nodes"][0]["id"] == "n1"
     assert load_input(MOCKS / "sample_ast.json")[0] == "legacy_ast"
@@ -132,12 +141,24 @@ def test_list_page_repeats_markup_inside_one_loop(name, kind, timelines):
     assert len(set(loops)) == 1 and len(loops) > 1
 
 
-def test_admin_page_has_session_role_guard_and_session_reads(timelines, labels):
+def test_admin_page_has_role_guards_and_session_reads(timelines, labels):
     t, lab = timelines["admin"], labels["admin"]
-    undecided = {k for k, v in lab.items() if v["concern"] == "undecided" and v["reason"] == "auth_or_display"}
-    guarded = {o["nodeId"] for e in t["sequence"] for o in e["enclosedBy"] if o["role"] == "branch"}
-    assert undecided & guarded, "the ambiguous role guard must enclose output"
+    guards = {o["nodeId"] for e in t["sequence"] for o in e["enclosedBy"] if o["role"] == "branch"}
+    # Component 1's rule: query in body -> authorization; output-only body -> display conditional.
+    assert {(lab[g]["concern"], lab[g]["reason"]) for g in guards} == {
+        ("business_logic", "gates_data_access"), ("presentation", "display_conditional")}
+    assert not any(v["concern"] == "undecided" for v in lab.values())
     assert any(r["sourceKind"] == "session" for r in all_reads(t))
+
+
+def test_edge_cases_have_one_undecided_role_guard_around_output(timelines, labels):
+    t, lab = timelines["edge_cases"], labels["edge_cases"]
+    undecided = [k for k, v in lab.items() if v["concern"] == "undecided"]
+    assert len(undecided) == 1
+    assert lab[undecided[0]] | {"ruleId": None} == {
+        "concern": "undecided", "basis": "abstained", "ruleId": None, "reason": "auth_or_display"}
+    enclosed = [e for e in t["sequence"] if any(o["nodeId"] == undecided[0] for o in e["enclosedBy"])]
+    assert any(e["kind"] != "Stmt_InlineHTML" for e in enclosed), "the guard must wrap output"
 
 
 def test_detail_page_has_static_and_nested_output(timelines):
@@ -302,5 +323,12 @@ def test_generator_reproduces_the_committed_mocks(generated):
 @needs_hms
 @needs_php
 def test_undecided_guard_condition_is_a_session_check(generated, labels):
-    undecided = [k for k, v in labels["admin"].items() if v["concern"] == "undecided"]
+    undecided = [k for k, v in labels["edge_cases"].items() if v["concern"] == "undecided"]
     assert undecided and all("$_SESSION" in gen.CONDITIONS[k] for k in undecided)
+
+
+@needs_hms
+@needs_php
+def test_admin_guards_are_session_role_checks(generated, timelines):
+    guards = {o["nodeId"] for e in timelines["admin"]["sequence"] for o in e["enclosedBy"] if o["role"] == "branch"}
+    assert guards and all("$_SESSION['role']" in gen.CONDITIONS[g] for g in guards)

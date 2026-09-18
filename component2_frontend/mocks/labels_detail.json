@@ -4,163 +4,163 @@
     "f004#01075": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01114": {
       "concern": "data_access",
       "basis": "rule",
-      "ruleId": "C1-SQL-EXEC",
+      "ruleId": "R02",
       "reason": "sql_execution"
     },
     "f004#01122": {
       "concern": "mixed",
       "basis": "rule",
-      "ruleId": "C1-FETCH-LOOP",
+      "ruleId": "R04",
       "reason": "fetch_in_loop_header"
     },
     "f004#01129": {
       "concern": "data_access",
       "basis": "rule",
-      "ruleId": "C1-ROW-FETCH",
+      "ruleId": "R03",
       "reason": "row_fetch"
     },
     "f004#01145": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01147": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01155": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01157": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01165": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01167": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01175": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01177": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01185": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01187": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-DISPLAY-COND",
+      "ruleId": "R08",
       "reason": "display_conditional"
     },
     "f004#01212": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01219": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-DISPLAY-COND",
+      "ruleId": "R08",
       "reason": "display_conditional"
     },
     "f004#01244": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01251": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-DISPLAY-COND",
+      "ruleId": "R08",
       "reason": "display_conditional"
     },
     "f004#01276": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01284": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01286": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-DISPLAY-COND",
+      "ruleId": "R08",
       "reason": "display_conditional"
     },
     "f004#01312": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01314": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01321": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01329": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01337": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     },
     "f004#01342": {
       "concern": "presentation",
       "basis": "rule",
-      "ruleId": "C1-OUTPUT",
+      "ruleId": "R01",
       "reason": "output_statement"
     }
   }

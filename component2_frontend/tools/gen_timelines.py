@@ -135,8 +135,21 @@ class Source:
                 if frame["kind"] == "branch":
                     self.ifs[frame["id"]]["body_has_query"] = True
 
+    def _is_action(self, i):
+        """True if token i starts a non-query action: an assignment, or a call that isn't mysqli I/O."""
+        name, text, _ = self.t[i]
+        if name not in ("T_VARIABLE", "T_STRING") or i + 1 >= len(self.t):
+            return False
+        follow = self.t[self.sig(i)]
+        if name == "T_VARIABLE":
+            return follow[:2] == ("CHAR", b"=") or follow[0] == "T_CONCAT_EQUAL"
+        if name == "T_STRING":
+            return follow[:2] == ("CHAR", b"(") and text.decode() != QUERY_FN and text.decode() not in FETCH_FNS
+        return False
+
     def _walk(self):
         stack, pending, last_closed_if = [], None, None
+        output_end = 0  # tokens before this index belong to an echo/print expression
         i = 0
         while i < len(self.t):
             name, text, line = self.t[i]
@@ -155,7 +168,8 @@ class Source:
                 cond = self.text(p + 1, close)
                 if name == "T_IF":
                     root = self.nid(i)
-                    self.ifs[root] = {"condNodeId": cond_id, "cond": cond, "line": line, "body_has_query": False}
+                    self.ifs[root] = {"condNodeId": cond_id, "cond": cond, "line": line, "body_has_query": False,
+                                      "body_has_action": False}
                     CONDITIONS[root] = cond
                     frame = {"kind": "branch", "id": root, "branch": "then", "condNodeId": cond_id}
                 else:
@@ -186,6 +200,10 @@ class Source:
                 continue
 
             self._record_call(i, stack)
+            if i >= output_end and self._is_action(i):
+                for frame in stack:
+                    if frame["kind"] == "branch":
+                        self.ifs[frame["id"]]["body_has_action"] = True
 
             if (name == "CHAR" and text == b"{") or name in ("T_CURLY_OPEN", "T_DOLLAR_OPEN_CURLY_BRACES"):
                 if pending and name == "CHAR":
@@ -222,6 +240,7 @@ class Source:
                         elif n == "CHAR" and t in (b")", b"]"):
                             depth -= 1
                         j += 1
+                    output_end = j
                     out |= {"kind": "Expr_Print" if name == "T_PRINT" else "Stmt_Echo", "expr": (i + 1, j)}
                 self.outputs.append(out)
             i += 1
@@ -331,8 +350,8 @@ def build(spec, php, lexer_note):
         cfg = query_cfg[query["line"]]
         queries[qid] = {"line": query["line"], "sql": src.raw_sql(query), "tables": cfg["tables"],
                         "columns": cfg["columns"], "resultVar": query["assigned"]}
-        labels[src.nid(fetch["tok"])] = label("data_access", "C1-ROW-FETCH", "row_fetch")
-        labels[qid] = label("data_access", "C1-SQL-EXEC", "sql_execution")
+        labels[src.nid(fetch["tok"])] = label("data_access", "ROW-FETCH", "row_fetch")
+        labels[qid] = label("data_access", "SQL-EXEC", "sql_execution")
         if cfg["ambiguous"]:
             return "ambiguous", {"fetchNodeId": src.nid(fetch["tok"]), "queryNodeId": qid,
                                  "table": None, "column": None}
@@ -378,15 +397,15 @@ def build(spec, php, lexer_note):
                 fetch = loop_fetch[f["id"]]
                 header_lo, header_hi = src.loops[f["id"]]["cond"]
                 if fetch and header_lo <= fetch["tok"] < header_hi:
-                    labels[f["id"]] = label("mixed", "C1-FETCH-LOOP", "fetch_in_loop_header")
+                    labels[f["id"]] = label("mixed", "FETCH-LOOP", "fetch_in_loop_header")
                 else:
-                    labels[f["id"]] = label("presentation", "C1-RENDER-LOOP", "iterates_prefetched_rows")
+                    labels[f["id"]] = label("presentation", "RENDER-LOOP", "iterates_prefetched_rows")
             else:
                 enclosed.append({"nodeId": f["id"], "kind": "Stmt_If", "role": "branch",
                                  "branch": f["branch"], "condNodeId": f["condNodeId"]})
                 labels[f["id"]] = if_label(src.ifs[f["id"]])
         entry["enclosedBy"] = enclosed
-        labels[entry["id"]] = label("presentation", "C1-OUTPUT", "output_statement")
+        labels[entry["id"]] = label("presentation", "OUTPUT", "output_statement")
         sequence.append(entry)
 
     provenance = dict(spec["provenance"])
@@ -404,19 +423,35 @@ def build(spec, php, lexer_note):
     return timeline, {"schemaVersion": SCHEMA_VERSION, "labels": dict(sorted(labels.items()))}
 
 
-def label(concern, rule_id, reason, basis="rule"):
-    return {"concern": concern, "basis": basis, "ruleId": rule_id, "reason": reason}
+# Placeholder rule ids in the backend member's "R01" format, until Component 1 publishes its own.
+RULE_IDS = {
+    "OUTPUT": "R01",           # echo / print / inline HTML
+    "SQL-EXEC": "R02",         # mysqli_query call
+    "ROW-FETCH": "R03",        # mysqli_fetch_* call
+    "FETCH-LOOP": "R04",       # loop whose header fetches rows: iteration + data access
+    "RENDER-LOOP": "R05",      # loop over already-fetched rows
+    "AUTHZ-QUERY": "R06",      # session-conditional if whose body runs a query
+    "GATE-QUERY": "R07",       # other if whose body runs a query
+    "DISPLAY-COND": "R08",     # if whose body is output only
+    "AUTH-OR-DISPLAY": "R09",  # session-conditional if mixing output with a non-query action
+}
+
+
+def label(concern, rule, reason, basis="rule"):
+    return {"concern": concern, "basis": basis, "ruleId": RULE_IDS[rule], "reason": reason}
 
 
 def if_label(node):
-    """Component 1's authorization rule: query in body -> logic; output-only body -> display, unless the
-    condition is a session check, where display vs access control cannot be decided from this file."""
+    """Component 1's authorization rule: a query in the body -> authorization (logic); output only ->
+    display conditional; anything else is ambiguous, so the tool abstains rather than guess."""
     session = "$_SESSION" in node["cond"]
     if node["body_has_query"]:
-        return label("business_logic", "C1-AUTHZ-QUERY" if session else "C1-GATE-QUERY", "gates_data_access")
+        return label("business_logic", "AUTHZ-QUERY" if session else "GATE-QUERY", "gates_data_access")
+    if not node["body_has_action"]:
+        return label("presentation", "DISPLAY-COND", "display_conditional")
     if session:
-        return label("undecided", "C1-AUTH-OR-DISPLAY", "auth_or_display", basis="abstain")
-    return label("presentation", "C1-DISPLAY-COND", "display_conditional")
+        return label("undecided", "AUTH-OR-DISPLAY", "auth_or_display", basis="abstained")
+    raise NotImplementedError(f"no rule for a non-session if mixing output and actions (line {node['line']})")
 
 
 # ----------------------------------------------------------------------------- specs
@@ -485,6 +520,11 @@ $settings = parse_ini_file('settings.ini');
     </table>
 <?php } ?>
     <p class="footer"><?php echo $settings['hospital_name'] ?></p>
+<?php if ($_SESSION['role'] == 'admin') {
+  $show_admin_tools = true;
+?>
+    <p class="text-muted">Signed in as administrator <?php echo $_SESSION['username'];?></p>
+<?php } ?>
   </body>
 </html>
 """
@@ -594,6 +634,9 @@ def specs():
                     "The foreach (line 18) is nested inside the if (line 11) and uses a key variable ($i).",
                     "number_format($row['docFees'], 2) is sourceKind 'computed' with derivedFrom.",
                     "$_GET['ID'] is echoed unescaped (line 16): a request read, and a reflected-XSS bug kept as-is.",
+                    "The if at line 28 tests $_SESSION['role'] and its body mixes output with a non-query action "
+                    "($show_admin_tools = true). Neither Component 1 rule applies (query in body -> authorization; "
+                    "output only -> display), so it is labelled undecided (auth_or_display).",
                     "Not covered by the contract: this page has no endpoint; use it for timeline parsing and "
                     "boundary inference, not reconciliation.",
                 ]},

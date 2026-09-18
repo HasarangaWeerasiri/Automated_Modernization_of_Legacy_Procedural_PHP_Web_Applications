@@ -347,7 +347,66 @@
     {
       "id": "f005#00194",
       "kind": "Stmt_InlineHTML",
-      "raw": "</p>\n  </body>\n</html>\n",
+      "raw": "</p>\n",
+      "enclosedBy": []
+    },
+    {
+      "id": "f005#00219",
+      "kind": "Stmt_InlineHTML",
+      "raw": "    <p class=\"text-muted\">Signed in as administrator ",
+      "enclosedBy": [
+        {
+          "nodeId": "f005#00196",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f005#00199"
+        }
+      ]
+    },
+    {
+      "id": "f005#00221",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$_SESSION['username']",
+          "var": "$_SESSION",
+          "path": [
+            "username"
+          ],
+          "sourceKind": "session",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f005#00196",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f005#00199"
+        }
+      ]
+    },
+    {
+      "id": "f005#00229",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</p>\n",
+      "enclosedBy": [
+        {
+          "nodeId": "f005#00196",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f005#00199"
+        }
+      ]
+    },
+    {
+      "id": "f005#00234",
+      "kind": "Stmt_InlineHTML",
+      "raw": "  </body>\n</html>\n",
       "enclosedBy": []
     }
   ],
@@ -367,7 +426,7 @@
     "source": "hand-written",
     "modelledOn": "generate_bill() in legacy-apps/hms/admin-panel.php (prestb JOIN appointmenttb)",
     "scenario": "schema 1.0 edge cases: ambiguous SELECT *, unresolved read, foreach nested in an if",
-    "handWrittenSource": "<!DOCTYPE html>\n<?php\nsession_start();\n$con=mysqli_connect(\"mysql\",\"root\",\"root\",\"legacydb\");\n$pid = $_SESSION['pid'];\n$settings = parse_ini_file('settings.ini');\n?>\n<html lang=\"en\">\n  <body style=\"padding-top:50px;\">\n    <h4>Bills for patient <?php echo $pid ?></h4>\n<?php if (isset($_GET['ID'])) {\n  $query = \"select * from prestb p inner join appointmenttb a on p.ID=a.ID where p.pid='$pid' and p.ID='\".$_GET['ID'].\"'\";\n  $result = mysqli_query($con,$query);\n  $rows = mysqli_fetch_all($result, MYSQLI_ASSOC);\n?>\n    <h5>Appointment <?php echo $_GET['ID'] ?></h5>\n    <table class=\"table table-hover\">\n<?php foreach ($rows as $i => $row) { ?>\n      <tr>\n        <td><?php echo $row['doctor'];?></td>\n        <td><?php echo $row['prescription'];?></td>\n        <td><?php echo number_format($row['docFees'], 2);?></td>\n      </tr>\n<?php } ?>\n    </table>\n<?php } ?>\n    <p class=\"footer\"><?php echo $settings['hospital_name'] ?></p>\n  </body>\n</html>\n",
+    "handWrittenSource": "<!DOCTYPE html>\n<?php\nsession_start();\n$con=mysqli_connect(\"mysql\",\"root\",\"root\",\"legacydb\");\n$pid = $_SESSION['pid'];\n$settings = parse_ini_file('settings.ini');\n?>\n<html lang=\"en\">\n  <body style=\"padding-top:50px;\">\n    <h4>Bills for patient <?php echo $pid ?></h4>\n<?php if (isset($_GET['ID'])) {\n  $query = \"select * from prestb p inner join appointmenttb a on p.ID=a.ID where p.pid='$pid' and p.ID='\".$_GET['ID'].\"'\";\n  $result = mysqli_query($con,$query);\n  $rows = mysqli_fetch_all($result, MYSQLI_ASSOC);\n?>\n    <h5>Appointment <?php echo $_GET['ID'] ?></h5>\n    <table class=\"table table-hover\">\n<?php foreach ($rows as $i => $row) { ?>\n      <tr>\n        <td><?php echo $row['doctor'];?></td>\n        <td><?php echo $row['prescription'];?></td>\n        <td><?php echo number_format($row['docFees'], 2);?></td>\n      </tr>\n<?php } ?>\n    </table>\n<?php } ?>\n    <p class=\"footer\"><?php echo $settings['hospital_name'] ?></p>\n<?php if ($_SESSION['role'] == 'admin') {\n  $show_admin_tools = true;\n?>\n    <p class=\"text-muted\">Signed in as administrator <?php echo $_SESSION['username'];?></p>\n<?php } ?>\n  </body>\n</html>\n",
     "notes": [
       "Hand-written: none of the other mocks can hold these cases without changing their raw values.",
       "f005#00087 is SELECT * over prestb JOIN appointmenttb. Both tables have ID, pid, fname, lname, doctor, appdate and apptime, and mysqli_fetch_all(MYSQLI_ASSOC) keeps only the last duplicate, so every $row read is confidence 'ambiguous' with table/column null.",
@@ -375,11 +434,12 @@
       "The foreach (line 18) is nested inside the if (line 11) and uses a key variable ($i).",
       "number_format($row['docFees'], 2) is sourceKind 'computed' with derivedFrom.",
       "$_GET['ID'] is echoed unescaped (line 16): a request read, and a reflected-XSS bug kept as-is.",
+      "The if at line 28 tests $_SESSION['role'] and its body mixes output with a non-query action ($show_admin_tools = true). Neither Component 1 rule applies (query in body -> authorization; output only -> display), so it is labelled undecided (auth_or_display).",
       "Not covered by the contract: this page has no endpoint; use it for timeline parsing and boundary inference, not reconciliation."
     ],
     "linesCovered": [
       1,
-      29
+      34
     ],
     "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
   }
