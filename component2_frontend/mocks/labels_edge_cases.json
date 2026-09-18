@@ -1,0 +1,137 @@
+{
+  "schemaVersion": "1.0",
+  "labels": {
+    "f005#00000": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00042": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00044": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00049": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00051": {
+      "concern": "business_logic",
+      "basis": "rule",
+      "ruleId": "C1-GATE-QUERY",
+      "reason": "gates_data_access"
+    },
+    "f005#00087": {
+      "concern": "data_access",
+      "basis": "rule",
+      "ruleId": "C1-SQL-EXEC",
+      "reason": "sql_execution"
+    },
+    "f005#00099": {
+      "concern": "data_access",
+      "basis": "rule",
+      "ruleId": "C1-ROW-FETCH",
+      "reason": "row_fetch"
+    },
+    "f005#00109": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00111": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00119": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00121": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-RENDER-LOOP",
+      "reason": "iterates_prefetched_rows"
+    },
+    "f005#00138": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00140": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00148": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00150": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00158": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00160": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00174": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00179": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00184": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00186": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    },
+    "f005#00194": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "C1-OUTPUT",
+      "reason": "output_statement"
+    }
+  }
+}

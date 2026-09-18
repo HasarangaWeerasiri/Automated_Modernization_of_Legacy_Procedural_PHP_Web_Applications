@@ -1,0 +1,714 @@
+{
+  "entrypoint": "legacy-apps/hms/admin-panel1.php",
+  "schemaVersion": "1.0",
+  "sequence": [
+    {
+      "id": "f001#00645",
+      "kind": "Stmt_InlineHTML",
+      "raw": "                </tbody>\n              </table>\n        <br>\n      </div>\n      </div>\n      </div>\n\n\n\n\n      <div class=\"tab-pane fade\" id=\"list-app\" role=\"tabpanel\" aria-labelledby=\"list-pat-list\">\n\n         <div class=\"col-md-8\">\n      <form class=\"form-group\" action=\"appsearch.php\" method=\"post\">\n        <div class=\"row\">\n        <div class=\"col-md-10\"><input type=\"text\" name=\"app_contact\" placeholder=\"Enter Contact\" class = \"form-control\"></div>\n        <div class=\"col-md-2\"><input type=\"submit\" name=\"app_search_submit\" class=\"btn btn-primary\" value=\"Search\"></div></div>\n      </form>\n    </div>\n        \n              <table class=\"table table-hover\">\n                <thead>\n                  <tr>\n                  <th scope=\"col\">Appointment ID</th>\n                  <th scope=\"col\">Patient ID</th>\n                    <th scope=\"col\">First Name</th>\n                    <th scope=\"col\">Last Name</th>\n                    <th scope=\"col\">Gender</th>\n                    <th scope=\"col\">Email</th>\n                    <th scope=\"col\">Contact</th>\n                    <th scope=\"col\">Doctor Name</th>\n                    <th scope=\"col\">Consultancy Fees</th>\n                    <th scope=\"col\">Appointment Date</th>\n                    <th scope=\"col\">Appointment Time</th>\n                    <th scope=\"col\">Appointment Status</th>\n                  </tr>\n                </thead>\n                <tbody>\n                  ",
+      "enclosedBy": []
+    },
+    {
+      "id": "f001#00701",
+      "kind": "Stmt_InlineHTML",
+      "raw": "                      <tr>\n                        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00703",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['ID']",
+          "var": "$row",
+          "path": [
+            "ID"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f001#00693",
+            "queryNodeId": "f001#00678",
+            "table": "appointmenttb",
+            "column": "ID"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00711",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\n                        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00713",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['pid']",
+          "var": "$row",
+          "path": [
+            "pid"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f001#00693",
+            "queryNodeId": "f001#00678",
+            "table": "appointmenttb",
+            "column": "pid"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00721",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\n                        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00723",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['fname']",
+          "var": "$row",
+          "path": [
+            "fname"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f001#00693",
+            "queryNodeId": "f001#00678",
+            "table": "appointmenttb",
+            "column": "fname"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00731",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\n                        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00733",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['lname']",
+          "var": "$row",
+          "path": [
+            "lname"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f001#00693",
+            "queryNodeId": "f001#00678",
+            "table": "appointmenttb",
+            "column": "lname"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00741",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\n                        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00743",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['gender']",
+          "var": "$row",
+          "path": [
+            "gender"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f001#00693",
+            "queryNodeId": "f001#00678",
+            "table": "appointmenttb",
+            "column": "gender"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00751",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\n                        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00753",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['email']",
+          "var": "$row",
+          "path": [
+            "email"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f001#00693",
+            "queryNodeId": "f001#00678",
+            "table": "appointmenttb",
+            "column": "email"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00761",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\n                        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00763",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['contact']",
+          "var": "$row",
+          "path": [
+            "contact"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f001#00693",
+            "queryNodeId": "f001#00678",
+            "table": "appointmenttb",
+            "column": "contact"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00771",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\n                        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00773",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['doctor']",
+          "var": "$row",
+          "path": [
+            "doctor"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f001#00693",
+            "queryNodeId": "f001#00678",
+            "table": "appointmenttb",
+            "column": "doctor"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00781",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\n                        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00783",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['docFees']",
+          "var": "$row",
+          "path": [
+            "docFees"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f001#00693",
+            "queryNodeId": "f001#00678",
+            "table": "appointmenttb",
+            "column": "docFees"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00791",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\n                        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00793",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['appdate']",
+          "var": "$row",
+          "path": [
+            "appdate"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f001#00693",
+            "queryNodeId": "f001#00678",
+            "table": "appointmenttb",
+            "column": "appdate"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00801",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\n                        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00803",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['apptime']",
+          "var": "$row",
+          "path": [
+            "apptime"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f001#00693",
+            "queryNodeId": "f001#00678",
+            "table": "appointmenttb",
+            "column": "apptime"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00811",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\n                        <td>\n                    ",
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00838",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "\"Active\"",
+          "var": null,
+          "path": null,
+          "sourceKind": "literal",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        },
+        {
+          "nodeId": "f001#00813",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f001#00815"
+        }
+      ]
+    },
+    {
+      "id": "f001#00870",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "\"Cancelled by Patient\"",
+          "var": null,
+          "path": null,
+          "sourceKind": "literal",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        },
+        {
+          "nodeId": "f001#00845",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f001#00847"
+        }
+      ]
+    },
+    {
+      "id": "f001#00902",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "\"Cancelled by Doctor\"",
+          "var": null,
+          "path": null,
+          "sourceKind": "literal",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        },
+        {
+          "nodeId": "f001#00877",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f001#00879"
+        }
+      ]
+    },
+    {
+      "id": "f001#00910",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\n                      </tr>\n                    ",
+      "enclosedBy": [
+        {
+          "nodeId": "f001#00686",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f001#00915",
+      "kind": "Stmt_InlineHTML",
+      "raw": "                </tbody>\n              </table>\n        <br>\n      </div>\n\n<div class=\"tab-pane fade\" id=\"list-messages\" role=\"tabpanel\" aria-labelledby=\"list-messages-list\">...</div>\n\n      <div class=\"tab-pane fade\" id=\"list-settings\" role=\"tabpanel\" aria-labelledby=\"list-settings-list\">\n        <form class=\"form-group\" method=\"post\" action=\"admin-panel1.php\">\n          <div class=\"row\">\n                  <div class=\"col-md-4\"><label>Doctor Name:</label></div>\n                  <div class=\"col-md-8\"><input type=\"text\" class=\"form-control\" name=\"doctor\" onkeydown=\"return alphaOnly(event);\" required></div><br><br>\n                  <div class=\"col-md-4\"><label>Specialization:</label></div>\n                  <div class=\"col-md-8\">\n                   <select name=\"special\" class=\"form-control\" id=\"special\" required=\"required\">\n                      <option value=\"head\" name=\"spec\" disabled selected>Select Specialization</option>\n                      <option value=\"General\" name=\"spec\">General</option>\n                      <option value=\"Cardiologist\" name=\"spec\">Cardiologist</option>\n                      <option value=\"Neurologist\" name=\"spec\">Neurologist</option>\n                      <option value=\"Pediatrician\" name=\"spec\">Pediatrician</option>\n                    </select>\n                    </div><br><br>\n                  <div class=\"col-md-4\"><label>Email ID:</label></div>\n                  <div class=\"col-md-8\"><input type=\"email\"  class=\"form-control\" name=\"demail\" required></div><br><br>\n                  <div class=\"col-md-4\"><label>Password:</label></div>\n                  <div class=\"col-md-8\"><input type=\"password\" class=\"form-control\"  onkeyup='check();' name=\"dpassword\" id=\"dpassword\"  required></div><br><br>\n                  <div class=\"col-md-4\"><label>Confirm Password:</label></div>\n                  <div class=\"col-md-8\"  id='cpass'><input type=\"password\" class=\"form-control\" onkeyup='check();' name=\"cdpassword\" id=\"cdpassword\" required>&nbsp &nbsp<span id='message'></span> </div><br><br>\n                   \n                  \n                  <div class=\"col-md-4\"><label>Consultancy Fees:</label></div>\n                  <div class=\"col-md-8\"><input type=\"text\" class=\"form-control\"  name=\"docFees\" required></div><br><br>\n                </div>\n          <input type=\"submit\" name=\"docsub\" value=\"Add Doctor\" class=\"btn btn-primary\">\n        </form>\n      </div>\n\n      <div class=\"tab-pane fade\" id=\"list-settings1\" role=\"tabpanel\" aria-labelledby=\"list-settings1-list\">\n        <form class=\"form-group\" method=\"post\" action=\"admin-panel1.php\">\n          <div class=\"row\">\n          \n                  <div class=\"col-md-4\"><label>Email ID:</label></div>\n                  <div class=\"col-md-8\"><input type=\"email\"  class=\"form-control\" name=\"demail\" required></div><br><br>\n                  \n                </div>\n          <input type=\"submit\" name=\"docsub1\" value=\"Delete Doctor\" class=\"btn btn-primary\" onclick=\"confirm('do you really want to delete?')\">\n        </form>\n      </div>\n\n\n       <div class=\"tab-pane fade\" id=\"list-attend\" role=\"tabpanel\" aria-labelledby=\"list-attend-list\">...</div>\n\n       <div class=\"tab-pane fade\" id=\"list-mes\" role=\"tabpanel\" aria-labelledby=\"list-mes-list\">\n\n         <div class=\"col-md-8\">\n      <form class=\"form-group\" action=\"messearch.php\" method=\"post\">\n        <div class=\"row\">\n        <div class=\"col-md-10\"><input type=\"text\" name=\"mes_contact\" placeholder=\"Enter Contact\" class = \"form-control\"></div>\n        <div class=\"col-md-2\"><input type=\"submit\" name=\"mes_search_submit\" class=\"btn btn-primary\" value=\"Search\"></div></div>\n      </form>\n    </div>\n        \n              <table class=\"table table-hover\">\n                <thead>\n                  <tr>\n                    <th scope=\"col\">User Name</th>\n                    <th scope=\"col\">Email</th>\n                    <th scope=\"col\">Contact</th>\n                    <th scope=\"col\">Message</th>\n                  </tr>\n                </thead>\n                <tbody>\n                  ",
+      "enclosedBy": []
+    }
+  ],
+  "queries": {
+    "f001#00678": {
+      "line": 458,
+      "sql": "\"select * from appointmenttb;\"",
+      "tables": [
+        "appointmenttb"
+      ],
+      "columns": [
+        "pid",
+        "ID",
+        "fname",
+        "lname",
+        "gender",
+        "email",
+        "contact",
+        "doctor",
+        "docFees",
+        "appdate",
+        "apptime",
+        "userStatus",
+        "doctorStatus"
+      ],
+      "resultVar": "$result"
+    }
+  },
+  "_provenance": {
+    "source": "legacy-apps/hms/admin-panel1.php",
+    "upstream": "https://github.com/kishan0725/Hospital-Management-System @ 777fda46b77a820977a5ba616283dbfbc40bf7e1",
+    "scenario": "list page: appointment table rendered by a Stmt_While loop",
+    "notes": [
+      "Excerpt: the 'Appointment Details' tab (#list-app). Entries are whole lexer tokens, so the first and last Stmt_InlineHTML also carry the neighbouring tabs' closing/opening markup.",
+      "f001#00678 is `select * from appointmenttb;`; columns are the expansion of * from legacy-apps/sql/myhmsdb.sql.",
+      "Deliberate contract gap: `contact` is selected by f001#00678 and echoed (line 468) but is absent from the contract's Appointment schema (GET /api/appointments)."
+    ],
+    "linesCovered": [
+      414,
+      562
+    ],
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+  }
+}

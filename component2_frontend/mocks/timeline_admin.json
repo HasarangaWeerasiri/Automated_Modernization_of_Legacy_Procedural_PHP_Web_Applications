@@ -1,0 +1,246 @@
+{
+  "entrypoint": "hand-written: admin_dashboard.php (modelled on legacy-apps/hms/admin-panel.php)",
+  "schemaVersion": "1.0",
+  "sequence": [
+    {
+      "id": "f003#00000",
+      "kind": "Stmt_InlineHTML",
+      "raw": "<!DOCTYPE html>\n",
+      "enclosedBy": []
+    },
+    {
+      "id": "f003#00032",
+      "kind": "Stmt_InlineHTML",
+      "raw": "<html lang=\"en\">\n  <body style=\"padding-top:50px;\">\n   <div class=\"container-fluid\" style=\"margin-top:50px;\">\n    <h3 style = \"margin-left: 40%;  padding-bottom: 20px; font-family: 'IBM Plex Sans', sans-serif;\"> Welcome &nbsp",
+      "enclosedBy": []
+    },
+    {
+      "id": "f003#00034",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$username",
+          "var": "$username",
+          "path": [],
+          "sourceKind": "session",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": []
+    },
+    {
+      "id": "f003#00039",
+      "kind": "Stmt_InlineHTML",
+      "raw": "   </h3>\n",
+      "enclosedBy": []
+    },
+    {
+      "id": "f003#00096",
+      "kind": "Stmt_InlineHTML",
+      "raw": "    <div class=\"admin-stats\">\n      <p>Active appointments: ",
+      "enclosedBy": [
+        {
+          "nodeId": "f003#00041",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f003#00044"
+        }
+      ]
+    },
+    {
+      "id": "f003#00098",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$stats['total']",
+          "var": "$stats",
+          "path": [
+            "total"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f003#00089",
+            "queryNodeId": "f003#00077",
+            "table": "appointmenttb",
+            "column": "total"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f003#00041",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f003#00044"
+        }
+      ]
+    },
+    {
+      "id": "f003#00106",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</p>\n      <p>Fees collected: &#8377;",
+      "enclosedBy": [
+        {
+          "nodeId": "f003#00041",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f003#00044"
+        }
+      ]
+    },
+    {
+      "id": "f003#00108",
+      "kind": "Expr_Print",
+      "reads": [
+        {
+          "expr": "$stats['revenue']",
+          "var": "$stats",
+          "path": [
+            "revenue"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f003#00089",
+            "queryNodeId": "f003#00077",
+            "table": "appointmenttb",
+            "column": "revenue"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f003#00041",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f003#00044"
+        }
+      ]
+    },
+    {
+      "id": "f003#00116",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</p>\n      <p>Signed in as ",
+      "enclosedBy": [
+        {
+          "nodeId": "f003#00041",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f003#00044"
+        }
+      ]
+    },
+    {
+      "id": "f003#00118",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$_SESSION['role']",
+          "var": "$_SESSION",
+          "path": [
+            "role"
+          ],
+          "sourceKind": "session",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f003#00041",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f003#00044"
+        }
+      ]
+    },
+    {
+      "id": "f003#00126",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</p>\n    </div>\n",
+      "enclosedBy": [
+        {
+          "nodeId": "f003#00041",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f003#00044"
+        }
+      ]
+    },
+    {
+      "id": "f003#00135",
+      "kind": "Stmt_InlineHTML",
+      "raw": "    <p class=\"text-muted\">Statistics are visible to administrators only.</p>\n",
+      "enclosedBy": [
+        {
+          "nodeId": "f003#00041",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "else",
+          "condNodeId": "f003#00044"
+        }
+      ]
+    },
+    {
+      "id": "f003#00157",
+      "kind": "Stmt_InlineHTML",
+      "raw": "    <a class=\"nav-link\" href=\"admin-panel1.php\">Receptionist panel</a>\n",
+      "enclosedBy": [
+        {
+          "nodeId": "f003#00141",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f003#00144"
+        }
+      ]
+    },
+    {
+      "id": "f003#00162",
+      "kind": "Stmt_InlineHTML",
+      "raw": "   </div>\n  </body>\n</html>\n",
+      "enclosedBy": []
+    }
+  ],
+  "queries": {
+    "f003#00077": {
+      "line": 14,
+      "sql": "\"select count(*) as total, sum(docFees) as revenue from appointmenttb where userStatus=1 and doctorStatus=1;\"",
+      "tables": [
+        "appointmenttb"
+      ],
+      "columns": [
+        "total",
+        "revenue"
+      ],
+      "resultVar": "$result"
+    }
+  },
+  "_provenance": {
+    "source": "hand-written",
+    "modelledOn": "legacy-apps/hms/admin-panel.php lines 9 and 225 ($_SESSION['username'] -> $username -> echo)",
+    "scenario": "admin page: output gated by $_SESSION role checks",
+    "handWrittenSource": "<!DOCTYPE html>\n<?php\nsession_start();\n$con=mysqli_connect(\"mysql\",\"root\",\"root\",\"legacydb\");\n$username = $_SESSION['username'];\n?>\n<html lang=\"en\">\n  <body style=\"padding-top:50px;\">\n   <div class=\"container-fluid\" style=\"margin-top:50px;\">\n    <h3 style = \"margin-left: 40%;  padding-bottom: 20px; font-family: 'IBM Plex Sans', sans-serif;\"> Welcome &nbsp<?php echo $username ?>\n   </h3>\n<?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'admin') {\n  $query = \"select count(*) as total, sum(docFees) as revenue from appointmenttb where userStatus=1 and doctorStatus=1;\";\n  $result = mysqli_query($con,$query);\n  $stats = mysqli_fetch_array($result);\n?>\n    <div class=\"admin-stats\">\n      <p>Active appointments: <?php echo $stats['total'];?></p>\n      <p>Fees collected: &#8377;<?php print $stats['revenue'];?></p>\n      <p>Signed in as <?php echo $_SESSION['role'];?></p>\n    </div>\n<?php } else { ?>\n    <p class=\"text-muted\">Statistics are visible to administrators only.</p>\n<?php } ?>\n<?php if ($_SESSION['role'] == 'admin') { ?>\n    <a class=\"nav-link\" href=\"admin-panel1.php\">Receptionist panel</a>\n<?php } ?>\n   </div>\n  </body>\n</html>\n",
+    "notes": [
+      "Hand-written because HMS has no $_SESSION guard around output anywhere (include/checklogin.php is never included).",
+      "Guard at line 12 wraps a query (authorization: must stay server-side). Guard at line 25 wraps only markup (display-only). Both test $_SESSION['role'].",
+      "Session reads ($username, $_SESSION['role']) are not API fields and do not appear in the contract; reconciliation must exclude sourceKind 'session' rather than flag it.",
+      "Covers Expr_Print (line 19) and an HTML entity (&#8377;) in raw.",
+      "f003#00077 columns are result-set names (aliases), since the query selects aggregates."
+    ],
+    "linesCovered": [
+      1,
+      30
+    ],
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+  }
+}

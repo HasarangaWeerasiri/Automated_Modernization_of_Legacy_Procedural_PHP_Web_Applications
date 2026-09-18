@@ -1,0 +1,386 @@
+{
+  "entrypoint": "hand-written: edge_cases.php (modelled on generate_bill() in legacy-apps/hms/admin-panel.php)",
+  "schemaVersion": "1.0",
+  "sequence": [
+    {
+      "id": "f005#00000",
+      "kind": "Stmt_InlineHTML",
+      "raw": "<!DOCTYPE html>\n",
+      "enclosedBy": []
+    },
+    {
+      "id": "f005#00042",
+      "kind": "Stmt_InlineHTML",
+      "raw": "<html lang=\"en\">\n  <body style=\"padding-top:50px;\">\n    <h4>Bills for patient ",
+      "enclosedBy": []
+    },
+    {
+      "id": "f005#00044",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$pid",
+          "var": "$pid",
+          "path": [],
+          "sourceKind": "session",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": []
+    },
+    {
+      "id": "f005#00049",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</h4>\n",
+      "enclosedBy": []
+    },
+    {
+      "id": "f005#00109",
+      "kind": "Stmt_InlineHTML",
+      "raw": "    <h5>Appointment ",
+      "enclosedBy": [
+        {
+          "nodeId": "f005#00051",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f005#00054"
+        }
+      ]
+    },
+    {
+      "id": "f005#00111",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$_GET['ID']",
+          "var": "$_GET",
+          "path": [
+            "ID"
+          ],
+          "sourceKind": "request",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f005#00051",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f005#00054"
+        }
+      ]
+    },
+    {
+      "id": "f005#00119",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</h5>\n    <table class=\"table table-hover\">\n",
+      "enclosedBy": [
+        {
+          "nodeId": "f005#00051",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f005#00054"
+        }
+      ]
+    },
+    {
+      "id": "f005#00138",
+      "kind": "Stmt_InlineHTML",
+      "raw": "      <tr>\n        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f005#00051",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f005#00054"
+        },
+        {
+          "nodeId": "f005#00121",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$rows",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": "$i"
+        }
+      ]
+    },
+    {
+      "id": "f005#00140",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['doctor']",
+          "var": "$row",
+          "path": [
+            "doctor"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "ambiguous",
+          "source": {
+            "fetchNodeId": "f005#00099",
+            "queryNodeId": "f005#00087",
+            "table": null,
+            "column": null
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f005#00051",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f005#00054"
+        },
+        {
+          "nodeId": "f005#00121",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$rows",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": "$i"
+        }
+      ]
+    },
+    {
+      "id": "f005#00148",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\n        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f005#00051",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f005#00054"
+        },
+        {
+          "nodeId": "f005#00121",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$rows",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": "$i"
+        }
+      ]
+    },
+    {
+      "id": "f005#00150",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['prescription']",
+          "var": "$row",
+          "path": [
+            "prescription"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "ambiguous",
+          "source": {
+            "fetchNodeId": "f005#00099",
+            "queryNodeId": "f005#00087",
+            "table": null,
+            "column": null
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f005#00051",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f005#00054"
+        },
+        {
+          "nodeId": "f005#00121",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$rows",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": "$i"
+        }
+      ]
+    },
+    {
+      "id": "f005#00158",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\n        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f005#00051",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f005#00054"
+        },
+        {
+          "nodeId": "f005#00121",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$rows",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": "$i"
+        }
+      ]
+    },
+    {
+      "id": "f005#00160",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "number_format($row['docFees'], 2)",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "ambiguous",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$row['docFees']",
+              "var": "$row",
+              "path": [
+                "docFees"
+              ],
+              "sourceKind": "db_row_field",
+              "confidence": "ambiguous",
+              "source": {
+                "fetchNodeId": "f005#00099",
+                "queryNodeId": "f005#00087",
+                "table": null,
+                "column": null
+              }
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f005#00051",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f005#00054"
+        },
+        {
+          "nodeId": "f005#00121",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$rows",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": "$i"
+        }
+      ]
+    },
+    {
+      "id": "f005#00174",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\n      </tr>\n",
+      "enclosedBy": [
+        {
+          "nodeId": "f005#00051",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f005#00054"
+        },
+        {
+          "nodeId": "f005#00121",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$rows",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": "$i"
+        }
+      ]
+    },
+    {
+      "id": "f005#00179",
+      "kind": "Stmt_InlineHTML",
+      "raw": "    </table>\n",
+      "enclosedBy": [
+        {
+          "nodeId": "f005#00051",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f005#00054"
+        }
+      ]
+    },
+    {
+      "id": "f005#00184",
+      "kind": "Stmt_InlineHTML",
+      "raw": "    <p class=\"footer\">",
+      "enclosedBy": []
+    },
+    {
+      "id": "f005#00186",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$settings['hospital_name']",
+          "var": "$settings",
+          "path": [
+            "hospital_name"
+          ],
+          "sourceKind": "unresolved",
+          "confidence": "unresolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": []
+    },
+    {
+      "id": "f005#00194",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</p>\n  </body>\n</html>\n",
+      "enclosedBy": []
+    }
+  ],
+  "queries": {
+    "f005#00087": {
+      "line": 13,
+      "sql": "\"select * from prestb p inner join appointmenttb a on p.ID=a.ID where p.pid='$pid' and p.ID='\".$_GET['ID'].\"'\"",
+      "tables": [
+        "prestb",
+        "appointmenttb"
+      ],
+      "columns": null,
+      "resultVar": "$result"
+    }
+  },
+  "_provenance": {
+    "source": "hand-written",
+    "modelledOn": "generate_bill() in legacy-apps/hms/admin-panel.php (prestb JOIN appointmenttb)",
+    "scenario": "schema 1.0 edge cases: ambiguous SELECT *, unresolved read, foreach nested in an if",
+    "handWrittenSource": "<!DOCTYPE html>\n<?php\nsession_start();\n$con=mysqli_connect(\"mysql\",\"root\",\"root\",\"legacydb\");\n$pid = $_SESSION['pid'];\n$settings = parse_ini_file('settings.ini');\n?>\n<html lang=\"en\">\n  <body style=\"padding-top:50px;\">\n    <h4>Bills for patient <?php echo $pid ?></h4>\n<?php if (isset($_GET['ID'])) {\n  $query = \"select * from prestb p inner join appointmenttb a on p.ID=a.ID where p.pid='$pid' and p.ID='\".$_GET['ID'].\"'\";\n  $result = mysqli_query($con,$query);\n  $rows = mysqli_fetch_all($result, MYSQLI_ASSOC);\n?>\n    <h5>Appointment <?php echo $_GET['ID'] ?></h5>\n    <table class=\"table table-hover\">\n<?php foreach ($rows as $i => $row) { ?>\n      <tr>\n        <td><?php echo $row['doctor'];?></td>\n        <td><?php echo $row['prescription'];?></td>\n        <td><?php echo number_format($row['docFees'], 2);?></td>\n      </tr>\n<?php } ?>\n    </table>\n<?php } ?>\n    <p class=\"footer\"><?php echo $settings['hospital_name'] ?></p>\n  </body>\n</html>\n",
+    "notes": [
+      "Hand-written: none of the other mocks can hold these cases without changing their raw values.",
+      "f005#00087 is SELECT * over prestb JOIN appointmenttb. Both tables have ID, pid, fname, lname, doctor, appdate and apptime, and mysqli_fetch_all(MYSQLI_ASSOC) keeps only the last duplicate, so every $row read is confidence 'ambiguous' with table/column null.",
+      "$settings comes from parse_ini_file('settings.ini'): its values are only known at runtime, so $settings['hospital_name'] is sourceKind 'unresolved'.",
+      "The foreach (line 18) is nested inside the if (line 11) and uses a key variable ($i).",
+      "number_format($row['docFees'], 2) is sourceKind 'computed' with derivedFrom.",
+      "$_GET['ID'] is echoed unescaped (line 16): a request read, and a reflected-XSS bug kept as-is.",
+      "Not covered by the contract: this page has no endpoint; use it for timeline parsing and boundary inference, not reconciliation."
+    ],
+    "linesCovered": [
+      1,
+      29
+    ],
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+  }
+}

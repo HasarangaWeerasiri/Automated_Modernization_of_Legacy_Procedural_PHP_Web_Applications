@@ -48,6 +48,87 @@
           }
         }
       }
+    },
+    "/api/appointments": {
+      "get": {
+        "operationId": "listAppointments",
+        "summary": "List all appointments (receptionist view)",
+        "description": "Serves mocks/timeline_list_while.json and mocks/timeline_list_foreach.json (legacy query: select * from appointmenttb).",
+        "responses": {
+          "200": {
+            "description": "All appointments.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["appointments"],
+                  "properties": {
+                    "appointments": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Appointment" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        }
+      }
+    },
+    "/api/me/appointments": {
+      "get": {
+        "operationId": "listMyAppointments",
+        "summary": "List the signed-in patient's appointment history",
+        "description": "Serves mocks/timeline_detail.json. The legacy query filtered on fname/lname read from $_SESSION; here the patient is identified by the bearer token instead, so no session value appears in the request or response.",
+        "responses": {
+          "200": {
+            "description": "The current patient's appointments.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["appointments"],
+                  "properties": {
+                    "appointments": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/PatientAppointment" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        }
+      }
+    },
+    "/api/admin/appointment-stats": {
+      "get": {
+        "operationId": "getAppointmentStats",
+        "summary": "Active-appointment count and fees collected (admin only)",
+        "description": "Serves the authorization-guarded block of mocks/timeline_admin.json. The display-only values in that timeline ($username, $_SESSION['role']) are session-sourced and deliberately not part of this response.",
+        "responses": {
+          "200": {
+            "description": "Appointment statistics.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AppointmentStats" }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          },
+          "403": {
+            "description": "Token is valid but the user is not an admin"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -67,6 +148,48 @@
         "properties": {
           "total": { "type": "integer" },
           "avg_price": { "type": "number" }
+        }
+      },
+      "Appointment": {
+        "type": "object",
+        "description": "DELIBERATE GAP: omits `contact`. The legacy query selects it (select * from appointmenttb) and the page echoes it ($row['contact'], admin-panel1.php line 468), so reconciliation of timeline_list_while.json / timeline_list_foreach.json must flag it as missing.",
+        "required": ["pid", "ID", "fname", "lname", "gender", "email", "doctor", "docFees", "appdate", "apptime", "userStatus", "doctorStatus"],
+        "properties": {
+          "pid": { "type": "integer" },
+          "ID": { "type": "integer" },
+          "fname": { "type": "string" },
+          "lname": { "type": "string" },
+          "gender": { "type": "string" },
+          "email": { "type": "string" },
+          "doctor": { "type": "string" },
+          "docFees": { "type": "integer" },
+          "appdate": { "type": "string", "format": "date" },
+          "apptime": { "type": "string", "format": "time" },
+          "userStatus": { "type": "integer" },
+          "doctorStatus": { "type": "integer" }
+        }
+      },
+      "PatientAppointment": {
+        "type": "object",
+        "description": "Complete for timeline_detail.json: every db-sourced read there is provided (reconciliation success path).",
+        "required": ["ID", "doctor", "docFees", "appdate", "apptime", "userStatus", "doctorStatus"],
+        "properties": {
+          "ID": { "type": "integer" },
+          "doctor": { "type": "string" },
+          "docFees": { "type": "integer" },
+          "appdate": { "type": "string", "format": "date" },
+          "apptime": { "type": "string", "format": "time" },
+          "userStatus": { "type": "integer" },
+          "doctorStatus": { "type": "integer" }
+        }
+      },
+      "AppointmentStats": {
+        "type": "object",
+        "description": "Complete for the db-sourced reads in timeline_admin.json (total, revenue). Session-sourced reads (username, role) are intentionally absent: they are not API fields.",
+        "required": ["total", "revenue"],
+        "properties": {
+          "total": { "type": "integer" },
+          "revenue": { "type": "integer" }
         }
       }
     },

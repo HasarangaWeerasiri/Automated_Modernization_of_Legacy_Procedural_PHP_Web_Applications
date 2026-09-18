@@ -1,0 +1,507 @@
+{
+  "entrypoint": "legacy-apps/hms/admin-panel.php",
+  "schemaVersion": "1.0",
+  "sequence": [
+    {
+      "id": "f004#01075",
+      "kind": "Stmt_InlineHTML",
+      "raw": "                    </select>\r\n                  </div><br/><br/> \r\n\r\n\r\n                        <script>\r\n              document.getElementById('doctor').onchange = function updateFees(e) {\r\n                var selection = document.querySelector(`[value=${this.value}]`).getAttribute('data-value');\r\n                document.getElementById('docFees').value = selection;\r\n              };\r\n            </script>\r\n\r\n                  \r\n                  \r\n\r\n                  \r\n                        <!-- <div class=\"col-md-4\"><label for=\"doctor\">Doctors:</label></div>\r\n                                <div class=\"col-md-8\">\r\n                                    <select name=\"doctor\" class=\"form-control\" id=\"doctor1\" required=\"required\">\r\n                                      <option value=\"\" disabled selected>Select Doctor</option>\r\n                                      \r\n                                    </select>\r\n                                </div>\r\n                                <br><br> -->\r\n\r\n                                <!-- <script>\r\n                                  document.getElementById(\"spec\").onchange = function updateSpecs(event) {\r\n                                      var selected = document.querySelector(`[data-value=${this.value}]`).getAttribute(\"value\");\r\n                                      console.log(selected);\r\n\r\n                                      var options = document.getElementById(\"doctor1\").querySelectorAll(\"option\");\r\n\r\n                                      for (i = 0; i < options.length; i++) {\r\n                                        var currentOption = options[i];\r\n                                        var category = options[i].getAttribute(\"data-spec\");\r\n\r\n                                        if (category == selected) {\r\n                                          currentOption.style.display = \"block\";\r\n                                        } else {\r\n                                          currentOption.style.display = \"none\";\r\n                                        }\r\n                                      }\r\n                                    }\r\n                                </script> -->\r\n\r\n                        \r\n                    <!-- <script>\r\n                    let data = \r\n                \r\n              document.getElementById('spec').onchange = function updateSpecs(e) {\r\n                let values = data.filter(obj => obj.spec == this.value).map(o => o.username);   \r\n                document.getElementById('doctor1').value = document.querySelector(`[value=${values}]`).getAttribute('data-value');\r\n              };\r\n            </script> -->\r\n\r\n\r\n                  \r\n                  <div class=\"col-md-4\"><label for=\"consultancyfees\">\r\n                                Consultancy Fees\r\n                              </label></div>\r\n                              <div class=\"col-md-8\">\r\n                              <!-- <div id=\"docFees\">Select a doctor</div> -->\r\n                              <input class=\"form-control\" type=\"text\" name=\"docFees\" id=\"docFees\" readonly=\"readonly\"/>\r\n                  </div><br><br>\r\n\r\n                  <div class=\"col-md-4\"><label>Appointment Date</label></div>\r\n                  <div class=\"col-md-8\"><input type=\"date\" class=\"form-control datepicker\" name=\"appdate\"></div><br><br>\r\n\r\n                  <div class=\"col-md-4\"><label>Appointment Time</label></div>\r\n                  <div class=\"col-md-8\">\r\n                    <!-- <input type=\"time\" class=\"form-control\" name=\"apptime\"> -->\r\n                    <select name=\"apptime\" class=\"form-control\" id=\"apptime\" required=\"required\">\r\n                      <option value=\"\" disabled selected>Select Time</option>\r\n                      <option value=\"08:00:00\">8:00 AM</option>\r\n                      <option value=\"10:00:00\">10:00 AM</option>\r\n                      <option value=\"12:00:00\">12:00 PM</option>\r\n                      <option value=\"14:00:00\">2:00 PM</option>\r\n                      <option value=\"16:00:00\">4:00 PM</option>\r\n                    </select>\r\n\r\n                  </div><br><br>\r\n\r\n                  <div class=\"col-md-4\">\r\n                    <input type=\"submit\" name=\"app-submit\" value=\"Create new entry\" class=\"btn btn-primary\" id=\"inputbtn\">\r\n                  </div>\r\n                  <div class=\"col-md-8\"></div>                  \r\n                </div>\r\n              </form>\r\n            </div>\r\n          </div>\r\n        </div><br>\r\n      </div>\r\n      \r\n<div class=\"tab-pane fade\" id=\"app-hist\" role=\"tabpanel\" aria-labelledby=\"list-pat-list\">\r\n        \r\n              <table class=\"table table-hover\">\r\n                <thead>\r\n                  <tr>\r\n                    \r\n                    <th scope=\"col\">Doctor Name</th>\r\n                    <th scope=\"col\">Consultancy Fees</th>\r\n                    <th scope=\"col\">Appointment Date</th>\r\n                    <th scope=\"col\">Appointment Time</th>\r\n                    <th scope=\"col\">Current Status</th>\r\n                    <th scope=\"col\">Action</th>\r\n                  </tr>\r\n                </thead>\r\n                <tbody>\r\n                  ",
+      "enclosedBy": []
+    },
+    {
+      "id": "f004#01145",
+      "kind": "Stmt_InlineHTML",
+      "raw": "                      <tr>\r\n                        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f004#01147",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['doctor']",
+          "var": "$row",
+          "path": [
+            "doctor"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f004#01129",
+            "queryNodeId": "f004#01114",
+            "table": "appointmenttb",
+            "column": "doctor"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f004#01155",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\r\n                        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f004#01157",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['docFees']",
+          "var": "$row",
+          "path": [
+            "docFees"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f004#01129",
+            "queryNodeId": "f004#01114",
+            "table": "appointmenttb",
+            "column": "docFees"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f004#01165",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\r\n                        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f004#01167",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['appdate']",
+          "var": "$row",
+          "path": [
+            "appdate"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f004#01129",
+            "queryNodeId": "f004#01114",
+            "table": "appointmenttb",
+            "column": "appdate"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f004#01175",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\r\n                        <td>",
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f004#01177",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['apptime']",
+          "var": "$row",
+          "path": [
+            "apptime"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f004#01129",
+            "queryNodeId": "f004#01114",
+            "table": "appointmenttb",
+            "column": "apptime"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f004#01185",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\r\n                        \r\n                          <td>\r\n                    ",
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f004#01212",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "\"Active\"",
+          "var": null,
+          "path": null,
+          "sourceKind": "literal",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        },
+        {
+          "nodeId": "f004#01187",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f004#01189"
+        }
+      ]
+    },
+    {
+      "id": "f004#01244",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "\"Cancelled by You\"",
+          "var": null,
+          "path": null,
+          "sourceKind": "literal",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        },
+        {
+          "nodeId": "f004#01219",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f004#01221"
+        }
+      ]
+    },
+    {
+      "id": "f004#01276",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "\"Cancelled by Doctor\"",
+          "var": null,
+          "path": null,
+          "sourceKind": "literal",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        },
+        {
+          "nodeId": "f004#01251",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f004#01253"
+        }
+      ]
+    },
+    {
+      "id": "f004#01284",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</td>\r\n\r\n                        <td>\r\n                        ",
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f004#01312",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t                        <a href=\"admin-panel.php?ID=",
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        },
+        {
+          "nodeId": "f004#01286",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f004#01288"
+        }
+      ]
+    },
+    {
+      "id": "f004#01314",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$row['ID']",
+          "var": "$row",
+          "path": [
+            "ID"
+          ],
+          "sourceKind": "db_row_field",
+          "confidence": "resolved",
+          "source": {
+            "fetchNodeId": "f004#01129",
+            "queryNodeId": "f004#01114",
+            "table": "appointmenttb",
+            "column": "ID"
+          }
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        },
+        {
+          "nodeId": "f004#01286",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f004#01288"
+        }
+      ]
+    },
+    {
+      "id": "f004#01321",
+      "kind": "Stmt_InlineHTML",
+      "raw": "&cancel=update\" \r\n                              onClick=\"return confirm('Are you sure you want to cancel this appointment ?')\"\r\n                              title=\"Cancel Appointment\" tooltip-placement=\"top\" tooltip=\"Remove\"><button class=\"btn btn-danger\">Cancel</button></a>\r\n\t                        ",
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        },
+        {
+          "nodeId": "f004#01286",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f004#01288"
+        }
+      ]
+    },
+    {
+      "id": "f004#01329",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "\"Cancelled\"",
+          "var": null,
+          "path": null,
+          "sourceKind": "literal",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        },
+        {
+          "nodeId": "f004#01286",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "else",
+          "condNodeId": "f004#01288"
+        }
+      ]
+    },
+    {
+      "id": "f004#01337",
+      "kind": "Stmt_InlineHTML",
+      "raw": "                        \r\n                        </td>\r\n                      </tr>\r\n                    ",
+      "enclosedBy": [
+        {
+          "nodeId": "f004#01122",
+          "kind": "Stmt_While",
+          "role": "iteration",
+          "iterExpr": "$row = mysqli_fetch_array($result)",
+          "iterSourceKind": "db_row_field",
+          "valueVar": "$row",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f004#01342",
+      "kind": "Stmt_InlineHTML",
+      "raw": "                </tbody>\r\n              </table>\r\n        <br>\r\n      </div>\r\n\r\n\r\n\r\n      <div class=\"tab-pane fade\" id=\"list-pres\" role=\"tabpanel\" aria-labelledby=\"list-pres-list\">\r\n        \r\n              <table class=\"table table-hover\">\r\n                <thead>\r\n                  <tr>\r\n                    \r\n                    <th scope=\"col\">Doctor Name</th>\r\n                    <th scope=\"col\">Appointment ID</th>\r\n                    <th scope=\"col\">Appointment Date</th>\r\n                    <th scope=\"col\">Appointment Time</th>\r\n                    <th scope=\"col\">Diseases</th>\r\n                    <th scope=\"col\">Allergies</th>\r\n                    <th scope=\"col\">Prescriptions</th>\r\n                    <th scope=\"col\">Bill Payment</th>\r\n                  </tr>\r\n                </thead>\r\n                <tbody>\r\n                  ",
+      "enclosedBy": []
+    }
+  ],
+  "queries": {
+    "f004#01114": {
+      "line": 473,
+      "sql": "\"select ID,doctor,docFees,appdate,apptime,userStatus,doctorStatus from appointmenttb where fname ='$fname' and lname='$lname';\"",
+      "tables": [
+        "appointmenttb"
+      ],
+      "columns": [
+        "ID",
+        "doctor",
+        "docFees",
+        "appdate",
+        "apptime",
+        "userStatus",
+        "doctorStatus"
+      ],
+      "resultVar": "$result"
+    }
+  },
+  "_provenance": {
+    "source": "legacy-apps/hms/admin-panel.php",
+    "upstream": "https://github.com/kishan0725/Hospital-Management-System @ 777fda46b77a820977a5ba616283dbfbc40bf7e1",
+    "scenario": "detail page: static markup plus a guard nested inside a loop",
+    "notes": [
+      "Excerpt: the booking form's tail and the 'Appointment History' tab (#app-hist). Chosen because HMS has no DB-backed single-record page; this is a per-patient list, not a single record.",
+      "Source file uses CRLF line endings; raw values keep the \\r\\n.",
+      "The else branch (line 511) is recorded as branch \"else\" of the Stmt_If at line 504.",
+      "f004#01114's WHERE clause filters on $fname/$lname, which the page reads from $_SESSION (lines 11, 13).",
+      "No contract gap: every db field read here is in the PatientAppointment schema (success path)."
+    ],
+    "linesCovered": [
+      360,
+      543
+    ],
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+  }
+}
