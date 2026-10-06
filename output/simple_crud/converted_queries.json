@@ -1,0 +1,54 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\create_user.php",
+        "source_line": 9,
+        "operation": "INSERT",
+        "table": "users",
+        "parameters": [
+            "name",
+            "email"
+        ],
+        "parameterized_sql": "INSERT INTO users (name, email, status) VALUES (:name, :email, 'active')",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\delete_user.php",
+        "source_line": 8,
+        "operation": "DELETE",
+        "table": "users",
+        "parameters": [
+            "id"
+        ],
+        "parameterized_sql": "DELETE FROM users WHERE id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\update_user.php",
+        "source_line": 8,
+        "operation": "UPDATE",
+        "table": "users",
+        "parameters": [
+            "name",
+            "id"
+        ],
+        "parameterized_sql": "UPDATE users SET name = :name WHERE id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\users.php",
+        "source_line": 4,
+        "operation": "SELECT",
+        "table": "users",
+        "parameters": [],
+        "parameterized_sql": "SELECT id, name, email, status FROM users",
+        "status": "CONVERTED",
+        "reason": null
+    }
+]
