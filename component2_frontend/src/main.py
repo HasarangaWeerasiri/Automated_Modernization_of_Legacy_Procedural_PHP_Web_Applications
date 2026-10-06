@@ -8,7 +8,6 @@ Pipeline: legacy-PHP output timeline + OpenAPI contract -> Next.js/TSX component
 """
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
@@ -31,8 +30,9 @@ load_timeline = loader.load_timeline_json
 load_labels = loader.load_labels_json
 load_legacy_ast = loader.load_legacy_ast
 load_input = loader.load_input
+load_contract = loader.load_contract_json
 
-__all__ = ["load_input", "load_labels", "load_legacy_ast", "load_timeline", "main"]
+__all__ = ["load_contract", "load_input", "load_labels", "load_legacy_ast", "load_timeline", "main"]
 
 console = Console()
 
@@ -76,11 +76,6 @@ def parse_args() -> argparse.Namespace:
     if args.stage is None and (args.input is None or args.contract is None):
         parser.error("give --timeline/--labels/--stage, or --input and --contract")
     return args
-
-
-def load_contract(path: Path) -> dict:
-    with path.open("r", encoding="utf-8") as f:
-        return json.load(f)
 
 
 def run_stage1(timeline_path: Path, labels_path: Path) -> None:

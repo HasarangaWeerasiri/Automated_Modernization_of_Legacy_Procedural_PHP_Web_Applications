@@ -219,6 +219,12 @@ def load_legacy_ast(path: Path) -> dict:
         return json.load(f)
 
 
+def load_contract_json(path: Path) -> dict:
+    """Read Component 1's OpenAPI contract. Stage 4 will convert it into model types."""
+    with Path(path).open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+
 def load_input(path: Path) -> tuple[str, dict]:
     """Detect whether `path` is a timeline or the legacy fixture and return its validated JSON."""
     with Path(path).open("r", encoding="utf-8") as f:
