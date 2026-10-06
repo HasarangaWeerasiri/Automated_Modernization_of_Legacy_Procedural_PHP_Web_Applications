@@ -1,0 +1,58 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\create_user.php",
+        "source_line": 9,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "INSERT INTO users (name, email, status) VALUES ('{{name}}', '{{email}}', 'active')",
+        "operation": "INSERT",
+        "dynamic_variables": [
+            "name",
+            "email"
+        ],
+        "status": "RECOVERED",
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\delete_user.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "DELETE FROM users WHERE id = {{id}}",
+        "operation": "DELETE",
+        "dynamic_variables": [
+            "id"
+        ],
+        "status": "RECOVERED",
+        "reason": null
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\update_user.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "UPDATE users SET name = '{{name}}' WHERE id = {{id}}",
+        "operation": "UPDATE",
+        "dynamic_variables": [
+            "name",
+            "id"
+        ],
+        "status": "RECOVERED",
+        "reason": null
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\users.php",
+        "source_line": 4,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, name, email, status FROM users",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason": null
+    }
+]

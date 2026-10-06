@@ -1,0 +1,76 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\create_user.php",
+        "source_line": 9,
+        "operation": "INSERT",
+        "tables": [
+            "users"
+        ],
+        "columns": [
+            "name",
+            "email",
+            "status"
+        ],
+        "dynamic_variables": [
+            "name",
+            "email"
+        ],
+        "status": "PARSED",
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\delete_user.php",
+        "source_line": 8,
+        "operation": "DELETE",
+        "tables": [
+            "users"
+        ],
+        "columns": [
+            "id"
+        ],
+        "dynamic_variables": [
+            "id"
+        ],
+        "status": "PARSED",
+        "reason": null
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\update_user.php",
+        "source_line": 8,
+        "operation": "UPDATE",
+        "tables": [
+            "users"
+        ],
+        "columns": [
+            "name",
+            "id"
+        ],
+        "dynamic_variables": [
+            "name",
+            "id"
+        ],
+        "status": "PARSED",
+        "reason": null
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\users.php",
+        "source_line": 4,
+        "operation": "SELECT",
+        "tables": [
+            "users"
+        ],
+        "columns": [
+            "id",
+            "name",
+            "email",
+            "status"
+        ],
+        "dynamic_variables": [],
+        "status": "PARSED",
+        "reason": null
+    }
+]

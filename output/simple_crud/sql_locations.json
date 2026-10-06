@@ -1,0 +1,34 @@
+[
+    {
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\create_user.php",
+        "source_line": 9,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "status": "LOCATED",
+        "reason": null
+    },
+    {
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\delete_user.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "status": "LOCATED",
+        "reason": null
+    },
+    {
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\update_user.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "status": "LOCATED",
+        "reason": null
+    },
+    {
+        "source_file": "..\\..\\benchmarks\\apps\\simple_crud\\legacy\\users.php",
+        "source_line": 4,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "status": "LOCATED",
+        "reason": null
+    }
+]
