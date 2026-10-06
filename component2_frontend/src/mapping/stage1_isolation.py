@@ -10,14 +10,16 @@ presentation layer:
     no label                    -> keep, status review, reason "unlabelled"
 
 "Every node the timeline mentions" means the output statements plus the
-if-branches and loops that enclose them and the query/fetch calls their reads
-come from. Only the label's `concern` drives the decision; `basis` and
-`ruleId` are carried through for reporting.
+constructs that enclose them (loops, if-branches, switch cases, try/catch) and
+the query/fetch calls their reads come from. Only the label's `concern` drives
+the decision; `basis` and `ruleId` are carried through for reporting. The
+timeline's optional `queries` map is not used.
 
-A node's status comes from its own label only. An excluded if or loop still
-appears, with its label, in the enclosure chain of every kept node it wraps:
-Stage 2 needs to know whether a wrapping guard is an authorization check or a
-display conditional.
+A node's status comes from its own label only and never spreads to the nodes
+inside it. An enclosure's status is information for Stage 2, not a block: an
+excluded or review-flagged if or loop still appears, with its label, in the
+enclosure chain of every kept node it wraps. Stage 2 needs to know whether a
+wrapping guard is an authorization check or a display conditional.
 """
 
 import json
@@ -87,9 +89,6 @@ def _nodes(timeline: Timeline):
                     yield read.source.fetch_node_id, "fetch", CALL_KIND, (), None
         if first(node.id):
             yield node.id, "output", node.kind, node.enclosed_by, node
-    for query_id in sorted(timeline.queries):  # queries no read refers to
-        if first(query_id):
-            yield query_id, "query", CALL_KIND, (), None
 
 
 def isolate_presentation(timeline: Timeline, labels: dict[str, Label]) -> PresentationResult:
@@ -135,9 +134,11 @@ def _enclosure_dict(enc: Enclosure) -> dict:
     if enc.role == "iteration":
         d = {"nodeId": enc.node_id, "kind": enc.kind, "role": enc.role, "iterExpr": enc.iter_expr,
              "iterSourceKind": enc.iter_source_kind, "valueVar": enc.value_var, "keyVar": enc.key_var}
-    else:
+    elif enc.role == "branch":
         d = {"nodeId": enc.node_id, "kind": enc.kind, "role": enc.role, "branch": enc.branch,
              "condNodeId": enc.cond_node_id}
+    else:  # switch_case / try_catch: carried through untouched
+        d = {"nodeId": enc.node_id, "kind": enc.kind, "role": enc.role} | dict(enc.extra)
     return d | {"label": _label_dict(enc.label)}
 
 

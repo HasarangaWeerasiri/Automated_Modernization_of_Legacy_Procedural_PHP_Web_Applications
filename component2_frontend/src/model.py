@@ -50,11 +50,11 @@ class Read:
 
 @dataclass(frozen=True)
 class Enclosure:
-    """An if-branch or loop wrapping an output node."""
+    """A construct wrapping an output node: a loop, an if-branch, a switch case or a try/catch."""
 
     node_id: str
-    kind: str  # Stmt_If | Stmt_While | Stmt_Foreach
-    role: str  # "iteration" or "branch"
+    kind: str  # nikic node name, e.g. Stmt_If | Stmt_While | Stmt_Foreach
+    role: str  # "iteration" | "branch" | "switch_case" | "try_catch"
     # role "iteration"
     iter_expr: str | None = None
     iter_source_kind: str | None = None
@@ -63,6 +63,9 @@ class Enclosure:
     # role "branch"
     branch: str | None = None  # then | elseif | else
     cond_node_id: str | None = None
+    # roles "switch_case" / "try_catch": their fields are not specified yet, so whatever the
+    # timeline gives is carried here as (key, value) pairs sorted by key. Opaque: never used in a decision.
+    extra: tuple[tuple[str, object], ...] = ()
     # The enclosing node's own label. The loader leaves it None; Stage 1 attaches it.
     label: Label | None = None
 
@@ -95,7 +98,9 @@ class Timeline:
     entrypoint: str
     schema_version: str
     sequence: tuple[OutputNode, ...]
-    queries: dict[str, Query]  # by query node id
+    # By query node id. Optional extension: empty when the timeline has no queries map.
+    # Raw SQL for reporting only; no stage may need it (reads carry source.query_node_id).
+    queries: dict[str, Query]
     provenance: dict  # opaque metadata about how the mock was made; never used in decisions
 
 

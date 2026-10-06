@@ -1,0 +1,34 @@
+{
+  "entrypoint": "hand-written: switch_case.php (test fixture: an output node inside a switch_case enclosure; the fields of switch_case are not specified yet, so caseNodeId is a placeholder that only tests that unknown fields are carried through)",
+  "schemaVersion": "1.0",
+  "sequence": [
+    {
+      "id": "t002#00001",
+      "kind": "Stmt_InlineHTML",
+      "raw": "<span class=\"status\">",
+      "enclosedBy": []
+    },
+    {
+      "id": "t002#00006",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "\"Active\"",
+          "var": null,
+          "path": null,
+          "sourceKind": "literal",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "t002#00002",
+          "kind": "Stmt_Switch",
+          "role": "switch_case",
+          "caseNodeId": "t002#00004"
+        }
+      ]
+    }
+  ]
+}

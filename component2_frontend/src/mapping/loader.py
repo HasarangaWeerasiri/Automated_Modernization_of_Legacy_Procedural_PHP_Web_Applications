@@ -11,10 +11,13 @@ from pathlib import Path
 from src.model import Concern, Enclosure, Label, OutputNode, Query, Read, ReadSource, Timeline
 
 SCHEMA_VERSION = "1.0"
-TIMELINE_KEYS = ("entrypoint", "schemaVersion", "sequence", "queries")
+TIMELINE_KEYS = ("entrypoint", "schemaVersion", "sequence")  # "queries" is an optional extension
 OUTPUT_KINDS = ("Stmt_InlineHTML", "Stmt_Echo", "Expr_Print")
 LOOP_KINDS = ("Stmt_While", "Stmt_Foreach")
 BRANCHES = ("then", "elseif", "else")
+# In the schema, but their fields are not specified yet: accepted and carried through as-is.
+OTHER_ROLES = ("switch_case", "try_catch")
+ENCLOSURE_BASE_KEYS = {"nodeId", "kind", "role"}
 SOURCE_KINDS = ("db_row_field", "session", "request", "server", "literal", "computed", "unresolved")
 CONFIDENCES = ("resolved", "ambiguous", "unresolved")
 CONCERNS = tuple(c.value for c in Concern)
@@ -36,7 +39,7 @@ def _check_node_id(value, where: str) -> None:
         raise ValueError(f"{where}: {value!r} is not a '<fileId>#<ordinal>' node id")
 
 
-def _check_read(read: dict, queries: dict, where: str) -> None:
+def _check_read(read: dict, where: str) -> None:
     keys = READ_KEYS | ({"derivedFrom"} if read.get("sourceKind") == "computed" else set())
     if set(read) != keys:
         raise ValueError(f"{where}: read keys {sorted(read)} != {sorted(keys)}")
@@ -59,8 +62,8 @@ def _check_read(read: dict, queries: dict, where: str) -> None:
         if not isinstance(source, dict) or set(source) != SOURCE_KEYS:
             raise ValueError(f"{where}: db_row_field source needs keys {sorted(SOURCE_KEYS)}")
         _check_node_id(source["fetchNodeId"], where)
-        if source["queryNodeId"] not in queries:
-            raise ValueError(f"{where}: queryNodeId {source['queryNodeId']!r} is not in queries")
+        # Not looked up in the queries map: that map is optional, and a read stands on its queryNodeId alone.
+        _check_node_id(source["queryNodeId"], where)
         null_target = source["table"] is None and source["column"] is None
         if confidence == "ambiguous" and not null_target:
             raise ValueError(f"{where}: ambiguous db reads have null table and column")
@@ -73,7 +76,7 @@ def _check_read(read: dict, queries: dict, where: str) -> None:
         if not read["derivedFrom"]:
             raise ValueError(f"{where}: computed reads list what they derive from")
         for inner in read["derivedFrom"]:
-            _check_read(inner, queries, f"{where} derivedFrom")
+            _check_read(inner, f"{where} derivedFrom")
 
 
 def load_timeline_json(path: Path) -> dict:
@@ -96,8 +99,7 @@ def load_timeline_json(path: Path) -> dict:
     if timeline["schemaVersion"] != SCHEMA_VERSION:
         raise ValueError(f"{path}: schemaVersion {timeline['schemaVersion']!r}, expected {SCHEMA_VERSION!r}")
 
-    queries = timeline["queries"]
-    for qid, query in queries.items():
+    for qid, query in timeline.get("queries", {}).items():
         _check_node_id(qid, f"{path}: queries")
         if set(query) != QUERY_KEYS:
             raise ValueError(f"{path}: query {qid} keys {sorted(query)} != {sorted(QUERY_KEYS)}")
@@ -116,7 +118,7 @@ def load_timeline_json(path: Path) -> dict:
         if set(entry) != {"id", "kind", "enclosedBy", payload}:
             raise ValueError(f"{where}: {entry['kind']} keys {sorted(entry)}; expected id/kind/enclosedBy/{payload}")
         for read in entry.get("reads", []):
-            _check_read(read, queries, where)
+            _check_read(read, where)
 
         for enc in entry["enclosedBy"]:
             _check_node_id(enc.get("nodeId"), where)
@@ -130,8 +132,13 @@ def load_timeline_json(path: Path) -> dict:
                 if set(enc) != BRANCH_KEYS or enc["kind"] != "Stmt_If" or enc["branch"] not in BRANCHES:
                     raise ValueError(f"{where}: malformed branch {enc}")
                 _check_node_id(enc["condNodeId"], where)
+            elif enc.get("role") in OTHER_ROLES:
+                # Only what every enclosure has is checked; any other field is carried through.
+                if not isinstance(enc.get("kind"), str):
+                    raise ValueError(f"{where}: {enc['role']} enclosure {enc['nodeId']} has no kind")
             else:
-                raise ValueError(f"{where}: enclosedBy role {enc.get('role')!r}, expected 'iteration' or 'branch'")
+                roles = ("iteration", "branch", *OTHER_ROLES)
+                raise ValueError(f"{where}: enclosedBy role {enc.get('role')!r}, expected one of {roles}")
 
     return timeline
 
@@ -171,8 +178,11 @@ def _enclosure(d: dict) -> Enclosure:
     if d["role"] == "iteration":
         return Enclosure(node_id=d["nodeId"], kind=d["kind"], role="iteration", iter_expr=d["iterExpr"],
                          iter_source_kind=d["iterSourceKind"], value_var=d["valueVar"], key_var=d["keyVar"])
-    return Enclosure(node_id=d["nodeId"], kind=d["kind"], role="branch", branch=d["branch"],
-                     cond_node_id=d["condNodeId"])
+    if d["role"] == "branch":
+        return Enclosure(node_id=d["nodeId"], kind=d["kind"], role="branch", branch=d["branch"],
+                         cond_node_id=d["condNodeId"])
+    extra = tuple(sorted((k, v) for k, v in d.items() if k not in ENCLOSURE_BASE_KEYS))
+    return Enclosure(node_id=d["nodeId"], kind=d["kind"], role=d["role"], extra=extra)
 
 
 def load_timeline(path: Path) -> Timeline:
@@ -191,7 +201,7 @@ def load_timeline(path: Path) -> Timeline:
     queries = {
         qid: Query(node_id=qid, line=q["line"], sql=q["sql"], tables=tuple(q["tables"]),
                    columns=None if q["columns"] is None else tuple(q["columns"]), result_var=q["resultVar"])
-        for qid, q in doc["queries"].items()
+        for qid, q in doc.get("queries", {}).items()
     }
     return Timeline(entrypoint=doc["entrypoint"], schema_version=doc["schemaVersion"], sequence=sequence,
                     queries=queries, provenance=doc.get("_provenance", {}))

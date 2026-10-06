@@ -126,6 +126,53 @@ def test_unlabelled_node_is_kept_for_review_without_guessing():
     assert r.counts.review == 1 and r.counts.excluded == 0
 
 
+def test_switch_case_fixture_loads_and_goes_through_stage1():
+    r = run("switch_case", FIXTURES)
+    assert (r.counts.total, r.counts.kept, r.counts.review, r.counts.excluded) == (3, 3, 0, 0)
+    assert dumps(r) == dumps(run("switch_case", FIXTURES))
+
+
+@pytest.mark.parametrize("role, kind", [("switch_case", "Stmt_Switch"), ("try_catch", "Stmt_TryCatch")])
+def test_other_enclosure_roles_pass_through_like_any_enclosure(role, kind, tmp_path):
+    doc = json.loads((FIXTURES / "timeline_switch_case.json").read_text(encoding="utf-8"))
+    doc["sequence"][1]["enclosedBy"][0].update(role=role, kind=kind)
+    path = tmp_path / "timeline.json"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    r = isolate_presentation(load_timeline(path), load_labels(FIXTURES / "labels_switch_case.json"))
+
+    echo = next(k for k in r.kept if k.node_id == "t002#00006")
+    (wrapper,) = echo.enclosed_by
+    assert echo.status is Status.OK, "the wrapper's role does not change the output node's own status"
+    assert (wrapper.role, wrapper.kind, wrapper.label.concern) == (role, kind, Concern.PRESENTATION)
+    assert dict(wrapper.extra) == {"caseNodeId": "t002#00004"}, "unspecified fields are carried through"
+    wrapper_node = next(k for k in r.kept if k.node_id == "t002#00002")
+    assert (wrapper_node.node_type, wrapper_node.kind, wrapper_node.status) == ("enclosure", kind, Status.OK)
+    written = next(k for k in result_to_dict(r)["kept"] if k["nodeId"] == "t002#00006")["enclosedBy"][0]
+    assert (written["role"], written["caseNodeId"], written["label"]["concern"]) == (
+        role, "t002#00004", "presentation")
+
+
+def test_enclosure_role_outside_the_schema_is_rejected(tmp_path):
+    doc = json.loads((FIXTURES / "timeline_switch_case.json").read_text(encoding="utf-8"))
+    doc["sequence"][1]["enclosedBy"][0]["role"] = "match_arm"
+    path = tmp_path / "timeline.json"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    with pytest.raises(ValueError, match="enclosedBy role"):
+        load_timeline(path)
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_queries_map_is_optional_and_stage1_does_not_need_it(name, tmp_path):
+    doc = json.loads((MOCKS / f"timeline_{name}.json").read_text(encoding="utf-8"))
+    assert doc.pop("queries"), "the mock has a queries map to remove"
+    path = tmp_path / f"timeline_{name}.json"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    timeline = load_timeline(path)
+    assert timeline.queries == {}
+    without = isolate_presentation(timeline, load_labels(MOCKS / f"labels_{name}.json"))
+    assert dumps(without) == dumps(run(name))
+
+
 def test_decisions_ignore_rule_id_and_basis():
     timeline = load_timeline(MOCKS / "timeline_edge_cases.json")
     labels = load_labels(MOCKS / "labels_edge_cases.json")
