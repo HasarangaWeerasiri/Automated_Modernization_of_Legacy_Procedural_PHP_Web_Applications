@@ -1,5 +1,7 @@
 # Component 2 — Agent Context (read this first, every task)
 
+_Version 2 — 6 Oct 2026 (updated after the Stage 1 review)._
+
 This file is the handoff between the research chat and the coding agent. It records decisions
 already made. **Do not change a decision recorded here.** If something here looks wrong or a task
 conflicts with it, stop and report it instead of working around it.
@@ -25,10 +27,10 @@ SQLAlchemy (data). Anything the tool cannot resolve is **flagged, not guessed** 
 
 | Stage | Name | Input → Output | Status |
 |---|---|---|---|
-| 1 | Presentation isolation | timeline + labels → kept output nodes (with enclosure chain) | **Next** |
-| 2 | Boundary inference | Stage 1 result → component tree, using `docs/php-analysis/boundary-rules.md` | After Stage 1 |
-| 3 | Data requirement recovery | per component: backward slice → fields needed | Skeleton only (needs DFG) |
-| 4 | Contract reconciliation | needs vs contract → matched / missing / unused | Skeleton only (needs DFG + C3 schema) |
+| 1 | Presentation isolation | timeline + labels → a status for **every node the timeline mentions** (output nodes, guards, loops, queries, fetches), each output node keeping its full enclosure chain | **Done** (commit `1d91be0`) |
+| 2 | Boundary inference | Stage 1 result → component tree, using `docs/php-analysis/boundary-rules.md` | **Next** |
+| 3 | Data requirement recovery | per component: backward slice → fields needed | Not started (needs DFG) |
+| 4 | Contract reconciliation | needs vs contract → matched / missing / unused | Not started (needs DFG + C3 schema) |
 | 5 | Generation | Next.js **Server Components** (`.tsx`) + typed fetch layer | Later |
 
 Inline JS / AJAX is **out of scope**: detect and flag it, never convert it.
@@ -37,13 +39,15 @@ Everything is generated as a Server Component, **by construction**.
 ## 3. Input format (Member 01's schema 1.0)
 
 **Timeline** (`output-timeline.json`, mocks: `mocks/timeline_*.json`) — output nodes in source order.
-Each entry has a stable `nodeId` (e.g. `f012#00347`), nikic `kind` (`Stmt_Echo`, `Stmt_InlineHTML`,
+Each sequence entry has a stable ID (e.g. `f012#00347`) in the field **`id`** (enclosures, queries and
+label keys use `nodeId`; field naming pending Member 01's confirmation — the loader follows the mocks), nikic `kind` (`Stmt_Echo`, `Stmt_InlineHTML`,
 `Expr_Print`), byte-exact `raw`, and:
 
 - `enclosedBy`: list, **outermost → innermost**
   - loop: `{nodeId, kind, role: "iteration", iterExpr, iterSourceKind, valueVar, keyVar}`
   - branch: `{nodeId, kind: "Stmt_If", role: "branch", branch: "then"|"elseif"|"else", condNodeId}`
-  - other roles: `switch_case`, `try_catch`
+  - other roles: `switch_case`, `try_catch` — the loader **must accept and model** them. No boundary
+    rule covers them yet, so Stage 2 **abstains and flags** any node enclosed by them. Never crash on them
 - `reads`: `{expr, var, path, sourceKind, confidence, source: {fetchNodeId, queryNodeId, table, column}}`
   - `sourceKind`: `db_row_field | session | request | server | literal | computed | unresolved`
   - `confidence`: `resolved | ambiguous | unresolved`
@@ -55,8 +59,10 @@ Each entry has a stable `nodeId` (e.g. `f012#00347`), nikic `kind` (`Stmt_Echo`,
 - `basis`: `rule | abstained`
 
 **Agent-chosen extensions (pending Member 01's confirmation — do not build logic that depends on them):**
-a `queries` map keyed by `queryNodeId`; `source: null` for non-DB reads; an `else` branch's
-`condNodeId` points at its `if` condition; `_provenance` blocks (loader ignores them).
+- `queries` map keyed by `queryNodeId` — **optional** in the loader. If present, use it only for raw SQL
+  (reporting, later C3 join). Reads must still work with `source.queryNodeId` alone. Stage 1 and Stage 2 must not need it.
+- `source: null` for non-DB reads; an `else` branch's `condNodeId` points at its `if` condition;
+  `_provenance` blocks (kept as opaque metadata, never used in a decision).
 
 ## 4. Hard rules
 
@@ -64,6 +70,9 @@ a `queries` map keyed by `queryNodeId`; `source: null` for non-DB reads; an `els
 2. **Never use `ruleId`** in any decision (C1's IDs are placeholders). Use `concern`; `basis` is for reporting only.
 3. **Never derive or guess a concern.** Missing label → keep the node, status `review`, reason `unlabelled`.
 4. `undecided` → render but mark `review`. `unresolved` reads → flag, never guess.
+4a. A node's Stage 1 status comes from **its own label only** and never spreads to the nodes inside it.
+    An enclosure's status (e.g. a loop labelled `mixed` because its condition fetches rows) is **information
+    for Stage 2, not a block**: a `mixed` or `business_logic` loop/guard is still used as a structural boundary.
 5. `session` and `request` reads are **excluded** from contract matching.
 6. `ambiguous` reads (e.g. `SELECT *`) need C3's schema → until then, flag them.
 7. Output must be **deterministic**: same input → byte-identical output, stable ordering.
@@ -75,16 +84,21 @@ a `queries` map keyed by `queryNodeId`; `source: null` for non-DB reads; an `els
 
 | Group | Apps | Agent may |
 |---|---|---|
-| Rule discovery | HMS (commit `777fda4`), WackoPicko | Read, build mocks, test |
+| Rule discovery | HMS (commit `777fda4`, in `legacy-apps/hms`), WackoPicko (`github.com/adamdoupe/WackoPicko`, MIT — to be added to `legacy-apps/wackopicko`, pinned commit) | Read, build mocks, test |
 | Evaluation | crud-php-mysqli, PHP-MySQL-CRUD-Application (+ more to come) | **Do not open, read or build mocks from these.** They are locked until Stage 2 is finished |
 
 ## 6. Repo state (as of 6 Oct 2026)
 
-- Branch `frontend-migration-`, last known commit `20d5e2a` (may not be pushed — check).
+- Branch `frontend-migration-`, latest commit `3c0e249` (pushed). History was rewritten on 19 Sep
+  (commit trailers removed): old `20d5e2a` = `fdc62b3`, `878df5c` = `1d91be0`, `c9c9535` = `a7cdedc`.
 - Mocks: `timeline_{list_while,list_foreach,admin,detail,edge_cases}.json`, `labels_*.json` (5), `sample_contract.json`, legacy `sample_ast.json` (untouched).
 - Deliberate contract gap: field **`contact`** (flagged on list pages only). `sku` appears in no schema.
 - Exactly **one** `undecided` node across all mocks (edge-case file, reason `auth_or_display`).
-- Tests: 50 passing (`tests/`). Generator `tools/gen_timelines.py` needs PHP and HMS at `777fda4`.
+- Tests: 82 passing (50 mock/fixture + 32 Stage 1). Extra fixtures: `tests/fixtures/{timeline,labels}_unlabelled.json`.
+  Generator `tools/gen_timelines.py` needs PHP and HMS at `777fda4`.
+- Stage 1 summary: list_while 35→32 ok/1 review/2 excl · list_foreach same · admin 18→15/0/3 · detail 27→24/1/2 · edge_cases 27→23/1/3.
+  Summary semantics: `kept` = status ok; ok + review + excluded = total.
+- `src/main.py` keeps dict-returning aliases only so the original 50 mock tests pass; all format knowledge is in the loader.
 - Single-table `SELECT *` currently `resolved` in the list mocks — **pending Member 01**, do not change yet.
 
 ## 7. Boundary rules
