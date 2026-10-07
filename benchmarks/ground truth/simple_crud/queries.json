@@ -1,0 +1,57 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "create_user.php",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "users",
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "name",
+            "email",
+            "status"
+        ],
+        "expected_filter_columns": []
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "delete_user.php",
+        "expected_recoverable": true,
+        "expected_operation": "DELETE",
+        "expected_table": "users",
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ]
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "update_user.php",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "users",
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "name"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ]
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "users.php",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "users",
+        "expected_read_columns": [
+            "id",
+            "name",
+            "email",
+            "status"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": []
+    }
+]

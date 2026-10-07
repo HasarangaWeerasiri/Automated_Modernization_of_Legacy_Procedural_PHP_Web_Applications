@@ -1,0 +1,50 @@
+{
+    "benchmark_count": 2,
+    "total_queries": 10,
+    "expected_recoverable": 9,
+    "expected_abstentions": 1,
+    "actual_recovered": 9,
+    "actual_abstentions": 1,
+    "recovery_confusion_matrix": {
+        "true_positive": 9,
+        "false_positive": 0,
+        "false_negative": 0,
+        "true_negative": 1
+    },
+    "recovery_precision": 100.0,
+    "recovery_recall": 100.0,
+    "recovery_f1": 100.0,
+    "recovery_decision_accuracy": 100.0,
+    "correct_abstention_rate": 100.0,
+    "observed_abstention_rate": 10.0,
+    "operation_accuracy": 100.0,
+    "table_accuracy": 100.0,
+    "read_column_accuracy": 100.0,
+    "write_column_accuracy": 100.0,
+    "filter_column_accuracy": 100.0,
+    "benchmarks": {
+        "simple_crud": {
+            "total_queries": 4,
+            "expected_recoverable": 4,
+            "expected_abstentions": 0,
+            "actual_recovered": 4,
+            "actual_abstentions": 0,
+            "recovery_precision": 100.0,
+            "recovery_recall": 100.0,
+            "recovery_f1": 100.0,
+            "abstention_rate": 0.0
+        },
+        "mixed_crud": {
+            "total_queries": 6,
+            "expected_recoverable": 5,
+            "expected_abstentions": 1,
+            "actual_recovered": 5,
+            "actual_abstentions": 1,
+            "recovery_precision": 100.0,
+            "recovery_recall": 100.0,
+            "recovery_f1": 100.0,
+            "abstention_rate": 16.67
+        }
+    },
+    "evaluation_scope_note": "Results apply only to the currently annotated benchmark fixtures and should not be interpreted as general accuracy on arbitrary legacy PHP systems."
+}

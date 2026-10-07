@@ -1,0 +1,83 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "01_select.php",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "products",
+        "expected_read_columns": [
+            "id",
+            "title",
+            "price"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": []
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "02_interpolation.php",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "products",
+        "expected_read_columns": [
+            "id",
+            "title",
+            "price"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ]
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "03_concat.php",
+        "expected_recoverable": true,
+        "expected_operation": "DELETE",
+        "expected_table": "products",
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ]
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "04_reassignment.php",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "products",
+        "expected_read_columns": [
+            "id",
+            "title",
+            "price"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": []
+    },
+    {
+        "query_id": "Q005",
+        "source_file": "05_update.php",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "products",
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "title",
+            "price"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ]
+    },
+    {
+        "query_id": "Q006",
+        "source_file": "06_dynamic_function.php",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": []
+    }
+]
