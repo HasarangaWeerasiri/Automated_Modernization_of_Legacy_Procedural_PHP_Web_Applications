@@ -1,0 +1,62 @@
+[
+  {
+    "query_id": "Q001",
+    "source_file": "legacy/01_like_search.php",
+    "expected_recoverable": true,
+    "expected_normalized_sql": "SELECT id, name, email FROM users WHERE name LIKE :q",
+    "expected_operation": "SELECT",
+    "expected_tables": ["users"],
+    "expected_read_columns": ["id", "name", "email"],
+    "expected_write_columns": [],
+    "expected_filter_columns": ["name"],
+    "expected_reason_code": null
+  },
+  {
+    "query_id": "Q002",
+    "source_file": "legacy/02_dynamic_order.php",
+    "expected_recoverable": false,
+    "expected_normalized_sql": null,
+    "expected_operation": null,
+    "expected_tables": [],
+    "expected_read_columns": [],
+    "expected_write_columns": [],
+    "expected_filter_columns": [],
+    "expected_reason_code": "STRUCTURAL"
+  },
+  {
+    "query_id": "Q003",
+    "source_file": "legacy/03_dynamic_in.php",
+    "expected_recoverable": false,
+    "expected_normalized_sql": null,
+    "expected_operation": null,
+    "expected_tables": [],
+    "expected_read_columns": [],
+    "expected_write_columns": [],
+    "expected_filter_columns": [],
+    "expected_reason_code": "STRUCTURAL"
+  },
+  {
+    "query_id": "Q004",
+    "source_file": "legacy/04_conditional_append.php",
+    "expected_recoverable": false,
+    "expected_normalized_sql": null,
+    "expected_operation": null,
+    "expected_tables": [],
+    "expected_read_columns": [],
+    "expected_write_columns": [],
+    "expected_filter_columns": [],
+    "expected_reason_code": "BRANCHING"
+  },
+  {
+    "query_id": "Q005",
+    "source_file": "legacy/05_join.php",
+    "expected_recoverable": true,
+    "expected_normalized_sql": "SELECT orders.id, orders.total, orders.status, users.name FROM orders JOIN users ON orders.user_id = users.id WHERE users.id = :userId",
+    "expected_operation": "SELECT",
+    "expected_tables": ["orders", "users"],
+    "expected_read_columns": ["orders.id", "orders.total", "orders.status", "users.name"],
+    "expected_write_columns": [],
+    "expected_filter_columns": ["users.id"],
+    "expected_reason_code": null
+  }
+]
