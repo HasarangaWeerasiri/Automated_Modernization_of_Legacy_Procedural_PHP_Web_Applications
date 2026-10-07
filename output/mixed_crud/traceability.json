@@ -1,0 +1,129 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "..\\..\\benchmarks\\apps\\mixed_crud\\legacy\\01_select.php",
+        "source_line": 4,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT id, title, price FROM products",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "products"
+        ],
+        "read_columns": [
+            "id",
+            "title",
+            "price"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "ready_for_conversion"
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "..\\..\\benchmarks\\apps\\mixed_crud\\legacy\\02_interpolation.php",
+        "source_line": 7,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT id, title, price FROM products WHERE id = {{id}}",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "products"
+        ],
+        "read_columns": [
+            "id",
+            "title",
+            "price"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "reason": null,
+        "action": "ready_for_conversion"
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "..\\..\\benchmarks\\apps\\mixed_crud\\legacy\\03_concat.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "DELETE FROM products WHERE id = {{id}}",
+        "operation": "DELETE",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "products"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "reason": null,
+        "action": "ready_for_conversion"
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "..\\..\\benchmarks\\apps\\mixed_crud\\legacy\\04_reassignment.php",
+        "source_line": 7,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT id, title, price FROM products",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "products"
+        ],
+        "read_columns": [
+            "id",
+            "title",
+            "price"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "ready_for_conversion"
+    },
+    {
+        "query_id": "Q005",
+        "source_file": "..\\..\\benchmarks\\apps\\mixed_crud\\legacy\\05_update.php",
+        "source_line": 11,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "UPDATE products SET title = '{{title}}', price = {{price}} WHERE id = {{id}}",
+        "operation": "UPDATE",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "products"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "title",
+            "price"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "reason": null,
+        "action": "ready_for_conversion"
+    },
+    {
+        "query_id": "Q006",
+        "source_file": "..\\..\\benchmarks\\apps\\mixed_crud\\legacy\\06_dynamic_function.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "recovery_status": "UNRESOLVED",
+        "recovered_sql": "{{UNRESOLVED:buildQuery($table, $condition)}}",
+        "operation": null,
+        "analysis_status": "UNRESOLVED",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": "Query contains unsupported dynamic expression.",
+        "action": "manual_review_required"
+    }
+]

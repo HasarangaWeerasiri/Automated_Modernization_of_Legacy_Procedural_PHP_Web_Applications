@@ -1,0 +1,14 @@
+[
+    {
+        "query_id": "Q006",
+        "source_file": "..\\..\\benchmarks\\apps\\mixed_crud\\legacy\\06_dynamic_function.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "{{UNRESOLVED:buildQuery($table, $condition)}}",
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "Query contains unsupported dynamic expression.",
+        "action": "manual_review_required"
+    }
+]
