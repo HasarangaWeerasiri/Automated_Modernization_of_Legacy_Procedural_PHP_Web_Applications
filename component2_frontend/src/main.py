@@ -134,6 +134,8 @@ def component_label(node) -> str:
         parts.append(f"container <{node.container.tag}{element_id}>")
     elif node.container:
         parts.append("no wrapper")
+    if node.loop_concern:
+        parts.append(f"loop: {node.loop_concern}")
     if node.root_tags:
         parts.append("item " + " ".join(f"<{tag}>" for tag in node.root_tags))
     if node.elements is not None:

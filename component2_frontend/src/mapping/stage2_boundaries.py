@@ -1,7 +1,7 @@
 """Stage 2: boundary inference.
 
 Turns the Stage 1 result into a component tree by applying the owner's
-boundary rules (docs/php-analysis/boundary-rules.md, draft v0.2) as written.
+boundary rules (docs/php-analysis/boundary-rules.md, draft v0.3) as written.
 Thresholds come from config/boundary_rules.json. Where no rule covers a
 structure the node is an Abstain: nothing is guessed.
 
@@ -14,15 +14,24 @@ How the rules are applied:
           R-L3: a one-element item stays inline, no Item component.
           R-L4 needs no code of its own: the walk is innermost first.
   ifs     R-I3 output in attribute position. R-L6 tags crossing a branch ->
-          abstain. R-I2 a branch holding a loop -> that List's guard; the
-          other branch is its Empty. Then by size: R-I4 inline, R-I5 its own
-          component. R-I6 merges adjacent small ifs in one element.
-          R-I1 is decided at page level.
+          abstain. An if labelled business_logic is an authorization guard ->
+          abstain, with or without a loop inside. R-I2 a branch holding a
+          loop -> that List's guard; the other branch is its Empty. Then by
+          size: R-I4 inline (up to small_if_max_elements), R-I5 its own
+          component (fallback_component_min_elements or more). R-I6 merges
+          adjacent small ifs in one element. R-I1 is decided at page level.
 
-Enclosure labels: a loop or list guard labelled mixed or business_logic is
-still used as structure (CONTEXT.md rule 4a). A content if with such a label
-would move that logic into the UI, so it abstains (boundary-rules.md section 5).
-Stage 1 review statuses carry to the node built from the reviewed construct.
+Labels and statuses (boundary-rules.md sections 4a and 5):
+  - An abstaining if still shows what is inside it: its children are built.
+  - A content if labelled data_access or mixed would move that logic into the
+    UI, so it abstains.
+  - A loop labelled mixed is still a List with status ok; the loop's concern
+    is recorded on the List as loop_concern (information, not a status).
+  - A Stage 1 review on an output node carries to the leaf that holds it. A
+    review on an undecided or unlabelled if or loop carries to the node built
+    from it (CONTEXT.md rules 3 and 4).
+  - An R-I6 chain is always review: the conditions' text is not in the
+    timeline, so their mutual exclusivity cannot be checked.
 
 Not implemented: R-F1 and R-F2 (function and layout components), blocked on
 whether a page's timeline includes the output of the functions it calls.
@@ -145,8 +154,9 @@ class _Builder:
     def run(self, nodes: list[KeptNode]) -> list[tagtrack.NodeTags]:
         return [self.tags[k.node_id] for k in nodes]
 
-    def node(self, type_, rules, reason, nodes, sources=(), children=(), abstain=False, flags=(), **extra):
-        reviews = [self.review[s] for s in sources if s in self.review]
+    def node(self, type_, rules, reason, nodes, sources=(), children=(), abstain=False, flags=(), review=(),
+             **extra):
+        reviews = [*review, *(self.review[s] for s in sources if s in self.review)]
         if not children:  # a leaf also answers for its own output nodes
             reviews += [k.reason for k in nodes if k.status is Status.REVIEW]
             if nodes and tagtrack.has_unmatched_close(self.run(nodes)):
@@ -185,7 +195,8 @@ class _Builder:
                         chain.append(items[j])
                         j += 1
                 if len(chain) > 1:  # R-I6; the conditions' text is not in the timeline, so exclusivity is unchecked
-                    out.append(self.conditional(chain, "InlineConditional", "R-I6", "exclusivity_not_verified"))
+                    out.append(self.conditional(chain, "InlineConditional", "R-I6", "exclusivity_not_verified",
+                                                review=("exclusivity_not_verified",)))
                 else:
                     out.append(self.if_(item))
                 i += len(chain)
@@ -251,11 +262,12 @@ class _Builder:
     def branch_children(self, region: _If) -> list[ComponentNode]:
         return [child for branch in region.branches for child in self.items(branch.items)]
 
-    def conditional(self, regions: list[_If], type_, rule, reason) -> ComponentNode:
+    def conditional(self, regions: list[_If], type_, rule, reason, review=()) -> ComponentNode:
         facts = [self.facts(r) for r in regions]
         return self.node(
             type_, (rule,), reason, [k for f in facts for k in f["nodes"]], tuple(r.node_id for r in regions),
-            [child for r in regions for child in self.branch_children(r)], elements=max(f["elements"] for f in facts))
+            [child for r in regions for child in self.branch_children(r)], review=review,
+            elements=max(f["elements"] for f in facts))
 
     def if_(self, region: _If) -> ComponentNode:
         f = self.facts(region)
@@ -267,11 +279,15 @@ class _Builder:
         if f["crosses"]:
             return self.abstain("tag_crosses_branch", nodes, source, ("R-L6",), self.branch_children(region),
                                 flags=("tag_crosses_branch",))
+        if region.label is not None and region.label.concern is Concern.BUSINESS_LOGIC:
+            # An authorization guard, not an empty-state check, whether or not it holds a loop (R-I2, section 5).
+            # Its content, including any List, is still built underneath it.
+            return self.abstain("cuts_across_business_logic", nodes, source, (), self.branch_children(region))
         if len(f["loops"]) == 1:
             return self.guarded_list(region, *f["loops"][0])
         if f["loops"]:  # R-I2 speaks of one List per guard
             return self.abstain("list_guard_multiple_loops", nodes, source, (), self.branch_children(region))
-        if f["blocked"]:  # section 5: the boundary would cut across a logic / data-access node
+        if f["blocked"]:  # section 5: the boundary would cut across a data-access or mixed node
             return self.abstain(f"cuts_across_{region.label.concern.value}", nodes, source, (),
                                 self.branch_children(region))
         if f["elements"] <= self.config.small_if_max_elements:
@@ -295,7 +311,7 @@ class _Builder:
                                           self.items(branch.items)))
         return self.node("List", (*parts["rules"], "R-I2"), parts["reason"], nodes,
                          (list_branch.items[index].enclosure.node_id, region.node_id), children,
-                         container=parts["container"])
+                         container=parts["container"], loop_concern=parts["loop_concern"])
 
     # ---- loops
 
@@ -327,18 +343,20 @@ class _Builder:
             container = ListContainer(True, outer[0].tag, outer[0].element_id, outer[0].opened_in)
             container_rule, reason = "R-L2a", "container_is_nearest_open_tag"
 
+        label = region.enclosure.label
+        common = {"reason": reason, "container": container, "loop_concern": label.concern.value if label else None}
         if len(roots) == 1 and tagtrack.element_count(run) == 1:  # R-L3: stays an inline map
-            return {"rules": ("R-L1", container_rule, "R-L3"), "reason": reason, "container": container,
-                    "child": self.node("Static", ("R-L3",), "inline_map", nodes)}
+            return common | {"rules": ("R-L1", container_rule, "R-L3"),
+                             "child": self.node("Static", ("R-L3",), "inline_map", nodes)}
         item = self.node("Item", ("R-L1",), "loop_body", nodes, (), self.items(region.items), root_tags=roots)
-        return {"rules": ("R-L1", container_rule), "reason": reason, "container": container, "child": item}
+        return common | {"rules": ("R-L1", container_rule), "child": item}
 
     def loop(self, region: _Loop) -> ComponentNode:
         parts = self.list_parts(region)
         if isinstance(parts, ComponentNode):
             return parts
         return self.node("List", parts["rules"], parts["reason"], _flat(region.items), (region.enclosure.node_id,),
-                         [parts["child"]], container=parts["container"])
+                         [parts["child"]], container=parts["container"], loop_concern=parts["loop_concern"])
 
     # ---- page
 
@@ -363,7 +381,14 @@ def _walk(node: ComponentNode):
 def infer_boundaries(stage1_result: PresentationResult, timeline: Timeline, config: BoundaryConfig) -> ComponentTree:
     order = {node.id: index for index, node in enumerate(timeline.sequence)}
     outputs = sorted((k for k in stage1_result.kept if k.node_type == "output"), key=lambda k: order[k.node_id])
-    review = {k.node_id: k.reason for k in stage1_result.kept if k.status is Status.REVIEW}
+    # Reviews that carry from an enclosing if or loop to the node built from it. `mixed` is left out:
+    # it is information only (section 4a) and is recorded as loop_concern instead. A review on an
+    # output node is read from the node itself when its leaf is built.
+    review = {
+        k.node_id: k.reason for k in stage1_result.kept
+        if k.status is Status.REVIEW and k.node_type != "output"
+        and not (k.label is not None and k.label.concern is Concern.MIXED)
+    }
     root = _Builder(outputs, review, config).page()
     nodes = list(_walk(root))
     counts = TreeCounts(
@@ -398,6 +423,7 @@ def _node_dict(node: ComponentNode) -> dict:
         "container": None if container is None else {
             "hasWrapper": container.has_wrapper, "tag": container.tag, "id": container.element_id,
             "openedIn": container.opened_in},
+        "loopConcern": node.loop_concern,
         "rootTags": list(node.root_tags),
         "elements": node.elements,
         "flags": list(node.flags),

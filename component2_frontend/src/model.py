@@ -159,8 +159,8 @@ class PresentationResult:
 class BoundaryConfig:
     """Thresholds for docs/php-analysis/boundary-rules.md, read from config/boundary_rules.json."""
 
-    small_if_max_elements: int  # R-I4
-    fallback_component_min_elements: int  # R-I5 ("N")
+    small_if_max_elements: int  # R-I4: an if with at most this many elements stays inline
+    fallback_component_min_elements: int  # R-I5 ("N"): an if with this many elements or more is its own component
     table_section_tags: tuple[str, ...]  # R-L2a walks past these
     void_tags: tuple[str, ...]  # elements that never have a closing tag
 
@@ -187,6 +187,7 @@ class ComponentNode:
     source_ids: tuple[str, ...] = ()  # the loop / if nodes it was built from
     children: tuple["ComponentNode", ...] = ()
     container: ListContainer | None = None  # List only
+    loop_concern: str | None = None  # List only: the concern Component 1 gave its loop. Information, not a status
     root_tags: tuple[str, ...] = ()  # Item only: the item's root elements
     elements: int | None = None  # conditionals only: largest number of opening tags in one branch
     flags: tuple[str, ...] = ()  # e.g. unmatched_close, tag_crosses_branch

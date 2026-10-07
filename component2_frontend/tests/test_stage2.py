@@ -6,6 +6,7 @@ or from the owner's Stage 2 brief. Nothing is asserted about cases those do not 
 
 import dataclasses
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -115,7 +116,7 @@ def test_hms_table_loop_is_a_list_in_its_table_with_a_tr_item(name, trees):
 def test_hms_status_cell_is_one_inline_conditional(name, trees):
     (chain,) = find(trees[name], rule="R-I6")
     assert chain.type == "InlineConditional" and len(chain.source_ids) == 3
-    assert (chain.elements, chain.reason) == (0, "exclusivity_not_verified")
+    assert (chain.elements, chain.status, chain.reason) == (0, "review", "exclusivity_not_verified")
 
 
 def canonical(tree):
@@ -154,11 +155,18 @@ def test_admin_display_guard_is_inline_and_authorization_guard_is_not_a_componen
     assert [(n.type, n.status) for n in built_from_auth] == [("Abstain", "abstain")]
 
 
-def test_edge_cases_foreach_in_an_if_is_a_guarded_list(trees):
-    (lst,) = find(trees["edge_cases"], type="List")
+def test_edge_cases_business_logic_guard_around_a_loop_abstains_and_still_shows_the_list(trees):
+    """R-I2 (v0.3): a business_logic guard is an authorization check, not an empty-state check."""
+    tree = trees["edge_cases"]
     (guard,) = ifs_labelled("edge_cases", Concern.BUSINESS_LOGIC)
-    assert "R-I2" in lst.rules and guard in lst.source_ids
-    assert lst.status == "ok", "a business_logic guard is still used as structure (rule 4a)"
+    (abstain,) = [n for n in walk(tree.root) if guard in n.source_ids]
+    assert (abstain.type, abstain.status, abstain.reason) == ("Abstain", "abstain", "cuts_across_business_logic")
+    (lst,) = find(tree, type="List")
+    assert lst in abstain.children, "the List inside the guard is still built, under the Abstain"
+    assert "R-I2" not in lst.rules and guard not in lst.source_ids
+    assert (lst.container.tag, lst.status) == ("table", "ok")
+    (item,) = find(tree, type="Item")
+    assert item in lst.children and item.root_tags == ("tr",)
 
 
 def test_edge_cases_undecided_guard_content_carries_review(trees):
@@ -167,10 +175,31 @@ def test_edge_cases_undecided_guard_content_carries_review(trees):
     assert (node.status, node.reason) == ("review", "auth_or_display")
 
 
-@pytest.mark.parametrize("name", ["list_while", "detail"])
-def test_mixed_loop_is_still_a_list_and_carries_review(name, trees):
+@pytest.mark.parametrize("name", ["list_while", "list_foreach", "detail"])
+def test_mixed_loop_is_a_list_with_status_ok_and_its_concern_recorded(name, trees):
+    """Section 4a: a loop that fetches rows in its header is information, not a review."""
     (lst,) = find(trees[name], type="List")
-    assert (lst.status, lst.reason) == ("review", "mixed_concern")
+    assert (lst.status, lst.loop_concern) == ("ok", "mixed")
+    assert tree_to_dict(trees[name])["tree"]["children"][1]["loopConcern"] == "mixed"
+
+
+@pytest.mark.parametrize("name", ["edge_cases", "wp_guestbook", "wp_view"])
+def test_loop_concern_is_recorded_on_every_list(name, trees):
+    assert {lst.loop_concern for lst in find(trees[name], type="List")} == {"presentation"}
+    assert all(n.loop_concern is None for n in walk(trees[name].root) if n.type != "List")
+
+
+def test_only_reviews_named_by_the_status_rules_reach_the_tree(trees):
+    """Section 4a: R-I6 chains, and Stage 1 reviews other than a mixed loop."""
+    reviews = {name: sorted((n.type, n.reason) for n in walk(tree.root) if n.status == "review")
+               for name, tree in trees.items()}
+    chain = ("InlineConditional", "exclusivity_not_verified")
+    assert reviews == {
+        "list_while": [chain], "list_foreach": [chain], "detail": [chain], "admin": [],
+        "edge_cases": [("InlineConditional", "auth_or_display")],
+        "wp_guestbook": [], "wp_view": [], "wp_header": [], "wp_thumbnails": [],
+        "wp_login": [("Page", "logic_or_display")],
+    }
 
 
 # ---------------------------------------------------------------- WackoPicko (boundary-rules.md 6.3, 6.4)
@@ -353,10 +382,11 @@ def test_unlabelled_output_node_carries_review_into_its_leaf():
 
 
 def test_cli_prints_the_tree_and_writes_json(trees):
+    # The printed tree uses box-drawing characters; UTF-8 on both ends keeps this independent of the console code page.
     proc = subprocess.run(
         [sys.executable, "src/main.py", "--timeline", "mocks/timeline_wp_guestbook.json",
          "--labels", "mocks/labels_wp_guestbook.json", "--stage", "2"],
-        cwd=ROOT, capture_output=True, text=True, check=True,
+        cwd=ROOT, capture_output=True, encoding="utf-8", check=True, env={**os.environ, "PYTHONUTF8": "1"},
     )
     assert summary(trees["wp_guestbook"]) in proc.stdout and "R-L2b" in proc.stdout
     written = json.loads((ROOT / "output" / "stage2_wp_guestbook.json").read_text(encoding="utf-8"))
