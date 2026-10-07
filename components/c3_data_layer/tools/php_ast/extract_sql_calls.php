@@ -119,6 +119,70 @@ function getMethodName(Node $name): ?string
     return null;
 }
 
+/**
+ * Attach parent references to AST nodes.
+ *
+ * PhpParser nodes do not contain parent references by default.
+ * We add them so assignments can be checked for surrounding
+ * control-flow structures such as if/elseif/else statements.
+ */
+function connectParentNodes(
+    Node $node,
+    ?Node $parent = null
+): void {
+    if ($parent !== null) {
+        $node->setAttribute('parent', $parent);
+    }
+
+    foreach ($node->getSubNodeNames() as $subNodeName) {
+        $child = $node->$subNodeName;
+
+        if ($child instanceof Node) {
+            connectParentNodes(
+                $child,
+                $node
+            );
+        } elseif (is_array($child)) {
+            foreach ($child as $item) {
+                if ($item instanceof Node) {
+                    connectParentNodes(
+                        $item,
+                        $node
+                    );
+                }
+            }
+        }
+    }
+}
+
+
+/**
+ * Return the control-flow contexts surrounding a node.
+ */
+function getControlFlowContext(
+    Node $node
+): array {
+    $contexts = [];
+
+    $parent = $node->getAttribute('parent');
+
+    while ($parent instanceof Node) {
+
+        if ($parent instanceof Node\Stmt\If_) {
+            $contexts[] = 'IF';
+        } elseif ($parent instanceof Node\Stmt\ElseIf_) {
+            $contexts[] = 'ELSEIF';
+        } elseif ($parent instanceof Node\Stmt\Else_) {
+            $contexts[] = 'ELSE';
+        }
+
+        $parent = $parent->getAttribute('parent');
+    }
+
+    return array_values(
+        array_unique($contexts)
+    );
+}
 
 $results = [];
 $assignments = [];
@@ -138,6 +202,14 @@ foreach ($phpFiles as $phpFile) {
 
         if ($ast === null) {
             continue;
+        }
+
+	        foreach ($ast as $rootNode) {
+            if ($rootNode instanceof Node) {
+                connectParentNodes(
+                    $rootNode
+                );
+            }
         }
 
     } catch (Error $error) {
@@ -193,7 +265,7 @@ foreach ($phpFiles as $phpFile) {
                 ? 'CONCAT_ASSIGN'
                 : 'ASSIGN';
 
-        $assignments[] = [
+	        $assignments[] = [
             'source_file' => $phpFile,
             'source_line' => $assignment->getStartLine(),
             'variable' => $variableName,
@@ -201,6 +273,9 @@ foreach ($phpFiles as $phpFile) {
             'expression' => expressionToString(
                 $assignment->expr,
                 $prettyPrinter
+            ),
+            'control_flow' => getControlFlowContext(
+                $assignment
             ),
         ];
     }

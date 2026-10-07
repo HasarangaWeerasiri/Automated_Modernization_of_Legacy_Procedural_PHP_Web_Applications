@@ -406,7 +406,80 @@ def _select_assignment_chain(
     return assignments[
         last_assign_index:
     ]
+def _detect_branching_assignment(
+    assignment_chain: list[dict],
+) -> tuple[str | None, str | None]:
+    """
+    Detect SQL construction that depends on control flow.
 
+    If any assignment participating in the recovered SQL
+    expression occurs inside a conditional branch, there may
+    be multiple possible SQL shapes at runtime.
+
+    The current deterministic recovery stage therefore
+    abstains instead of choosing one branch.
+    """
+
+    for assignment in assignment_chain:
+        control_flow = assignment.get(
+            "control_flow",
+            [],
+        )
+
+        if control_flow:
+            return (
+                "BRANCHING",
+                "SQL construction depends on conditional "
+                "control flow.",
+            )
+
+    return None, None
+
+def _detect_structural_placeholder(
+    sql: str,
+) -> tuple[str | None, str | None]:
+    """
+    Detect dynamic placeholders used in SQL structural positions.
+
+    Ordinary scalar values can later become bind parameters.
+    Dynamic identifiers and dynamic SQL list fragments cannot
+    safely be treated as ordinary scalar parameters.
+
+    Returns:
+        reason_code, reason
+
+    If no unsupported structural placeholder is found:
+        None, None
+    """
+
+    order_by_pattern = re.compile(
+        r"\bORDER\s+BY\s+"
+        r"\{\{[A-Za-z_][A-Za-z0-9_]*\}\}",
+        re.IGNORECASE,
+    )
+
+    if order_by_pattern.search(sql):
+        return (
+            "STRUCTURAL",
+            "Dynamic value occurs in a structural "
+            "ORDER BY position.",
+        )
+
+    dynamic_in_pattern = re.compile(
+        r"\bIN\s*\(\s*"
+        r"\{\{[A-Za-z_][A-Za-z0-9_]*\}\}"
+        r"\s*\)",
+        re.IGNORECASE,
+    )
+
+    if dynamic_in_pattern.search(sql):
+        return (
+            "STRUCTURAL",
+            "Dynamic value represents an SQL IN-list "
+            "fragment rather than a scalar value.",
+        )
+
+    return None, None
 
 def _detect_operation(
     sql: str,
@@ -496,6 +569,13 @@ def recover_queries_from_ast(
 
             continue
 
+        (
+            branching_reason_code,
+            branching_reason,
+        ) = _detect_branching_assignment(
+            assignment_chain
+        )
+
         sql_fragments = []
         dynamic_variables = []
         fully_supported = True
@@ -537,8 +617,17 @@ def recover_queries_from_ast(
             recovered_sql
         )
 
-        if not fully_supported:
+        reason_code = None
+
+        if branching_reason_code is not None:
             status = "UNRESOLVED"
+            reason_code = branching_reason_code
+            reason = branching_reason
+            operation = None
+
+        elif not fully_supported:
+            status = "UNRESOLVED"
+            reason_code = "UNKNOWN_EXPR"
             reason = (
                 "Query contains unsupported "
                 "dynamic expression."
@@ -546,14 +635,29 @@ def recover_queries_from_ast(
 
         elif operation is None:
             status = "UNRESOLVED"
+            reason_code = "UNSUPPORTED_SHAPE"
             reason = (
                 "Recovered expression is not a "
                 "recognized CRUD SQL operation."
             )
 
         else:
-            status = "RECOVERED"
-            reason = None
+            (
+                structural_reason_code,
+                structural_reason,
+            ) = _detect_structural_placeholder(
+                recovered_sql
+            )
+
+            if structural_reason_code is not None:
+                status = "UNRESOLVED"
+                reason_code = structural_reason_code
+                reason = structural_reason
+                operation = None
+
+            else:
+                status = "RECOVERED"
+                reason = None
 
         recovered_queries.append(
             {
@@ -574,12 +678,12 @@ def recover_queries_from_ast(
                     dynamic_variables
                 ),
                 "status": status,
+                "reason_code": reason_code,
                 "reason": reason,
             }
         )
 
     return recovered_queries
-
 
 def recover_queries(
     php_path: str | Path,

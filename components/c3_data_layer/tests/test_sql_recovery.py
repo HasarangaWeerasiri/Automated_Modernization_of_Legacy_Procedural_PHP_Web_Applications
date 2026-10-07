@@ -90,3 +90,46 @@ def test_unsupported_dynamic_query_abstains():
         "unsupported dynamic expression"
         in query["reason"].lower()
     )
+
+HARD_BENCHMARK_PATH = (
+    Path(__file__).resolve().parents[3]
+    / "benchmarks"
+    / "apps"
+    / "hard_crud"
+    / "legacy"
+)
+
+
+def get_hard_queries():
+    return recover_queries(HARD_BENCHMARK_PATH)
+
+
+def test_dynamic_order_by_abstains_as_structural():
+    queries = get_hard_queries()
+
+    query = queries[1]
+
+    assert query["query_id"] == "Q002"
+    assert query["status"] == "UNRESOLVED"
+    assert query["reason_code"] == "STRUCTURAL"
+    assert query["operation"] is None
+
+def test_dynamic_in_list_abstains_as_structural():
+    queries = get_hard_queries()
+
+    query = queries[2]
+
+    assert query["query_id"] == "Q003"
+    assert query["status"] == "UNRESOLVED"
+    assert query["reason_code"] == "STRUCTURAL"
+    assert query["operation"] is None
+
+def test_conditional_sql_append_abstains_as_branching():
+    queries = get_hard_queries()
+
+    query = queries[3]
+
+    assert query["query_id"] == "Q004"
+    assert query["status"] == "UNRESOLVED"
+    assert query["reason_code"] == "BRANCHING"
+    assert query["operation"] is None

@@ -1,0 +1,77 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "..\\..\\benchmarks\\apps\\hard_crud\\legacy\\01_like_search.php",
+        "source_line": 9,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, name, email FROM users WHERE name LIKE '%{{q}}%'",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "q"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "..\\..\\benchmarks\\apps\\hard_crud\\legacy\\02_dynamic_order.php",
+        "source_line": 9,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, name, email FROM users ORDER BY {{column}}",
+        "operation": null,
+        "dynamic_variables": [
+            "column"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "STRUCTURAL",
+        "reason": "Dynamic value occurs in a structural ORDER BY position."
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "..\\..\\benchmarks\\apps\\hard_crud\\legacy\\03_dynamic_in.php",
+        "source_line": 9,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, title, price FROM products WHERE id IN ({{ids}})",
+        "operation": null,
+        "dynamic_variables": [
+            "ids"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "STRUCTURAL",
+        "reason": "Dynamic value represents an SQL IN-list fragment rather than a scalar value."
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "..\\..\\benchmarks\\apps\\hard_crud\\legacy\\04_conditional_append.php",
+        "source_line": 11,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, name, email, status FROM users WHERE status = '{{status}}'",
+        "operation": null,
+        "dynamic_variables": [
+            "status"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q005",
+        "source_file": "..\\..\\benchmarks\\apps\\hard_crud\\legacy\\05_join.php",
+        "source_line": 13,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT orders.id, orders.total, orders.status, users.name FROM orders JOIN users ON orders.user_id = users.id WHERE users.id = {{userId}}",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "userId"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    }
+]

@@ -1,0 +1,21 @@
+{
+  "benchmark": "hard_crud",
+  "stage": "pre_soundness_fix",
+  "total_queries": 5,
+  "expected_recoverable": 2,
+  "expected_abstentions": 3,
+  "actual_recovered": 5,
+  "actual_abstentions": 0,
+  "true_positive": 2,
+  "false_positive": 3,
+  "false_negative": 0,
+  "true_negative": 0,
+  "recovery_decision_precision": 40.0,
+  "recovery_decision_recall": 100.0,
+  "observed_false_positives": [
+    "Q002 dynamic ORDER BY",
+    "Q003 dynamic IN list",
+    "Q004 conditional SQL construction"
+  ],
+  "note": "Results apply only to the five predeclared adversarial hard_crud cases."
+}
