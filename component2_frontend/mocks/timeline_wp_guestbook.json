@@ -1,0 +1,226 @@
+{
+  "entrypoint": "legacy-apps/wackopicko/website/guestbook.php",
+  "schemaVersion": "1.0",
+  "sequence": [
+    {
+      "id": "f006#00139",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\n",
+      "enclosedBy": []
+    },
+    {
+      "id": "f006#00148",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\n<div class=\"column prepend-1 span-24 first last\">\n<h2>Guestbook</h2>\n",
+      "enclosedBy": []
+    },
+    {
+      "id": "f006#00156",
+      "kind": "Stmt_InlineHTML",
+      "raw": "<h4>See what people are saying about us!</h4>\n\n",
+      "enclosedBy": []
+    },
+    {
+      "id": "f006#00180",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t<p class=\"comment\">",
+      "enclosedBy": [
+        {
+          "nodeId": "f006#00159",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f006#00162"
+        },
+        {
+          "nodeId": "f006#00167",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$guestbook",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$guest",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f006#00181",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$guest[\"comment\"]",
+          "var": "$guest",
+          "path": [
+            "comment"
+          ],
+          "sourceKind": "unresolved",
+          "confidence": "unresolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f006#00159",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f006#00162"
+        },
+        {
+          "nodeId": "f006#00167",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$guestbook",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$guest",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f006#00189",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</p>\n\t<p> - by ",
+      "enclosedBy": [
+        {
+          "nodeId": "f006#00159",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f006#00162"
+        },
+        {
+          "nodeId": "f006#00167",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$guestbook",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$guest",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f006#00190",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( $guest[\"name\"] )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$guest[\"name\"]",
+              "var": "$guest",
+              "path": [
+                "name"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f006#00159",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f006#00162"
+        },
+        {
+          "nodeId": "f006#00167",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$guestbook",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$guest",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f006#00202",
+      "kind": "Stmt_InlineHTML",
+      "raw": " </p>\n\t",
+      "enclosedBy": [
+        {
+          "nodeId": "f006#00159",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f006#00162"
+        },
+        {
+          "nodeId": "f006#00167",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$guestbook",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$guest",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f006#00213",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\n\n\n\n<form action=\"",
+      "enclosedBy": []
+    },
+    {
+      "id": "f006#00214",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( Guestbook::$GUESTBOOK_URL )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "Guestbook::$GUESTBOOK_URL",
+              "var": "Guestbook::$GUESTBOOK_URL",
+              "path": [],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": []
+    },
+    {
+      "id": "f006#00224",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\" method=\"POST\">\n   Name: <br>\n   <input type=\"text\" name=\"name\" /><br>\n   Comment: <br>\n   <textarea id=\"comment-box\" name=\"comment\"></textarea> <br>\n   <input type=\"submit\" value=\"Submit\" />\n</form>\n\n\n</div>\n",
+      "enclosedBy": []
+    }
+  ],
+  "queries": {},
+  "_provenance": {
+    "source": "legacy-apps/wackopicko/website/guestbook.php",
+    "upstream": "https://github.com/adamdoupe/WackoPicko @ cabc1b3a06beda7df98e839fa2d84db9a4bdfee7",
+    "scenario": "list guard around a loop whose item has two root elements",
+    "notes": [
+      "The foreach (line 35) is the only content of if ($guestbook) (line 33); its item is two <p> with no wrapper.",
+      "our_header(), our_footer() and error_message() are called here; their output is in include/html_functions.php and is not part of this timeline.",
+      "Data reaches this code through include/*.php class methods (mysql_* calls inside them), not through a query in this file. Every such read is therefore sourceKind 'unresolved', loops have iterSourceKind 'unresolved', and there is no queries entry. Whether the data-flow graph follows values through those methods is a question for Member 01.",
+      "Class::$property reads (URL constants) are sourceKind 'unresolved' with var = the whole expression.",
+      "Labels are generator placeholders, not Component 1 output."
+    ],
+    "linesCovered": [
+      24,
+      58
+    ],
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+  }
+}

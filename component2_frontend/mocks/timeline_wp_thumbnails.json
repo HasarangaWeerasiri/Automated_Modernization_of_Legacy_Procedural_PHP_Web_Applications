@@ -1,0 +1,252 @@
+{
+  "entrypoint": "legacy-apps/wackopicko/website/include/html_functions.php",
+  "schemaVersion": "1.0",
+  "sequence": [
+    {
+      "id": "f009#00275",
+      "kind": "Stmt_InlineHTML",
+      "raw": "<div class=\"column prepend-1 span-21 first last\" style=\"margin-bottom: 2em;\">\n      ",
+      "enclosedBy": []
+    },
+    {
+      "id": "f009#00286",
+      "kind": "Stmt_InlineHTML",
+      "raw": "<ul class=\"thumbnail-pic-list\">\n",
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00277",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00280"
+        }
+      ]
+    },
+    {
+      "id": "f009#00404",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</ul>\n</div>\n<div class=\"column prepend-1 span-21 first last\" style=\"margin-bottom: 2em;\">\n<ul class=\"thumbnail-pic-list\">\n\t ",
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00277",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00280"
+        },
+        {
+          "nodeId": "f009#00289",
+          "kind": "Stmt_For",
+          "role": "iteration",
+          "iterExpr": "$i = 0; $i < count($pictures); $i++",
+          "iterSourceKind": "unresolved",
+          "valueVar": null,
+          "keyVar": null
+        },
+        {
+          "nodeId": "f009#00375",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00378"
+        }
+      ]
+    },
+    {
+      "id": "f009#00459",
+      "kind": "Stmt_InlineHTML",
+      "raw": "<li>\n<a href=\"",
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00277",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00280"
+        },
+        {
+          "nodeId": "f009#00289",
+          "kind": "Stmt_For",
+          "role": "iteration",
+          "iterExpr": "$i = 0; $i < count($pictures); $i++",
+          "iterSourceKind": "unresolved",
+          "valueVar": null,
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f009#00460",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h($link_to)",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$link_to",
+              "var": "$link_to",
+              "path": [],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00277",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00280"
+        },
+        {
+          "nodeId": "f009#00289",
+          "kind": "Stmt_For",
+          "role": "iteration",
+          "iterExpr": "$i = 0; $i < count($pictures); $i++",
+          "iterSourceKind": "unresolved",
+          "valueVar": null,
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f009#00467",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\"><img src=\"/upload/",
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00277",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00280"
+        },
+        {
+          "nodeId": "f009#00289",
+          "kind": "Stmt_For",
+          "role": "iteration",
+          "iterExpr": "$i = 0; $i < count($pictures); $i++",
+          "iterSourceKind": "unresolved",
+          "valueVar": null,
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f009#00468",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( $pic['filename'])",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$pic['filename']",
+              "var": "$pic",
+              "path": [
+                "filename"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00277",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00280"
+        },
+        {
+          "nodeId": "f009#00289",
+          "kind": "Stmt_For",
+          "role": "iteration",
+          "iterExpr": "$i = 0; $i < count($pictures); $i++",
+          "iterSourceKind": "unresolved",
+          "valueVar": null,
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f009#00479",
+      "kind": "Stmt_InlineHTML",
+      "raw": ".128_128.jpg\" height=\"128\" width=\"128\" /></a>\n</li>\n",
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00277",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00280"
+        },
+        {
+          "nodeId": "f009#00289",
+          "kind": "Stmt_For",
+          "role": "iteration",
+          "iterExpr": "$i = 0; $i < count($pictures); $i++",
+          "iterSourceKind": "unresolved",
+          "valueVar": null,
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f009#00493",
+      "kind": "Stmt_InlineHTML",
+      "raw": "<h3 class=\"error\">No pictures here...</h3>\n\n\n",
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00277",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "else",
+          "condNodeId": "f009#00280"
+        }
+      ]
+    },
+    {
+      "id": "f009#00498",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</ul>\n</div>\n",
+      "enclosedBy": []
+    }
+  ],
+  "queries": {},
+  "_provenance": {
+    "source": "legacy-apps/wackopicko/website/include/html_functions.php",
+    "upstream": "https://github.com/adamdoupe/WackoPicko @ cabc1b3a06beda7df98e839fa2d84db9a4bdfee7",
+    "scenario": "chunked loop: the body closes and reopens its container",
+    "function": "thumbnail_pic_list",
+    "notes": [
+      "Function-body timeline: the output of thumbnail_pic_list() as if it were an entrypoint. Whether page timelines will include a called function's output is open (boundary-rules.md section 9, question 4).",
+      "The for loop (line 97) is C-style. Its iterExpr holds the whole header and valueVar/keyVar are null: which fields a for loop fills is open (boundary-rules.md section 9, question 10).",
+      "Every fourth iteration (lines 109-117) emits </ul></div><div ...><ul ...>.",
+      "The <ul> opens inside if ($pictures) (line 95) and closes after the else (line 137).",
+      "Data reaches this code through include/*.php class methods (mysql_* calls inside them), not through a query in this file. Every such read is therefore sourceKind 'unresolved', loops have iterSourceKind 'unresolved', and there is no queries entry. Whether the data-flow graph follows values through those methods is a question for Member 01.",
+      "Class::$property reads (URL constants) are sourceKind 'unresolved' with var = the whole expression.",
+      "Labels are generator placeholders, not Component 1 output."
+    ],
+    "linesCovered": [
+      93,
+      138
+    ],
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+  }
+}

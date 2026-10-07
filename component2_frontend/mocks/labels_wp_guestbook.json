@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "labels": {
+    "f006#00139": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f006#00148": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f006#00156": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f006#00159": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R08",
+      "reason": "display_conditional"
+    },
+    "f006#00167": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R05",
+      "reason": "iterates_prefetched_rows"
+    },
+    "f006#00180": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f006#00181": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f006#00189": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f006#00190": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f006#00202": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f006#00213": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f006#00214": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f006#00224": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    }
+  }
+}

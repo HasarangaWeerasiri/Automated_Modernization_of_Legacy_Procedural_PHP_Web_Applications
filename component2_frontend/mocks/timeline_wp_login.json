@@ -1,0 +1,101 @@
+{
+  "entrypoint": "legacy-apps/wackopicko/website/users/login.php",
+  "schemaVersion": "1.0",
+  "sequence": [
+    {
+      "id": "f008#00192",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\n<div class=\"column prepend-1 span-23 first last\">\n    <h2>Login</h2>\n    ",
+      "enclosedBy": [
+        {
+          "nodeId": "f008#00178",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f008#00181"
+        }
+      ]
+    },
+    {
+      "id": "f008#00200",
+      "kind": "Stmt_InlineHTML",
+      "raw": "    <table style=\"width:320px\" cellspacing=\"0\">\n      <form action=\"",
+      "enclosedBy": [
+        {
+          "nodeId": "f008#00178",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f008#00181"
+        }
+      ]
+    },
+    {
+      "id": "f008#00201",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( $_SERVER['PHP_SELF'] )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "resolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$_SERVER['PHP_SELF']",
+              "var": "$_SERVER",
+              "path": [
+                "PHP_SELF"
+              ],
+              "sourceKind": "server",
+              "confidence": "resolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f008#00178",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f008#00181"
+        }
+      ]
+    },
+    {
+      "id": "f008#00212",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\" method=\"POST\">\n      <tr><td>Username :</td><td> <input type=\"text\" name=\"username\" /></td></tr>\n      <tr><td>Password :</td><td> <input type=\"password\" name=\"password\" /></td></tr>\n      <tr><td><input type=\"submit\" value=\"login\" /></td><td> <a href=\"/users/register.php\">Register</a></td></tr>\n   </form>\n </table>\n</div>\n   ",
+      "enclosedBy": [
+        {
+          "nodeId": "f008#00178",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f008#00181"
+        }
+      ]
+    }
+  ],
+  "queries": {},
+  "_provenance": {
+    "source": "legacy-apps/wackopicko/website/users/login.php",
+    "upstream": "https://github.com/adamdoupe/WackoPicko @ cabc1b3a06beda7df98e839fa2d84db9a4bdfee7",
+    "scenario": "page guard: one if wraps all of the page's output",
+    "notes": [
+      "if ($bad_login) (line 29) wraps everything this page outputs. Its body calls layout functions, so the generator's placeholder label for it is undecided (logic_or_display).",
+      "our_header(), our_footer() and error_message() are called here; their output is in include/html_functions.php and is not part of this timeline.",
+      "Data reaches this code through include/*.php class methods (mysql_* calls inside them), not through a query in this file. Every such read is therefore sourceKind 'unresolved', loops have iterSourceKind 'unresolved', and there is no queries entry. Whether the data-flow graph follows values through those methods is a question for Member 01.",
+      "Class::$property reads (URL constants) are sourceKind 'unresolved' with var = the whole expression.",
+      "Labels are generator placeholders, not Component 1 output."
+    ],
+    "linesCovered": [
+      34,
+      46
+    ],
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+  }
+}

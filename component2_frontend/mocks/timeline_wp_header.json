@@ -1,0 +1,277 @@
+{
+  "entrypoint": "legacy-apps/wackopicko/website/include/html_functions.php",
+  "schemaVersion": "1.0",
+  "sequence": [
+    {
+      "id": "f009#00040",
+      "kind": "Stmt_InlineHTML",
+      "raw": "<html>\n  <head>\n    <link rel=\"stylesheet\" href=\"/css/blueprint/screen.css\" type=\"text/css\" media=\"screen, projection\">\n    <link rel=\"stylesheet\" href=\"/css/blueprint/print.css\" type=\"text/css\" media=\"print\">\n    <!--[if IE]><link rel=\"stylesheet\" href=\"/css/blueprint/ie.css\" type=\"text/css\" media=\"screen, projection\"><![endif]-->\n    <link rel=\"stylesheet\" href=\"/css/stylings.css\" type=\"text/css\" media=\"screen\">\n    <title>WackoPicko.com</title>\n  </head>\n  <body>\n    <div class=\"container \" style=\"border: 2px solid #5c95cf;\">\n      <div class=\"column span-24 first last\">\n\t<h1 id=\"title\"><a href=\"/\">WackoPicko.com</a></h1>\n      </div>\n      <div id=\"menu\">\n\t<div class=\"column prepend-1 span-14 first\">\n\t  <ul class=\"menu\">\n\t    <li class=\"",
+      "enclosedBy": []
+    },
+    {
+      "id": "f009#00052",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "'current'",
+          "var": null,
+          "path": null,
+          "sourceKind": "literal",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00042",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00044"
+        }
+      ]
+    },
+    {
+      "id": "f009#00060",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\"><a href=\"/users/home.php\"><span>Home</span></a></li>\n\t    <li class=\"",
+      "enclosedBy": []
+    },
+    {
+      "id": "f009#00072",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "'current'",
+          "var": null,
+          "path": null,
+          "sourceKind": "literal",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00062",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00064"
+        }
+      ]
+    },
+    {
+      "id": "f009#00080",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\"><a href=\"/pictures/upload.php\"><span>Upload</span></a></li>\n\t    <li class=\"",
+      "enclosedBy": []
+    },
+    {
+      "id": "f009#00092",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "'current'",
+          "var": null,
+          "path": null,
+          "sourceKind": "literal",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00082",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00084"
+        }
+      ]
+    },
+    {
+      "id": "f009#00100",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\"><a href=\"/pictures/recent.php\"><span>Recent</span></a></li>\n            <li class=\"",
+      "enclosedBy": []
+    },
+    {
+      "id": "f009#00112",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "'current'",
+          "var": null,
+          "path": null,
+          "sourceKind": "literal",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00102",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00104"
+        }
+      ]
+    },
+    {
+      "id": "f009#00120",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\"><a href=\"/guestbook.php\"><span>Guestbook</span></a></li>\n\n      ",
+      "enclosedBy": []
+    },
+    {
+      "id": "f009#00135",
+      "kind": "Stmt_InlineHTML",
+      "raw": "<li class=\"",
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00122",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00125"
+        }
+      ]
+    },
+    {
+      "id": "f009#00147",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "'current'",
+          "var": null,
+          "path": null,
+          "sourceKind": "literal",
+          "confidence": "resolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00122",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00125"
+        },
+        {
+          "nodeId": "f009#00137",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00139"
+        }
+      ]
+    },
+    {
+      "id": "f009#00155",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\"><a href=\"/cart/review.php\"><span>Cart</span></a></li> ",
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00122",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00125"
+        }
+      ]
+    },
+    {
+      "id": "f009#00160",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t  </ul>\n\t</div>\n\t<div class=\"column prepend-1 span-7 first last\">\n\t  <ul class=\"menu top_login\" >\n      ",
+      "enclosedBy": []
+    },
+    {
+      "id": "f009#00174",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t    <li><a href=\"/users/logout.php\"><Span>Logout</span></a></li>\n      ",
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00162",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f009#00165"
+        }
+      ]
+    },
+    {
+      "id": "f009#00183",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t    <li><a href=\"/users/login.php\"><Span>Login</span></a></li>\n      ",
+      "enclosedBy": [
+        {
+          "nodeId": "f009#00162",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "else",
+          "condNodeId": "f009#00165"
+        }
+      ]
+    },
+    {
+      "id": "f009#00188",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t  </ul>\n\t</div>\n      </div>\n\n\n\n      <div class=\"column span-24 first last\" id=\"search_bar_blue\">\n\t<div class=\"column prepend-17 span-7 first last\" id=\"search_box\">\n\t  <form action=\"/pictures/search.php\" method=\"get\" style=\"display:inline;\">\n\t    <input id=\"query2\" name=\"query\" size=\"15\" style=\"padding: 2px; font-size: 16px; text-decoration:none;border:none;vertical-align:middle;\" type=\"text\" value=\"",
+      "enclosedBy": []
+    },
+    {
+      "id": "f009#00189",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h($search_terms)",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$search_terms",
+              "var": "$search_terms",
+              "path": [],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": []
+    },
+    {
+      "id": "f009#00196",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\"/>\n\t    <input src=\"/images/search_button_white.gif\" type=\"image\" style=\"border: 0pt none ; position: relative; top: 0px;vertical-align:middle;margin-left: 1em;\" />\n\t  </form>\n\t</div>\n      </div>\n   ",
+      "enclosedBy": []
+    }
+  ],
+  "queries": {},
+  "_provenance": {
+    "source": "legacy-apps/wackopicko/website/include/html_functions.php",
+    "upstream": "https://github.com/adamdoupe/WackoPicko @ cabc1b3a06beda7df98e839fa2d84db9a4bdfee7",
+    "scenario": "menu with if statements inside attribute values",
+    "function": "our_header",
+    "notes": [
+      "Function-body timeline: the output of our_header() as if it were an entrypoint. Whether page timelines will include a called function's output is open (boundary-rules.md section 9, question 4).",
+      "Lines 27-30 and 32: if ($selected == ...) { echo 'current'; } inside class=\"...\".",
+      "The function opens <html>, <body> and a container <div> that our_footer() closes, so they are still open at the end of this timeline.",
+      "Data reaches this code through include/*.php class methods (mysql_* calls inside them), not through a query in this file. Every such read is therefore sourceKind 'unresolved', loops have iterSourceKind 'unresolved', and there is no queries entry. Whether the data-flow graph follows values through those methods is a question for Member 01.",
+      "Class::$property reads (URL constants) are sourceKind 'unresolved' with var = the whole expression.",
+      "Labels are generator placeholders, not Component 1 output."
+    ],
+    "linesCovered": [
+      11,
+      56
+    ],
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+  }
+}

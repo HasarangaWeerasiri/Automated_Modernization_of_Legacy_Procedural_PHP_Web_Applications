@@ -1,0 +1,6 @@
+{
+  "small_if_max_elements": 3,
+  "fallback_component_min_elements": 4,
+  "table_section_tags": ["tbody", "thead", "tfoot", "tr"],
+  "void_tags": ["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"]
+}

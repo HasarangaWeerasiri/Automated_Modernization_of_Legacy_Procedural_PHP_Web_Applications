@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "labels": {
+    "f009#00275": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f009#00277": {
+      "concern": "undecided",
+      "basis": "abstained",
+      "ruleId": "R10",
+      "reason": "logic_or_display"
+    },
+    "f009#00286": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f009#00289": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R05",
+      "reason": "iterates_prefetched_rows"
+    },
+    "f009#00375": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R08",
+      "reason": "display_conditional"
+    },
+    "f009#00404": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f009#00459": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f009#00460": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f009#00467": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f009#00468": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f009#00479": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f009#00493": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    },
+    "f009#00498": {
+      "concern": "presentation",
+      "basis": "rule",
+      "ruleId": "R01",
+      "reason": "output_statement"
+    }
+  }
+}

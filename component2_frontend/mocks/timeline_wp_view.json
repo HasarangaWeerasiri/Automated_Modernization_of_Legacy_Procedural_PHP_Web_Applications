@@ -1,0 +1,1409 @@
+{
+  "entrypoint": "legacy-apps/wackopicko/website/pictures/view.php",
+  "schemaVersion": "1.0",
+  "sequence": [
+    {
+      "id": "f007#00198",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\n",
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00206",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\n<div class=\"column prepend-1 span-14 first\" >\n   <h2 id=\"image-title\">",
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00207",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( $pic['title'] )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$pic['title']",
+              "var": "$pic",
+              "path": [
+                "title"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00218",
+      "kind": "Stmt_InlineHTML",
+      "raw": " </h2>\n\t<img id=\"image\" src=\"../upload/",
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00219",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( $pic['filename'] )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$pic['filename']",
+              "var": "$pic",
+              "path": [
+                "filename"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00230",
+      "kind": "Stmt_InlineHTML",
+      "raw": ".550.jpg\" width=\"550\" />\n\t\n\t<div class=\"column span-14 first last \" id=\"comments\">\n\t  <div class=\"column span-14 first last\">\n\t    <h2 id=\"comment-title\">Comments</h2>\n\t  </div>\n   ",
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00253",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t  <div class=\"column prepend-1 span-12 first last\">\n\t    <p class=\"comment\">",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00232",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00235"
+        },
+        {
+          "nodeId": "f007#00240",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$comments",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$comment",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00254",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "$comment['text']",
+          "var": "$comment",
+          "path": [
+            "text"
+          ],
+          "sourceKind": "unresolved",
+          "confidence": "unresolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00232",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00235"
+        },
+        {
+          "nodeId": "f007#00240",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$comments",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$comment",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00262",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</p>\n\t  </div>\n\t  <div class=\"column prepend-10 span-6 first last\">\n\t  - by <a href=\"",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00232",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00235"
+        },
+        {
+          "nodeId": "f007#00240",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$comments",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$comment",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00263",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "Users::$VIEW_URL",
+          "var": "Users::$VIEW_URL",
+          "path": [],
+          "sourceKind": "unresolved",
+          "confidence": "unresolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00232",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00235"
+        },
+        {
+          "nodeId": "f007#00240",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$comments",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$comment",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00270",
+      "kind": "Stmt_InlineHTML",
+      "raw": "?userid=",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00232",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00235"
+        },
+        {
+          "nodeId": "f007#00240",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$comments",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$comment",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00271",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( $comment['user_id'] )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$comment['user_id']",
+              "var": "$comment",
+              "path": [
+                "user_id"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00232",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00235"
+        },
+        {
+          "nodeId": "f007#00240",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$comments",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$comment",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00282",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\">",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00232",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00235"
+        },
+        {
+          "nodeId": "f007#00240",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$comments",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$comment",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00283",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( $comment['login'] )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$comment['login']",
+              "var": "$comment",
+              "path": [
+                "login"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00232",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00235"
+        },
+        {
+          "nodeId": "f007#00240",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$comments",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$comment",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00295",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</a>\n\t  </div>\n",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00232",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00235"
+        },
+        {
+          "nodeId": "f007#00240",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$comments",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$comment",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00307",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t  \n   <div class=\"column prepend-1-span12 first last\" style=\"padding-top:2em;padding-bottom:2em\">\n      <h3 style=\"text-align:center\">No comments yet...</h3>\n      </div>\n",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00232",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "else",
+          "condNodeId": "f007#00235"
+        }
+      ]
+    },
+    {
+      "id": "f007#00313",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t  <div class=\"column prepend-1 span-12 first last\" style=\"padding-bottom:2em;\">\n\t    <h3 style=\"text-align:center;padding-top:2em;\">Add your comment</h3>\n\t    <form action=\"",
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00314",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "Comments::$PREVIEW_COMMENT_URL",
+          "var": "Comments::$PREVIEW_COMMENT_URL",
+          "path": [],
+          "sourceKind": "unresolved",
+          "confidence": "unresolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00321",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\" method=\"POST\">\n\t      <textarea id=\"comment-box\" name=\"text\"></textarea>\n\t      <div class=\"column prepend-9 first last\">\n\t\t<input type=\"hidden\" name=\"picid\" value=\"",
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00322",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( $pic['id'] )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$pic['id']",
+              "var": "$pic",
+              "path": [
+                "id"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00333",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\"/>\n\t\t<input type=\"submit\" value=\"Preview\"/>\n\n\t      </div>\n\t    </form>\n\t  </div>\n\t  \n\t</div>\n      </div>\n      \n      <div class=\"column prepend-2 append-1 span-6 last\" style=\"padding-top:1em;\" >\n   <h3 id=\"tradebux\">",
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00334",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( $pic['price'] )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$pic['price']",
+              "var": "$pic",
+              "path": [
+                "price"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00345",
+      "kind": "Stmt_InlineHTML",
+      "raw": " Tradebux<br />\n   ",
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00377",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t  <a href=\"",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00358",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00361"
+        }
+      ]
+    },
+    {
+      "id": "f007#00378",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( Cart::$ACTION_URL . '?action=add&picid=' . $pic['id'] )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "Cart::$ACTION_URL",
+              "var": "Cart::$ACTION_URL",
+              "path": [],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            },
+            {
+              "expr": "$pic['id']",
+              "var": "$pic",
+              "path": [
+                "id"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00358",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00361"
+        }
+      ]
+    },
+    {
+      "id": "f007#00400",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\">Add to Cart</a>\n    ",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00358",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00361"
+        }
+      ]
+    },
+    {
+      "id": "f007#00405",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t</h3>\n\t<h3 id=\"info-area\">Uploaded on ",
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00406",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( date(\"F j, Y\", $pic['created_on_unix']) )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "date(\"F j, Y\", $pic['created_on_unix'])",
+              "var": null,
+              "path": null,
+              "sourceKind": "computed",
+              "confidence": "unresolved",
+              "source": null,
+              "derivedFrom": [
+                {
+                  "expr": "$pic['created_on_unix']",
+                  "var": "$pic",
+                  "path": [
+                    "created_on_unix"
+                  ],
+                  "sourceKind": "unresolved",
+                  "confidence": "unresolved",
+                  "source": null
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00423",
+      "kind": "Stmt_InlineHTML",
+      "raw": "<br />\n\t\t\t\t\t  by <a href=\"",
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00424",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "Users::$VIEW_URL",
+          "var": "Users::$VIEW_URL",
+          "path": [],
+          "sourceKind": "unresolved",
+          "confidence": "unresolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00431",
+      "kind": "Stmt_InlineHTML",
+      "raw": "?userid=",
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00432",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( $pic['user_id'] )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$pic['user_id']",
+              "var": "$pic",
+              "path": [
+                "user_id"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00444",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\">",
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00445",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h($pic['login'])",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$pic['login']",
+              "var": "$pic",
+              "path": [
+                "login"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00455",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</a>\n\t</h3>  \n\t",
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00466",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t\t\t\t\t  \n\t<div class=\"column span-6 first last\" id=\"related\">\n\t  <div class=\"column span-6 first last\">\n\t    <h2 id=\"related-title\">Related</h2>\n\t  </div>\n      ",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00457",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00460"
+        }
+      ]
+    },
+    {
+      "id": "f007#00481",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t  <div class=\"column prepend-1 span-4 first last\">\n\t    <a href=\"",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00457",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00460"
+        },
+        {
+          "nodeId": "f007#00468",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$related",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$p",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00482",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( Pictures::$VIEW_PIC_URL . \"?picid=\" . $p['id'] )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "Pictures::$VIEW_PIC_URL",
+              "var": "Pictures::$VIEW_PIC_URL",
+              "path": [],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            },
+            {
+              "expr": "$p['id']",
+              "var": "$p",
+              "path": [
+                "id"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00457",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00460"
+        },
+        {
+          "nodeId": "f007#00468",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$related",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$p",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00504",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\"><img src=\"/upload/",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00457",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00460"
+        },
+        {
+          "nodeId": "f007#00468",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$related",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$p",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00505",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h($p['filename'])",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$p['filename']",
+              "var": "$p",
+              "path": [
+                "filename"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00457",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00460"
+        },
+        {
+          "nodeId": "f007#00468",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$related",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$p",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00515",
+      "kind": "Stmt_InlineHTML",
+      "raw": ".128.jpg\" width=\"128\" /></a>\n\t <p>by <a href=\"",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00457",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00460"
+        },
+        {
+          "nodeId": "f007#00468",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$related",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$p",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00516",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "Users::$VIEW_URL",
+          "var": "Users::$VIEW_URL",
+          "path": [],
+          "sourceKind": "unresolved",
+          "confidence": "unresolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00457",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00460"
+        },
+        {
+          "nodeId": "f007#00468",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$related",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$p",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00523",
+      "kind": "Stmt_InlineHTML",
+      "raw": "?userid=",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00457",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00460"
+        },
+        {
+          "nodeId": "f007#00468",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$related",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$p",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00524",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( $p['user_id'] )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$p['user_id']",
+              "var": "$p",
+              "path": [
+                "user_id"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00457",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00460"
+        },
+        {
+          "nodeId": "f007#00468",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$related",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$p",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00535",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\">",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00457",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00460"
+        },
+        {
+          "nodeId": "f007#00468",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$related",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$p",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00536",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( $p['login'] )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$p['login']",
+              "var": "$p",
+              "path": [
+                "login"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00457",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00460"
+        },
+        {
+          "nodeId": "f007#00468",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$related",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$p",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00547",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</a></p>\n\t  </div>\n",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00457",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00460"
+        },
+        {
+          "nodeId": "f007#00468",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$related",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$p",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00551",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t</div>\n\t",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00457",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00460"
+        }
+      ]
+    },
+    {
+      "id": "f007#00556",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t",
+      "enclosedBy": []
+    },
+    {
+      "id": "f007#00567",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t<div class=\"column span-6 first last\" id=\"same-upload\">\n\t  <div class=\"column span-6 first last\">\n\t    <h2 id=\"same-upload-title\">Other by <a href=\"",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00558",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00561"
+        }
+      ]
+    },
+    {
+      "id": "f007#00568",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "Users::$VIEW_URL",
+          "var": "Users::$VIEW_URL",
+          "path": [],
+          "sourceKind": "unresolved",
+          "confidence": "unresolved",
+          "source": null
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00558",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00561"
+        }
+      ]
+    },
+    {
+      "id": "f007#00575",
+      "kind": "Stmt_InlineHTML",
+      "raw": "?userid=",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00558",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00561"
+        }
+      ]
+    },
+    {
+      "id": "f007#00576",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( $pic['user_id'] )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$pic['user_id']",
+              "var": "$pic",
+              "path": [
+                "user_id"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00558",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00561"
+        }
+      ]
+    },
+    {
+      "id": "f007#00587",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\">",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00558",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00561"
+        }
+      ]
+    },
+    {
+      "id": "f007#00588",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h($pic['login'])",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$pic['login']",
+              "var": "$pic",
+              "path": [
+                "login"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00558",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00561"
+        }
+      ]
+    },
+    {
+      "id": "f007#00598",
+      "kind": "Stmt_InlineHTML",
+      "raw": "</a></h2>\n\t  </div>\n\n      ",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00558",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00561"
+        }
+      ]
+    },
+    {
+      "id": "f007#00613",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t  <div class=\"column prepend-1 span-4 first last\" style=\"margin-bottom:2em;\">\n\t    <a href=\"",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00558",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00561"
+        },
+        {
+          "nodeId": "f007#00600",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$same",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$pic",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00614",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h( Pictures::$VIEW_PIC_URL . \"?picid=\" . $pic['id'] )",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "Pictures::$VIEW_PIC_URL",
+              "var": "Pictures::$VIEW_PIC_URL",
+              "path": [],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            },
+            {
+              "expr": "$pic['id']",
+              "var": "$pic",
+              "path": [
+                "id"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00558",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00561"
+        },
+        {
+          "nodeId": "f007#00600",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$same",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$pic",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00636",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\"><img src=\"/upload/",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00558",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00561"
+        },
+        {
+          "nodeId": "f007#00600",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$same",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$pic",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00637",
+      "kind": "Stmt_Echo",
+      "reads": [
+        {
+          "expr": "h($pic['filename'])",
+          "var": null,
+          "path": null,
+          "sourceKind": "computed",
+          "confidence": "unresolved",
+          "source": null,
+          "derivedFrom": [
+            {
+              "expr": "$pic['filename']",
+              "var": "$pic",
+              "path": [
+                "filename"
+              ],
+              "sourceKind": "unresolved",
+              "confidence": "unresolved",
+              "source": null
+            }
+          ]
+        }
+      ],
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00558",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00561"
+        },
+        {
+          "nodeId": "f007#00600",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$same",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$pic",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00647",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\" width=\"128\" /></a>\n\t  </div>\n",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00558",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00561"
+        },
+        {
+          "nodeId": "f007#00600",
+          "kind": "Stmt_Foreach",
+          "role": "iteration",
+          "iterExpr": "$same",
+          "iterSourceKind": "unresolved",
+          "valueVar": "$pic",
+          "keyVar": null
+        }
+      ]
+    },
+    {
+      "id": "f007#00651",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t</div>\n\t",
+      "enclosedBy": [
+        {
+          "nodeId": "f007#00558",
+          "kind": "Stmt_If",
+          "role": "branch",
+          "branch": "then",
+          "condNodeId": "f007#00561"
+        }
+      ]
+    },
+    {
+      "id": "f007#00656",
+      "kind": "Stmt_InlineHTML",
+      "raw": "\t\n      </div>\n\n\n\n",
+      "enclosedBy": []
+    }
+  ],
+  "queries": {},
+  "_provenance": {
+    "source": "legacy-apps/wackopicko/website/pictures/view.php",
+    "upstream": "https://github.com/adamdoupe/WackoPicko @ cabc1b3a06beda7df98e839fa2d84db9a4bdfee7",
+    "scenario": "three guarded lists, one with an else branch",
+    "notes": [
+      "Comments (lines 50-69): if/else around a foreach whose item is two <div> with no wrapper.",
+      "Related (96-108) and same-upload (109-121): an if around a heading and a foreach of <div> cards, inside <div id=\"related\"> and <div id=\"same-upload\">.",
+      "The second card loop reuses $pic as its loop variable, shadowing the page's $pic.",
+      "our_header(), our_footer() and error_message() are called here; their output is in include/html_functions.php and is not part of this timeline.",
+      "Data reaches this code through include/*.php class methods (mysql_* calls inside them), not through a query in this file. Every such read is therefore sourceKind 'unresolved', loops have iterSourceKind 'unresolved', and there is no queries entry. Whether the data-flow graph follows values through those methods is a question for Member 01.",
+      "Class::$property reads (URL constants) are sourceKind 'unresolved' with var = the whole expression.",
+      "Labels are generator placeholders, not Component 1 output."
+    ],
+    "linesCovered": [
+      39,
+      126
+    ],
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+  }
+}

@@ -21,18 +21,22 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 HMS = ROOT / "legacy-apps" / "hms"
+WACKOPICKO = ROOT / "legacy-apps" / "wackopicko"
 MOCKS = ROOT / "mocks"
 TOK_PHP = Path(__file__).with_name("tok.php")
 
 SCHEMA_VERSION = "1.0"
 UPSTREAM_COMMIT = "777fda46b77a820977a5ba616283dbfbc40bf7e1"
 UPSTREAM = f"https://github.com/kishan0725/Hospital-Management-System @ {UPSTREAM_COMMIT}"
+WP_COMMIT = "cabc1b3a06beda7df98e839fa2d84db9a4bdfee7"
+WP_UPSTREAM = f"https://github.com/adamdoupe/WackoPicko @ {WP_COMMIT}"
 
 QUERY_FN = "mysqli_query"
 FETCH_FNS = {"mysqli_fetch_array", "mysqli_fetch_assoc", "mysqli_fetch_all"}
 SUPERGLOBALS = {"$_SESSION": "session", "$_GET": "request", "$_POST": "request", "$_REQUEST": "request",
                 "$_COOKIE": "request", "$_SERVER": "server"}
 INSIGNIFICANT = {"T_WHITESPACE", "T_COMMENT", "T_DOC_COMMENT"}
+LOOP_TOKENS = {"T_WHILE": "Stmt_While", "T_FOREACH": "Stmt_Foreach", "T_FOR": "Stmt_For"}
 LITERALS = {"T_CONSTANT_ENCAPSED_STRING", "T_LNUMBER", "T_DNUMBER"}
 CONFIDENCE_ORDER = ["resolved", "ambiguous", "unresolved"]
 
@@ -51,12 +55,13 @@ def php_version(php: str) -> str:
     return subprocess.run([php, "-r", "echo PHP_VERSION;"], capture_output=True, text=True, check=True).stdout
 
 
-def upstream_blob(name: str) -> bytes:
-    head = subprocess.run(["git", "-C", str(HMS), "rev-parse", "HEAD"], capture_output=True, text=True,
+def upstream_blob(name: str, clone: Path = HMS, commit: str = UPSTREAM_COMMIT) -> bytes:
+    """A file's bytes at the pinned commit of a legacy app (see legacy-apps/PINS.md)."""
+    head = subprocess.run(["git", "-C", str(clone), "rev-parse", "HEAD"], capture_output=True, text=True,
                           check=True).stdout.strip()
-    if head != UPSTREAM_COMMIT:
-        raise RuntimeError(f"legacy-apps/hms is at {head}, expected {UPSTREAM_COMMIT}")
-    return subprocess.run(["git", "-C", str(HMS), "show", f"HEAD:{name}"], capture_output=True, check=True).stdout
+    if head != commit:
+        raise RuntimeError(f"legacy-apps/{clone.name} is at {head}, expected {commit}")
+    return subprocess.run(["git", "-C", str(clone), "show", f"HEAD:{name}"], capture_output=True, check=True).stdout
 
 
 def lex(src: bytes, php: str) -> list[tuple[str, bytes, int]]:
@@ -154,7 +159,7 @@ class Source:
         while i < len(self.t):
             name, text, line = self.t[i]
 
-            if name in ("T_IF", "T_ELSEIF", "T_WHILE", "T_FOREACH"):
+            if name in ("T_IF", "T_ELSEIF", "T_WHILE", "T_FOREACH", "T_FOR"):
                 # Headers are skipped below, so record the calls inside them here
                 # (e.g. the mysqli_fetch_array in `while ($row = mysqli_fetch_array(...))`).
                 p = self.sig(i)
@@ -186,16 +191,16 @@ class Source:
                            "condNodeId": self.ifs[root]["condNodeId"]}
                 i += 1
                 continue
-            if name in ("T_WHILE", "T_FOREACH"):
+            if name in LOOP_TOKENS:
                 p = self.sig(i)
                 close = self.close_paren(p)
-                self.loops[self.nid(i)] = {"kind": "Stmt_While" if name == "T_WHILE" else "Stmt_Foreach",
-                                           "line": line, "cond": (p + 1, close)}
+                self.loops[self.nid(i)] = {"kind": LOOP_TOKENS[name], "line": line, "cond": (p + 1, close)}
                 pending = {"kind": "loop", "id": self.nid(i)}
                 i = close + 1
                 continue
             if name == "T_FUNCTION":
-                pending = {"kind": "function"}
+                following = self.t[self.sig(i)]
+                pending = {"kind": "function", "name": following[1].decode() if following[0] == "T_STRING" else None}
                 i += 1
                 continue
 
@@ -222,10 +227,10 @@ class Source:
                 continue
 
             if name in ("T_INLINE_HTML", "T_ECHO", "T_PRINT", "T_OPEN_TAG_WITH_ECHO"):
-                if any(f["kind"] == "function" for f in stack):
-                    i += 1  # output inside a function body is not page-level execution order
-                    continue
+                # Output inside a function body is not part of the page's own sequence; it is kept under
+                # the function's name so a spec can ask for that body as its own timeline.
                 out = {"tok": i, "line": line, "end_line": line + text.count(b"\n") - text.endswith(b"\n"),
+                       "function": next((f["name"] for f in reversed(stack) if f["kind"] == "function"), None),
                        "frames": [f for f in stack if f["kind"] in ("loop", "branch")]}
                 if name == "T_INLINE_HTML":
                     out |= {"kind": "Stmt_InlineHTML", "raw": text}
@@ -281,7 +286,11 @@ def loop_object(src, loop_id):
     lp = src.loops[loop_id]
     lo, hi = lp["cond"]
     fetch = next((c for c in src.calls.values() if c["fn"] in FETCH_FNS and lo <= c["tok"] < hi), None)
-    if lp["kind"] == "Stmt_While":
+    if lp["kind"] == "Stmt_For":
+        # Which of these a C-style for should fill is an open question for Member 01; the whole
+        # header is kept as iterExpr and the variables are left null rather than guessed.
+        iter_expr, value_var, key_var = src.text(lo, hi), None, None
+    elif lp["kind"] == "Stmt_While":
         eq = next(j for j in range(lo, hi) if src.t[j][:2] == ("CHAR", b"="))
         iter_expr, value_var, key_var = src.text(lo, hi), src.text(lo, eq), None
     else:
@@ -319,6 +328,14 @@ def parse_reads(src, lo, hi):
             reads.append({"form": "var", "expr": src.text(j, idx[end] + 1), "var": text.decode(), "path": path})
             k = end + 1
             continue
+        if (name == "T_STRING" and k + 2 < len(idx) and src.t[idx[k + 1]][1] == b"::"
+                and src.t[idx[k + 2]][0] == "T_VARIABLE"):
+            reads.append({"form": "static", "expr": src.text(j, idx[k + 2] + 1)})  # Class::$property
+            k += 3
+            continue
+        if name == "T_STRING" and k + 1 < len(idx) and src.t[idx[k + 1]][1] == b"::":
+            k += 2  # Class::method(...): the method name that follows is handled as a call
+            continue
         if name == "T_STRING" and k + 1 < len(idx) and src.t[idx[k + 1]][1] == b"(":
             close = src.close_paren(idx[k + 1])
             inner = [r for r in parse_reads(src, idx[k + 1] + 1, close) if r["form"] != "literal"]
@@ -335,7 +352,7 @@ def build(spec, php, lexer_note):
     src_bytes = spec["src"]
     src = Source(lex(src_bytes, php), spec["file_id"])
     lo, hi = spec["lines"]
-    selected = [o for o in src.outputs if lo <= o["line"] <= hi]
+    selected = [o for o in src.outputs if lo <= o["line"] <= hi and o["function"] == spec.get("function")]
     query_cfg = spec["queries"]
 
     loop_objs, loop_fetch = {}, {}
@@ -369,6 +386,9 @@ def build(spec, php, lexer_note):
             worst = max((d["confidence"] for d in derived), key=CONFIDENCE_ORDER.index, default="resolved")
             return {"expr": r["expr"], "var": None, "path": None, "sourceKind": "computed",
                     "confidence": worst, "source": None, "derivedFrom": derived}
+        if r["form"] == "static":
+            return {"expr": r["expr"], "var": r["expr"], "path": [], "sourceKind": "unresolved",
+                    "confidence": "unresolved", "source": None}
         var = r["var"]
         base = {"expr": r["expr"], "var": var, "path": r["path"]}
         loop = next((f for f in reversed(out["frames"])
@@ -377,7 +397,7 @@ def build(spec, php, lexer_note):
         if fetch:
             confidence, source = db_source(fetch, r["path"])
             return base | {"sourceKind": "db_row_field", "confidence": confidence, "source": source}
-        kind = SUPERGLOBALS.get(var) or spec["var_kinds"].get(var)
+        kind = SUPERGLOBALS.get(var) or spec["var_kinds"].get(var) or spec.get("unknown_vars")
         if kind is None:
             raise ValueError(f"{spec['entrypoint']}: unresolved read {r['expr']} at line {out['line']}")
         confidence = "unresolved" if kind == "unresolved" else "resolved"
@@ -434,6 +454,7 @@ RULE_IDS = {
     "GATE-QUERY": "R07",       # other if whose body runs a query
     "DISPLAY-COND": "R08",     # if whose body is output only
     "AUTH-OR-DISPLAY": "R09",  # session-conditional if mixing output with a non-query action
+    "LOGIC-OR-DISPLAY": "R10",  # any other if mixing output with a non-query action
 }
 
 
@@ -451,7 +472,7 @@ def if_label(node):
         return label("presentation", "DISPLAY-COND", "display_conditional")
     if session:
         return label("undecided", "AUTH-OR-DISPLAY", "auth_or_display", basis="abstained")
-    raise NotImplementedError(f"no rule for a non-session if mixing output and actions (line {node['line']})")
+    return label("undecided", "LOGIC-OR-DISPLAY", "logic_or_display", basis="abstained")
 
 
 # ----------------------------------------------------------------------------- specs
@@ -644,15 +665,69 @@ def specs():
     }
 
 
+WP_SOURCE_NOTES = [
+    "Data reaches this code through include/*.php class methods (mysql_* calls inside them), not through a "
+    "query in this file. Every such read is therefore sourceKind 'unresolved', loops have iterSourceKind "
+    "'unresolved', and there is no queries entry. Whether the data-flow graph follows values through those "
+    "methods is a question for Member 01.",
+    "Class::$property reads (URL constants) are sourceKind 'unresolved' with var = the whole expression.",
+    "Labels are generator placeholders, not Component 1 output.",
+]
+
+
+def wackopicko_specs():
+    def page(file_id, path, scenario, notes, function=None):
+        entrypoint = f"legacy-apps/wackopicko/website/{path}"
+        provenance = {"source": entrypoint, "upstream": WP_UPSTREAM, "scenario": scenario}
+        if function:
+            provenance["function"] = function
+            notes = [f"Function-body timeline: the output of {function}() as if it were an entrypoint. Whether "
+                     "page timelines will include a called function's output is open (boundary-rules.md section 9, "
+                     "question 4)."] + notes
+        return {"file_id": file_id, "entrypoint": entrypoint, "function": function, "lines": (1, 10_000),
+                "src": upstream_blob(f"website/{path}", WACKOPICKO, WP_COMMIT), "queries": {}, "var_kinds": {},
+                "unknown_vars": "unresolved", "provenance": provenance | {"notes": notes + WP_SOURCE_NOTES}}
+
+    layout_note = ("our_header(), our_footer() and error_message() are called here; their output is in "
+                   "include/html_functions.php and is not part of this timeline.")
+    return {
+        "wp_guestbook": page("f006", "guestbook.php", "list guard around a loop whose item has two root elements", [
+            "The foreach (line 35) is the only content of if ($guestbook) (line 33); its item is two <p> with no "
+            "wrapper.", layout_note]),
+        "wp_view": page("f007", "pictures/view.php", "three guarded lists, one with an else branch", [
+            "Comments (lines 50-69): if/else around a foreach whose item is two <div> with no wrapper.",
+            "Related (96-108) and same-upload (109-121): an if around a heading and a foreach of <div> cards, "
+            "inside <div id=\"related\"> and <div id=\"same-upload\">.",
+            "The second card loop reuses $pic as its loop variable, shadowing the page's $pic.", layout_note]),
+        "wp_login": page("f008", "users/login.php", "page guard: one if wraps all of the page's output", [
+            "if ($bad_login) (line 29) wraps everything this page outputs. Its body calls layout functions, so "
+            "the generator's placeholder label for it is undecided (logic_or_display).", layout_note]),
+        "wp_header": page("f009", "include/html_functions.php", "menu with if statements inside attribute values", [
+            "Lines 27-30 and 32: if ($selected == ...) {{ echo 'current'; }} inside class=\"...\".",
+            "The function opens <html>, <body> and a container <div> that our_footer() closes, so they are still "
+            "open at the end of this timeline."], function="our_header"),
+        "wp_thumbnails": page("f009", "include/html_functions.php", "chunked loop: the body closes and reopens its container", [
+            "The for loop (line 97) is C-style. Its iterExpr holds the whole header and valueVar/keyVar are null: "
+            "which fields a for loop fills is open (boundary-rules.md section 9, question 10).",
+            "Every fourth iteration (lines 109-117) emits </ul></div><div ...><ul ...>.",
+            "The <ul> opens inside if ($pictures) (line 95) and closes after the else (line 137)."],
+            function="thumbnail_pic_list"),
+    }
+
+
 def generate_all() -> dict[str, dict]:
-    """Return {filename: document} for every timeline and labels file."""
+    """Return {filename: document} for every timeline and labels file.
+
+    WackoPicko mocks are left out when legacy-apps/wackopicko is not cloned.
+    """
     php = find_php()
     if php is None:
         raise RuntimeError("PHP not found: set PHP_BIN or put php on PATH")
     lexer_note = f"PHP {php_version(php)} token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
     CONDITIONS.clear()
     docs = {}
-    for name, spec in specs().items():
+    all_specs = specs() | (wackopicko_specs() if (WACKOPICKO / ".git").exists() else {})
+    for name, spec in all_specs.items():
         timeline, labels = build(spec, php, lexer_note)
         docs[f"timeline_{name}.json"] = timeline
         docs[f"labels_{name}.json"] = labels

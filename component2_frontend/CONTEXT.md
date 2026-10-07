@@ -1,6 +1,6 @@
 # Component 2 — Agent Context (read this first, every task)
 
-_Version 2 — 6 Oct 2026 (updated after the Stage 1 review)._
+_Version 3 — 6 Oct 2026 (updated after the Stage 1 fix-up review)._
 
 This file is the handoff between the research chat and the coding agent. It records decisions
 already made. **Do not change a decision recorded here.** If something here looks wrong or a task
@@ -44,7 +44,8 @@ label keys use `nodeId`; field naming pending Member 01's confirmation — the l
 `Expr_Print`), byte-exact `raw`, and:
 
 - `enclosedBy`: list, **outermost → innermost**
-  - loop: `{nodeId, kind, role: "iteration", iterExpr, iterSourceKind, valueVar, keyVar}`
+  - loop: `{nodeId, kind, role: "iteration", iterExpr, iterSourceKind, valueVar, keyVar}` — loop kinds
+    accepted: `Stmt_While`, `Stmt_Foreach`, `Stmt_For`, `Stmt_Do` (C-style `for` fields pending Member 01)
   - branch: `{nodeId, kind: "Stmt_If", role: "branch", branch: "then"|"elseif"|"else", condNodeId}`
   - other roles: `switch_case`, `try_catch` — the loader **must accept and model** them. No boundary
     rule covers them yet, so Stage 2 **abstains and flags** any node enclosed by them. Never crash on them
@@ -77,24 +78,26 @@ label keys use `nodeId`; field naming pending Member 01's confirmation — the l
 6. `ambiguous` reads (e.g. `SELECT *`) need C3's schema → until then, flag them.
 7. Output must be **deterministic**: same input → byte-identical output, stable ordering.
 8. Do not modify mock files unless the task says so. Never change `raw` values.
-9. **Commit and push** on `frontend-migration-` before any branch switch (`component2_frontend/` does not exist on `dev`).
+9. **Commit and push** on `frontend-migration-` at the end of every task and before any branch switch (`component2_frontend/` does not exist on `dev`).
 10. Never edit HMS files with Git Bash `sed` (it converts CRLF → LF).
 
 ## 5. Corpus rules
 
 | Group | Apps | Agent may |
 |---|---|---|
-| Rule discovery | HMS (commit `777fda4`, in `legacy-apps/hms`), WackoPicko (`github.com/adamdoupe/WackoPicko`, MIT — to be added to `legacy-apps/wackopicko`, pinned commit) | Read, build mocks, test |
+| Rule discovery | HMS (`legacy-apps/hms`), WackoPicko (`legacy-apps/wackopicko`, MIT, PHP under `website/`). Pinned commits are recorded in `legacy-apps/PINS.md` | Read, build mocks, test |
 | Evaluation | crud-php-mysqli, PHP-MySQL-CRUD-Application (+ more to come) | **Do not open, read or build mocks from these.** They are locked until Stage 2 is finished |
 
 ## 6. Repo state (as of 6 Oct 2026)
 
-- Branch `frontend-migration-`, latest commit `3c0e249` (pushed). History was rewritten on 19 Sep
+- Branch `frontend-migration-`. Latest: `aa24ea2` (loader + Stage 1 fix-up), `ed33aff` (CONTEXT v2), `3c0e249`. History was rewritten on 19 Sep
   (commit trailers removed): old `20d5e2a` = `fdc62b3`, `878df5c` = `1d91be0`, `c9c9535` = `a7cdedc`.
 - Mocks: `timeline_{list_while,list_foreach,admin,detail,edge_cases}.json`, `labels_*.json` (5), `sample_contract.json`, legacy `sample_ast.json` (untouched).
 - Deliberate contract gap: field **`contact`** (flagged on list pages only). `sku` appears in no schema.
 - Exactly **one** `undecided` node across all mocks (edge-case file, reason `auth_or_display`).
-- Tests: 82 passing (50 mock/fixture + 32 Stage 1). Extra fixtures: `tests/fixtures/{timeline,labels}_unlabelled.json`.
+- Tests: 91 passing. Extra fixtures: `tests/fixtures/{timeline,labels}_unlabelled.json`, `tests/fixtures/{timeline,labels}_switch_case.json` (`caseNodeId`, `Stmt_Switch` are placeholders).
+- Loader: accepts `iteration`, `branch`, `switch_case`, `try_catch` roles (unknown fields of the last two kept as opaque `extra`); rejects any other role as format drift. `queries` map optional; validated only when present.
+- Review nodes in list_while / list_foreach / detail = the loop itself, `mixed`, reason `fetch_in_loop_header` (expected; rule 4a).
   Generator `tools/gen_timelines.py` needs PHP and HMS at `777fda4`.
 - Stage 1 summary: list_while 35→32 ok/1 review/2 excl · list_foreach same · admin 18→15/0/3 · detail 27→24/1/2 · edge_cases 27→23/1/3.
   Summary semantics: `kept` = status ok; ok + review + excluded = total.

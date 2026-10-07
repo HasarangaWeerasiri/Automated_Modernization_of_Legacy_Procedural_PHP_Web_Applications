@@ -152,6 +152,30 @@ def test_other_enclosure_roles_pass_through_like_any_enclosure(role, kind, tmp_p
         role, "t002#00004", "presentation")
 
 
+@pytest.mark.parametrize("kind", ["Stmt_While", "Stmt_Foreach", "Stmt_For", "Stmt_Do"])
+def test_every_loop_kind_loads_and_goes_through_stage1(kind, tmp_path):
+    doc = json.loads((MOCKS / "timeline_list_while.json").read_text(encoding="utf-8"))
+    for entry in doc["sequence"]:
+        for enc in entry["enclosedBy"]:
+            if enc["role"] == "iteration":
+                enc["kind"] = kind
+    path = tmp_path / "timeline.json"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    r = isolate_presentation(load_timeline(path), load_labels(MOCKS / "labels_list_while.json"))
+    loops = {e.kind for k in r.kept for e in k.enclosed_by if e.role == "iteration"}
+    assert loops == {kind}
+    assert r.counts == run("list_while").counts, "the loop keyword does not change any decision"
+
+
+def test_loop_kind_outside_the_schema_is_rejected(tmp_path):
+    doc = json.loads((MOCKS / "timeline_list_while.json").read_text(encoding="utf-8"))
+    next(e for e in doc["sequence"] if e["enclosedBy"])["enclosedBy"][0]["kind"] = "Stmt_Goto"
+    path = tmp_path / "timeline.json"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    with pytest.raises(ValueError, match="malformed loop"):
+        load_timeline(path)
+
+
 def test_enclosure_role_outside_the_schema_is_rejected(tmp_path):
     doc = json.loads((FIXTURES / "timeline_switch_case.json").read_text(encoding="utf-8"))
     doc["sequence"][1]["enclosedBy"][0]["role"] = "match_arm"

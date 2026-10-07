@@ -13,7 +13,7 @@ from src.model import Concern, Enclosure, Label, OutputNode, Query, Read, ReadSo
 SCHEMA_VERSION = "1.0"
 TIMELINE_KEYS = ("entrypoint", "schemaVersion", "sequence")  # "queries" is an optional extension
 OUTPUT_KINDS = ("Stmt_InlineHTML", "Stmt_Echo", "Expr_Print")
-LOOP_KINDS = ("Stmt_While", "Stmt_Foreach")
+LOOP_KINDS = ("Stmt_While", "Stmt_Foreach", "Stmt_For", "Stmt_Do")
 BRANCHES = ("then", "elseif", "else")
 # In the schema, but their fields are not specified yet: accepted and carried through as-is.
 OTHER_ROLES = ("switch_case", "try_catch")

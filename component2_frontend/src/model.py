@@ -150,3 +150,57 @@ class PresentationResult:
     kept: tuple[KeptNode, ...]  # in order of first appearance; output nodes in sequence order
     excluded: tuple[ExcludedNode, ...]
     counts: StageCounts
+
+
+# ----------------------------------------------------------------------------- Stage 2 config and result
+
+
+@dataclass(frozen=True)
+class BoundaryConfig:
+    """Thresholds for docs/php-analysis/boundary-rules.md, read from config/boundary_rules.json."""
+
+    small_if_max_elements: int  # R-I4
+    fallback_component_min_elements: int  # R-I5 ("N")
+    table_section_tags: tuple[str, ...]  # R-L2a walks past these
+    void_tags: tuple[str, ...]  # elements that never have a closing tag
+
+
+@dataclass(frozen=True)
+class ListContainer:
+    has_wrapper: bool  # False: the List renders a Fragment (R-L2b)
+    tag: str | None  # the container element, e.g. "table"
+    element_id: str | None  # its id attribute, if it has a static one
+    opened_in: str | None  # the output node whose raw opens it
+
+
+@dataclass(frozen=True)
+class ComponentNode:
+    """One node of the component tree. A node with no children is a leaf."""
+
+    type: str  # Page | Layout | List | Item | Empty | InlineConditional | ConditionalComponent
+    #            | AttributeExpression | Static | Abstain
+    rule: str | None  # the boundary rule that made this node, e.g. "R-L1"; None when no rule was involved
+    rules: tuple[str, ...]  # every boundary rule that fired for this node, in order
+    status: str  # ok | review | abstain
+    reason: str
+    node_ids: tuple[str, ...]  # the timeline output nodes it covers, in sequence order
+    source_ids: tuple[str, ...] = ()  # the loop / if nodes it was built from
+    children: tuple["ComponentNode", ...] = ()
+    container: ListContainer | None = None  # List only
+    root_tags: tuple[str, ...] = ()  # Item only: the item's root elements
+    elements: int | None = None  # conditionals only: largest number of opening tags in one branch
+    flags: tuple[str, ...] = ()  # e.g. unmatched_close, tag_crosses_branch
+
+
+@dataclass(frozen=True)
+class TreeCounts:
+    components: int  # Page, Layout, List, Item, Empty and ConditionalComponent nodes
+    abstain: int  # nodes with status abstain
+    review: int  # nodes with status review
+
+
+@dataclass(frozen=True)
+class ComponentTree:
+    entrypoint: str
+    root: ComponentNode
+    counts: TreeCounts
