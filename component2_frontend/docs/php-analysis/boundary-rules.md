@@ -1,9 +1,9 @@
-# Component 2 — UI Boundary Rules (DRAFT v0.2)
+# Component 2 — UI Boundary Rules (DRAFT v0.3)
 
 | Item | Value |
 |---|---|
 | Status | **Draft** — not frozen. Freeze when 2 consecutive new rule-discovery apps add no new pattern (saturation) |
-| Date | 6 October 2026 (v0.2: corrections after the agent's source spot-check) |
+| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run) |
 | Owner | Jayawardhana R D L L (IT23213876) — Component 2, Frontend Migration |
 | Rule-discovery corpus | HMS (`kishan0725/Hospital-Management-System`, commit `777fda4`), WackoPicko (`adamdoupe/WackoPicko`, commit `cabc1b3`, MIT) |
 | Evaluation corpus | **Locked — do not open** (see §7) |
@@ -27,6 +27,10 @@
 **Line numbers:** v0.1 mixed two conventions (some ranges start at the keyword line, most at the
 opening-brace line, so many are 1 line late). From v0.2, **ranges cite the keyword line** (`if` / `for` /
 `while` / `foreach`) to the closing-brace line. Rows not yet re-checked are marked ±1.
+
+**Element counting (used by R-I4 / R-I5):** an `if`'s size = the opening-tag count of its **largest
+branch**; void elements (`<br>`, `<input>`, `<img>`) count; markup inside a literal `echo "<b>x</b>"`
+counts; an `echo` of a variable counts 0.
 
 **Tool limits:** the counting scripts are regex-based approximations. They mis-handle (a) whole pages
 inside `echo '...'` strings and (b) a `?` inside a `<?= ... ?>` string. Every reported anomaly was
@@ -56,12 +60,12 @@ Loop kinds observed: `while`, `foreach`, C-style `for`. Item shapes observed: ta
 
 | Rule | Text | Evidence |
 |---|---|---|
-| **R-I1** Page guard | An `if` that wraps the **whole page output** (incl. layout calls) → **not a component**. The page renders normally; the condition is form/redirect logic owned by Component 1 | WackoPicko 4/4 (`users/login.php` 30–49, `users/register.php` 39–64, `pictures/upload.php` 74–97, `admin/login.php` 22–32) |
-| **R-I2** List guard | An `if` whose body contains an output loop → the List component's **empty-state condition**. Any heading inside the guard belongs to the List. `else` branch → Empty component | WackoPicko 8/8 |
+| **R-I1** Page guard | An `if` that wraps the **whole page output** (incl. layout calls) → **not a component**. The page renders normally; the condition is form/redirect logic owned by Component 1. Single-branch only: a page-level `if/else` is not covered yet and falls through to the other rules | WackoPicko 4/4 (`users/login.php` 30–49, `users/register.php` 39–64, `pictures/upload.php` 74–97, `admin/login.php` 22–32) |
+| **R-I2** List guard | An `if` whose body contains an output loop **and whose own concern is not `business_logic`** → the List component's **empty-state condition**. Any heading inside the guard belongs to the List. The non-loop branch → Empty component. A `business_logic` guard around a loop is an authorization check, not an empty-state check → **abstain** (`cuts_across_business_logic`, §5) | WackoPicko 8/8 (all `if ($list)` emptiness checks) |
 | **R-I3** Attribute conditional | An `if` inside an HTML attribute value → JSX attribute expression. **Never** a boundary | WackoPicko 5/5 (menu `class="current"`) |
 | **R-I4** Small content `if` | Content `if` with **≤ 3 elements** (with or without `else`) → inline conditional / ternary | WackoPicko 11/11, HMS 12/12 |
-| **R-I5** Fallback | Content `if` with **> N = 4 elements** that matches none of R-I1–R-I3 → own Conditional component | **Never triggered** in the rule-discovery corpus. Design default only |
-| **R-I6** Sibling chain | Consecutive sibling `if`s that output into the same parent element with mutually exclusive conditions → **one** conditional value | HMS: 3 chains × 3 `if`s (status cell in `admin-panel.php`, `admin-panel1.php`, `doctor-panel.php`) |
+| **R-I5** Fallback | Content `if` with **≥ N = 4 elements** (i.e. above the R-I4 limit — no gap) that matches none of R-I1–R-I3 → own Conditional component | **Never triggered** in the rule-discovery corpus. Design default only |
+| **R-I6** Sibling chain | Consecutive sibling `if`s that output into the same parent element with mutually exclusive conditions → **one** conditional value. Exclusivity cannot be checked without condition text, so status is **`review`**, reason `exclusivity_not_verified`, until Member 01 Q2 is answered | HMS: 3 chains × 3 `if`s (status cell in `admin-panel.php`, `admin-panel1.php`, `doctor-panel.php`) |
 
 **Statement for the report:** *Boundary decisions are structural (page guard, list guard, attribute,
 inline). A size threshold N = 4 exists only as a fallback; it was never triggered in the
@@ -78,6 +82,15 @@ rule-discovery corpus, where the largest plain content conditional had 3 element
 
 ---
 
+## 4a. Status rules
+
+| Situation | Status |
+|---|---|
+| Stage 1 `review` on an **output** node | Carries through to the component that contains it |
+| Loop (or guard) labelled `mixed` because it fetches rows in its header | Information only. The List stays `ok`; the loop's concern is recorded on the List as `loopConcern` |
+| R-I6 sibling chain | `review` (`exclusivity_not_verified`) |
+| Any abstain case (§5) | `abstain` |
+
 ## 5. Abstain (flag, do not guess)
 
 - No rule matches the structure.
@@ -86,7 +99,8 @@ rule-discovery corpus, where the largest plain content conditional had 3 element
 - A tag opens in one branch and closes outside it (unbalanced per branch).
 - Loop body closes and reopens its own container (R-L7).
 - Node enclosed by `switch_case` or `try_catch` (no rule yet).
-- Output comes from a called function whose output is not in the current timeline (cross-file output — pending Member 01).
+- Output comes from a called function whose output is not in the current timeline (cross-file output). **Not detectable yet**: the timeline does not record calls (Member 01 Q4). Call sites are listed by hand in §6.5.
+- A content `if` labelled `business_logic` (authorization guard), whether or not it holds a loop → abstain `cuts_across_business_logic`. Candidate rule, **not adopted** (one hand-written mock only): render the content normally and delegate the condition to C1 (server-side 403 / no data). Decide after C1 confirms how authorization appears in the contract.
 
 ---
 
@@ -141,6 +155,14 @@ No-output loops (R-L5): admin-panel.php 146, 315 (inside `<!-- -->`). String-bui
 
 ---
 
+### 6.5 Where R-F1 / R-F2 would apply (not implemented — blocked on Member 01 Q4)
+
+| Rule | Function | Called from |
+|---|---|---|
+| R-F2 | `our_header()`, `our_footer()` | `guestbook.php` 25 / 60, `pictures/view.php` 40 / 127, `users/login.php` 31 / 48 (+ other pages) |
+| R-F1 | `thumbnail_pic_list($pictures, $high_quality)` | 4 pages (mock `wp_thumbnails`) |
+| R-F1 | `error_message()` | `guestbook.php` 29, `users/login.php` 37 |
+
 ## 7. Corpus split (approved before deep reading)
 
 | Group | Apps |
@@ -183,6 +205,8 @@ No-output loops (R-L5): admin-panel.php 146, 315 (inside `<!-- -->`). String-bui
 8. Which endpoint serves which page/timeline (for Stage 4)?
 9. What fields do `switch_case` and `try_catch` enclosures carry?
 10. For a C-style `for` loop (`for ($i=0; $i<count($p); $i++) { $pic = $p[$i]; … }`), what are `iterExpr`, `valueVar`, `keyVar`?
+11. Does the DFG follow values through class methods in other files (e.g. `Guestbook::get_all_guestbooks()`)? If not, every WackoPicko read stays `unresolved`.
+12. How is a static property read (`Users::$VIEW_URL`) represented?
 
 **For Component 1:** HMS never includes `include/checklogin.php`, so it has no working login gate.
 **For Component 4:** WackoPicko has intentionally unescaped output (`<?= $comment['text'] ?>`, `<?= $guest["comment"] ?>`). React escapes by default, so this output will differ — an expected, intended difference. WackoPicko uses `mysql_*` → needs PHP 5.x to run for runtime capture.
@@ -199,3 +223,8 @@ No-output loops (R-L5): admin-panel.php 146, 315 (inside `<!-- -->`). String-bui
 | 6 Oct 2026 | Stop adding rule-discovery apps at saturation (2 consecutive apps, no new pattern) | Defensible stopping point |
 | 6 Oct 2026 | Chunked loop = abstain (R-L7), not a rule | Observed once; a rule from one case would be over-fitting |
 | 6 Oct 2026 | Tag balance checked per branch | WackoPicko `<ul>` opens inside `if`, closes after `else` |
+| 7 Oct 2026 | R-I5 fires at ≥ 4 elements (no gap after R-I4's ≤ 3) | A 4-element `if` matching no rule would otherwise abstain for an arbitrary reason |
+| 7 Oct 2026 | R-I2 only for guards not labelled `business_logic` | Without condition text, the label is the only signal separating an emptiness check from an authorization check |
+| 7 Oct 2026 | R-I6 chains → status `review` | Collapsing non-exclusive `if`s would change behaviour; an unverified assumption must stay visible |
+| 7 Oct 2026 | A DB loop labelled `mixed` does **not** make its List `review` | Every DB-driven loop fetches in its header; flagging all of them would inflate the flag rate with no action for the developer |
+| 7 Oct 2026 | Authorization guard stays abstain; delegation rule recorded as candidate only | One hand-written case; needs C1's contract decision |

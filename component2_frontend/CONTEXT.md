@@ -1,6 +1,6 @@
 # Component 2 — Agent Context (read this first, every task)
 
-_Version 3 — 6 Oct 2026 (updated after the Stage 1 fix-up review)._
+_Version 4 — 7 Oct 2026 (updated after the Stage 2 review)._
 
 This file is the handoff between the research chat and the coding agent. It records decisions
 already made. **Do not change a decision recorded here.** If something here looks wrong or a task
@@ -28,9 +28,9 @@ SQLAlchemy (data). Anything the tool cannot resolve is **flagged, not guessed** 
 | Stage | Name | Input → Output | Status |
 |---|---|---|---|
 | 1 | Presentation isolation | timeline + labels → a status for **every node the timeline mentions** (output nodes, guards, loops, queries, fetches), each output node keeping its full enclosure chain | **Done** (commit `1d91be0`) |
-| 2 | Boundary inference | Stage 1 result → component tree, using `docs/php-analysis/boundary-rules.md` | **Next** |
-| 3 | Data requirement recovery | per component: backward slice → fields needed | Not started (needs DFG) |
-| 4 | Contract reconciliation | needs vs contract → matched / missing / unused | Not started (needs DFG + C3 schema) |
+| 2 | Boundary inference | Stage 1 result → component tree, using `docs/php-analysis/boundary-rules.md` | **Done** — v0.3 fix-ups in progress |
+| 3 | Data requirement recovery | per component: union of its output nodes' `reads` → fields needed | **Next** — build on the HMS mocks (structured reads). Real input needs the DFG |
+| 4 | Contract reconciliation | needs vs contract → matched / missing / unused | **Next** — mocks (`contact` gap). Real `SELECT *` needs C3 schema |
 | 5 | Generation | Next.js **Server Components** (`.tsx`) + typed fetch layer | Later |
 
 Inline JS / AJAX is **out of scope**: detect and flag it, never convert it.
@@ -78,7 +78,7 @@ label keys use `nodeId`; field naming pending Member 01's confirmation — the l
 6. `ambiguous` reads (e.g. `SELECT *`) need C3's schema → until then, flag them.
 7. Output must be **deterministic**: same input → byte-identical output, stable ordering.
 8. Do not modify mock files unless the task says so. Never change `raw` values.
-9. **Commit and push** on `frontend-migration-` at the end of every task and before any branch switch (`component2_frontend/` does not exist on `dev`).
+9. **Commit** on `frontend-migration-` at the end of every task and before any branch switch (`component2_frontend/` does not exist on `dev`). **Push only when the owner says so.**
 10. Never edit HMS files with Git Bash `sed` (it converts CRLF → LF).
 
 ## 5. Corpus rules
@@ -93,9 +93,10 @@ label keys use `nodeId`; field naming pending Member 01's confirmation — the l
 - Branch `frontend-migration-`. Latest: `aa24ea2` (loader + Stage 1 fix-up), `ed33aff` (CONTEXT v2), `3c0e249`. History was rewritten on 19 Sep
   (commit trailers removed): old `20d5e2a` = `fdc62b3`, `878df5c` = `1d91be0`, `c9c9535` = `a7cdedc`.
 - Mocks: `timeline_{list_while,list_foreach,admin,detail,edge_cases}.json`, `labels_*.json` (5), `sample_contract.json`, legacy `sample_ast.json` (untouched).
+- WackoPicko mocks: `{timeline,labels}_wp_{guestbook,view,login,header,thumbnails}.json` (generated). Their **labels are generator placeholders**, not C1 output, and every WackoPicko read is `unresolved` (data comes through class methods in `include/*.php`). Use them for Stage 2 only.
 - Deliberate contract gap: field **`contact`** (flagged on list pages only). `sku` appears in no schema.
-- Exactly **one** `undecided` node across all mocks (edge-case file, reason `auth_or_display`).
-- Tests: 91 passing. Extra fixtures: `tests/fixtures/{timeline,labels}_unlabelled.json`, `tests/fixtures/{timeline,labels}_switch_case.json` (`caseNodeId`, `Stmt_Switch` are placeholders).
+- `undecided` nodes: edge_cases (1, `auth_or_display`), wp_login (1, placeholder `logic_or_display`), wp_thumbnails (1, placeholder `logic_or_display`).
+- Tests: 223 passing (after Stage 2). Earlier: 91. Extra fixtures: `tests/fixtures/{timeline,labels}_unlabelled.json`, `tests/fixtures/{timeline,labels}_switch_case.json` (`caseNodeId`, `Stmt_Switch` are placeholders).
 - Loader: accepts `iteration`, `branch`, `switch_case`, `try_catch` roles (unknown fields of the last two kept as opaque `extra`); rejects any other role as format drift. `queries` map optional; validated only when present.
 - Review nodes in list_while / list_foreach / detail = the loop itself, `mixed`, reason `fetch_in_loop_header` (expected; rule 4a).
   Generator `tools/gen_timelines.py` needs PHP and HMS at `777fda4`.
@@ -106,7 +107,7 @@ label keys use `nodeId`; field naming pending Member 01's confirmation — the l
 
 ## 7. Boundary rules
 
-See `docs/php-analysis/boundary-rules.md` (draft v0.1). Rules are **settings, not code**:
+See `docs/php-analysis/boundary-rules.md` (current draft: see its header). Rules are **settings, not code**:
 put rule thresholds (e.g. N = 4) in a config file so the owner can change them without code changes.
 The rules are decided by the owner, not the agent. If code reveals a case no rule covers, **report it**;
 do not invent a rule.
