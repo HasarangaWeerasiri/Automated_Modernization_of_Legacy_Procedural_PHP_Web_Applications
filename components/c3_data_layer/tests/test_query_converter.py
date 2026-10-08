@@ -363,3 +363,48 @@ def test_arithmetic_update_is_converted():
         "WHERE id = :id"
     )
     assert set(result["parameters"]) == {"delta", "id"}
+
+
+def test_structural_placeholder_safety_cases():
+    cases = [
+        (
+            "safe_update_value",
+            "UPDATE patients SET phone = {{phone}} WHERE id = {{id}}",
+            "CONVERTED",
+        ),
+        (
+            "unsafe_update_column",
+            "UPDATE patients SET {{column}} = '123' WHERE id = 1",
+            "UNRESOLVED",
+        ),
+        (
+            "unsafe_where_expression",
+            "SELECT id FROM patients WHERE {{condition}}",
+            "UNRESOLVED",
+        ),
+        (
+            "unsafe_join_condition",
+            "SELECT p.id FROM patients p "
+            "INNER JOIN doctors d ON {{condition}}",
+            "UNRESOLVED",
+        ),
+        (
+            "safe_join_value",
+            "SELECT p.id FROM patients p "
+            "INNER JOIN doctors d ON d.id = p.id "
+            "WHERE p.id = {{id}}",
+            "CONVERTED",
+        ),
+    ]
+
+    for query_id, sql, expected_status in cases:
+        result = convert_query({
+            "query_id": query_id,
+            "operation": sql.split()[0],
+            "status": "RECOVERED",
+            "recovered_sql": sql,
+        })
+
+        assert result["status"] == expected_status, (
+            f"{query_id}: {result.get('reason')}"
+        )

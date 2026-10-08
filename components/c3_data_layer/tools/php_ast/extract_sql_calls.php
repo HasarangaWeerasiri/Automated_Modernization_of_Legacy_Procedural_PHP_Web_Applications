@@ -186,6 +186,7 @@ function getControlFlowContext(
 
 $results = [];
 $assignments = [];
+$functions = [];
 $phpFiles = collectPhpFiles($inputPath);
 
 
@@ -224,6 +225,60 @@ foreach ($phpFiles as $phpFile) {
         ];
 
         continue;
+    }
+
+        /*
+     * Collect simple named PHP function definitions.
+     * Metadata only; no PHP functions are executed.
+     */
+    $functionNodes = $nodeFinder->findInstanceOf(
+        $ast,
+        Node\Stmt\Function_::class
+    );
+
+    foreach ($functionNodes as $functionNode) {
+
+        $parameters = [];
+        $supportedParameters = true;
+
+        foreach ($functionNode->params as $parameter) {
+            if (
+                !$parameter->var instanceof Node\Expr\Variable
+                || !is_string($parameter->var->name)
+            ) {
+                $supportedParameters = false;
+                break;
+            }
+
+            $parameters[] = $parameter->var->name;
+        }
+
+        $returnExpression = null;
+
+        // Only a function whose entire body is one return
+        // statement qualifies for simple return extraction.
+        $statements = $functionNode->stmts ?? [];
+
+        if (
+            $supportedParameters
+            && count($statements) === 1
+            && $statements[0] instanceof Node\Stmt\Return_
+            && $statements[0]->expr !== null
+        ) {
+            $returnExpression = expressionToString(
+                $statements[0]->expr,
+                $prettyPrinter
+            );
+        }
+
+        $functions[] = [
+            'name' => $functionNode->name->toString(),
+            'source_file' => $phpFile,
+            'source_line' => $functionNode->getStartLine(),
+            'parameters' => $parameters,
+            'return_expression' => $returnExpression,
+            'simple_return' => $returnExpression !== null,
+        ];
     }
 
     /*
@@ -265,7 +320,59 @@ foreach ($phpFiles as $phpFile) {
                 ? 'CONCAT_ASSIGN'
                 : 'ASSIGN';
 
-	        $assignments[] = [
+        $functionCallMetadata = null;
+        $expressionNode = $assignment->expr;
+
+        if (
+            $expressionNode instanceof Node\Expr\FuncCall
+            && $expressionNode->name instanceof Node\Name
+        ) {
+            $arguments = [];
+
+            foreach ($expressionNode->args as $argument) {
+                $value = $argument->value;
+
+                $argumentInfo = [
+                    'expression' => expressionToString(
+                        $value,
+                        $prettyPrinter
+                    ),
+                    'kind' => 'UNSUPPORTED',
+                ];
+
+                if (
+                    $value instanceof Node\Expr\BinaryOp\Coalesce
+                    && $value->left instanceof Node\Expr\ArrayDimFetch
+                    && $value->left->var instanceof Node\Expr\Variable
+                    && is_string($value->left->var->name)
+                    && $value->left->dim instanceof Node\Scalar\String_
+                    && $value->right instanceof Node\Scalar\String_
+                ) {
+                    $argumentInfo = [
+                        'expression' => expressionToString(
+                            $value,
+                            $prettyPrinter
+                        ),
+                        'kind' => 'COALESCE',
+                        'input_source' => $value->left->var->name,
+                        'input_key' => $value->left->dim->value,
+                        'default_expression' => expressionToString(
+                            $value->right,
+                            $prettyPrinter
+                        ),
+                    ];
+                }
+
+                $arguments[] = $argumentInfo;
+            }
+
+            $functionCallMetadata = [
+                'name' => $expressionNode->name->toString(),
+                'arguments' => $arguments,
+            ];
+        }
+
+        $assignments[] = [
             'source_file' => $phpFile,
             'source_line' => $assignment->getStartLine(),
             'variable' => $variableName,
@@ -277,6 +384,7 @@ foreach ($phpFiles as $phpFile) {
             'control_flow' => getControlFlowContext(
                 $assignment
             ),
+            'function_call' => $functionCallMetadata,
         ];
     }
     /*
@@ -439,6 +547,7 @@ foreach ($phpFiles as $phpFile) {
 $output = [
     'sql_calls' => $results,
     'assignments' => $assignments,
+    'functions' => $functions,
 ];
 
 echo json_encode(

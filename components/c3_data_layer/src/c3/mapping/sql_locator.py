@@ -96,6 +96,10 @@ def _run_ast_extractor(
         [],
     )
 
+    functions = ast_data.get(
+        "functions",
+        [],
+    )
     if not isinstance(sql_calls, list):
         raise SQLLocatorError(
             "Expected 'sql_calls' to be a JSON array."
@@ -106,9 +110,15 @@ def _run_ast_extractor(
             "Expected 'assignments' to be a JSON array."
         )
 
+    if not isinstance(functions, list):
+        raise SQLLocatorError(
+            "Expected 'functions' to be a JSON array."
+        )
+
     return {
         "sql_calls": sql_calls,
         "assignments": assignments,
+        "functions": functions,
     }
 
 

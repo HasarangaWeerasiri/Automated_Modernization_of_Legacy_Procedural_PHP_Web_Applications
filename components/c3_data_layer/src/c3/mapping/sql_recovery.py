@@ -406,6 +406,116 @@ def _select_assignment_chain(
     return assignments[
         last_assign_index:
     ]
+
+def _collect_branch_sql_variants(
+    relevant_assignments: list[dict],
+) -> list[dict]:
+    """
+    Collect simple, literal SQL alternatives from conditional
+    assignments for diagnostic purposes.
+
+    Do not infer runtime conditions or mark queries recovered.
+    """
+    variants = []
+
+    for assignment in relevant_assignments:
+        control_flow = assignment.get("control_flow") or []
+
+        if not control_flow:
+            continue
+
+        if assignment.get("assignment_type") != "ASSIGN":
+            continue
+
+        expression = (assignment.get("expression") or "").strip()
+
+        # Accept only a complete, double-quoted static PHP string.
+        # Dynamic expressions and concatenations remain unsupported.
+        if not (
+            len(expression) >= 2
+            and expression.startswith('"')
+            and expression.endswith('"')
+            and "$" not in expression
+        ):
+            continue
+
+        sql = expression[1:-1]
+
+        if _detect_operation(sql) is None:
+            continue
+
+        variants.append({
+            "source_line": assignment.get("source_line"),
+            "control_flow": control_flow,
+            "sql": sql,
+        })
+
+    return variants
+def _collect_conditional_append_variants(
+    relevant_assignments: list[dict],
+) -> list[dict]:
+    """
+    Collect diagnostic SQL variants for a simple pattern:
+
+        $sql = "base SQL";
+        if (...) {
+            $sql .= " fragment" . $dynamic_value;
+        }
+
+    Supports only one unconditional base assignment
+    followed by one conditional CONCAT_ASSIGN.
+
+    Does not generate executable SQL or infer conditions.
+    """
+
+    if len(relevant_assignments) != 2:
+        return []
+
+    base, append = relevant_assignments
+
+    if (
+        base.get("assignment_type") != "ASSIGN"
+        or base.get("control_flow")
+        or append.get("assignment_type") != "CONCAT_ASSIGN"
+        or not append.get("control_flow")
+        or base.get("source_file") != append.get("source_file")
+    ):
+        return []
+
+    base_fragment, _, base_supported = _expression_to_template(
+        base.get("expression", "")
+    )
+
+    append_fragment, _, append_supported = _expression_to_template(
+        append.get("expression", "")
+    )
+
+    if not base_supported:
+        return []
+
+    base_sql = _normalize_sql(base_fragment)
+    combined_sql = _normalize_sql(
+        base_fragment + append_fragment
+    )
+
+    if _detect_operation(base_sql) is None:
+        return []
+
+    return [
+        {
+            "source_line": base.get("source_line"),
+            "control_flow": [],
+            "sql": base_sql,
+            "fully_supported": True,
+        },
+        {
+            "source_line": append.get("source_line"),
+            "control_flow": append.get("control_flow"),
+            "sql": combined_sql,
+            "fully_supported": append_supported,
+        },
+    ]
+
 def _detect_branching_assignment(
     assignment_chain: list[dict],
 ) -> tuple[str | None, str | None]:
@@ -514,6 +624,122 @@ def _detect_operation(
     return match.group(1).upper()
 
 
+
+
+def _collect_cross_file_diagnostics(
+    assignment_chain: list[dict],
+    functions: list[dict],
+) -> dict | None:
+    """Collect non-executable diagnostics for simple function calls."""
+
+    if len(assignment_chain) != 1:
+        return None
+
+    assignment = assignment_chain[0]
+    function_call = assignment.get("function_call")
+
+    if not isinstance(function_call, dict):
+        return None
+
+    function_name = function_call.get("name")
+    arguments = function_call.get("arguments")
+
+    if not isinstance(function_name, str):
+        return None
+
+    if not isinstance(arguments, list):
+        return None
+
+    matching_functions = [
+        function
+        for function in functions
+        if isinstance(function, dict)
+        and isinstance(function.get("name"), str)
+        and function["name"].lower() == function_name.lower()
+    ]
+
+    if len(matching_functions) != 1:
+        return {
+            "function_name": function_name,
+            "resolution_status": "UNRESOLVED",
+            "reason": (
+                "Function definition is missing or ambiguous."
+            ),
+        }
+
+    function = matching_functions[0]
+
+    parameters = function.get("parameters")
+    return_expression = function.get("return_expression")
+
+    if not function.get("simple_return"):
+        return {
+            "function_name": function_name,
+            "resolution_status": "UNRESOLVED",
+            "reason": "Function does not have a simple return.",
+        }
+
+    if not isinstance(parameters, list):
+        return None
+
+    if len(parameters) != len(arguments):
+        return {
+            "function_name": function_name,
+            "resolution_status": "UNRESOLVED",
+            "reason": "Function argument count does not match.",
+        }
+
+    if not isinstance(return_expression, str):
+        return None
+
+    template, variables, supported = (
+        _expression_to_template(return_expression)
+    )
+
+    if not supported:
+        return {
+            "function_name": function_name,
+            "resolution_status": "UNRESOLVED",
+            "reason": "Function return expression is unsupported.",
+        }
+
+    if sorted(variables) != sorted(parameters):
+        return {
+            "function_name": function_name,
+            "resolution_status": "UNRESOLVED",
+            "reason": "Function parameter mapping is incomplete.",
+        }
+
+    if any(
+        not isinstance(argument, dict)
+        or argument.get("kind") != "COALESCE"
+        or argument.get("input_source") != "_GET"
+        or not isinstance(argument.get("input_key"), str)
+        or not isinstance(argument.get("default_expression"), str)
+        for argument in arguments
+    ):
+        return {
+            "function_name": function_name,
+            "resolution_status": "UNRESOLVED",
+            "reason": "Function argument expression is unsupported.",
+        }
+
+    return {
+        "function_name": function_name,
+        "function_source_file": function.get("source_file"),
+        "resolution_status": "DIAGNOSTIC_ONLY",
+        "sql_template": _normalize_sql(template),
+        "parameter_bindings": [
+            {
+                "parameter": parameter,
+                "argument": argument,
+            }
+            for parameter, argument in zip(parameters, arguments)
+        ],
+        "requires_include_validation": True,
+        "safe_for_conversion": False,
+    }
+
 def recover_queries_from_ast(
     ast_data: dict,
 ) -> list[dict]:
@@ -530,6 +756,8 @@ def recover_queries_from_ast(
         "assignments",
         []
     )
+
+    functions = ast_data.get("functions", [])
 
     recovered_queries = []
 
@@ -553,6 +781,9 @@ def recover_queries_from_ast(
             )
         )
 
+        sql_variants = []
+        cross_file_diagnostics = None
+
         if direct_sql_expression:
             # Direct literal, interpolation, or concatenated SQL.
             assignment_chain = [
@@ -574,6 +805,21 @@ def recover_queries_from_ast(
             assignment_chain = _select_assignment_chain(
                 relevant_assignments
             )
+
+            sql_variants = _collect_branch_sql_variants(
+                relevant_assignments
+            )
+
+            if not sql_variants:
+                sql_variants = _collect_conditional_append_variants(
+                    relevant_assignments
+                )
+
+            cross_file_diagnostics = _collect_cross_file_diagnostics(
+                assignment_chain,
+                functions,
+            )
+
 
         if not assignment_chain:
             recovered_queries.append(
@@ -713,6 +959,16 @@ def recover_queries_from_ast(
                 "status": status,
                 "reason_code": reason_code,
                 "reason": reason,
+                **(
+                    {"cross_file_diagnostics": cross_file_diagnostics}
+                    if cross_file_diagnostics is not None
+                    else {}
+                ),
+                **(
+                    {"sql_variants": sql_variants}
+                    if reason_code == "BRANCHING" and sql_variants
+                    else {}
+                ),
             }
         )
 

@@ -179,3 +179,97 @@ def test_direct_interpolated_sql_is_recovered():
     assert result[0]["status"] == "RECOVERED"
     assert result[0]["operation"] == "SELECT"
     assert "{{id}}" in result[0]["recovered_sql"]
+
+
+def test_q014_preserves_both_branch_sql_variants():
+    from pathlib import Path
+    from c3.mapping.sql_locator import analyze_php_ast
+    from c3.mapping.sql_recovery import recover_queries_from_ast
+
+    php_file = (
+        Path(__file__).resolve().parents[3]
+        / "benchmarks"
+        / "apps"
+        / "clinic_inventory_legacy_hard"
+        / "legacy"
+        / "14_branch_query.php"
+    )
+
+    queries = recover_queries_from_ast(
+        analyze_php_ast(php_file)
+    )
+
+    assert len(queries) == 1
+
+    query = queries[0]
+
+    assert query["status"] == "UNRESOLVED"
+    assert query["reason_code"] == "BRANCHING"
+    assert query["operation"] is None
+
+    variants = query["sql_variants"]
+
+    assert len(variants) == 2
+
+    assert variants[0]["source_line"] == 6
+    assert variants[0]["control_flow"] == ["IF"]
+    assert variants[0]["sql"] == (
+        "SELECT id, full_name FROM doctors WHERE active = 1"
+    )
+
+    assert variants[1]["source_line"] == 8
+    assert variants[1]["control_flow"] == ["ELSE", "IF"]
+    assert variants[1]["sql"] == (
+        "SELECT id, full_name FROM doctors"
+    )
+
+
+def test_q016_preserves_conditional_append_variants():
+    from pathlib import Path
+    from c3.mapping.sql_locator import analyze_php_ast
+    from c3.mapping.sql_recovery import recover_queries_from_ast
+
+    php_file = (
+        Path(__file__).resolve().parents[3]
+        / "benchmarks"
+        / "apps"
+        / "clinic_inventory_legacy_hard"
+        / "legacy"
+        / "16_conditional_concat.php"
+    )
+
+    queries = recover_queries_from_ast(
+        analyze_php_ast(php_file)
+    )
+
+    assert len(queries) == 1
+
+    query = queries[0]
+
+    assert query["status"] == "UNRESOLVED"
+    assert query["reason_code"] == "BRANCHING"
+    assert query["operation"] is None
+
+    variants = query["sql_variants"]
+
+    assert len(variants) == 2
+
+    assert variants[0] == {
+        "source_line": 4,
+        "control_flow": [],
+        "sql": (
+            "SELECT id, full_name FROM patients WHERE 1=1"
+        ),
+        "fully_supported": True,
+    }
+
+    assert variants[1] == {
+        "source_line": 6,
+        "control_flow": ["IF"],
+        "sql": (
+            "SELECT id, full_name FROM patients WHERE 1=1 "
+            "AND department_id = "
+            "{{UNRESOLVED:$_GET['department_id']}}"
+        ),
+        "fully_supported": False,
+    }
