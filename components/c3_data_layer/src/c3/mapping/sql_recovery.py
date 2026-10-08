@@ -452,6 +452,20 @@ def _detect_structural_placeholder(
         None, None
     """
 
+        # Dynamic SQL identifiers must never become bind parameters.
+    dynamic_table_pattern = re.compile(
+        r"\b(?:FROM|JOIN|INTO|UPDATE|TABLE)\s+"
+        r"\{\{[A-Za-z_][A-Za-z0-9_]*\}\}",
+        re.IGNORECASE,
+    )
+
+    if dynamic_table_pattern.search(sql):
+        return (
+            "STRUCTURAL",
+            "Dynamic table identifier cannot be "
+            "parameterized safely.",
+        )
+
     order_by_pattern = re.compile(
         r"\bORDER\s+BY\s+"
         r"\{\{[A-Za-z_][A-Za-z0-9_]*\}\}",
@@ -529,18 +543,37 @@ def recover_queries_from_ast(
             "sql_argument"
         )
 
-        relevant_assignments = (
-            _find_relevant_assignments(
-                sql_call,
-                assignments,
+        # Determine whether SQL is passed directly or through a variable.
+        sql_argument_text = (sql_argument or "").strip()
+
+        direct_sql_expression = not bool(
+            re.fullmatch(
+                r"\$[A-Za-z_][A-Za-z0-9_]*",
+                sql_argument_text,
             )
         )
 
-        assignment_chain = (
-            _select_assignment_chain(
+        if direct_sql_expression:
+            # Direct literal, interpolation, or concatenated SQL.
+            assignment_chain = [
+                {
+                    "source_file": sql_call.get("source_file"),
+                    "source_line": sql_call.get("source_line"),
+                    "assignment_type": "ASSIGN",
+                    "expression": sql_argument_text,
+                    "control_flow": sql_call.get("control_flow", []),
+                }
+            ]
+        else:
+            # Existing SQL-variable assignment recovery.
+            relevant_assignments = _find_relevant_assignments(
+                sql_call,
+                assignments,
+            )
+
+            assignment_chain = _select_assignment_chain(
                 relevant_assignments
             )
-        )
 
         if not assignment_chain:
             recovered_queries.append(

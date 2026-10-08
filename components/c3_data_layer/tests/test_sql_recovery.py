@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from c3.mapping.sql_recovery import recover_queries
-
+from c3.mapping.sql_recovery import recover_queries_from_ast
 
 BENCHMARK_PATH = (
     Path(__file__).resolve().parents[3]
@@ -133,3 +133,49 @@ def test_conditional_sql_append_abstains_as_branching():
     assert query["status"] == "UNRESOLVED"
     assert query["reason_code"] == "BRANCHING"
     assert query["operation"] is None
+
+
+def test_direct_sql_literal_is_recovered():
+    ast_data = {
+        "sql_calls": [
+            {
+                "source_file": "patients.php",
+                "source_line": 4,
+                "executor": "mysqli_query",
+                "sql_argument": '"SELECT id, full_name FROM patients"',
+            }
+        ],
+        "assignments": [],
+    }
+
+    result = recover_queries_from_ast(ast_data)
+
+    assert len(result) == 1
+    assert result[0]["status"] == "RECOVERED"
+    assert result[0]["operation"] == "SELECT"
+    assert result[0]["recovered_sql"] == (
+        "SELECT id, full_name FROM patients"
+    )
+
+
+def test_direct_interpolated_sql_is_recovered():
+    ast_data = {
+        "sql_calls": [
+            {
+                "source_file": "patients.php",
+                "source_line": 5,
+                "executor": "mysqli_query",
+                "sql_argument": (
+                    '"SELECT id FROM patients WHERE id = \'{$id}\'"'
+                ),
+            }
+        ],
+        "assignments": [],
+    }
+
+    result = recover_queries_from_ast(ast_data)
+
+    assert len(result) == 1
+    assert result[0]["status"] == "RECOVERED"
+    assert result[0]["operation"] == "SELECT"
+    assert "{{id}}" in result[0]["recovered_sql"]

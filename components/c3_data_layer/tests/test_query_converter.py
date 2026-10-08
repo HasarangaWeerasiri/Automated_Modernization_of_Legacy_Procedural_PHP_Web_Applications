@@ -216,3 +216,150 @@ def test_multiple_queries_are_converted():
         result[1]["status"]
         == "CONVERTED"
     )
+
+def test_static_inner_join_is_converted():
+    query = {
+        "query_id": "Q008",
+        "source_file": "08_join_appointments.php",
+        "source_line": 7,
+        "operation": "SELECT",
+        "status": "RECOVERED",
+        "recovered_sql": (
+            "SELECT a.id, p.full_name, "
+            "d.full_name AS doctor_name "
+            "FROM appointments a "
+            "JOIN patients p ON p.id = a.patient_id "
+            "JOIN doctors d ON d.id = a.doctor_id "
+            "WHERE p.id = {{patient}}"
+        ),
+    }
+
+    result = convert_query(query)
+
+    assert result["status"] == "CONVERTED"
+    assert result["operation"] == "SELECT"
+    assert result["table"] == "appointments"
+    assert result["parameters"] == ["patient"]
+    assert "JOIN patients p" in result["parameterized_sql"]
+    assert "JOIN doctors d" in result["parameterized_sql"]
+    assert "WHERE p.id = :patient" in result["parameterized_sql"]
+
+
+def test_subquery_remains_unresolved():
+    query = {
+        "query_id": "Q010",
+        "operation": "SELECT",
+        "status": "RECOVERED",
+        "recovered_sql": (
+            "SELECT id FROM patients "
+            "WHERE id IN "
+            "(SELECT patient_id FROM appointments)"
+        ),
+    }
+
+    result = convert_query(query)
+
+    assert result["status"] == "UNRESOLVED"
+
+
+def test_multi_table_update_remains_unresolved():
+    query = {
+        "query_id": "Q020",
+        "operation": "UPDATE",
+        "status": "RECOVERED",
+        "recovered_sql": (
+            "UPDATE patients p "
+            "JOIN appointments a ON a.patient_id = p.id "
+            "SET p.phone = '0700000000'"
+        ),
+    }
+
+    result = convert_query(query)
+
+    assert result["status"] == "UNRESOLVED"
+
+def test_dynamic_select_column_is_unresolved():
+    result = convert_query({
+        "query_id": "dynamic_column",
+        "operation": "SELECT",
+        "status": "RECOVERED",
+        "recovered_sql": (
+            "SELECT {{column}} FROM patients"
+        ),
+    })
+
+    assert result["status"] == "UNRESOLVED"
+
+
+def test_dynamic_where_column_is_unresolved():
+    result = convert_query({
+        "query_id": "dynamic_condition_column",
+        "operation": "SELECT",
+        "status": "RECOVERED",
+        "recovered_sql": (
+            "SELECT id FROM patients "
+            "WHERE {{column}} = 1"
+        ),
+    })
+
+    assert result["status"] == "UNRESOLVED"
+
+
+def test_dynamic_order_direction_is_unresolved():
+    result = convert_query({
+        "query_id": "dynamic_order_direction",
+        "operation": "SELECT",
+        "status": "RECOVERED",
+        "recovered_sql": (
+            "SELECT id FROM patients "
+            "ORDER BY id {{direction}}"
+        ),
+    })
+
+    assert result["status"] == "UNRESOLVED"
+
+def test_dynamic_condition_is_unresolved():
+    result = convert_query({
+        "query_id": "dynamic_condition",
+        "operation": "SELECT",
+        "status": "RECOVERED",
+        "recovered_sql": (
+            "SELECT id FROM patients WHERE {{condition}}"
+        ),
+    })
+
+    assert result["status"] == "UNRESOLVED"
+
+
+def test_dynamic_group_by_column_is_unresolved():
+    result = convert_query({
+        "query_id": "dynamic_group_by",
+        "operation": "SELECT",
+        "status": "RECOVERED",
+        "recovered_sql": (
+            "SELECT COUNT(*) FROM patients "
+            "GROUP BY {{column}}"
+        ),
+    })
+
+    assert result["status"] == "UNRESOLVED"
+
+def test_arithmetic_update_is_converted():
+    result = convert_query({
+        "query_id": "Q017",
+        "operation": "UPDATE",
+        "status": "RECOVERED",
+        "recovered_sql": (
+            "UPDATE appointments "
+            "SET fee = fee + {{delta}} "
+            "WHERE id = {{id}}"
+        ),
+    })
+
+    assert result["status"] == "CONVERTED"
+    assert result["parameterized_sql"] == (
+        "UPDATE appointments "
+        "SET fee = fee + :delta "
+        "WHERE id = :id"
+    )
+    assert set(result["parameters"]) == {"delta", "id"}

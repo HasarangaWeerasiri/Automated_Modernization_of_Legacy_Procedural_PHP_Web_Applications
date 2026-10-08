@@ -69,6 +69,78 @@ def _unique(values: list[str]) -> list[str]:
 
     return result
 
+def _has_unsafe_placeholder_position(
+    tree,
+    parameter_names: list[str],
+) -> bool:
+    """
+    Reject placeholders unless their AST position is
+    explicitly supported as a scalar-value position.
+
+    This is a conservative validation policy.
+    """
+
+    names = set(parameter_names)
+
+    comparison_types = (
+        exp.EQ,
+        exp.NEQ,
+        exp.GT,
+        exp.GTE,
+        exp.LT,
+        exp.LTE,
+        exp.Like,
+        exp.ILike,
+    )
+
+    for node in tree.walk():
+        if not isinstance(node, exp.Placeholder):
+            continue
+
+        if node.name not in names:
+            return True
+
+        parent = node.parent
+
+        if parent is None:
+            return True
+
+        # Right-hand side of scalar comparisons.
+        if isinstance(parent, comparison_types):
+            if node.arg_key == "expression":
+                continue
+
+                # Right-hand scalar operand of addition.
+        # Example: UPDATE appointments SET fee = fee + :delta
+        if isinstance(parent, exp.Add):
+            if (
+                node.arg_key == "expression"
+                and isinstance(parent.this, (exp.Column, exp.Literal))
+            ):
+                continue
+
+        # Parameterized LIMIT and OFFSET values.
+        if isinstance(parent, (exp.Limit, exp.Offset)):
+            if node.arg_key == "expression":
+                continue
+
+        # Scalar values in IN lists.
+        if isinstance(parent, exp.In):
+            if node.arg_key == "expressions":
+                continue
+
+        # Values in INSERT statements.
+        if isinstance(parent, exp.Tuple):
+            if (
+                node.arg_key == "expressions"
+                and isinstance(tree, exp.Insert)
+            ):
+                continue
+
+        # All other positions remain unsupported.
+        return True
+
+    return False
 
 def convert_query(query: dict) -> dict:
     """
@@ -130,14 +202,17 @@ def convert_query(query: dict) -> dict:
     )
 
     if len(tables) != 1:
-        return {
-            **base_result,
-            "status": "UNRESOLVED",
-            "reason": (
-                "Initial converter supports exactly "
-                "one referenced table."
-            ),
-        }
+        if len(tables) > 1 and _is_supported_join_select(tree):
+            pass
+        else:
+            return {
+                **base_result,
+                "status": "UNRESOLVED",
+                "reason": (
+                    "Unsupported multi-table SQL structure. "
+                    "Only static SELECT INNER JOINs are supported."
+                ),
+            }
 
     operation = (
         query.get("operation")
@@ -167,6 +242,16 @@ def convert_query(query: dict) -> dict:
         )
     )
 
+    if _has_unsafe_placeholder_position(tree, parameters):
+        return {
+            **base_result,
+            "status": "UNRESOLVED",
+            "reason": (
+                "Dynamic placeholder occurs in an "
+                "unsupported structural SQL position."
+            ),
+        }
+
     like_wildcard_parameters = _unique(
         [
             match.group(2)
@@ -187,6 +272,54 @@ def convert_query(query: dict) -> dict:
         "reason": None,
     }
 
+def _is_supported_join_select(tree) -> bool:
+    """
+    Allow SELECT queries using static INNER JOINs.
+
+    Reject subqueries, dynamic table references,
+    and unsupported JOIN shapes.
+    """
+
+    if not isinstance(tree, exp.Select):
+        return False
+
+    # Nested queries require separate validation.
+    if any(tree.find_all(exp.Subquery)):
+        return False
+
+    from_clause = tree.args.get("from_")
+
+    if from_clause is None:
+        return False
+
+    if not isinstance(from_clause.this, exp.Table):
+        return False
+
+    joins = tree.args.get("joins") or []
+
+    if not joins:
+        return False
+
+    for join in joins:
+        # Only direct table JOINs are supported.
+        if not isinstance(join.this, exp.Table):
+            return False
+
+        # Do not allow CROSS, LEFT, RIGHT or FULL JOINs yet.
+        kind = (join.args.get("kind") or "").upper()
+        side = (join.args.get("side") or "").upper()
+
+        if kind not in ("", "INNER"):
+            return False
+
+        if side:
+            return False
+
+        # A JOIN without an ON condition is unsupported.
+        if join.args.get("on") is None:
+            return False
+
+    return True
 
 def convert_queries(
     queries: list[dict],
