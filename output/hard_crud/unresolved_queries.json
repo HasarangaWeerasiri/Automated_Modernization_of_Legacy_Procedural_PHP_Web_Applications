@@ -1,0 +1,38 @@
+[
+    {
+        "query_id": "Q002",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\02_dynamic_order.php",
+        "source_line": 9,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, name, email FROM users ORDER BY {{column}}",
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "Dynamic value occurs in a structural ORDER BY position.",
+        "action": "manual_review_required"
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\03_dynamic_in.php",
+        "source_line": 9,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, title, price FROM products WHERE id IN ({{ids}})",
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "Dynamic value represents an SQL IN-list fragment rather than a scalar value.",
+        "action": "manual_review_required"
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\04_conditional_append.php",
+        "source_line": 11,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, name, email, status FROM users WHERE status = '{{status}}'",
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow.",
+        "action": "manual_review_required"
+    }
+]

@@ -1,12 +1,12 @@
-﻿"""
+"""
 Data Access Code Generator
 Component 3 - Data Layer Migration
 
 Generates reusable SQLAlchemy data-access functions
 from safely converted SQL queries.
 
-Only queries marked CONVERTED are emitted.
-Unresolved queries are deliberately skipped.
+Converted queries are emitted as executable functions.
+Unresolved queries are emitted as manual-review stubs.
 """
 
 import json
@@ -168,6 +168,21 @@ def _build_function(query: dict) -> str:
     return "\n".join(lines)
 
 
+def _build_unresolved_stub(query: dict) -> str:
+    """Emit a safe function inventory entry without inventing SQL behavior."""
+    query_id = _safe_identifier(str(query.get("query_id") or "unknown"))
+    name = f"unresolved_query_{query_id}"
+    source_file = str(query.get("source_file") or "unknown").replace("\\", "/")
+    source_line = query.get("source_line")
+    location = f"{source_file}:{source_line if source_line is not None else 'unknown'}"
+    message = f"manual review: {location}"
+    return "\n".join([
+        f"def {name}(session, **kwargs):",
+        f"    \"\"\"Unresolved query {query.get('query_id', 'unknown')}; {location}.\"\"\"",
+        f"    raise NotImplementedError({message!r})",
+    ])
+
+
 def generate_data_access_source(
     converted_queries: list[dict],
 ) -> str:
@@ -195,24 +210,14 @@ def generate_data_access_source(
         "",
     ]
 
-    converted = [
-        query
-        for query in converted_queries
-        if query.get("status") == "CONVERTED"
-    ]
+    functions = []
+    for query in converted_queries:
+        if query.get("status") == "CONVERTED":
+            functions.append(_build_function(query))
+        elif query.get("status") == "UNRESOLVED":
+            functions.append(_build_unresolved_stub(query))
 
-    for index, query in enumerate(converted):
-        lines.append(
-            _build_function(query)
-        )
-
-        if index < len(converted) - 1:
-            lines.extend(
-                [
-                    "",
-                    "",
-                ]
-            )
+    lines.append("\n\n\n".join(functions))
 
     lines.append("")
 

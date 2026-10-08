@@ -36,11 +36,15 @@ def build_unresolved_report(
                 "recovered_sql": query.get("recovered_sql"),
                 "operation": query.get("operation"),
                 "status": "UNRESOLVED",
-                "reason": (
-                    query.get("reason")
-                    or "Query could not be safely recovered."
-                ),
-                "action": "manual_review_required",
+"reason_code": (
+    query.get("reason_code")
+    or "UNKNOWN_EXPR"
+),
+"reason": (
+    query.get("reason")
+    or "Query could not be safely recovered."
+),
+"action": "manual_review_required",
             }
         )
 

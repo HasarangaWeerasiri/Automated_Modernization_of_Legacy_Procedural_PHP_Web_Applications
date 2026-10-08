@@ -1,0 +1,257 @@
+{
+    "tables": [
+        {
+            "name": "users",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "name",
+                    "data_type": "VARCHAR(100)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "email",
+                    "data_type": "VARCHAR(150)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "status",
+                    "data_type": "VARCHAR(20)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "role",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "created_at",
+                    "data_type": "DATETIME",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        },
+        {
+            "name": "categories",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "name",
+                    "data_type": "VARCHAR(100)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        },
+        {
+            "name": "products",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "category_id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "title",
+                    "data_type": "VARCHAR(150)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "description",
+                    "data_type": "TEXT",
+                    "nullable": true,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "price",
+                    "data_type": "DECIMAL(10,2)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "stock",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "status",
+                    "data_type": "VARCHAR(20)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": [
+                {
+                    "column": "category_id",
+                    "referenced_table": "categories",
+                    "referenced_column": "id"
+                }
+            ]
+        },
+        {
+            "name": "orders",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "user_id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "total",
+                    "data_type": "DECIMAL(10,2)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "status",
+                    "data_type": "VARCHAR(20)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "created_at",
+                    "data_type": "DATETIME",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": [
+                {
+                    "column": "user_id",
+                    "referenced_table": "users",
+                    "referenced_column": "id"
+                }
+            ]
+        },
+        {
+            "name": "order_items",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "order_id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "product_id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "quantity",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "unit_price",
+                    "data_type": "DECIMAL(10,2)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": [
+                {
+                    "column": "order_id",
+                    "referenced_table": "orders",
+                    "referenced_column": "id"
+                },
+                {
+                    "column": "product_id",
+                    "referenced_table": "products",
+                    "referenced_column": "id"
+                }
+            ]
+        }
+    ]
+}

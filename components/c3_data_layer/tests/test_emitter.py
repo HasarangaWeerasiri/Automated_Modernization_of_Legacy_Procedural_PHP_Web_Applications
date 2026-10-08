@@ -1,4 +1,4 @@
-import importlib.util
+﻿import importlib.util
 
 from c3.generation.emitter import (
     generate_data_access_source,
@@ -164,7 +164,7 @@ def test_select_does_not_commit():
     )
 
 
-def test_unresolved_query_is_not_generated():
+def test_unresolved_query_generates_manual_review_stub():
     queries = _sample_queries()
 
     queries.append(
@@ -174,17 +174,21 @@ def test_unresolved_query_is_not_generated():
             "source_line": 10,
             "operation": None,
             "status": "UNRESOLVED",
-            "reason": (
-                "Unsupported dynamic expression."
-            ),
+            "reason": "Unsupported dynamic expression.",
         }
     )
 
-    source = generate_data_access_source(
-        queries
-    )
+    source = generate_data_access_source(queries)
 
-    assert "Q005" not in source
+    # Unresolved queries must remain in the function inventory.
+    assert "Q005" in source
+
+    # A stub must raise an explicit manual-review exception.
+    assert "NotImplementedError" in source
+    assert "manual review: dynamic.php:10" in source
+
+    # The generated module must be valid Python.
+    compile(source, "<generated_data_access>", "exec")
 
 
 def test_traceability_is_preserved():

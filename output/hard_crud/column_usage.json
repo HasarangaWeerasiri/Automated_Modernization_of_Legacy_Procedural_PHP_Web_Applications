@@ -1,0 +1,80 @@
+[
+    {
+        "query_id": "Q001",
+        "operation": "SELECT",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [
+            "id",
+            "name",
+            "email"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "name"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\01_like_search.php",
+        "source_line": 9,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\02_dynamic_order.php",
+        "source_line": 9,
+        "status": "UNRESOLVED",
+        "reason": "Dynamic value occurs in a structural ORDER BY position."
+    },
+    {
+        "query_id": "Q003",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\03_dynamic_in.php",
+        "source_line": 9,
+        "status": "UNRESOLVED",
+        "reason": "Dynamic value represents an SQL IN-list fragment rather than a scalar value."
+    },
+    {
+        "query_id": "Q004",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\04_conditional_append.php",
+        "source_line": 11,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q005",
+        "operation": "SELECT",
+        "tables": [
+            "orders",
+            "users"
+        ],
+        "read_columns": [
+            "id",
+            "total",
+            "status",
+            "name"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\05_join.php",
+        "source_line": 13,
+        "status": "ANALYZED",
+        "reason": null
+    }
+]

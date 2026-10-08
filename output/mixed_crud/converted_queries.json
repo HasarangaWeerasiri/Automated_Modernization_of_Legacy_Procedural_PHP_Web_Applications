@@ -3,86 +3,71 @@
         "query_id": "Q001",
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\mixed_crud\\legacy\\01_select.php",
         "source_line": 4,
-        "executor": "mysqli_query",
-        "sql_argument": "$sql",
-        "recovered_sql": "SELECT id, title, price FROM products",
         "operation": "SELECT",
-        "dynamic_variables": [],
-        "status": "RECOVERED",
-        "reason_code": null,
+        "table": "products",
+        "parameters": [],
+        "parameterized_sql": "SELECT id, title, price FROM products",
+        "status": "CONVERTED",
         "reason": null
     },
     {
         "query_id": "Q002",
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\mixed_crud\\legacy\\02_interpolation.php",
         "source_line": 7,
-        "executor": "mysqli_query",
-        "sql_argument": "$sql",
-        "recovered_sql": "SELECT id, title, price FROM products WHERE id = {{id}}",
         "operation": "SELECT",
-        "dynamic_variables": [
+        "table": "products",
+        "parameters": [
             "id"
         ],
-        "status": "RECOVERED",
-        "reason_code": null,
+        "parameterized_sql": "SELECT id, title, price FROM products WHERE id = :id",
+        "status": "CONVERTED",
         "reason": null
     },
     {
         "query_id": "Q003",
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\mixed_crud\\legacy\\03_concat.php",
         "source_line": 8,
-        "executor": "mysqli_query",
-        "sql_argument": "$sql",
-        "recovered_sql": "DELETE FROM products WHERE id = {{id}}",
         "operation": "DELETE",
-        "dynamic_variables": [
+        "table": "products",
+        "parameters": [
             "id"
         ],
-        "status": "RECOVERED",
-        "reason_code": null,
+        "parameterized_sql": "DELETE FROM products WHERE id = :id",
+        "status": "CONVERTED",
         "reason": null
     },
     {
         "query_id": "Q004",
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\mixed_crud\\legacy\\04_reassignment.php",
         "source_line": 7,
-        "executor": "mysqli_query",
-        "sql_argument": "$sql",
-        "recovered_sql": "SELECT id, title, price FROM products",
         "operation": "SELECT",
-        "dynamic_variables": [],
-        "status": "RECOVERED",
-        "reason_code": null,
+        "table": "products",
+        "parameters": [],
+        "parameterized_sql": "SELECT id, title, price FROM products",
+        "status": "CONVERTED",
         "reason": null
     },
     {
         "query_id": "Q005",
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\mixed_crud\\legacy\\05_update.php",
         "source_line": 11,
-        "executor": "mysqli_query",
-        "sql_argument": "$sql",
-        "recovered_sql": "UPDATE products SET title = '{{title}}', price = {{price}} WHERE id = {{id}}",
         "operation": "UPDATE",
-        "dynamic_variables": [
+        "table": "products",
+        "parameters": [
             "title",
             "price",
             "id"
         ],
-        "status": "RECOVERED",
-        "reason_code": null,
+        "parameterized_sql": "UPDATE products SET title = :title, price = :price WHERE id = :id",
+        "status": "CONVERTED",
         "reason": null
     },
     {
         "query_id": "Q006",
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\mixed_crud\\legacy\\06_dynamic_function.php",
         "source_line": 8,
-        "executor": "mysqli_query",
-        "sql_argument": "$sql",
-        "recovered_sql": "{{UNRESOLVED:buildQuery($table, $condition)}}",
         "operation": null,
-        "dynamic_variables": [],
         "status": "UNRESOLVED",
-        "reason_code": "UNKNOWN_EXPR",
         "reason": "Query contains unsupported dynamic expression."
     }
 ]

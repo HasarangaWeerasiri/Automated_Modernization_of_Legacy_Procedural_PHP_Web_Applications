@@ -160,3 +160,66 @@ def test_empty_report_when_all_queries_recovered():
     result = build_unresolved_report(queries)
 
     assert result == []
+
+def test_empty_report_when_all_queries_recovered():
+    queries = [
+        {
+            "query_id": "Q001",
+            "status": "RECOVERED",
+            "recovered_sql": "SELECT id FROM users",
+        }
+    ]
+
+    result = build_unresolved_report(queries)
+
+    assert result == []
+
+
+def test_unresolved_reason_code_is_preserved():
+    queries = [
+        {
+            "query_id": "Q005",
+            "source_file": "dynamic.php",
+            "source_line": 10,
+            "status": "UNRESOLVED",
+            "reason_code": "BRANCHING",
+            "reason": "SQL depends on conditional flow.",
+        }
+    ]
+
+    result = build_unresolved_report(queries)
+
+    assert len(result) == 1
+    assert result[0]["reason_code"] == "BRANCHING"
+    assert result[0]["action"] == "manual_review_required"
+
+
+def test_missing_reason_code_uses_fallback():
+    queries = [
+        {
+            "query_id": "Q006",
+            "source_file": "dynamic.php",
+            "source_line": 15,
+            "status": "UNRESOLVED",
+            "reason": "Unsupported dynamic expression.",
+        }
+    ]
+
+    result = build_unresolved_report(queries)
+
+    assert result[0]["reason_code"] == "UNKNOWN_EXPR"
+
+def test_missing_reason_code_uses_fallback():
+    queries = [
+        {
+            "query_id": "Q006",
+            "source_file": "dynamic.php",
+            "source_line": 15,
+            "status": "UNRESOLVED",
+            "reason": "Unsupported dynamic expression.",
+        }
+    ]
+
+    result = build_unresolved_report(queries)
+
+    assert result[0]["reason_code"] == "UNKNOWN_EXPR"

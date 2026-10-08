@@ -12,7 +12,7 @@
         ],
         "write_columns": [],
         "filter_columns": [],
-        "source_file": "..\\..\\benchmarks\\apps\\mixed_crud\\legacy\\01_select.php",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\mixed_crud\\legacy\\01_select.php",
         "source_line": 4,
         "status": "ANALYZED",
         "reason": null
@@ -32,7 +32,7 @@
         "filter_columns": [
             "id"
         ],
-        "source_file": "..\\..\\benchmarks\\apps\\mixed_crud\\legacy\\02_interpolation.php",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\mixed_crud\\legacy\\02_interpolation.php",
         "source_line": 7,
         "status": "ANALYZED",
         "reason": null
@@ -48,7 +48,7 @@
         "filter_columns": [
             "id"
         ],
-        "source_file": "..\\..\\benchmarks\\apps\\mixed_crud\\legacy\\03_concat.php",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\mixed_crud\\legacy\\03_concat.php",
         "source_line": 8,
         "status": "ANALYZED",
         "reason": null
@@ -66,7 +66,7 @@
         ],
         "write_columns": [],
         "filter_columns": [],
-        "source_file": "..\\..\\benchmarks\\apps\\mixed_crud\\legacy\\04_reassignment.php",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\mixed_crud\\legacy\\04_reassignment.php",
         "source_line": 7,
         "status": "ANALYZED",
         "reason": null
@@ -85,7 +85,7 @@
         "filter_columns": [
             "id"
         ],
-        "source_file": "..\\..\\benchmarks\\apps\\mixed_crud\\legacy\\05_update.php",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\mixed_crud\\legacy\\05_update.php",
         "source_line": 11,
         "status": "ANALYZED",
         "reason": null
@@ -97,7 +97,7 @@
         "read_columns": [],
         "write_columns": [],
         "filter_columns": [],
-        "source_file": "..\\..\\benchmarks\\apps\\mixed_crud\\legacy\\06_dynamic_function.php",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\mixed_crud\\legacy\\06_dynamic_function.php",
         "source_line": 8,
         "status": "UNRESOLVED",
         "reason": "Query contains unsupported dynamic expression."

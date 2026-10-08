@@ -1,0 +1,8 @@
+{
+    "total_queries": 5,
+    "recovered_queries": 2,
+    "converted_queries": 1,
+    "unresolved_queries": 3,
+    "conversion_unresolved": 4,
+    "output_directory": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\output\\hard_crud"
+}

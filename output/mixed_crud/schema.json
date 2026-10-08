@@ -1,0 +1,34 @@
+{
+    "tables": [
+        {
+            "name": "products",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "title",
+                    "data_type": "VARCHAR(255)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "price",
+                    "data_type": "DECIMAL(10,2)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        }
+    ]
+}
