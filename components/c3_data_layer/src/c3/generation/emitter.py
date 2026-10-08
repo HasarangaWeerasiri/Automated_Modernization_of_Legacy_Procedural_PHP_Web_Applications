@@ -1,4 +1,4 @@
-"""
+﻿"""
 Data Access Code Generator
 Component 3 - Data Layer Migration
 
@@ -100,9 +100,18 @@ def _build_function(query: dict) -> str:
 
     parameter_lines = []
 
+    like_wildcard_parameters = set(
+        query.get("like_wildcard_parameters", [])
+    )
+
     for parameter in parameters:
+        if parameter in like_wildcard_parameters:
+            value_expression = f'f"%{{{parameter}}}%"'
+        else:
+            value_expression = parameter
+
         parameter_lines.append(
-            f'        "{parameter}": {parameter},'
+            f'        "{parameter}": {value_expression},'
         )
 
     lines = [

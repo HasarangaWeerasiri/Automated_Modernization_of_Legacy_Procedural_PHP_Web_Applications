@@ -29,3 +29,9 @@ Thumbs.db
 # ============================================
 *.tmp
 *.log
+# ============================================
+# C3 MySQL behavioral validation results
+# ============================================
+**/tests/mysql_validation/legacy_results.json
+**/tests/mysql_validation/migrated_results.json
+**/tests/mysql_validation/comparison_report.json

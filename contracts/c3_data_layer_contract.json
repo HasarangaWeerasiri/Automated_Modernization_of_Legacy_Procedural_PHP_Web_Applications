@@ -1,0 +1,48 @@
+﻿{
+  "component_id": "C3",
+  "component_name": "Data Layer Migration",
+  "contract_version": "1.0.0",
+  "description": "Recover supported SQL from legacy procedural PHP and generate SQLAlchemy data-access artifacts and migration reports.",
+  "interface": {
+    "type": "python_cli",
+    "entry_point": "c3.cli",
+    "command": "python -m c3.cli run --php <php_directory> --schema <schema_file> --output <output_directory>",
+    "working_directory": "components/c3_data_layer",
+    "requirements": [
+      "Python environment with C3 dependencies installed",
+      "PHP executable available on PATH",
+      "C3 src directory available on PYTHONPATH"
+    ]
+  },
+  "inputs": {
+    "php_directory": {
+      "type": "directory",
+      "required": true
+    },
+    "schema_file": {
+      "type": "file",
+      "required": true
+    },
+    "output_directory": {
+      "type": "directory",
+      "required": true
+    }
+  },
+  "outputs": {
+    "models.py": "Generated SQLAlchemy models",
+    "data_access.py": "Generated SQLAlchemy data-access functions",
+    "queries.json": "Recovered SQL queries",
+    "converted_queries.json": "Converted SQL queries",
+    "schema.json": "Parsed database schema",
+    "column_usage.json": "Column usage report",
+    "unresolved_queries.json": "Unresolved queries",
+    "summary.json": "Migration summary"
+  },
+  "limitations": [
+    "Only supported SQL patterns are converted",
+    "Dynamic SQL may remain unresolved",
+    "The converter currently supports one referenced table per query",
+    "Generated code requires database validation",
+    "An existing database schema must be supplied"
+  ]
+}

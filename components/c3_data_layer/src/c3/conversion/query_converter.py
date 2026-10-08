@@ -27,43 +27,32 @@ QUOTED_PLACEHOLDER_PATTERN = re.compile(
     r"(['\"])\{\{([A-Za-z_][A-Za-z0-9_]*)\}\}\1"
 )
 
+LIKE_WILDCARD_PATTERN = re.compile(
+    r"(?i)\bLIKE\s+(['\"])%\{\{([A-Za-z_][A-Za-z0-9_]*)\}\}%\1"
+)
+
 def _parameterize_sql(sql: str) -> str:
     """
-    Convert recovery placeholders into SQLAlchemy
+    Convert recovered placeholders into SQLAlchemy
     named bind parameters.
 
-    Quoted dynamic placeholders have their legacy
-    SQL quotes removed.
-
-    Examples:
-        WHERE id = {{id}}
-            -> WHERE id = :id
-
-        name = '{{name}}'
-            -> name = :name
-
-        VALUES ('{{email}}', 'active')
-            -> VALUES (:email, 'active')
-
-    Static SQL string literals are preserved.
+    Handles quoted placeholders and simple LIKE
+    patterns with surrounding wildcards.
     """
 
-    # First handle placeholders surrounded by
-    # legacy SQL quotes.
-    parameterized = (
-        QUOTED_PLACEHOLDER_PATTERN.sub(
-            lambda match: ":" + match.group(2),
-            sql,
-        )
+    parameterized = LIKE_WILDCARD_PATTERN.sub(
+        lambda match: "LIKE :" + match.group(2),
+        sql,
     )
 
-    # Then handle unquoted placeholders such as
-    # numeric IDs and numeric values.
-    parameterized = (
-        PLACEHOLDER_PATTERN.sub(
-            lambda match: ":" + match.group(1),
-            parameterized,
-        )
+    parameterized = QUOTED_PLACEHOLDER_PATTERN.sub(
+        lambda match: ":" + match.group(2),
+        parameterized,
+    )
+
+    parameterized = PLACEHOLDER_PATTERN.sub(
+        lambda match: ":" + match.group(1),
+        parameterized,
     )
 
     return parameterized
@@ -178,11 +167,21 @@ def convert_query(query: dict) -> dict:
         )
     )
 
+    like_wildcard_parameters = _unique(
+        [
+            match.group(2)
+            for match in LIKE_WILDCARD_PATTERN.finditer(
+                recovered_sql
+            )
+        ]
+    )
+
     return {
         **base_result,
         "operation": operation,
         "table": tables[0],
         "parameters": parameters,
+        "like_wildcard_parameters": like_wildcard_parameters,
         "parameterized_sql": parameterized_sql,
         "status": "CONVERTED",
         "reason": None,
