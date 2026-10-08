@@ -35,3 +35,17 @@ Thumbs.db
 **/tests/mysql_validation/legacy_results.json
 **/tests/mysql_validation/migrated_results.json
 **/tests/mysql_validation/comparison_report.json
+
+# ============================================
+# C3 mixed CRUD validation results
+# ============================================
+**/tests/mysql_validation/mixed_legacy_results.json
+**/tests/mysql_validation/mixed_migrated_results.json
+**/tests/mysql_validation/mixed_comparison_report.json
+
+# ============================================
+# C3 hard CRUD validation results
+# ============================================
+**/tests/mysql_validation/hard_legacy_results.json
+**/tests/mysql_validation/hard_migrated_results.json
+**/tests/mysql_validation/hard_comparison_report.json
