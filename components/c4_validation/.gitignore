@@ -1,0 +1,23 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.hypothesis/
+*.egg-info/
+
+# Environment files
+.env
+.env.*
+.env.example
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Benchmark source and seed dumps: used under their own licences, not redistributed.
+# Each app is restored from benchmarks/PINS.md.
+benchmarks/*/

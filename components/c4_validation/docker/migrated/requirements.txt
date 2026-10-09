@@ -1,0 +1,6 @@
+# Runtime of the migrated application container (not of the engine).
+fastapi==0.143.0
+uvicorn==0.54.0
+SQLAlchemy==2.1.4
+PyMySQL==1.2.3
+cryptography==50.0.2

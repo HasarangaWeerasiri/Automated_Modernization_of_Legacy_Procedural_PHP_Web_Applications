@@ -1,0 +1,26 @@
+# Python 3.11 or newer.
+
+# HTTP driver for both systems
+requests==2.34.2
+
+# Database snapshots, reset and delta
+SQLAlchemy==2.1.4
+PyMySQL==1.2.3
+cryptography==50.0.2
+pandas==3.0.6
+
+# Value extraction from legacy HTML
+beautifulsoup4==4.15.0
+
+# Scenario generation
+hypothesis==6.168.5
+Faker==40.41.0
+
+# Harness generation and comparison
+Jinja2==3.1.6
+deepdiff==9.1.0
+
+# Execution and container lifecycle
+pytest==9.1.1
+docker==7.2.0
+python-dotenv==1.2.4

@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "c4-validation"
+version = "0.1.0"
+description = "Component 4: Behavioural Equivalence Validation Engine"
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+# tests/ holds tests OF the engine. Restricting collection to it keeps benchmark
+# sources and other components' tests out of a C4 run.
+testpaths = ["tests"]
+pythonpath = ["src"]

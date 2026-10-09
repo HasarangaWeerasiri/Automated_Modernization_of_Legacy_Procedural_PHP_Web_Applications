@@ -1,0 +1,84 @@
+# C4 validation environment: the legacy system and the migrated system side by side.
+#
+# Normal use goes through the engine, which supplies every variable from config.py:
+#
+#   python -m c4.containers up
+#
+# To run Compose by hand, pass the same two files the engine reads:
+#
+#   docker compose --env-file .env --env-file benchmarks/<app>.env up -d --build
+#
+# .env                  machine-local settings (copy from .env.example)
+# benchmarks/<app>.env  which benchmark application to run
+#
+# The defaults written here must match DEFAULTS in src/c4/config.py.
+
+name: c4
+
+services:
+  legacy-db:
+    image: mysql:5.7
+    container_name: c4-legacy-db
+    environment:
+      # Benchmarks connect as root with an empty password. The port below is
+      # bound to loopback only, so this account is not reachable from the network.
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: ${C4_LEGACY_DB_NAME:?set in benchmarks/<app>.env}
+    ports:
+      - "127.0.0.1:${C4_LEGACY_DB_PORT:-3307}:3306"
+    volumes:
+      - ${C4_LEGACY_SEED:?set in benchmarks/<app>.env}:/docker-entrypoint-initdb.d/seed.sql:ro
+      - legacy-db-socket:/var/run/mysqld
+    healthcheck:
+      # TCP, not the socket: the image's temporary init server is socket-only, so
+      # this passes only once the seed has loaded and the real server is up.
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "--silent"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+
+  legacy-web:
+    build: ./docker/legacy
+    container_name: c4-legacy-web
+    ports:
+      - "127.0.0.1:${C4_LEGACY_WEB_PORT:-8080}:80"
+    volumes:
+      # Read-only: a benchmark is never modified, not even by itself.
+      - ${C4_LEGACY_DOCROOT:?set in benchmarks/<app>.env}:/var/www/html:ro
+      - legacy-db-socket:/var/run/mysqld
+    depends_on:
+      legacy-db:
+        condition: service_healthy
+
+  migrated-db:
+    image: mysql:8.0
+    container_name: c4-migrated-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${C4_MIGRATED_DB_PASSWORD:-c4migrated}
+      MYSQL_DATABASE: ${C4_MIGRATED_DB_NAME:-${C4_LEGACY_DB_NAME}}
+    ports:
+      - "127.0.0.1:${C4_MIGRATED_DB_PORT:-3308}:3306"
+    volumes:
+      # The same dump as the legacy side unless a benchmark says otherwise (FR2).
+      - ${C4_MIGRATED_SEED:-${C4_LEGACY_SEED}}:/docker-entrypoint-initdb.d/seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+
+  migrated-api:
+    build: ./docker/migrated
+    container_name: c4-migrated-api
+    environment:
+      DATABASE_URL: mysql+pymysql://root:${C4_MIGRATED_DB_PASSWORD:-c4migrated}@migrated-db:3306/${C4_MIGRATED_DB_NAME:-${C4_LEGACY_DB_NAME}}
+    ports:
+      - "127.0.0.1:${C4_MIGRATED_API_PORT:-8000}:8000"
+    volumes:
+      - ${C4_MIGRATED_APP:-./stub_api}:/app:ro
+    depends_on:
+      migrated-db:
+        condition: service_healthy
+
+volumes:
+  legacy-db-socket:
