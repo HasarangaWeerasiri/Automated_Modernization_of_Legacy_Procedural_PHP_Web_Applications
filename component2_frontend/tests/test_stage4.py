@@ -68,8 +68,8 @@ def canonical(report):
     ids = {}
 
     def walk(value, key=None):
-        if isinstance(value, dict):
-            return {k: walk(v, k) for k, v in value.items() if k != "entrypoint"}
+        if isinstance(value, dict):  # the two pages are different files, so "file" differs too
+            return {k: walk(v, k) for k, v in value.items() if k not in ("entrypoint", "file")}
         if isinstance(value, list):
             return [walk(v, key) for v in value]
         if key in ("nodeId", "queryNodeId") and value:
@@ -159,7 +159,8 @@ def test_matched_needs_carry_an_unverified_type(name, reports):
 
 def test_list_rows_are_matched_against_the_array_item_schema(reports):
     report = reports["list_while"]
-    assert report.collections == ((report.results[0].need.row_of, "appointments"),)
+    (collection,) = report.collection_results
+    assert (collection.component_id, collection.schema_property) == (report.results[0].need.row_of, "appointments")
     assert all(r.schema_property.startswith("appointments[].") for r in results(report, "matched"))
 
 
@@ -186,10 +187,123 @@ def test_two_runs_give_byte_identical_json(name, reports):
 
 
 def test_summary_line_has_the_spec_format(reports):
+    """Spec v0.2 section 2.4, collections counted apart from field needs."""
     assert summary(reports["list_while"]) == (
-        "[Stage 4] 11 needs: 10 matched, 1 missing, 0 excluded, 0 cannot reconcile · 2 unused")
-    pattern = r"\[Stage 4\] \d+ needs: \d+ matched, \d+ missing, \d+ excluded, \d+ cannot reconcile · \d+ unused"
+        "[Stage 4] 11 needs: 10 matched, 1 missing, 0 excluded, 0 cannot reconcile · 1 collection mapped · 2 unused")
+    assert "· 0 collections mapped ·" in summary(reports["admin"])
+    assert "· 0 of 3 collections mapped ·" in summary(reports["wp_view"])
+    pattern = (r"\[Stage 4\] \d+ needs: \d+ matched, \d+ missing, \d+ excluded, \d+ cannot reconcile"
+               r" · (\d+ collections? mapped|\d+ of \d+ collections mapped) · \d+ unused")
     assert all(re.fullmatch(pattern, summary(r)) for r in reports.values())
+
+
+# ---------------------------------------------------------------- v0.2 (b) collection results
+
+
+@pytest.mark.parametrize("name", ["list_while", "list_foreach", "detail"])
+def test_collection_of_a_mapped_list_page_is_mapped(name, reports):
+    (collection,) = reports[name].collection_results
+    assert (collection.result, collection.reason, collection.schema_property) == ("mapped", "mapped", "appointments")
+    assert collection.need.kind == "collection"
+    assert all(r.need.kind != "collection" for r in reports[name].results), "not mixed with field needs"
+    assert (reports[name].counts.collections_mapped, reports[name].counts.collections_cannot_reconcile) == (1, 0)
+
+
+@pytest.mark.parametrize("name, lists", [("edge_cases", 1), ("wp_guestbook", 1), ("wp_view", 3)])
+def test_collection_of_an_unmapped_page_cannot_be_reconciled(name, lists, reports):
+    collections = reports[name].collection_results
+    assert len(collections) == lists
+    assert {(c.result, c.reason) for c in collections} == {("cannot_reconcile", "no_endpoint")}
+
+
+def test_several_lists_and_one_array_cannot_be_mapped(tmp_path):
+    """wp_view has three Lists; pointed at a one-array response, which array holds which rows is undecidable."""
+    view = json.loads((MOCKS / "timeline_wp_view.json").read_text(encoding="utf-8"))["entrypoint"]
+    endpoint_map = {**ENDPOINT_MAP, view: ENDPOINT_MAP["legacy-apps/hms/admin-panel1.php"]}
+    report = run("wp_view", endpoint_map=endpoint_map)
+    assert {(c.result, c.reason) for c in report.collection_results} == {
+        ("cannot_reconcile", "list_not_mapped_to_array")}
+
+
+def test_endpoint_missing_from_the_contract_cannot_be_reconciled():
+    ref = ENDPOINT_MAP["legacy-apps/hms/admin-panel1.php"]
+    endpoint_map = {**ENDPOINT_MAP, "legacy-apps/hms/admin-panel1.php": type(ref)("get", "/api/nowhere", "200",
+                                                                                  "application/json")}
+    report = run("list_while", endpoint_map=endpoint_map)
+    assert {(r.result, r.reason) for r in report.results} == {("cannot_reconcile", "endpoint_not_in_contract")}
+    assert {(c.result, c.reason) for c in report.collection_results} == {
+        ("cannot_reconcile", "endpoint_not_in_contract")}
+
+
+# ---------------------------------------------------------------- v0.2 (c) needs from abstained content
+
+
+def test_needs_inside_an_abstained_guard_are_marked(reports):
+    admin = {r.need.name: r for r in reports["admin"].results}
+    assert admin["total"].need.from_abstained and admin["revenue"].need.from_abstained
+    assert admin["$_SESSION['role']"].need.from_abstained, "echoed inside the authorization guard"
+    assert not admin["$username"].need.from_abstained, "echoed before the guard"
+    assert (admin["total"].result, admin["total"].schema_property) == ("matched", "total"), "still reconciled"
+
+
+def test_abstained_marking_reaches_the_json_and_the_cli(reports):
+    written = report_to_dict(reports["edge_cases"])
+    marked = {r["need"]["name"] for r in written["results"] if r["fromAbstained"]}
+    assert marked == {"doctor", "prescription", "docFees", "$_GET['ID']"}
+    assert written["collections"][0]["fromAbstained"] is True
+    proc = subprocess.run(
+        [sys.executable, "src/main.py", "--timeline", "mocks/timeline_edge_cases.json",
+         "--labels", "mocks/labels_edge_cases.json", "--stage", "4"],
+        cwd=ROOT, capture_output=True, encoding="utf-8", check=True,
+        env={**os.environ, "PYTHONUTF8": "1", "COLUMNS": "200"},
+    )
+    rows = {line.split()[2]: line for line in proc.stdout.splitlines() if line.lstrip().startswith(("Item", "Page"))}
+    assert rows["doctor"].rstrip().endswith("yes") and not rows["$settings['hospital_name']"].rstrip().endswith("yes")
+
+
+@pytest.mark.parametrize("name", ["list_while", "detail", "wp_guestbook"])
+def test_nothing_is_marked_abstained_where_stage2_did_not_abstain(name, reports):
+    report = reports[name]
+    assert not any(r.need.from_abstained for r in report.results + report.collection_results)
+
+
+# ---------------------------------------------------------------- v0.2 (d) unused is a lower bound
+
+
+def test_unused_note_is_in_the_json_and_printed_under_the_table(reports):
+    assert report_to_dict(reports["list_while"])["unusedNote"].startswith(
+        "unused = not referenced by output reads; condition reads are not visible yet")
+    assert report_to_dict(reports["list_while"])["unused"] == ["appointments[].userStatus",
+                                                               "appointments[].doctorStatus"]
+    proc = subprocess.run(
+        [sys.executable, "src/main.py", "--timeline", "mocks/timeline_list_while.json",
+         "--labels", "mocks/labels_list_while.json", "--stage", "4"],
+        cwd=ROOT, capture_output=True, encoding="utf-8", check=True, env={**os.environ, "PYTHONUTF8": "1"},
+    )
+    assert "unused = not referenced by output reads; condition reads are not visible yet" in proc.stdout
+
+
+# ---------------------------------------------------------------- v0.2 (e) source lines
+
+
+def test_contact_is_reported_at_its_real_line(reports):
+    (missing,) = results(reports["list_while"], "missing")
+    (reference,) = missing.need.references
+    assert (reference.file, reference.line) == ("legacy-apps/hms/admin-panel1.php", 468)
+
+
+def test_a_node_without_loc_gets_no_line(tmp_path):
+    doc = json.loads((MOCKS / "timeline_list_while.json").read_text(encoding="utf-8"))
+    for entry in doc["sequence"]:
+        entry.pop("loc")
+    path = tmp_path / "timeline_list_while.json"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    timeline = load_timeline(path)
+    tree = infer_boundaries(isolate_presentation(timeline, load_labels(MOCKS / "labels_list_while.json")),
+                            timeline, CONFIG)
+    report = reconcile(recover_requirements(tree, timeline), CONTRACT, ENDPOINT_MAP)
+    assert all(ref.line is None for r in report.results for ref in r.need.references)
+    assert summary(report) == summary(run("list_while")), "loc changes lines only, never a decision"
 
 
 def test_cli_stage_all_prints_every_stage_and_the_missing_table(reports):

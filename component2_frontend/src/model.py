@@ -71,6 +71,16 @@ class Enclosure:
 
 
 @dataclass(frozen=True)
+class Loc:
+    """Where a node is in its source file (the shape of Member 01's AST node envelope)."""
+
+    start_line: int
+    end_line: int
+    start_col: int
+    end_col: int
+
+
+@dataclass(frozen=True)
 class OutputNode:
     """One output statement (Stmt_InlineHTML / Stmt_Echo / Expr_Print)."""
 
@@ -79,6 +89,7 @@ class OutputNode:
     raw: str | None  # Stmt_InlineHTML only, byte-exact
     reads: tuple[Read, ...]  # Stmt_Echo / Expr_Print only
     enclosed_by: tuple[Enclosure, ...]  # outermost first
+    loc: Loc | None = None  # optional: absent when the timeline does not give it; never guessed
 
 
 @dataclass(frozen=True)
@@ -248,10 +259,12 @@ class EndpointRef:
 
 @dataclass(frozen=True)
 class NeedReference:
-    node_id: str  # the output node whose read gave the need
-    line: int | None  # its source line; None: schema 1.0 timelines carry no line per output node
+    node_id: str  # the output node whose read gave the need (for a collection: the loop)
+    line: int | None  # the node's loc.startLine; None when the timeline gives no loc for it
     expr: str  # the read as written, e.g. "$row['contact']"
     wrappers: tuple[str, ...] = ()  # functions applied around it, outermost first, e.g. ("h",)
+    file: str = ""  # the timeline's entrypoint
+    from_abstained: bool = False  # the output node is inside a Stage 2 Abstain node
 
 
 @dataclass(frozen=True)
@@ -268,6 +281,8 @@ class Need:
     source_kind: str | None = None  # context only: session | request | server
     flag: str | None = None  # ambiguous_needs_schema | unresolved_read
     item_component: str | None = None  # collection only: the List's Item component id
+    # Every reference comes from inside a Stage 2 Abstain node: the boundary around it was not decided.
+    from_abstained: bool = False
 
 
 @dataclass(frozen=True)
@@ -292,28 +307,30 @@ class NeedResult:
     component_id: str
     component_type: str
     need: Need
-    result: str  # matched | missing | excluded | cannot_reconcile
+    result: str  # field needs: matched | missing | excluded | cannot_reconcile; collections: mapped | cannot_reconcile
     reason: str  # e.g. missing_in_contract, session, no_endpoint
-    schema_property: str | None = None  # the property matched, e.g. "appointments[].doctor"
+    schema_property: str | None = None  # the property matched or mapped, e.g. "appointments[].doctor"
     type: str | None = None  # matched only: "unverified" until C3's schema is available
     hint: str | None = None  # missing only: a property equal to the column except for case
 
 
 @dataclass(frozen=True)
 class ReconciliationCounts:
-    needs: int
+    needs: int  # field, ambiguous, unresolved and context needs; collections are counted apart
     matched: int
     missing: int
     excluded: int
     cannot_reconcile: int
     unused: int
+    collections_mapped: int
+    collections_cannot_reconcile: int
 
 
 @dataclass(frozen=True)
 class ReconciliationReport:
     entrypoint: str
     endpoint: EndpointRef | None
-    results: tuple[NeedResult, ...]  # in component order, then need order
-    collections: tuple[tuple[str, str | None], ...]  # (List component id, array property it reads, or None)
-    unused: tuple[str, ...]  # contract properties no component needs
+    results: tuple[NeedResult, ...]  # field / ambiguous / unresolved / context needs: component order, need order
+    collection_results: tuple[NeedResult, ...]  # one per List: mapped or cannot_reconcile
+    unused: tuple[str, ...]  # contract properties no output read references (a lower bound, see UNUSED_NOTE)
     counts: ReconciliationCounts

@@ -6,13 +6,25 @@
       "id": "f003#00000",
       "kind": "Stmt_InlineHTML",
       "raw": "<!DOCTYPE html>\n",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 1,
+        "endLine": 1,
+        "startCol": 1,
+        "endCol": 16
+      }
     },
     {
       "id": "f003#00032",
       "kind": "Stmt_InlineHTML",
       "raw": "<html lang=\"en\">\n  <body style=\"padding-top:50px;\">\n   <div class=\"container-fluid\" style=\"margin-top:50px;\">\n    <h3 style = \"margin-left: 40%;  padding-bottom: 20px; font-family: 'IBM Plex Sans', sans-serif;\"> Welcome &nbsp",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 7,
+        "endLine": 10,
+        "startCol": 1,
+        "endCol": 115
+      }
     },
     {
       "id": "f003#00034",
@@ -27,13 +39,25 @@
           "source": null
         }
       ],
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 10,
+        "endLine": 10,
+        "startCol": 122,
+        "endCol": 135
+      }
     },
     {
       "id": "f003#00039",
       "kind": "Stmt_InlineHTML",
       "raw": "   </h3>\n",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 11,
+        "endLine": 11,
+        "startCol": 1,
+        "endCol": 9
+      }
     },
     {
       "id": "f003#00096",
@@ -47,7 +71,13 @@
           "branch": "then",
           "condNodeId": "f003#00044"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 17,
+        "endLine": 18,
+        "startCol": 1,
+        "endCol": 30
+      }
     },
     {
       "id": "f003#00098",
@@ -77,7 +107,13 @@
           "branch": "then",
           "condNodeId": "f003#00044"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 18,
+        "endLine": 18,
+        "startCol": 37,
+        "endCol": 57
+      }
     },
     {
       "id": "f003#00106",
@@ -91,7 +127,13 @@
           "branch": "then",
           "condNodeId": "f003#00044"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 18,
+        "endLine": 19,
+        "startCol": 60,
+        "endCol": 32
+      }
     },
     {
       "id": "f003#00108",
@@ -121,7 +163,13 @@
           "branch": "then",
           "condNodeId": "f003#00044"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 19,
+        "endLine": 19,
+        "startCol": 39,
+        "endCol": 61
+      }
     },
     {
       "id": "f003#00116",
@@ -135,7 +183,13 @@
           "branch": "then",
           "condNodeId": "f003#00044"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 19,
+        "endLine": 20,
+        "startCol": 65,
+        "endCol": 22
+      }
     },
     {
       "id": "f003#00118",
@@ -160,7 +214,13 @@
           "branch": "then",
           "condNodeId": "f003#00044"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 20,
+        "endLine": 20,
+        "startCol": 29,
+        "endCol": 51
+      }
     },
     {
       "id": "f003#00126",
@@ -174,7 +234,13 @@
           "branch": "then",
           "condNodeId": "f003#00044"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 20,
+        "endLine": 21,
+        "startCol": 54,
+        "endCol": 11
+      }
     },
     {
       "id": "f003#00135",
@@ -188,7 +254,13 @@
           "branch": "else",
           "condNodeId": "f003#00044"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 23,
+        "endLine": 23,
+        "startCol": 1,
+        "endCol": 77
+      }
     },
     {
       "id": "f003#00157",
@@ -202,13 +274,25 @@
           "branch": "then",
           "condNodeId": "f003#00144"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 26,
+        "endLine": 26,
+        "startCol": 1,
+        "endCol": 71
+      }
     },
     {
       "id": "f003#00162",
       "kind": "Stmt_InlineHTML",
       "raw": "   </div>\n  </body>\n</html>\n",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 28,
+        "endLine": 30,
+        "startCol": 1,
+        "endCol": 8
+      }
     }
   ],
   "queries": {
@@ -241,6 +325,7 @@
       1,
       30
     ],
-    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
+    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not)."
   }
 }

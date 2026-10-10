@@ -208,6 +208,7 @@ No-output loops (R-L5): admin-panel.php 146, 315 (inside `<!-- -->`). String-bui
 10. For a C-style `for` loop (`for ($i=0; $i<count($p); $i++) { $pic = $p[$i]; … }`), what are `iterExpr`, `valueVar`, `keyVar`?
 11. Does the DFG follow values through class methods in other files (e.g. `Guestbook::get_all_guestbooks()`)? If not, every WackoPicko read stays `unresolved`.
 12. How is a static property read (`Users::$VIEW_URL`) represented?
+13. Can timeline sequence entries carry `loc` (same shape as the AST node envelope: `startLine`, `endLine`, `startCol`, `endCol`)? Flag reports need file and line (NFR4).
 
 **For Component 1:** HMS never includes `include/checklogin.php`, so it has no working login gate.
 **For Component 4:** WackoPicko has intentionally unescaped output (`<?= $comment['text'] ?>`, `<?= $guest["comment"] ?>`). React escapes by default, so this output will differ — an expected, intended difference. WackoPicko uses `mysql_*` → needs PHP 5.x to run for runtime capture.

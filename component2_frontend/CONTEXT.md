@@ -1,6 +1,6 @@
 # Component 2 — Agent Context (read this first, every task)
 
-_Version 5 — 7 Oct 2026 (updated after the Stage 2 fix-up review)._
+_Version 6 — 8 Oct 2026 (updated after the Stage 3–4 review)._
 
 This file is the handoff between the research chat and the coding agent. It records decisions
 already made. **Do not change a decision recorded here.** If something here looks wrong or a task
@@ -29,9 +29,9 @@ SQLAlchemy (data). Anything the tool cannot resolve is **flagged, not guessed** 
 |---|---|---|---|
 | 1 | Presentation isolation | timeline + labels → a status for **every node the timeline mentions** (output nodes, guards, loops, queries, fetches), each output node keeping its full enclosure chain | **Done** (commit `1d91be0`) |
 | 2 | Boundary inference | Stage 1 result → component tree, using `docs/php-analysis/boundary-rules.md` | **Done** (`cf56444`, `65674b8`) |
-| 3 | Data requirement recovery | per component: union of its output nodes' `reads` → fields needed | **Next** — spec in `docs/reconciliation-spec.md`. Built on the HMS mocks; real input needs the DFG |
-| 4 | Contract reconciliation | needs vs contract → matched / missing / unused / excluded / cannot reconcile | **Next** — spec in `docs/reconciliation-spec.md`. Mocks (`contact` gap); real `SELECT *` needs C3 schema |
-| 5 | Generation | Next.js **Server Components** (`.tsx`) + typed fetch layer | Later |
+| 3 | Data requirement recovery | per component: union of its output nodes' `reads` → fields needed | **Done on mocks** — spec `docs/reconciliation-spec.md` v0.2. Real input needs the DFG |
+| 4 | Contract reconciliation | needs vs contract → matched / missing / unused / excluded / cannot reconcile | **Done on mocks** (`contact` gap found). Real `SELECT *` needs C3 schema; real evidence needs C1's contract + endpoint map |
+| 5 | Generation | Next.js **Server Components** (`.tsx`) + typed fetch layer | **Next** (spec to come) |
 
 Inline JS / AJAX is **out of scope**: detect and flag it, never convert it.
 Everything is generated as a Server Component, **by construction**.
@@ -88,15 +88,16 @@ label keys use `nodeId`; field naming pending Member 01's confirmation — the l
 | Rule discovery | HMS (`legacy-apps/hms`), WackoPicko (`legacy-apps/wackopicko`, MIT, PHP under `website/`). Pinned commits are recorded in `legacy-apps/PINS.md` | Read, build mocks, test |
 | Evaluation | crud-php-mysqli, PHP-MySQL-CRUD-Application (+ more to come) | **Do not open, read or build mocks from these.** They stay locked until the owner **freezes** the boundary rules (the rules doc header says *Frozen*). Finishing a stage does not unlock them |
 
-## 6. Repo state (as of 7 Oct 2026)
+## 6. Repo state (as of 8 Oct 2026)
 
-- Branch `frontend-migration-`. Latest: `65674b8` (Stage 2 v0.3 decisions), `b695210` (CONTEXT v4 + rules v0.3) — both local, not pushed. `cf56444` ("stage 2 is almost done", pushed by the owner) holds the main Stage 2 work.
+- Branch `frontend-migration-`. Pushed: `65674b8` (Stage 2 v0.3 decisions), `b695210` (CONTEXT v4 + rules v0.3), `cf56444` (main Stage 2 work). Stage 3–4 committed by the owner (see `git log`).
+- Substitute endpoint map: `mocks/endpoint_map.json` (maps only list_while, list_foreach, admin, detail; others → `no_endpoint`). The contract and map were both written by the agent, so the `contact` gap is planted, not discovered.
   History was rewritten on 19 Sep (commit trailers removed): old `20d5e2a` = `fdc62b3`, `878df5c` = `1d91be0`, `c9c9535` = `a7cdedc`.
 - Mocks: `timeline_{list_while,list_foreach,admin,detail,edge_cases}.json`, `labels_*.json` (5), `sample_contract.json`, legacy `sample_ast.json` (untouched).
 - WackoPicko mocks: `{timeline,labels}_wp_{guestbook,view,login,header,thumbnails}.json` (generated). Their **labels are generator placeholders**, not C1 output, and every WackoPicko read is `unresolved` (data comes through class methods in `include/*.php`). Use them for Stage 2 only.
 - Deliberate contract gap: field **`contact`** (flagged on list pages only). `sku` appears in no schema.
 - `undecided` nodes: edge_cases (1, `auth_or_display`), wp_login (1, placeholder `logic_or_display`), wp_thumbnails (1, placeholder `logic_or_display`).
-- Tests: 228 passing (after the Stage 2 fix-up). The Stage 2 CLI test forces UTF-8 (the owner's Windows console uses code page cp932). Extra fixtures: `tests/fixtures/{timeline,labels}_unlabelled.json`, `tests/fixtures/{timeline,labels}_switch_case.json` (`caseNodeId`, `Stmt_Switch` are placeholders).
+- Tests: 337 passing (after Stages 3–4). The Stage 2 CLI test forces UTF-8 (the owner's Windows console uses code page cp932). Extra fixtures: `tests/fixtures/{timeline,labels}_unlabelled.json`, `tests/fixtures/{timeline,labels}_switch_case.json` (`caseNodeId`, `Stmt_Switch` are placeholders).
 - Loader: accepts `iteration`, `branch`, `switch_case`, `try_catch` roles (unknown fields of the last two kept as opaque `extra`); rejects any other role as format drift. `queries` map optional; validated only when present.
 - Review nodes in list_while / list_foreach / detail = the loop itself, `mixed`, reason `fetch_in_loop_header` (expected; rule 4a).
   Generator `tools/gen_timelines.py` needs PHP and HMS at `777fda4`.

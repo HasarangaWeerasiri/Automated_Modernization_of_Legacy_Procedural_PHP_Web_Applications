@@ -6,19 +6,37 @@
       "id": "f006#00139",
       "kind": "Stmt_InlineHTML",
       "raw": "\n",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 24,
+        "endLine": 24,
+        "startCol": 1,
+        "endCol": 1
+      }
     },
     {
       "id": "f006#00148",
       "kind": "Stmt_InlineHTML",
       "raw": "\n<div class=\"column prepend-1 span-24 first last\">\n<h2>Guestbook</h2>\n",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 26,
+        "endLine": 28,
+        "startCol": 1,
+        "endCol": 19
+      }
     },
     {
       "id": "f006#00156",
       "kind": "Stmt_InlineHTML",
       "raw": "<h4>See what people are saying about us!</h4>\n\n",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 30,
+        "endLine": 31,
+        "startCol": 1,
+        "endCol": 1
+      }
     },
     {
       "id": "f006#00180",
@@ -41,7 +59,13 @@
           "valueVar": "$guest",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 38,
+        "endLine": 38,
+        "startCol": 1,
+        "endCol": 20
+      }
     },
     {
       "id": "f006#00181",
@@ -75,7 +99,13 @@
           "valueVar": "$guest",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 38,
+        "endLine": 38,
+        "startCol": 21,
+        "endCol": 41
+      }
     },
     {
       "id": "f006#00189",
@@ -98,7 +128,13 @@
           "valueVar": "$guest",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 38,
+        "endLine": 39,
+        "startCol": 45,
+        "endCol": 10
+      }
     },
     {
       "id": "f006#00190",
@@ -142,7 +178,13 @@
           "valueVar": "$guest",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 39,
+        "endLine": 39,
+        "startCol": 11,
+        "endCol": 32
+      }
     },
     {
       "id": "f006#00202",
@@ -165,13 +207,25 @@
           "valueVar": "$guest",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 39,
+        "endLine": 40,
+        "startCol": 36,
+        "endCol": 1
+      }
     },
     {
       "id": "f006#00213",
       "kind": "Stmt_InlineHTML",
       "raw": "\n\n\n\n<form action=\"",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 45,
+        "endLine": 49,
+        "startCol": 1,
+        "endCol": 14
+      }
     },
     {
       "id": "f006#00214",
@@ -196,13 +250,25 @@
           ]
         }
       ],
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 49,
+        "endLine": 49,
+        "startCol": 15,
+        "endCol": 47
+      }
     },
     {
       "id": "f006#00224",
       "kind": "Stmt_InlineHTML",
       "raw": "\" method=\"POST\">\n   Name: <br>\n   <input type=\"text\" name=\"name\" /><br>\n   Comment: <br>\n   <textarea id=\"comment-box\" name=\"comment\"></textarea> <br>\n   <input type=\"submit\" value=\"Submit\" />\n</form>\n\n\n</div>\n",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 49,
+        "endLine": 58,
+        "startCol": 50,
+        "endCol": 7
+      }
     }
   ],
   "queries": {},
@@ -221,6 +287,7 @@
       24,
       58
     ],
-    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
+    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not)."
   }
 }

@@ -20,8 +20,14 @@ List also gets one collection need: the loop it iterates and the query that
 loop reads, found from the reads of the loop's value variable.
 
 Needs are de-duplicated per component and kept in first-appearance order.
-Timelines carry no source line per output node, so every reference's line
-is None.
+Every reference carries the file (the timeline's entrypoint) and the line
+from the output node's loc.startLine; a node without loc gets line None,
+never a guess. A collection's reference is its loop, which has no loc, so
+its line is None.
+
+Needs from content inside a Stage 2 Abstain node are kept (the data is still
+rendered) and marked: each reference carries from_abstained, and a need is
+from_abstained when all of its references are (spec section 1.2a).
 """
 
 import json
@@ -98,7 +104,8 @@ def recover_requirements(component_tree: ComponentTree, timeline: Timeline) -> R
     collections: dict[str, dict] = {}  # List component id -> its collection need, filled as rows are read
 
     def visit(node: ComponentNode, component_id: str, owner: _Component | None, row_of: str | None,
-              parent_list: str | None) -> None:
+              parent_list: str | None, abstained: bool) -> None:
+        abstained = abstained or node.type == "Abstain"
         if node.type in COMPONENT_TYPES:
             if node.type == "Item":
                 row_of = parent_list
@@ -108,29 +115,35 @@ def recover_requirements(component_tree: ComponentTree, timeline: Timeline) -> R
                 loop = loops.get(node.source_ids[0]) if node.source_ids else None
                 item = next((f"{component_id}.{i}" for i, c in enumerate(node.children) if c.type == "Item"), None)
                 collections[component_id] = {
-                    "loop": loop, "item": item, "row_of": row_of, "queries": [],
-                    "reference": NeedReference(loop.node_id if loop else "", None, loop.iter_expr if loop else "")}
+                    "loop": loop, "item": item, "row_of": row_of, "queries": [], "from_abstained": abstained,
+                    "reference": NeedReference(node_id=loop.node_id if loop else "", line=None,
+                                               expr=loop.iter_expr if loop else "", file=timeline.entrypoint,
+                                               from_abstained=abstained)}
                 parent_list = component_id
         if node.type == "Static" and node.rule == "R-L3":  # an inline map's body is the List's row
             row_of = parent_list
         if not node.children:
             for node_id in node.node_ids:
+                loc = outputs[node_id].loc
                 for read in outputs[node_id].reads:
                     for base, wrappers in _base_reads(read):
                         classified = _classify(base)
                         if classified is None:
                             continue
                         key, fields = classified
-                        owner.add(key, fields, NeedReference(node_id, None, base.expr, wrappers), row_of)
+                        reference = NeedReference(
+                            node_id=node_id, line=loc.start_line if loc else None, expr=base.expr,
+                            wrappers=wrappers, file=timeline.entrypoint, from_abstained=abstained)
+                        owner.add(key, fields, reference, row_of)
                         collection = collections.get(row_of)
                         if (collection and collection["loop"] and base.var == collection["loop"].value_var
                                 and base.source is not None
                                 and base.source.query_node_id not in collection["queries"]):
                             collection["queries"].append(base.source.query_node_id)
         for index, child in enumerate(node.children):
-            visit(child, f"{component_id}.{index}", owner, row_of, parent_list)
+            visit(child, f"{component_id}.{index}", owner, row_of, parent_list, abstained)
 
-    visit(component_tree.root, "0", None, None, None)
+    visit(component_tree.root, "0", None, None, None, False)
 
     result = []
     for component in components:
@@ -143,10 +156,12 @@ def recover_requirements(component_tree: ComponentTree, timeline: Timeline) -> R
                 kind="collection", name=(loop.value_var or loop.node_id) if loop else "",
                 references=(collection["reference"],), row_of=collection["row_of"],
                 query_node_id=queries[0] if len(queries) == 1 else None,
-                flag=None if len(queries) == 1 else "unresolved_read", item_component=collection["item"]))
+                flag=None if len(queries) == 1 else "unresolved_read", item_component=collection["item"],
+                from_abstained=collection["from_abstained"]))
         for entry in component.needs.values():
             references = tuple(entry.pop("references"))
-            needs.append(Need(references=references, **entry))
+            needs.append(Need(references=references, from_abstained=all(r.from_abstained for r in references),
+                              **entry))
         result.append(ComponentNeeds(component.component_id, component.node.type, component.node.source_ids,
                                      tuple(needs)))
     return RequirementsResult(entrypoint=component_tree.entrypoint, components=tuple(result))
@@ -175,7 +190,9 @@ def need_dict(need: Need) -> dict:
         "sourceKind": need.source_kind,
         "flag": need.flag,
         "itemComponent": need.item_component,
-        "references": [{"nodeId": r.node_id, "line": r.line, "expr": r.expr, "wrappers": list(r.wrappers)}
+        "fromAbstained": need.from_abstained,
+        "references": [{"nodeId": r.node_id, "file": r.file, "line": r.line, "expr": r.expr,
+                        "wrappers": list(r.wrappers), "fromAbstained": r.from_abstained}
                        for r in need.references],
     }
 

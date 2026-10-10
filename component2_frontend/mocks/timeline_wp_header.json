@@ -6,7 +6,13 @@
       "id": "f009#00040",
       "kind": "Stmt_InlineHTML",
       "raw": "<html>\n  <head>\n    <link rel=\"stylesheet\" href=\"/css/blueprint/screen.css\" type=\"text/css\" media=\"screen, projection\">\n    <link rel=\"stylesheet\" href=\"/css/blueprint/print.css\" type=\"text/css\" media=\"print\">\n    <!--[if IE]><link rel=\"stylesheet\" href=\"/css/blueprint/ie.css\" type=\"text/css\" media=\"screen, projection\"><![endif]-->\n    <link rel=\"stylesheet\" href=\"/css/stylings.css\" type=\"text/css\" media=\"screen\">\n    <title>WackoPicko.com</title>\n  </head>\n  <body>\n    <div class=\"container \" style=\"border: 2px solid #5c95cf;\">\n      <div class=\"column span-24 first last\">\n\t<h1 id=\"title\"><a href=\"/\">WackoPicko.com</a></h1>\n      </div>\n      <div id=\"menu\">\n\t<div class=\"column prepend-1 span-14 first\">\n\t  <ul class=\"menu\">\n\t    <li class=\"",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 11,
+        "endLine": 27,
+        "startCol": 1,
+        "endCol": 16
+      }
     },
     {
       "id": "f009#00052",
@@ -29,13 +35,25 @@
           "branch": "then",
           "condNodeId": "f009#00044"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 27,
+        "endLine": 27,
+        "startCol": 48,
+        "endCol": 62
+      }
     },
     {
       "id": "f009#00060",
       "kind": "Stmt_InlineHTML",
       "raw": "\"><a href=\"/users/home.php\"><span>Home</span></a></li>\n\t    <li class=\"",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 27,
+        "endLine": 28,
+        "startCol": 68,
+        "endCol": 16
+      }
     },
     {
       "id": "f009#00072",
@@ -58,13 +76,25 @@
           "branch": "then",
           "condNodeId": "f009#00064"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 28,
+        "endLine": 28,
+        "startCol": 50,
+        "endCol": 64
+      }
     },
     {
       "id": "f009#00080",
       "kind": "Stmt_InlineHTML",
       "raw": "\"><a href=\"/pictures/upload.php\"><span>Upload</span></a></li>\n\t    <li class=\"",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 28,
+        "endLine": 29,
+        "startCol": 70,
+        "endCol": 16
+      }
     },
     {
       "id": "f009#00092",
@@ -87,13 +117,25 @@
           "branch": "then",
           "condNodeId": "f009#00084"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 29,
+        "endLine": 29,
+        "startCol": 50,
+        "endCol": 64
+      }
     },
     {
       "id": "f009#00100",
       "kind": "Stmt_InlineHTML",
       "raw": "\"><a href=\"/pictures/recent.php\"><span>Recent</span></a></li>\n            <li class=\"",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 29,
+        "endLine": 30,
+        "startCol": 70,
+        "endCol": 23
+      }
     },
     {
       "id": "f009#00112",
@@ -116,13 +158,25 @@
           "branch": "then",
           "condNodeId": "f009#00104"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 30,
+        "endLine": 30,
+        "startCol": 60,
+        "endCol": 74
+      }
     },
     {
       "id": "f009#00120",
       "kind": "Stmt_InlineHTML",
       "raw": "\"><a href=\"/guestbook.php\"><span>Guestbook</span></a></li>\n\n      ",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 30,
+        "endLine": 32,
+        "startCol": 80,
+        "endCol": 6
+      }
     },
     {
       "id": "f009#00135",
@@ -136,7 +190,13 @@
           "branch": "then",
           "condNodeId": "f009#00125"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 32,
+        "endLine": 32,
+        "startCol": 44,
+        "endCol": 54
+      }
     },
     {
       "id": "f009#00147",
@@ -166,7 +226,13 @@
           "branch": "then",
           "condNodeId": "f009#00139"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 32,
+        "endLine": 32,
+        "startCol": 86,
+        "endCol": 100
+      }
     },
     {
       "id": "f009#00155",
@@ -180,13 +246,25 @@
           "branch": "then",
           "condNodeId": "f009#00125"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 32,
+        "endLine": 32,
+        "startCol": 106,
+        "endCol": 161
+      }
     },
     {
       "id": "f009#00160",
       "kind": "Stmt_InlineHTML",
       "raw": "\t  </ul>\n\t</div>\n\t<div class=\"column prepend-1 span-7 first last\">\n\t  <ul class=\"menu top_login\" >\n      ",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 33,
+        "endLine": 37,
+        "startCol": 1,
+        "endCol": 6
+      }
     },
     {
       "id": "f009#00174",
@@ -200,7 +278,13 @@
           "branch": "then",
           "condNodeId": "f009#00165"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 38,
+        "endLine": 39,
+        "startCol": 1,
+        "endCol": 6
+      }
     },
     {
       "id": "f009#00183",
@@ -214,13 +298,25 @@
           "branch": "else",
           "condNodeId": "f009#00165"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 40,
+        "endLine": 41,
+        "startCol": 1,
+        "endCol": 6
+      }
     },
     {
       "id": "f009#00188",
       "kind": "Stmt_InlineHTML",
       "raw": "\t  </ul>\n\t</div>\n      </div>\n\n\n\n      <div class=\"column span-24 first last\" id=\"search_bar_blue\">\n\t<div class=\"column prepend-17 span-7 first last\" id=\"search_box\">\n\t  <form action=\"/pictures/search.php\" method=\"get\" style=\"display:inline;\">\n\t    <input id=\"query2\" name=\"query\" size=\"15\" style=\"padding: 2px; font-size: 16px; text-decoration:none;border:none;vertical-align:middle;\" type=\"text\" value=\"",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 42,
+        "endLine": 51,
+        "startCol": 1,
+        "endCol": 161
+      }
     },
     {
       "id": "f009#00189",
@@ -245,13 +341,25 @@
           ]
         }
       ],
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 51,
+        "endLine": 51,
+        "startCol": 162,
+        "endCol": 180
+      }
     },
     {
       "id": "f009#00196",
       "kind": "Stmt_InlineHTML",
       "raw": "\"/>\n\t    <input src=\"/images/search_button_white.gif\" type=\"image\" style=\"border: 0pt none ; position: relative; top: 0px;vertical-align:middle;margin-left: 1em;\" />\n\t  </form>\n\t</div>\n      </div>\n   ",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 51,
+        "endLine": 56,
+        "startCol": 184,
+        "endCol": 3
+      }
     }
   ],
   "queries": {},
@@ -272,6 +380,7 @@
       11,
       56
     ],
-    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
+    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not)."
   }
 }

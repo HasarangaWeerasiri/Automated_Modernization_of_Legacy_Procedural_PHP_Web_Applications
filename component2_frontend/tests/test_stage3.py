@@ -163,8 +163,8 @@ def canonical(result):
     ids = {}
 
     def walk(value, key=None):
-        if isinstance(value, dict):
-            return {k: walk(v, k) for k, v in value.items() if k != "entrypoint"}
+        if isinstance(value, dict):  # the two pages are different files, so "file" differs too
+            return {k: walk(v, k) for k, v in value.items() if k not in ("entrypoint", "file")}
         if isinstance(value, list):
             return [walk(v, key) for v in value]
         if key in ("sourceIds", "nodeId", "queryNodeId") and value:

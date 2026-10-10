@@ -15,6 +15,7 @@ from src.model import (
     Endpoint,
     EndpointRef,
     Label,
+    Loc,
     OutputNode,
     Query,
     Read,
@@ -42,6 +43,7 @@ READ_KEYS = {"expr", "var", "path", "sourceKind", "confidence", "source"}
 SOURCE_KEYS = {"fetchNodeId", "queryNodeId", "table", "column"}
 QUERY_KEYS = {"line", "sql", "tables", "columns", "resultVar"}
 LABEL_KEYS = {"concern", "basis", "ruleId", "reason"}
+LOC_KEYS = {"startLine", "endLine", "startCol", "endCol"}
 
 
 # ----------------------------------------------------------------------------- schema 1.0 checks
@@ -92,6 +94,16 @@ def _check_read(read: dict, where: str) -> None:
             _check_read(inner, f"{where} derivedFrom")
 
 
+def _check_loc(loc, where: str) -> None:
+    """loc is optional (pending Member 01 Q13); when present it has the AST envelope's four positions."""
+    if not isinstance(loc, dict) or set(loc) != LOC_KEYS:
+        raise ValueError(f"{where}: loc needs exactly {sorted(LOC_KEYS)}")
+    if not all(isinstance(loc[k], int) and not isinstance(loc[k], bool) and loc[k] >= 1 for k in LOC_KEYS):
+        raise ValueError(f"{where}: loc positions must be integers >= 1")
+    if (loc["endLine"], loc["endCol"]) < (loc["startLine"], loc["startCol"]):
+        raise ValueError(f"{where}: loc ends before it starts")
+
+
 def load_timeline_json(path: Path) -> dict:
     """Read a timeline file and check it against schema 1.0; return the validated JSON.
 
@@ -128,8 +140,12 @@ def load_timeline_json(path: Path) -> dict:
         if entry.get("kind") not in OUTPUT_KINDS:
             raise ValueError(f"{where}: kind {entry.get('kind')!r}, expected one of {OUTPUT_KINDS}")
         payload = "raw" if entry["kind"] == "Stmt_InlineHTML" else "reads"
-        if set(entry) != {"id", "kind", "enclosedBy", payload}:
-            raise ValueError(f"{where}: {entry['kind']} keys {sorted(entry)}; expected id/kind/enclosedBy/{payload}")
+        required = {"id", "kind", "enclosedBy", payload}
+        if not required <= set(entry) <= required | {"loc"}:
+            raise ValueError(f"{where}: {entry['kind']} keys {sorted(entry)}; expected id/kind/enclosedBy/{payload} "
+                             "and optionally loc")
+        if "loc" in entry:
+            _check_loc(entry["loc"], where)
         for read in entry.get("reads", []):
             _check_read(read, where)
 
@@ -208,6 +224,8 @@ def load_timeline(path: Path) -> Timeline:
             raw=e.get("raw"),
             reads=tuple(_read(r) for r in e.get("reads", ())),
             enclosed_by=tuple(_enclosure(x) for x in e["enclosedBy"]),
+            loc=None if "loc" not in e else Loc(e["loc"]["startLine"], e["loc"]["endLine"], e["loc"]["startCol"],
+                                                e["loc"]["endCol"]),
         )
         for e in doc["sequence"]
     )

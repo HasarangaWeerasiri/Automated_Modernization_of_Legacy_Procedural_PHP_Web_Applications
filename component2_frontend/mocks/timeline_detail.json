@@ -6,7 +6,13 @@
       "id": "f004#01075",
       "kind": "Stmt_InlineHTML",
       "raw": "                    </select>\r\n                  </div><br/><br/> \r\n\r\n\r\n                        <script>\r\n              document.getElementById('doctor').onchange = function updateFees(e) {\r\n                var selection = document.querySelector(`[value=${this.value}]`).getAttribute('data-value');\r\n                document.getElementById('docFees').value = selection;\r\n              };\r\n            </script>\r\n\r\n                  \r\n                  \r\n\r\n                  \r\n                        <!-- <div class=\"col-md-4\"><label for=\"doctor\">Doctors:</label></div>\r\n                                <div class=\"col-md-8\">\r\n                                    <select name=\"doctor\" class=\"form-control\" id=\"doctor1\" required=\"required\">\r\n                                      <option value=\"\" disabled selected>Select Doctor</option>\r\n                                      \r\n                                    </select>\r\n                                </div>\r\n                                <br><br> -->\r\n\r\n                                <!-- <script>\r\n                                  document.getElementById(\"spec\").onchange = function updateSpecs(event) {\r\n                                      var selected = document.querySelector(`[data-value=${this.value}]`).getAttribute(\"value\");\r\n                                      console.log(selected);\r\n\r\n                                      var options = document.getElementById(\"doctor1\").querySelectorAll(\"option\");\r\n\r\n                                      for (i = 0; i < options.length; i++) {\r\n                                        var currentOption = options[i];\r\n                                        var category = options[i].getAttribute(\"data-spec\");\r\n\r\n                                        if (category == selected) {\r\n                                          currentOption.style.display = \"block\";\r\n                                        } else {\r\n                                          currentOption.style.display = \"none\";\r\n                                        }\r\n                                      }\r\n                                    }\r\n                                </script> -->\r\n\r\n                        \r\n                    <!-- <script>\r\n                    let data = \r\n                \r\n              document.getElementById('spec').onchange = function updateSpecs(e) {\r\n                let values = data.filter(obj => obj.spec == this.value).map(o => o.username);   \r\n                document.getElementById('doctor1').value = document.querySelector(`[value=${values}]`).getAttribute('data-value');\r\n              };\r\n            </script> -->\r\n\r\n\r\n                  \r\n                  <div class=\"col-md-4\"><label for=\"consultancyfees\">\r\n                                Consultancy Fees\r\n                              </label></div>\r\n                              <div class=\"col-md-8\">\r\n                              <!-- <div id=\"docFees\">Select a doctor</div> -->\r\n                              <input class=\"form-control\" type=\"text\" name=\"docFees\" id=\"docFees\" readonly=\"readonly\"/>\r\n                  </div><br><br>\r\n\r\n                  <div class=\"col-md-4\"><label>Appointment Date</label></div>\r\n                  <div class=\"col-md-8\"><input type=\"date\" class=\"form-control datepicker\" name=\"appdate\"></div><br><br>\r\n\r\n                  <div class=\"col-md-4\"><label>Appointment Time</label></div>\r\n                  <div class=\"col-md-8\">\r\n                    <!-- <input type=\"time\" class=\"form-control\" name=\"apptime\"> -->\r\n                    <select name=\"apptime\" class=\"form-control\" id=\"apptime\" required=\"required\">\r\n                      <option value=\"\" disabled selected>Select Time</option>\r\n                      <option value=\"08:00:00\">8:00 AM</option>\r\n                      <option value=\"10:00:00\">10:00 AM</option>\r\n                      <option value=\"12:00:00\">12:00 PM</option>\r\n                      <option value=\"14:00:00\">2:00 PM</option>\r\n                      <option value=\"16:00:00\">4:00 PM</option>\r\n                    </select>\r\n\r\n                  </div><br><br>\r\n\r\n                  <div class=\"col-md-4\">\r\n                    <input type=\"submit\" name=\"app-submit\" value=\"Create new entry\" class=\"btn btn-primary\" id=\"inputbtn\">\r\n                  </div>\r\n                  <div class=\"col-md-8\"></div>                  \r\n                </div>\r\n              </form>\r\n            </div>\r\n          </div>\r\n        </div><br>\r\n      </div>\r\n      \r\n<div class=\"tab-pane fade\" id=\"app-hist\" role=\"tabpanel\" aria-labelledby=\"list-pat-list\">\r\n        \r\n              <table class=\"table table-hover\">\r\n                <thead>\r\n                  <tr>\r\n                    \r\n                    <th scope=\"col\">Doctor Name</th>\r\n                    <th scope=\"col\">Consultancy Fees</th>\r\n                    <th scope=\"col\">Appointment Date</th>\r\n                    <th scope=\"col\">Appointment Time</th>\r\n                    <th scope=\"col\">Current Status</th>\r\n                    <th scope=\"col\">Action</th>\r\n                  </tr>\r\n                </thead>\r\n                <tbody>\r\n                  ",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 360,
+        "endLine": 467,
+        "startCol": 1,
+        "endCol": 18
+      }
     },
     {
       "id": "f004#01145",
@@ -22,7 +28,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 481,
+        "endLine": 482,
+        "startCol": 1,
+        "endCol": 28
+      }
     },
     {
       "id": "f004#01147",
@@ -54,7 +66,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 482,
+        "endLine": 482,
+        "startCol": 35,
+        "endCol": 54
+      }
     },
     {
       "id": "f004#01155",
@@ -70,7 +88,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 482,
+        "endLine": 483,
+        "startCol": 57,
+        "endCol": 28
+      }
     },
     {
       "id": "f004#01157",
@@ -102,7 +126,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 483,
+        "endLine": 483,
+        "startCol": 35,
+        "endCol": 55
+      }
     },
     {
       "id": "f004#01165",
@@ -118,7 +148,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 483,
+        "endLine": 484,
+        "startCol": 58,
+        "endCol": 28
+      }
     },
     {
       "id": "f004#01167",
@@ -150,7 +186,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 484,
+        "endLine": 484,
+        "startCol": 35,
+        "endCol": 55
+      }
     },
     {
       "id": "f004#01175",
@@ -166,7 +208,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 484,
+        "endLine": 485,
+        "startCol": 58,
+        "endCol": 28
+      }
     },
     {
       "id": "f004#01177",
@@ -198,7 +246,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 485,
+        "endLine": 485,
+        "startCol": 35,
+        "endCol": 55
+      }
     },
     {
       "id": "f004#01185",
@@ -214,7 +268,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 485,
+        "endLine": 488,
+        "startCol": 58,
+        "endCol": 20
+      }
     },
     {
       "id": "f004#01212",
@@ -246,7 +306,13 @@
           "branch": "then",
           "condNodeId": "f004#01189"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 490,
+        "endLine": 490,
+        "startCol": 23,
+        "endCol": 36
+      }
     },
     {
       "id": "f004#01244",
@@ -278,7 +344,13 @@
           "branch": "then",
           "condNodeId": "f004#01221"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 494,
+        "endLine": 494,
+        "startCol": 23,
+        "endCol": 46
+      }
     },
     {
       "id": "f004#01276",
@@ -310,7 +382,13 @@
           "branch": "then",
           "condNodeId": "f004#01253"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 499,
+        "endLine": 499,
+        "startCol": 23,
+        "endCol": 49
+      }
     },
     {
       "id": "f004#01284",
@@ -326,7 +404,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 501,
+        "endLine": 504,
+        "startCol": 27,
+        "endCol": 24
+      }
     },
     {
       "id": "f004#01312",
@@ -349,7 +433,13 @@
           "branch": "then",
           "condNodeId": "f004#01288"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 506,
+        "endLine": 508,
+        "startCol": 1,
+        "endCol": 53
+      }
     },
     {
       "id": "f004#01314",
@@ -388,7 +478,13 @@
           "branch": "then",
           "condNodeId": "f004#01288"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 508,
+        "endLine": 508,
+        "startCol": 60,
+        "endCol": 74
+      }
     },
     {
       "id": "f004#01321",
@@ -411,7 +507,13 @@
           "branch": "then",
           "condNodeId": "f004#01288"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 508,
+        "endLine": 511,
+        "startCol": 77,
+        "endCol": 25
+      }
     },
     {
       "id": "f004#01329",
@@ -443,7 +545,13 @@
           "branch": "else",
           "condNodeId": "f004#01288"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 513,
+        "endLine": 513,
+        "startCol": 33,
+        "endCol": 49
+      }
     },
     {
       "id": "f004#01337",
@@ -459,13 +567,25 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 515,
+        "endLine": 518,
+        "startCol": 1,
+        "endCol": 20
+      }
     },
     {
       "id": "f004#01342",
       "kind": "Stmt_InlineHTML",
       "raw": "                </tbody>\r\n              </table>\r\n        <br>\r\n      </div>\r\n\r\n\r\n\r\n      <div class=\"tab-pane fade\" id=\"list-pres\" role=\"tabpanel\" aria-labelledby=\"list-pres-list\">\r\n        \r\n              <table class=\"table table-hover\">\r\n                <thead>\r\n                  <tr>\r\n                    \r\n                    <th scope=\"col\">Doctor Name</th>\r\n                    <th scope=\"col\">Appointment ID</th>\r\n                    <th scope=\"col\">Appointment Date</th>\r\n                    <th scope=\"col\">Appointment Time</th>\r\n                    <th scope=\"col\">Diseases</th>\r\n                    <th scope=\"col\">Allergies</th>\r\n                    <th scope=\"col\">Prescriptions</th>\r\n                    <th scope=\"col\">Bill Payment</th>\r\n                  </tr>\r\n                </thead>\r\n                <tbody>\r\n                  ",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 519,
+        "endLine": 543,
+        "startCol": 1,
+        "endCol": 18
+      }
     }
   ],
   "queries": {
@@ -502,6 +622,7 @@
       360,
       543
     ],
-    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
+    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not)."
   }
 }

@@ -195,19 +195,28 @@ def print_stage4(report) -> None:
     rows = stage4.flagged(report)
     if not rows:
         console.print("  no missing or cannot_reconcile needs", style="green")
-        return
-    console.print(f"  file: {escape(report.entrypoint)}", style="dim")
-    table = Table(box=box.SIMPLE_HEAD, show_edge=False)
-    for column in ("Component", "Field", "File:line", "Result", "Reason"):
-        table.add_column(column, overflow="fold")
-    for row in rows:
-        lines = sorted({str(ref.line) if ref.line is not None else "?" for ref in row.need.references})
-        reason = row.reason + (f" (hint: {row.hint})" if row.hint else "")
-        table.add_row(f"{row.component_type} {row.component_id}", escape(row.need.name),
-                      escape(f"{display_file(report.entrypoint)}:{','.join(lines)}"),
-                      f"[{'red' if row.result == 'missing' else 'yellow'}]{row.result}[/]", escape(reason))
-    console.print(table)
-    console.print("  line ? = the timeline has no source line per output node (schema 1.0)", style="dim")
+    else:
+        console.print(f"  file: {escape(report.entrypoint)}", style="dim")
+        table = Table(box=box.SIMPLE_HEAD, show_edge=False)
+        for column in ("Component", "Field", "File:line", "Result", "Reason", "Abstained"):
+            table.add_column(column, overflow="fold")
+        for row in rows:
+            lines = sorted({ref.line for ref in row.need.references if ref.line is not None})
+            unknown = any(ref.line is None for ref in row.need.references)
+            where = ",".join([str(line) for line in lines] + (["?"] if unknown else []))
+            reason = row.reason + (f" (hint: {row.hint})" if row.hint else "")
+            table.add_row(f"{row.component_type} {row.component_id}", escape(row.need.name),
+                          escape(f"{display_file(report.entrypoint)}:{where}"),
+                          f"[{'red' if row.result == 'missing' else 'yellow'}]{row.result}[/]", escape(reason),
+                          "[magenta]yes[/magenta]" if row.need.from_abstained else "")
+        console.print(table)
+        if any(ref.line is None for row in rows for ref in row.need.references):
+            console.print("  line ? = no loc for that output node in the timeline (never guessed)", style="dim")
+        if any(row.need.from_abstained for row in rows):
+            console.print("  Abstained yes = read inside content Stage 2 abstained on: weaker evidence",
+                          style="dim")
+    if report.unused:
+        console.print("  unused = not referenced by output reads; condition reads are not visible yet", style="dim")
 
 
 def display_file(entrypoint: str) -> str:

@@ -6,7 +6,13 @@
       "id": "f001#00645",
       "kind": "Stmt_InlineHTML",
       "raw": "                </tbody>\n              </table>\n        <br>\n      </div>\n      </div>\n      </div>\n\n\n\n\n      <div class=\"tab-pane fade\" id=\"list-app\" role=\"tabpanel\" aria-labelledby=\"list-pat-list\">\n\n         <div class=\"col-md-8\">\n      <form class=\"form-group\" action=\"appsearch.php\" method=\"post\">\n        <div class=\"row\">\n        <div class=\"col-md-10\"><input type=\"text\" name=\"app_contact\" placeholder=\"Enter Contact\" class = \"form-control\"></div>\n        <div class=\"col-md-2\"><input type=\"submit\" name=\"app_search_submit\" class=\"btn btn-primary\" value=\"Search\"></div></div>\n      </form>\n    </div>\n        \n              <table class=\"table table-hover\">\n                <thead>\n                  <tr>\n                  <th scope=\"col\">Appointment ID</th>\n                  <th scope=\"col\">Patient ID</th>\n                    <th scope=\"col\">First Name</th>\n                    <th scope=\"col\">Last Name</th>\n                    <th scope=\"col\">Gender</th>\n                    <th scope=\"col\">Email</th>\n                    <th scope=\"col\">Contact</th>\n                    <th scope=\"col\">Doctor Name</th>\n                    <th scope=\"col\">Consultancy Fees</th>\n                    <th scope=\"col\">Appointment Date</th>\n                    <th scope=\"col\">Appointment Time</th>\n                    <th scope=\"col\">Appointment Status</th>\n                  </tr>\n                </thead>\n                <tbody>\n                  ",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 414,
+        "endLine": 452,
+        "startCol": 1,
+        "endCol": 18
+      }
     },
     {
       "id": "f001#00701",
@@ -22,7 +28,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 461,
+        "endLine": 462,
+        "startCol": 1,
+        "endCol": 28
+      }
     },
     {
       "id": "f001#00703",
@@ -54,7 +66,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 462,
+        "endLine": 462,
+        "startCol": 35,
+        "endCol": 50
+      }
     },
     {
       "id": "f001#00711",
@@ -70,7 +88,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 462,
+        "endLine": 463,
+        "startCol": 53,
+        "endCol": 28
+      }
     },
     {
       "id": "f001#00713",
@@ -102,7 +126,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 463,
+        "endLine": 463,
+        "startCol": 35,
+        "endCol": 51
+      }
     },
     {
       "id": "f001#00721",
@@ -118,7 +148,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 463,
+        "endLine": 464,
+        "startCol": 54,
+        "endCol": 28
+      }
     },
     {
       "id": "f001#00723",
@@ -150,7 +186,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 464,
+        "endLine": 464,
+        "startCol": 35,
+        "endCol": 53
+      }
     },
     {
       "id": "f001#00731",
@@ -166,7 +208,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 464,
+        "endLine": 465,
+        "startCol": 56,
+        "endCol": 28
+      }
     },
     {
       "id": "f001#00733",
@@ -198,7 +246,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 465,
+        "endLine": 465,
+        "startCol": 35,
+        "endCol": 53
+      }
     },
     {
       "id": "f001#00741",
@@ -214,7 +268,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 465,
+        "endLine": 466,
+        "startCol": 56,
+        "endCol": 28
+      }
     },
     {
       "id": "f001#00743",
@@ -246,7 +306,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 466,
+        "endLine": 466,
+        "startCol": 35,
+        "endCol": 54
+      }
     },
     {
       "id": "f001#00751",
@@ -262,7 +328,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 466,
+        "endLine": 467,
+        "startCol": 57,
+        "endCol": 28
+      }
     },
     {
       "id": "f001#00753",
@@ -294,7 +366,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 467,
+        "endLine": 467,
+        "startCol": 35,
+        "endCol": 53
+      }
     },
     {
       "id": "f001#00761",
@@ -310,7 +388,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 467,
+        "endLine": 468,
+        "startCol": 56,
+        "endCol": 28
+      }
     },
     {
       "id": "f001#00763",
@@ -342,7 +426,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 468,
+        "endLine": 468,
+        "startCol": 35,
+        "endCol": 55
+      }
     },
     {
       "id": "f001#00771",
@@ -358,7 +448,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 468,
+        "endLine": 469,
+        "startCol": 58,
+        "endCol": 28
+      }
     },
     {
       "id": "f001#00773",
@@ -390,7 +486,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 469,
+        "endLine": 469,
+        "startCol": 35,
+        "endCol": 54
+      }
     },
     {
       "id": "f001#00781",
@@ -406,7 +508,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 469,
+        "endLine": 470,
+        "startCol": 57,
+        "endCol": 28
+      }
     },
     {
       "id": "f001#00783",
@@ -438,7 +546,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 470,
+        "endLine": 470,
+        "startCol": 35,
+        "endCol": 55
+      }
     },
     {
       "id": "f001#00791",
@@ -454,7 +568,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 470,
+        "endLine": 471,
+        "startCol": 58,
+        "endCol": 28
+      }
     },
     {
       "id": "f001#00793",
@@ -486,7 +606,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 471,
+        "endLine": 471,
+        "startCol": 35,
+        "endCol": 55
+      }
     },
     {
       "id": "f001#00801",
@@ -502,7 +628,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 471,
+        "endLine": 472,
+        "startCol": 58,
+        "endCol": 28
+      }
     },
     {
       "id": "f001#00803",
@@ -534,7 +666,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 472,
+        "endLine": 472,
+        "startCol": 35,
+        "endCol": 55
+      }
     },
     {
       "id": "f001#00811",
@@ -550,7 +688,13 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 472,
+        "endLine": 474,
+        "startCol": 58,
+        "endCol": 20
+      }
     },
     {
       "id": "f001#00838",
@@ -582,7 +726,13 @@
           "branch": "then",
           "condNodeId": "f001#00815"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 476,
+        "endLine": 476,
+        "startCol": 23,
+        "endCol": 36
+      }
     },
     {
       "id": "f001#00870",
@@ -614,7 +764,13 @@
           "branch": "then",
           "condNodeId": "f001#00847"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 480,
+        "endLine": 480,
+        "startCol": 23,
+        "endCol": 50
+      }
     },
     {
       "id": "f001#00902",
@@ -646,7 +802,13 @@
           "branch": "then",
           "condNodeId": "f001#00879"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 485,
+        "endLine": 485,
+        "startCol": 23,
+        "endCol": 49
+      }
     },
     {
       "id": "f001#00910",
@@ -662,13 +824,25 @@
           "valueVar": "$row",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 487,
+        "endLine": 489,
+        "startCol": 27,
+        "endCol": 20
+      }
     },
     {
       "id": "f001#00915",
       "kind": "Stmt_InlineHTML",
       "raw": "                </tbody>\n              </table>\n        <br>\n      </div>\n\n<div class=\"tab-pane fade\" id=\"list-messages\" role=\"tabpanel\" aria-labelledby=\"list-messages-list\">...</div>\n\n      <div class=\"tab-pane fade\" id=\"list-settings\" role=\"tabpanel\" aria-labelledby=\"list-settings-list\">\n        <form class=\"form-group\" method=\"post\" action=\"admin-panel1.php\">\n          <div class=\"row\">\n                  <div class=\"col-md-4\"><label>Doctor Name:</label></div>\n                  <div class=\"col-md-8\"><input type=\"text\" class=\"form-control\" name=\"doctor\" onkeydown=\"return alphaOnly(event);\" required></div><br><br>\n                  <div class=\"col-md-4\"><label>Specialization:</label></div>\n                  <div class=\"col-md-8\">\n                   <select name=\"special\" class=\"form-control\" id=\"special\" required=\"required\">\n                      <option value=\"head\" name=\"spec\" disabled selected>Select Specialization</option>\n                      <option value=\"General\" name=\"spec\">General</option>\n                      <option value=\"Cardiologist\" name=\"spec\">Cardiologist</option>\n                      <option value=\"Neurologist\" name=\"spec\">Neurologist</option>\n                      <option value=\"Pediatrician\" name=\"spec\">Pediatrician</option>\n                    </select>\n                    </div><br><br>\n                  <div class=\"col-md-4\"><label>Email ID:</label></div>\n                  <div class=\"col-md-8\"><input type=\"email\"  class=\"form-control\" name=\"demail\" required></div><br><br>\n                  <div class=\"col-md-4\"><label>Password:</label></div>\n                  <div class=\"col-md-8\"><input type=\"password\" class=\"form-control\"  onkeyup='check();' name=\"dpassword\" id=\"dpassword\"  required></div><br><br>\n                  <div class=\"col-md-4\"><label>Confirm Password:</label></div>\n                  <div class=\"col-md-8\"  id='cpass'><input type=\"password\" class=\"form-control\" onkeyup='check();' name=\"cdpassword\" id=\"cdpassword\" required>&nbsp &nbsp<span id='message'></span> </div><br><br>\n                   \n                  \n                  <div class=\"col-md-4\"><label>Consultancy Fees:</label></div>\n                  <div class=\"col-md-8\"><input type=\"text\" class=\"form-control\"  name=\"docFees\" required></div><br><br>\n                </div>\n          <input type=\"submit\" name=\"docsub\" value=\"Add Doctor\" class=\"btn btn-primary\">\n        </form>\n      </div>\n\n      <div class=\"tab-pane fade\" id=\"list-settings1\" role=\"tabpanel\" aria-labelledby=\"list-settings1-list\">\n        <form class=\"form-group\" method=\"post\" action=\"admin-panel1.php\">\n          <div class=\"row\">\n          \n                  <div class=\"col-md-4\"><label>Email ID:</label></div>\n                  <div class=\"col-md-8\"><input type=\"email\"  class=\"form-control\" name=\"demail\" required></div><br><br>\n                  \n                </div>\n          <input type=\"submit\" name=\"docsub1\" value=\"Delete Doctor\" class=\"btn btn-primary\" onclick=\"confirm('do you really want to delete?')\">\n        </form>\n      </div>\n\n\n       <div class=\"tab-pane fade\" id=\"list-attend\" role=\"tabpanel\" aria-labelledby=\"list-attend-list\">...</div>\n\n       <div class=\"tab-pane fade\" id=\"list-mes\" role=\"tabpanel\" aria-labelledby=\"list-mes-list\">\n\n         <div class=\"col-md-8\">\n      <form class=\"form-group\" action=\"messearch.php\" method=\"post\">\n        <div class=\"row\">\n        <div class=\"col-md-10\"><input type=\"text\" name=\"mes_contact\" placeholder=\"Enter Contact\" class = \"form-control\"></div>\n        <div class=\"col-md-2\"><input type=\"submit\" name=\"mes_search_submit\" class=\"btn btn-primary\" value=\"Search\"></div></div>\n      </form>\n    </div>\n        \n              <table class=\"table table-hover\">\n                <thead>\n                  <tr>\n                    <th scope=\"col\">User Name</th>\n                    <th scope=\"col\">Email</th>\n                    <th scope=\"col\">Contact</th>\n                    <th scope=\"col\">Message</th>\n                  </tr>\n                </thead>\n                <tbody>\n                  ",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 490,
+        "endLine": 562,
+        "startCol": 1,
+        "endCol": 18
+      }
     }
   ],
   "queries": {
@@ -709,6 +883,7 @@
       414,
       562
     ],
-    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
+    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not)."
   }
 }

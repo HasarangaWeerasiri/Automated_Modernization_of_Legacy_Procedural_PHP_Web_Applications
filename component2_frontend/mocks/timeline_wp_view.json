@@ -6,13 +6,25 @@
       "id": "f007#00198",
       "kind": "Stmt_InlineHTML",
       "raw": "\n",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 39,
+        "endLine": 39,
+        "startCol": 1,
+        "endCol": 1
+      }
     },
     {
       "id": "f007#00206",
       "kind": "Stmt_InlineHTML",
       "raw": "\n<div class=\"column prepend-1 span-14 first\" >\n   <h2 id=\"image-title\">",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 41,
+        "endLine": 43,
+        "startCol": 1,
+        "endCol": 24
+      }
     },
     {
       "id": "f007#00207",
@@ -39,13 +51,25 @@
           ]
         }
       ],
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 43,
+        "endLine": 43,
+        "startCol": 25,
+        "endCol": 45
+      }
     },
     {
       "id": "f007#00218",
       "kind": "Stmt_InlineHTML",
       "raw": " </h2>\n\t<img id=\"image\" src=\"../upload/",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 43,
+        "endLine": 44,
+        "startCol": 48,
+        "endCol": 32
+      }
     },
     {
       "id": "f007#00219",
@@ -72,13 +96,25 @@
           ]
         }
       ],
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 44,
+        "endLine": 44,
+        "startCol": 33,
+        "endCol": 56
+      }
     },
     {
       "id": "f007#00230",
       "kind": "Stmt_InlineHTML",
       "raw": ".550.jpg\" width=\"550\" />\n\t\n\t<div class=\"column span-14 first last \" id=\"comments\">\n\t  <div class=\"column span-14 first last\">\n\t    <h2 id=\"comment-title\">Comments</h2>\n\t  </div>\n   ",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 44,
+        "endLine": 50,
+        "startCol": 59,
+        "endCol": 3
+      }
     },
     {
       "id": "f007#00253",
@@ -101,7 +137,13 @@
           "valueVar": "$comment",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 52,
+        "endLine": 53,
+        "startCol": 1,
+        "endCol": 24
+      }
     },
     {
       "id": "f007#00254",
@@ -135,7 +177,13 @@
           "valueVar": "$comment",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 53,
+        "endLine": 53,
+        "startCol": 25,
+        "endCol": 44
+      }
     },
     {
       "id": "f007#00262",
@@ -158,7 +206,13 @@
           "valueVar": "$comment",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 53,
+        "endLine": 56,
+        "startCol": 48,
+        "endCol": 17
+      }
     },
     {
       "id": "f007#00263",
@@ -190,7 +244,13 @@
           "valueVar": "$comment",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 56,
+        "endLine": 56,
+        "startCol": 18,
+        "endCol": 37
+      }
     },
     {
       "id": "f007#00270",
@@ -213,7 +273,13 @@
           "valueVar": "$comment",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 56,
+        "endLine": 56,
+        "startCol": 41,
+        "endCol": 48
+      }
     },
     {
       "id": "f007#00271",
@@ -257,7 +323,13 @@
           "valueVar": "$comment",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 56,
+        "endLine": 56,
+        "startCol": 49,
+        "endCol": 75
+      }
     },
     {
       "id": "f007#00282",
@@ -280,7 +352,13 @@
           "valueVar": "$comment",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 56,
+        "endLine": 56,
+        "startCol": 78,
+        "endCol": 79
+      }
     },
     {
       "id": "f007#00283",
@@ -324,7 +402,13 @@
           "valueVar": "$comment",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 56,
+        "endLine": 56,
+        "startCol": 80,
+        "endCol": 104
+      }
     },
     {
       "id": "f007#00295",
@@ -347,7 +431,13 @@
           "valueVar": "$comment",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 56,
+        "endLine": 57,
+        "startCol": 108,
+        "endCol": 10
+      }
     },
     {
       "id": "f007#00307",
@@ -361,13 +451,25 @@
           "branch": "else",
           "condNodeId": "f007#00235"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 64,
+        "endLine": 67,
+        "startCol": 3,
+        "endCol": 13
+      }
     },
     {
       "id": "f007#00313",
       "kind": "Stmt_InlineHTML",
       "raw": "\t  <div class=\"column prepend-1 span-12 first last\" style=\"padding-bottom:2em;\">\n\t    <h3 style=\"text-align:center;padding-top:2em;\">Add your comment</h3>\n\t    <form action=\"",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 72,
+        "endLine": 74,
+        "startCol": 1,
+        "endCol": 19
+      }
     },
     {
       "id": "f007#00314",
@@ -382,13 +484,25 @@
           "source": null
         }
       ],
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 74,
+        "endLine": 74,
+        "startCol": 20,
+        "endCol": 53
+      }
     },
     {
       "id": "f007#00321",
       "kind": "Stmt_InlineHTML",
       "raw": "\" method=\"POST\">\n\t      <textarea id=\"comment-box\" name=\"text\"></textarea>\n\t      <div class=\"column prepend-9 first last\">\n\t\t<input type=\"hidden\" name=\"picid\" value=\"",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 74,
+        "endLine": 77,
+        "startCol": 57,
+        "endCol": 43
+      }
     },
     {
       "id": "f007#00322",
@@ -415,13 +529,25 @@
           ]
         }
       ],
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 77,
+        "endLine": 77,
+        "startCol": 44,
+        "endCol": 61
+      }
     },
     {
       "id": "f007#00333",
       "kind": "Stmt_InlineHTML",
       "raw": "\"/>\n\t\t<input type=\"submit\" value=\"Preview\"/>\n\n\t      </div>\n\t    </form>\n\t  </div>\n\t  \n\t</div>\n      </div>\n      \n      <div class=\"column prepend-2 append-1 span-6 last\" style=\"padding-top:1em;\" >\n   <h3 id=\"tradebux\">",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 77,
+        "endLine": 88,
+        "startCol": 64,
+        "endCol": 21
+      }
     },
     {
       "id": "f007#00334",
@@ -448,13 +574,25 @@
           ]
         }
       ],
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 88,
+        "endLine": 88,
+        "startCol": 22,
+        "endCol": 42
+      }
     },
     {
       "id": "f007#00345",
       "kind": "Stmt_InlineHTML",
       "raw": " Tradebux<br />\n   ",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 88,
+        "endLine": 89,
+        "startCol": 45,
+        "endCol": 3
+      }
     },
     {
       "id": "f007#00377",
@@ -468,7 +606,13 @@
           "branch": "then",
           "condNodeId": "f007#00361"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 90,
+        "endLine": 90,
+        "startCol": 1,
+        "endCol": 12
+      }
     },
     {
       "id": "f007#00378",
@@ -511,7 +655,13 @@
           "branch": "then",
           "condNodeId": "f007#00361"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 90,
+        "endLine": 90,
+        "startCol": 13,
+        "endCol": 74
+      }
     },
     {
       "id": "f007#00400",
@@ -525,13 +675,25 @@
           "branch": "then",
           "condNodeId": "f007#00361"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 90,
+        "endLine": 91,
+        "startCol": 77,
+        "endCol": 4
+      }
     },
     {
       "id": "f007#00405",
       "kind": "Stmt_InlineHTML",
       "raw": "\t</h3>\n\t<h3 id=\"info-area\">Uploaded on ",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 92,
+        "endLine": 93,
+        "startCol": 1,
+        "endCol": 32
+      }
     },
     {
       "id": "f007#00406",
@@ -568,13 +730,25 @@
           ]
         }
       ],
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 93,
+        "endLine": 93,
+        "startCol": 33,
+        "endCol": 79
+      }
     },
     {
       "id": "f007#00423",
       "kind": "Stmt_InlineHTML",
       "raw": "<br />\n\t\t\t\t\t  by <a href=\"",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 93,
+        "endLine": 94,
+        "startCol": 82,
+        "endCol": 19
+      }
     },
     {
       "id": "f007#00424",
@@ -589,13 +763,25 @@
           "source": null
         }
       ],
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 94,
+        "endLine": 94,
+        "startCol": 20,
+        "endCol": 39
+      }
     },
     {
       "id": "f007#00431",
       "kind": "Stmt_InlineHTML",
       "raw": "?userid=",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 94,
+        "endLine": 94,
+        "startCol": 43,
+        "endCol": 50
+      }
     },
     {
       "id": "f007#00432",
@@ -622,13 +808,25 @@
           ]
         }
       ],
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 94,
+        "endLine": 94,
+        "startCol": 51,
+        "endCol": 73
+      }
     },
     {
       "id": "f007#00444",
       "kind": "Stmt_InlineHTML",
       "raw": "\">",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 94,
+        "endLine": 94,
+        "startCol": 77,
+        "endCol": 78
+      }
     },
     {
       "id": "f007#00445",
@@ -655,13 +853,25 @@
           ]
         }
       ],
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 94,
+        "endLine": 94,
+        "startCol": 79,
+        "endCol": 97
+      }
     },
     {
       "id": "f007#00455",
       "kind": "Stmt_InlineHTML",
       "raw": "</a>\n\t</h3>  \n\t",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 94,
+        "endLine": 96,
+        "startCol": 101,
+        "endCol": 1
+      }
     },
     {
       "id": "f007#00466",
@@ -675,7 +885,13 @@
           "branch": "then",
           "condNodeId": "f007#00460"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 96,
+        "endLine": 101,
+        "startCol": 26,
+        "endCol": 6
+      }
     },
     {
       "id": "f007#00481",
@@ -698,7 +914,13 @@
           "valueVar": "$p",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 102,
+        "endLine": 103,
+        "startCol": 1,
+        "endCol": 14
+      }
     },
     {
       "id": "f007#00482",
@@ -750,7 +972,13 @@
           "valueVar": "$p",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 103,
+        "endLine": 103,
+        "startCol": 15,
+        "endCol": 68
+      }
     },
     {
       "id": "f007#00504",
@@ -773,7 +1001,13 @@
           "valueVar": "$p",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 103,
+        "endLine": 103,
+        "startCol": 72,
+        "endCol": 91
+      }
     },
     {
       "id": "f007#00505",
@@ -817,7 +1051,13 @@
           "valueVar": "$p",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 103,
+        "endLine": 103,
+        "startCol": 92,
+        "endCol": 111
+      }
     },
     {
       "id": "f007#00515",
@@ -840,7 +1080,13 @@
           "valueVar": "$p",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 103,
+        "endLine": 104,
+        "startCol": 115,
+        "endCol": 17
+      }
     },
     {
       "id": "f007#00516",
@@ -872,7 +1118,13 @@
           "valueVar": "$p",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 104,
+        "endLine": 104,
+        "startCol": 18,
+        "endCol": 37
+      }
     },
     {
       "id": "f007#00523",
@@ -895,7 +1147,13 @@
           "valueVar": "$p",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 104,
+        "endLine": 104,
+        "startCol": 41,
+        "endCol": 48
+      }
     },
     {
       "id": "f007#00524",
@@ -939,7 +1197,13 @@
           "valueVar": "$p",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 104,
+        "endLine": 104,
+        "startCol": 49,
+        "endCol": 69
+      }
     },
     {
       "id": "f007#00535",
@@ -962,7 +1226,13 @@
           "valueVar": "$p",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 104,
+        "endLine": 104,
+        "startCol": 72,
+        "endCol": 73
+      }
     },
     {
       "id": "f007#00536",
@@ -1006,7 +1276,13 @@
           "valueVar": "$p",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 104,
+        "endLine": 104,
+        "startCol": 74,
+        "endCol": 92
+      }
     },
     {
       "id": "f007#00547",
@@ -1029,7 +1305,13 @@
           "valueVar": "$p",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 104,
+        "endLine": 105,
+        "startCol": 95,
+        "endCol": 10
+      }
     },
     {
       "id": "f007#00551",
@@ -1043,13 +1325,25 @@
           "branch": "then",
           "condNodeId": "f007#00460"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 107,
+        "endLine": 108,
+        "startCol": 1,
+        "endCol": 1
+      }
     },
     {
       "id": "f007#00556",
       "kind": "Stmt_InlineHTML",
       "raw": "\t",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 109,
+        "endLine": 109,
+        "startCol": 1,
+        "endCol": 1
+      }
     },
     {
       "id": "f007#00567",
@@ -1063,7 +1357,13 @@
           "branch": "then",
           "condNodeId": "f007#00561"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 110,
+        "endLine": 112,
+        "startCol": 1,
+        "endCol": 50
+      }
     },
     {
       "id": "f007#00568",
@@ -1086,7 +1386,13 @@
           "branch": "then",
           "condNodeId": "f007#00561"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 112,
+        "endLine": 112,
+        "startCol": 51,
+        "endCol": 70
+      }
     },
     {
       "id": "f007#00575",
@@ -1100,7 +1406,13 @@
           "branch": "then",
           "condNodeId": "f007#00561"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 112,
+        "endLine": 112,
+        "startCol": 74,
+        "endCol": 81
+      }
     },
     {
       "id": "f007#00576",
@@ -1135,7 +1447,13 @@
           "branch": "then",
           "condNodeId": "f007#00561"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 112,
+        "endLine": 112,
+        "startCol": 82,
+        "endCol": 104
+      }
     },
     {
       "id": "f007#00587",
@@ -1149,7 +1467,13 @@
           "branch": "then",
           "condNodeId": "f007#00561"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 112,
+        "endLine": 112,
+        "startCol": 107,
+        "endCol": 108
+      }
     },
     {
       "id": "f007#00588",
@@ -1184,7 +1508,13 @@
           "branch": "then",
           "condNodeId": "f007#00561"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 112,
+        "endLine": 112,
+        "startCol": 109,
+        "endCol": 127
+      }
     },
     {
       "id": "f007#00598",
@@ -1198,7 +1528,13 @@
           "branch": "then",
           "condNodeId": "f007#00561"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 112,
+        "endLine": 115,
+        "startCol": 131,
+        "endCol": 6
+      }
     },
     {
       "id": "f007#00613",
@@ -1221,7 +1557,13 @@
           "valueVar": "$pic",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 116,
+        "endLine": 117,
+        "startCol": 1,
+        "endCol": 14
+      }
     },
     {
       "id": "f007#00614",
@@ -1273,7 +1615,13 @@
           "valueVar": "$pic",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 117,
+        "endLine": 117,
+        "startCol": 15,
+        "endCol": 70
+      }
     },
     {
       "id": "f007#00636",
@@ -1296,7 +1644,13 @@
           "valueVar": "$pic",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 117,
+        "endLine": 117,
+        "startCol": 74,
+        "endCol": 93
+      }
     },
     {
       "id": "f007#00637",
@@ -1340,7 +1694,13 @@
           "valueVar": "$pic",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 117,
+        "endLine": 117,
+        "startCol": 94,
+        "endCol": 115
+      }
     },
     {
       "id": "f007#00647",
@@ -1363,7 +1723,13 @@
           "valueVar": "$pic",
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 117,
+        "endLine": 118,
+        "startCol": 119,
+        "endCol": 10
+      }
     },
     {
       "id": "f007#00651",
@@ -1377,13 +1743,25 @@
           "branch": "then",
           "condNodeId": "f007#00561"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 120,
+        "endLine": 121,
+        "startCol": 1,
+        "endCol": 1
+      }
     },
     {
       "id": "f007#00656",
       "kind": "Stmt_InlineHTML",
       "raw": "\t\n      </div>\n\n\n\n",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 122,
+        "endLine": 126,
+        "startCol": 1,
+        "endCol": 1
+      }
     }
   ],
   "queries": {},
@@ -1404,6 +1782,7 @@
       39,
       126
     ],
-    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
+    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not)."
   }
 }

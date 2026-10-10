@@ -14,7 +14,13 @@
           "branch": "then",
           "condNodeId": "f008#00181"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 34,
+        "endLine": 37,
+        "startCol": 1,
+        "endCol": 4
+      }
     },
     {
       "id": "f008#00200",
@@ -28,7 +34,13 @@
           "branch": "then",
           "condNodeId": "f008#00181"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 38,
+        "endLine": 39,
+        "startCol": 1,
+        "endCol": 20
+      }
     },
     {
       "id": "f008#00201",
@@ -63,7 +75,13 @@
           "branch": "then",
           "condNodeId": "f008#00181"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 39,
+        "endLine": 39,
+        "startCol": 21,
+        "endCol": 48
+      }
     },
     {
       "id": "f008#00212",
@@ -77,7 +95,13 @@
           "branch": "then",
           "condNodeId": "f008#00181"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 39,
+        "endLine": 46,
+        "startCol": 51,
+        "endCol": 3
+      }
     }
   ],
   "queries": {},
@@ -96,6 +120,7 @@
       34,
       46
     ],
-    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
+    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not)."
   }
 }

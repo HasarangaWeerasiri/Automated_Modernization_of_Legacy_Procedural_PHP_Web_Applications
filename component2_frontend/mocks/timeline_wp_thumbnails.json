@@ -6,7 +6,13 @@
       "id": "f009#00275",
       "kind": "Stmt_InlineHTML",
       "raw": "<div class=\"column prepend-1 span-21 first last\" style=\"margin-bottom: 2em;\">\n      ",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 93,
+        "endLine": 94,
+        "startCol": 1,
+        "endCol": 6
+      }
     },
     {
       "id": "f009#00286",
@@ -20,7 +26,13 @@
           "branch": "then",
           "condNodeId": "f009#00280"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 95,
+        "endLine": 95,
+        "startCol": 1,
+        "endCol": 32
+      }
     },
     {
       "id": "f009#00404",
@@ -50,7 +62,13 @@
           "branch": "then",
           "condNodeId": "f009#00378"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 112,
+        "endLine": 116,
+        "startCol": 1,
+        "endCol": 2
+      }
     },
     {
       "id": "f009#00459",
@@ -73,7 +91,13 @@
           "valueVar": null,
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 124,
+        "endLine": 125,
+        "startCol": 1,
+        "endCol": 9
+      }
     },
     {
       "id": "f009#00460",
@@ -115,7 +139,13 @@
           "valueVar": null,
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 125,
+        "endLine": 125,
+        "startCol": 10,
+        "endCol": 23
+      }
     },
     {
       "id": "f009#00467",
@@ -138,7 +168,13 @@
           "valueVar": null,
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 125,
+        "endLine": 125,
+        "startCol": 27,
+        "endCol": 46
+      }
     },
     {
       "id": "f009#00468",
@@ -182,7 +218,13 @@
           "valueVar": null,
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 125,
+        "endLine": 125,
+        "startCol": 47,
+        "endCol": 69
+      }
     },
     {
       "id": "f009#00479",
@@ -205,7 +247,13 @@
           "valueVar": null,
           "keyVar": null
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 125,
+        "endLine": 126,
+        "startCol": 73,
+        "endCol": 6
+      }
     },
     {
       "id": "f009#00493",
@@ -219,13 +267,25 @@
           "branch": "else",
           "condNodeId": "f009#00280"
         }
-      ]
+      ],
+      "loc": {
+        "startLine": 133,
+        "endLine": 135,
+        "startCol": 1,
+        "endCol": 1
+      }
     },
     {
       "id": "f009#00498",
       "kind": "Stmt_InlineHTML",
       "raw": "</ul>\n</div>\n",
-      "enclosedBy": []
+      "enclosedBy": [],
+      "loc": {
+        "startLine": 137,
+        "endLine": 138,
+        "startCol": 1,
+        "endCol": 7
+      }
     }
   ],
   "queries": {},
@@ -247,6 +307,7 @@
       93,
       138
     ],
-    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact"
+    "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
+    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not)."
   }
 }

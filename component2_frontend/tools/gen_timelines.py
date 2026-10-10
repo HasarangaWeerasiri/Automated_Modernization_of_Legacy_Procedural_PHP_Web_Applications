@@ -40,6 +40,11 @@ LOOP_TOKENS = {"T_WHILE": "Stmt_While", "T_FOREACH": "Stmt_Foreach", "T_FOR": "S
 LITERALS = {"T_CONSTANT_ENCAPSED_STRING", "T_LNUMBER", "T_DNUMBER"}
 CONFIDENCE_ORDER = ["resolved", "ambiguous", "unresolved"]
 
+LOC_NOTE = ("Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry "
+            "carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, "
+            "computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the "
+            "statement's last byte (an echo's ';' is included; a print's is not).")
+
 # If-condition source text per node id, filled during generation (tests read it).
 CONDITIONS: dict[str, str] = {}
 
@@ -79,7 +84,25 @@ class Source:
         self.ifs = {}  # root If node id -> {condNodeId, cond, line, body_has_query}
         self.loops = {}  # loop node id -> {kind, line, cond (lo, hi) token range}
         self.calls = {}  # call node id -> {fn, tok, line, args [(lo, hi)], assigned}
+        # The token texts concatenate back to the exact source bytes, so each token's byte offset is known.
+        self.offsets, position = [], 0
+        for _, text, _ in tokens:
+            self.offsets.append(position)
+            position += len(text)
+        self.source = b"".join(text for _, text, _ in tokens)
         self._walk()
+
+    def position(self, offset):
+        """1-based (line, column) of a byte offset; the column counts bytes."""
+        line_start = self.source.rfind(b"\n", 0, offset) + 1
+        return self.source.count(b"\n", 0, offset) + 1, offset - line_start + 1
+
+    def loc(self, first, last):
+        """loc of tokens first..last: from the first byte of `first` to the last byte of `last`."""
+        start_line, start_col = self.position(self.offsets[first])
+        end_line, end_col = self.position(self.offsets[last] + len(self.t[last][1]) - 1)
+        assert start_line == self.t[first][2], "lexer line and byte-offset line disagree"
+        return {"startLine": start_line, "endLine": end_line, "startCol": start_col, "endCol": end_col}
 
     def nid(self, i):
         return f"{self.file_id}#{i:05d}"
@@ -233,7 +256,7 @@ class Source:
                        "function": next((f["name"] for f in reversed(stack) if f["kind"] == "function"), None),
                        "frames": [f for f in stack if f["kind"] in ("loop", "branch")]}
                 if name == "T_INLINE_HTML":
-                    out |= {"kind": "Stmt_InlineHTML", "raw": text}
+                    out |= {"kind": "Stmt_InlineHTML", "raw": text, "span": (i, i)}
                 else:
                     j, depth = i + 1, 0
                     while True:
@@ -246,7 +269,12 @@ class Source:
                             depth -= 1
                         j += 1
                     output_end = j
-                    out |= {"kind": "Expr_Print" if name == "T_PRINT" else "Stmt_Echo", "expr": (i + 1, j)}
+                    # The statement runs from echo / print / <?= to its ";" (echo only: a print is an
+                    # expression), or to the last token before the closing tag.
+                    ends_with_semicolon = name != "T_PRINT" and self.t[j][:2] == ("CHAR", b";")
+                    last = j if ends_with_semicolon else self.sig(j, -1)
+                    out |= {"kind": "Expr_Print" if name == "T_PRINT" else "Stmt_Echo", "expr": (i + 1, j),
+                            "span": (i, last)}
                 self.outputs.append(out)
             i += 1
         assert not stack, f"unbalanced blocks: {stack}"
@@ -425,6 +453,7 @@ def build(spec, php, lexer_note):
                                  "branch": f["branch"], "condNodeId": f["condNodeId"]})
                 labels[f["id"]] = if_label(src.ifs[f["id"]])
         entry["enclosedBy"] = enclosed
+        entry["loc"] = src.loc(*out["span"])
         labels[entry["id"]] = label("presentation", "OUTPUT", "output_statement")
         sequence.append(entry)
 
@@ -438,6 +467,7 @@ def build(spec, php, lexer_note):
         "_provenance": provenance | {
             "linesCovered": [selected[0]["line"], selected[-1]["end_line"]],
             "lexer": lexer_note,
+            "locExtension": LOC_NOTE,
         },
     }
     return timeline, {"schemaVersion": SCHEMA_VERSION, "labels": dict(sorted(labels.items()))}
