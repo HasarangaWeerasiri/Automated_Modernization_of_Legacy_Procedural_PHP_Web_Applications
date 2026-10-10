@@ -1,9 +1,9 @@
-# Component 2 — UI Boundary Rules (DRAFT v0.4)
+# Component 2 — UI Boundary Rules (DRAFT v0.5)
 
 | Item | Value |
 |---|---|
 | Status | **Draft** — not frozen. Freeze when 2 consecutive new rule-discovery apps add no new pattern (saturation) |
-| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run) |
+| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note; no rule changed) |
 | Owner | Jayawardhana R D L L (IT23213876) — Component 2, Frontend Migration |
 | Rule-discovery corpus | HMS (`kishan0725/Hospital-Management-System`, commit `777fda4`), WackoPicko (`adamdoupe/WackoPicko`, commit `cabc1b3`, MIT) |
 | Evaluation corpus | **Locked — do not open** (see §7) |
@@ -197,7 +197,7 @@ No-output loops (R-L5): admin-panel.php 146, 315 (inside `<!-- -->`). String-bui
 
 **For Member 01 (core / timeline)**
 1. `SELECT *`: always `ambiguous`, even for a single table?
-2. Condition text for JSX: read from `ast/<fileId>.json` via `condNodeId`, or a new `condExpr` field?
+2. Condition text for JSX: read from `ast/<fileId>.json` via `condNodeId`, or a new `condExpr` field? _(Until answered, C2 mocks carry `condExpr` — byte-exact PHP condition source — on branch enclosures as an agent extension; Stage 5 needs it.)_
 3. `$username = $_SESSION['username']` — will the DFG trace back to the session key?
 4. Function output: does the page timeline include output of called functions (e.g. `display_specs()`, `thumbnail_pic_list()`) at the call site?
 5. Escape wrappers: `<?= h($row['x']) ?>` → `computed` with `derivedFrom` → `db_row_field`?
@@ -209,6 +209,8 @@ No-output loops (R-L5): admin-panel.php 146, 315 (inside `<!-- -->`). String-bui
 11. Does the DFG follow values through class methods in other files (e.g. `Guestbook::get_all_guestbooks()`)? If not, every WackoPicko read stays `unresolved`.
 12. How is a static property read (`Users::$VIEW_URL`) represented?
 13. Can timeline sequence entries carry `loc` (same shape as the AST node envelope: `startLine`, `endLine`, `startCol`, `endCol`)? Flag reports need file and line (NFR4).
+14. `loc` conventions: are lines and columns 0- or 1-based, counted in bytes or characters, and is the end inclusive or exclusive? (nikic's own node attributes are `startLine`/`endLine` (1-based) and `startFilePos`/`endFilePos` (0-based byte offsets); columns would be derived from those. The C2 mocks currently use 1-based, bytes, inclusive end.)
+15. Can loop enclosures (and branch enclosures) also carry `loc`? A List's collection need has no line today.
 
 **For Component 1:** HMS never includes `include/checklogin.php`, so it has no working login gate.
 **For Component 4:** WackoPicko has intentionally unescaped output (`<?= $comment['text'] ?>`, `<?= $guest["comment"] ?>`). React escapes by default, so this output will differ — an expected, intended difference. WackoPicko uses `mysql_*` → needs PHP 5.x to run for runtime capture.

@@ -69,7 +69,8 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00044"
+          "condNodeId": "f003#00044",
+          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'"
         }
       ],
       "loc": {
@@ -105,7 +106,8 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00044"
+          "condNodeId": "f003#00044",
+          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'"
         }
       ],
       "loc": {
@@ -125,7 +127,8 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00044"
+          "condNodeId": "f003#00044",
+          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'"
         }
       ],
       "loc": {
@@ -161,7 +164,8 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00044"
+          "condNodeId": "f003#00044",
+          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'"
         }
       ],
       "loc": {
@@ -181,7 +185,8 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00044"
+          "condNodeId": "f003#00044",
+          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'"
         }
       ],
       "loc": {
@@ -212,7 +217,8 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00044"
+          "condNodeId": "f003#00044",
+          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'"
         }
       ],
       "loc": {
@@ -232,7 +238,8 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00044"
+          "condNodeId": "f003#00044",
+          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'"
         }
       ],
       "loc": {
@@ -272,7 +279,8 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00144"
+          "condNodeId": "f003#00144",
+          "condExpr": "$_SESSION['role'] == 'admin'"
         }
       ],
       "loc": {
@@ -326,6 +334,7 @@
       30
     ],
     "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
-    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not)."
+    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not).",
+    "condExprExtension": "Agent extension, pending Member 01 Q2 (boundary-rules.md section 9): every then/elseif branch enclosure carries condExpr, the byte-exact PHP source of its if/elseif condition from PHP's lexer, without the outer parentheses and the whitespace just inside them. else branches have none: their meaning comes from the chain."
   }
 }

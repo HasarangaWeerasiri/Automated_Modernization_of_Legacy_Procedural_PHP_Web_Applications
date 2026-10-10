@@ -63,6 +63,9 @@ class Enclosure:
     # role "branch"
     branch: str | None = None  # then | elseif | else
     cond_node_id: str | None = None
+    # Optional (agent extension, pending Member 01 Q2): the condition's PHP source, then/elseif only.
+    # Used by Stage 5's whitelist translator only; None means the condition is not available.
+    cond_expr: str | None = None
     # roles "switch_case" / "try_catch": their fields are not specified yet, so whatever the
     # timeline gives is carried here as (key, value) pairs sorted by key. Opaque: never used in a decision.
     extra: tuple[tuple[str, object], ...] = ()
@@ -218,6 +221,43 @@ class ComponentTree:
     counts: TreeCounts
 
 
+# ----------------------------------------------------------------------------- Stage 5 config
+
+
+@dataclass(frozen=True)
+class ReactDom:
+    """What React's TypeScript types accept (config/react_dom.json, extracted by tools/gen_react_dom.py).
+
+    Value kinds: "s" any string, "n" number, "b" boolean; after ":" the accepted string literals; "x" none.
+    """
+
+    elements: dict[str, str]  # tag -> props interface, e.g. "a" -> "AnchorHTMLAttributes"
+    extends: dict[str, tuple[str, ...]]  # interface -> the interfaces it extends
+    props: dict[str, dict[str, str]]  # interface -> prop name -> value kinds
+    css: dict[str, str]  # hyphenated CSS property -> value kinds
+
+
+@dataclass(frozen=True)
+class GenerationConfig:
+    """Settings for Stage 5 (docs/generation-spec.md), read from config/generation.json."""
+
+    escape_wrappers: tuple[str, ...]  # wrappers dropped because React escapes by default
+    context_reasons: dict[str, str]  # read sourceKind -> C2Todo reason
+    condition_context_reasons: dict[str, str]  # superglobal in a condition -> unresolvedCondition reason
+    attribute_renames: dict[str, str]  # HTML attribute -> React prop, where lower-casing is not enough
+    form_state: dict[str, dict[str, str]]  # tag -> HTML attribute -> uncontrolled React prop
+    content_as_prop: dict[str, str]  # tag whose content becomes a prop, e.g. textarea -> defaultValue
+    omitted_attributes: dict[str, dict[str, str]]  # tag -> attribute -> flag raised when it is omitted
+    document_shell_tags: tuple[str, ...]  # tags dropped, children kept
+    dropped_tags: dict[str, str]  # tags dropped with their content -> flag
+    preserve_whitespace_tags: tuple[str, ...]
+    inline_tags: tuple[str, ...]
+    legacy_link_attributes: tuple[str, ...]
+    legacy_link_pattern: str
+    api_base_url_env: str
+    react: ReactDom
+
+
 # ----------------------------------------------------------------------------- contract and endpoint map
 
 
@@ -230,12 +270,25 @@ class ResponseShape:
 
 
 @dataclass(frozen=True)
+class SchemaType:
+    """An OpenAPI schema reduced to what TypeScript types need (Stage 5), with $refs resolved."""
+
+    kind: str  # object | array | string | number | integer | boolean | unknown
+    ref: str | None = None  # its name under #/components/schemas, when it was reached through a $ref
+    properties: tuple[tuple[str, "SchemaType"], ...] = ()  # object: in contract order
+    required: tuple[str, ...] = ()  # object
+    items: "SchemaType | None" = None  # array
+    nullable: bool = False
+
+
+@dataclass(frozen=True)
 class Endpoint:
     method: str  # lower case, e.g. "get"
     path: str
     status: str  # response status code the shape was read from, e.g. "200"
     media_type: str
     response: ResponseShape | None  # None when that response has no object or array schema
+    schema: SchemaType | None = None  # the response body's schema, typed; None when there is none
 
 
 @dataclass(frozen=True)
@@ -334,3 +387,48 @@ class ReconciliationReport:
     collection_results: tuple[NeedResult, ...]  # one per List: mapped or cannot_reconcile
     unused: tuple[str, ...]  # contract properties no output read references (a lower bound, see UNUSED_NOTE)
     counts: ReconciliationCounts
+
+
+# ----------------------------------------------------------------------------- Stage 5 result
+
+
+@dataclass(frozen=True)
+class GeneratedFile:
+    path: str  # relative to the mock's output directory, "/"-separated, e.g. "components/AppointmentsItem.tsx"
+    text: str
+
+
+@dataclass(frozen=True)
+class GenerationEntry:
+    """One C2Todo, unresolvedCondition() or flag in the generated code (docs/generation-spec.md section 1)."""
+
+    kind: str  # C2Todo | unresolvedCondition | flag
+    flag: str | None  # flags only: what was done, e.g. attribute_omitted, escaping_changed, document_shell
+    reason: str  # why, e.g. missing_in_contract, unresolved_read, condition_not_translatable
+    status: str  # review | info
+    file: str  # the generated file
+    line: int  # its line in that file
+    node_id: str  # the timeline node it stands for ("" when none)
+    detail: str
+    function: str  # the generated function it is in
+    in_abstained: bool  # inside an Abstained_ function: generated, but not rendered
+    source_line: int | None  # the PHP line, from the node's loc; None when unknown
+
+
+@dataclass(frozen=True)
+class GeneratedComponent:
+    component_id: str  # position in the Stage 2 tree
+    type: str  # Page | List | Item | Empty | ConditionalComponent
+    name: str
+    file: str
+    todos: int  # C2Todo and unresolvedCondition uses in it, its Abstained_ functions included
+
+
+@dataclass(frozen=True)
+class GenerationResult:
+    entrypoint: str
+    route: str
+    files: tuple[GeneratedFile, ...]  # sorted by path
+    components: tuple[GeneratedComponent, ...]  # in tree order
+    todos: tuple[GenerationEntry, ...]  # C2Todo and unresolvedCondition, by file and line
+    flags: tuple[GenerationEntry, ...]  # by file and line

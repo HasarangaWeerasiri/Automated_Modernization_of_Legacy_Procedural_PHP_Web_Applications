@@ -5,6 +5,7 @@ Pipeline: legacy-PHP output timeline + OpenAPI contract -> Next.js/TSX component
 
     python src/main.py --timeline mocks/timeline_admin.json --labels mocks/labels_admin.json --stage 1
     python src/main.py --timeline mocks/timeline_admin.json --labels mocks/labels_admin.json --stage 2
+    python src/main.py --timeline mocks/timeline_list_while.json --labels mocks/labels_list_while.json --stage 5
     python src/main.py --timeline mocks/timeline_list_while.json --labels mocks/labels_list_while.json --stage all
     python src/main.py --input mocks/timeline_admin.json --contract mocks/sample_contract.json
 """
@@ -29,8 +30,11 @@ from src.mapping import loader  # noqa: E402
 from src.mapping import stage2_boundaries as stage2  # noqa: E402
 from src.mapping import stage3_requirements as stage3  # noqa: E402
 from src.mapping import stage4_reconcile as stage4  # noqa: E402
+from src.mapping import stage5_generate as stage5  # noqa: E402
 from src.mapping.boundary_config import DEFAULT_PATH as DEFAULT_BOUNDARY_CONFIG  # noqa: E402
 from src.mapping.boundary_config import load_boundary_config  # noqa: E402
+from src.mapping.generation_config import DEFAULT_PATH as DEFAULT_GENERATION_CONFIG  # noqa: E402
+from src.mapping.generation_config import load_generation_config  # noqa: E402
 from src.mapping.stage1_isolation import isolate_presentation, summary, write_result  # noqa: E402
 from src.model import Status  # noqa: E402
 
@@ -59,12 +63,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--labels", type=Path, help="Concern labels JSON (mocks/labels_*.json). Used with --stage.")
     parser.add_argument(
         "--stage",
-        choices=["1", "2", "3", "4", "all"],
+        choices=["1", "2", "3", "4", "5", "all"],
         help=(
             "Run the pipeline up to this stage (earlier stages run first) and write output/stage<N>_<name>.json "
             "for each. 1 = presentation isolation, 2 = boundary inference, 3 = data requirements, "
-            "4 = contract reconciliation, all = print stages 1 to 4."
+            "4 = contract reconciliation, 5 = generation (also writes output/generated/<name>/), "
+            "all = print stages 1 to 5."
         ),
+    )
+    parser.add_argument(
+        "--generation-config",
+        type=Path,
+        default=DEFAULT_GENERATION_CONFIG,
+        help="Stage 5 settings (default: config/generation.json).",
     )
     parser.add_argument(
         "--config",
@@ -219,6 +230,14 @@ def print_stage4(report) -> None:
         console.print("  unused = not referenced by output reads; condition reads are not visible yet", style="dim")
 
 
+def print_stage5(result) -> None:
+    console.print(escape(stage5.summary(result)), style="bold")
+    counts = stage5.counts(result)
+    for title, by_reason in (("C2Todos", counts["c2todos"]), ("flags", counts["flags"])):
+        text = ", ".join(f"{reason} {n}" for reason, n in by_reason.items()) or "none"
+        console.print(f"  {title} by reason: {escape(text)}", style="dim" if title == "flags" else None)
+
+
 def display_file(entrypoint: str) -> str:
     """Short file name for the table: the path's last part, or the hand-written mock's file name."""
     if entrypoint.startswith("hand-written:"):
@@ -228,8 +247,8 @@ def display_file(entrypoint: str) -> str:
 
 def run_stages(args) -> None:
     """Run stages 1 to the requested one, write each stage's JSON, print the requested one (or all)."""
-    last = 4 if args.stage == "all" else int(args.stage)
-    shown = {1, 2, 3, 4} if args.stage == "all" else {last}
+    last = 5 if args.stage == "all" else int(args.stage)
+    shown = {1, 2, 3, 4, 5} if args.stage == "all" else {last}
     timeline, labels = load_stage_inputs(args.timeline, args.labels)
 
     def stage(number, title, result, write, show):
@@ -256,8 +275,26 @@ def run_stages(args) -> None:
         return
     contract = load_or_exit("contract", loader.load_contract, args.contract or DEFAULT_CONTRACT)
     endpoint_map = load_or_exit("endpoint map", loader.load_endpoint_map, args.endpoint_map)
-    stage(4, "contract reconciliation", stage4.reconcile(requirements, contract, endpoint_map), stage4.write_report,
-          print_stage4)
+    report = stage(4, "contract reconciliation", stage4.reconcile(requirements, contract, endpoint_map),
+                   stage4.write_report, print_stage4)
+    if last < 5:
+        return
+    generation_config = load_or_exit("generation config", load_generation_config, args.generation_config)
+    result = stage5.generate(tree, requirements, report, contract, timeline, config, generation_config)
+    name = args.timeline.stem.removeprefix("timeline_")
+    output_root = args.output if args.output.is_absolute() else ROOT / args.output
+    directory = output_root / name
+    relative = directory.relative_to(ROOT).as_posix() if directory.is_relative_to(ROOT) else directory.as_posix()
+
+    def write(result, path):
+        stage5.write_report(result, path, relative)
+        stage5.write_files(result, directory)
+
+    def show(result):
+        print_stage5(result)
+        console.print(f"  wrote {len(result.files)} files to {relative}/", style="dim")
+
+    stage(5, "generation", result, write, show)
 
 
 def main() -> None:

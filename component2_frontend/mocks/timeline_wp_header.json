@@ -33,7 +33,8 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00044"
+          "condNodeId": "f009#00044",
+          "condExpr": "$selected == \"home\""
         }
       ],
       "loc": {
@@ -74,7 +75,8 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00064"
+          "condNodeId": "f009#00064",
+          "condExpr": "$selected == \"upload\""
         }
       ],
       "loc": {
@@ -115,7 +117,8 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00084"
+          "condNodeId": "f009#00084",
+          "condExpr": "$selected == \"recent\""
         }
       ],
       "loc": {
@@ -156,7 +159,8 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00104"
+          "condNodeId": "f009#00104",
+          "condExpr": "$selected == \"guestbook\""
         }
       ],
       "loc": {
@@ -188,7 +192,8 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00125"
+          "condNodeId": "f009#00125",
+          "condExpr": "Users::is_logged_in()"
         }
       ],
       "loc": {
@@ -217,14 +222,16 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00125"
+          "condNodeId": "f009#00125",
+          "condExpr": "Users::is_logged_in()"
         },
         {
           "nodeId": "f009#00137",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00139"
+          "condNodeId": "f009#00139",
+          "condExpr": "$selected == \"cart\""
         }
       ],
       "loc": {
@@ -244,7 +251,8 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00125"
+          "condNodeId": "f009#00125",
+          "condExpr": "Users::is_logged_in()"
         }
       ],
       "loc": {
@@ -276,7 +284,8 @@
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00165"
+          "condNodeId": "f009#00165",
+          "condExpr": "Users::is_logged_in()"
         }
       ],
       "loc": {
@@ -381,6 +390,7 @@
       56
     ],
     "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
-    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not)."
+    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not).",
+    "condExprExtension": "Agent extension, pending Member 01 Q2 (boundary-rules.md section 9): every then/elseif branch enclosure carries condExpr, the byte-exact PHP source of its if/elseif condition from PHP's lexer, without the outer parentheses and the whitespace just inside them. else branches have none: their meaning comes from the chain."
   }
 }

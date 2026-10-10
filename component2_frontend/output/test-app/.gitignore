@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Component 2 compile check: generated mocks copied in by tools/compile_check.py
+/c2-check/

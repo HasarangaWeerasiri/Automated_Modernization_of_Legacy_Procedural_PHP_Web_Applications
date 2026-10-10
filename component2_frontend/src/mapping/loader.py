@@ -21,6 +21,7 @@ from src.model import (
     Read,
     ReadSource,
     ResponseShape,
+    SchemaType,
     Timeline,
 )
 
@@ -158,9 +159,14 @@ def load_timeline_json(path: Path) -> dict:
                 if loops_seen.setdefault(enc["nodeId"], enc) != enc:
                     raise ValueError(f"{where}: loop {enc['nodeId']} differs from its earlier copy")
             elif enc.get("role") == "branch":
-                if set(enc) != BRANCH_KEYS or enc["kind"] != "Stmt_If" or enc["branch"] not in BRANCHES:
+                # condExpr is optional (agent extension, pending Member 01 Q2): the condition's PHP source.
+                if (not BRANCH_KEYS <= set(enc) <= BRANCH_KEYS | {"condExpr"} or enc["kind"] != "Stmt_If"
+                        or enc["branch"] not in BRANCHES):
                     raise ValueError(f"{where}: malformed branch {enc}")
                 _check_node_id(enc["condNodeId"], where)
+                if "condExpr" in enc and (enc["branch"] == "else" or not isinstance(enc["condExpr"], str)
+                                          or not enc["condExpr"].strip()):
+                    raise ValueError(f"{where}: condExpr must be non-empty source text, and an else has none")
             elif enc.get("role") in OTHER_ROLES:
                 # Only what every enclosure has is checked; any other field is carried through.
                 if not isinstance(enc.get("kind"), str):
@@ -209,7 +215,7 @@ def _enclosure(d: dict) -> Enclosure:
                          iter_source_kind=d["iterSourceKind"], value_var=d["valueVar"], key_var=d["keyVar"])
     if d["role"] == "branch":
         return Enclosure(node_id=d["nodeId"], kind=d["kind"], role="branch", branch=d["branch"],
-                         cond_node_id=d["condNodeId"])
+                         cond_node_id=d["condNodeId"], cond_expr=d.get("condExpr"))
     extra = tuple(sorted((k, v) for k, v in d.items() if k not in ENCLOSURE_BASE_KEYS))
     return Enclosure(node_id=d["nodeId"], kind=d["kind"], role=d["role"], extra=extra)
 
@@ -313,6 +319,41 @@ def _response_shape(doc: dict, schema, path: Path) -> ResponseShape | None:
     return None
 
 
+SCHEMA_REF_PREFIX = "#/components/schemas/"
+SCALAR_TYPES = ("string", "number", "integer", "boolean")
+
+
+def _schema_type(doc: dict, schema, path: Path, refs: tuple[str, ...] = ()) -> SchemaType:
+    """A response schema as Stage 5 types it. Anything not plainly typed is "unknown", never guessed."""
+    ref = None
+    if isinstance(schema, dict) and isinstance(schema.get("$ref"), str):
+        ref = schema["$ref"].removeprefix(SCHEMA_REF_PREFIX) if schema["$ref"].startswith(SCHEMA_REF_PREFIX) else None
+        if schema["$ref"] in refs:  # a recursive schema: the inner use stays unknown
+            return SchemaType("unknown", ref=ref)
+        refs = (*refs, schema["$ref"])
+    schema = _resolve(doc, schema, path)
+    if not isinstance(schema, dict):
+        return SchemaType("unknown", ref=ref)
+    declared = schema.get("type")
+    types = [declared] if isinstance(declared, str) else list(declared) if isinstance(declared, list) else []
+    nullable = "null" in types or schema.get("nullable") is True
+    types = [t for t in types if t != "null"]
+    if not types and "properties" in schema:
+        types = ["object"]
+    if len(types) != 1 or any(k in schema for k in ("oneOf", "anyOf", "allOf")):
+        return SchemaType("unknown", ref=ref, nullable=nullable)
+    kind = types[0]
+    if kind == "object":
+        properties = tuple((name, _schema_type(doc, sub, path, refs))
+                           for name, sub in schema.get("properties", {}).items())
+        return SchemaType("object", ref=ref, properties=properties, required=tuple(schema.get("required", ())),
+                          nullable=nullable)
+    if kind == "array":
+        return SchemaType("array", ref=ref, items=_schema_type(doc, schema.get("items", {}), path, refs),
+                          nullable=nullable)
+    return SchemaType(kind if kind in SCALAR_TYPES else "unknown", ref=ref, nullable=nullable)
+
+
 def load_contract(path: Path) -> Contract:
     """Load an OpenAPI 3.x contract: for every response with a body, the fields it offers."""
     doc = load_contract_json(path)
@@ -328,8 +369,9 @@ def load_contract(path: Path) -> Contract:
                 for media_type, content in response.get("content", {}).items():
                     schema = content.get("schema")
                     shape = _response_shape(doc, schema, path) if schema is not None else None
+                    typed = _schema_type(doc, schema, path) if schema is not None else None
                     endpoints[(method, route, str(status), media_type)] = Endpoint(
-                        method, route, str(status), media_type, shape)
+                        method, route, str(status), media_type, shape, typed)
     return Contract(title=doc.get("info", {}).get("title", ""), endpoints=endpoints)
 
 

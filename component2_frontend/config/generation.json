@@ -1,0 +1,40 @@
+{
+  "escape_wrappers": ["h", "htmlspecialchars", "htmlentities"],
+  "context_reasons": {
+    "session": "needs_auth_context",
+    "request": "needs_request_context",
+    "server": "needs_request_context"
+  },
+  "condition_context_reasons": {
+    "$_SESSION": "needs_auth_context",
+    "$_GET": "needs_request_context",
+    "$_POST": "needs_request_context",
+    "$_REQUEST": "needs_request_context",
+    "$_COOKIE": "needs_request_context",
+    "$_FILES": "needs_request_context",
+    "$_SERVER": "needs_request_context",
+    "$_ENV": "needs_request_context"
+  },
+  "attribute_renames": {
+    "class": "className",
+    "for": "htmlFor",
+    "accept-charset": "acceptCharset",
+    "http-equiv": "httpEquiv"
+  },
+  "form_state": {
+    "input": {"value": "defaultValue", "checked": "defaultChecked"}
+  },
+  "content_as_prop": {"textarea": "defaultValue"},
+  "omitted_attributes": {
+    "option": {"selected": "option_selected_not_converted"}
+  },
+  "document_shell_tags": ["html", "body"],
+  "dropped_tags": {"head": "document_shell", "script": "inline_js_dropped"},
+  "preserve_whitespace_tags": ["pre", "textarea"],
+  "inline_tags": ["a", "abbr", "b", "bdi", "bdo", "br", "button", "cite", "code", "data", "dfn", "em", "i", "img",
+                  "input", "kbd", "label", "mark", "q", "s", "samp", "select", "small", "span", "strong", "sub",
+                  "sup", "textarea", "time", "u", "var", "wbr"],
+  "legacy_link_attributes": ["href", "action", "formaction"],
+  "legacy_link_pattern": "\\.php(?![A-Za-z0-9_])",
+  "api_base_url_env": "API_BASE_URL"
+}

@@ -44,6 +44,10 @@ LOC_NOTE = ("Agent extension, pending Member 01 Q13 (boundary-rules.md section 9
             "carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, "
             "computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the "
             "statement's last byte (an echo's ';' is included; a print's is not).")
+COND_EXPR_NOTE = ("Agent extension, pending Member 01 Q2 (boundary-rules.md section 9): every then/elseif branch "
+                  "enclosure carries condExpr, the byte-exact PHP source of its if/elseif condition from PHP's "
+                  "lexer, without the outer parentheses and the whitespace just inside them. else branches have "
+                  "none: their meaning comes from the chain.")
 
 # If-condition source text per node id, filled during generation (tests read it).
 CONDITIONS: dict[str, str] = {}
@@ -199,9 +203,10 @@ class Source:
                     self.ifs[root] = {"condNodeId": cond_id, "cond": cond, "line": line, "body_has_query": False,
                                       "body_has_action": False}
                     CONDITIONS[root] = cond
-                    frame = {"kind": "branch", "id": root, "branch": "then", "condNodeId": cond_id}
+                    frame = {"kind": "branch", "id": root, "branch": "then", "condNodeId": cond_id, "cond": cond}
                 else:
-                    frame = {"kind": "branch", "id": last_closed_if, "branch": "elseif", "condNodeId": cond_id}
+                    frame = {"kind": "branch", "id": last_closed_if, "branch": "elseif", "condNodeId": cond_id,
+                             "cond": cond}
                     CONDITIONS[cond_id] = cond
                 pending = frame
                 i = close + 1
@@ -449,8 +454,11 @@ def build(spec, php, lexer_note):
                 else:
                     labels[f["id"]] = label("presentation", "RENDER-LOOP", "iterates_prefetched_rows")
             else:
-                enclosed.append({"nodeId": f["id"], "kind": "Stmt_If", "role": "branch",
-                                 "branch": f["branch"], "condNodeId": f["condNodeId"]})
+                branch = {"nodeId": f["id"], "kind": "Stmt_If", "role": "branch",
+                          "branch": f["branch"], "condNodeId": f["condNodeId"]}
+                if f["branch"] != "else":  # an else's meaning comes from the chain, so it has no condExpr
+                    branch["condExpr"] = f["cond"]
+                enclosed.append(branch)
                 labels[f["id"]] = if_label(src.ifs[f["id"]])
         entry["enclosedBy"] = enclosed
         entry["loc"] = src.loc(*out["span"])
@@ -468,6 +476,7 @@ def build(spec, php, lexer_note):
             "linesCovered": [selected[0]["line"], selected[-1]["end_line"]],
             "lexer": lexer_note,
             "locExtension": LOC_NOTE,
+            "condExprExtension": COND_EXPR_NOTE,
         },
     }
     return timeline, {"schemaVersion": SCHEMA_VERSION, "labels": dict(sorted(labels.items()))}
