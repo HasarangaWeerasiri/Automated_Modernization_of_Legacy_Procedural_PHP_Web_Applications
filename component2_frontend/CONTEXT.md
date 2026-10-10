@@ -1,6 +1,6 @@
 # Component 2 — Agent Context (read this first, every task)
 
-_Version 7 — 10 Oct 2026 (updated after the Stage 3–4 fix-up review; Stage 5 starts)._
+_Version 8 — 10 Oct 2026 (updated after the Stage 5 review)._
 
 This file is the handoff between the research chat and the coding agent. It records decisions
 already made. **Do not change a decision recorded here.** If something here looks wrong or a task
@@ -31,7 +31,7 @@ SQLAlchemy (data). Anything the tool cannot resolve is **flagged, not guessed** 
 | 2 | Boundary inference | Stage 1 result → component tree, using `docs/php-analysis/boundary-rules.md` | **Done** (`cf56444`, `65674b8`) |
 | 3 | Data requirement recovery | per component: union of its output nodes' `reads` → fields needed | **Done on mocks** (`f14a1cc` + loc fix-up) — spec `docs/reconciliation-spec.md` v0.2. Real input needs the DFG |
 | 4 | Contract reconciliation | needs vs contract → matched / missing / unused / excluded / cannot reconcile | **Done on mocks** (`contact` gap found). Real `SELECT *` needs C3 schema; real evidence needs C1's contract + endpoint map |
-| 5 | Generation | Next.js **Server Components** (`.tsx`) + typed fetch layer | **In progress** — spec `docs/generation-spec.md` v0.1 |
+| 5 | Generation | Next.js **Server Components** (`.tsx`) + typed fetch layer | **Done on mocks** (`ab64238`; 0 tsc errors on all 10 mocks) — spec `docs/generation-spec.md` v0.2 (fix-up in progress) |
 
 Inline JS / AJAX is **out of scope**: detect and flag it, never convert it.
 Everything is generated as a Server Component, **by construction**.
@@ -82,7 +82,7 @@ label keys use `nodeId`; field naming pending Member 01's confirmation — the l
 6. `ambiguous` reads (e.g. `SELECT *`) need C3's schema → until then, flag them.
 7. Output must be **deterministic**: same input → byte-identical output, stable ordering.
 8. Do not modify mock files unless the task says so. Never change `raw` values.
-9. **Commit policy (owner decision, 10 Oct):** the agent **commits locally** on `frontend-migration-` at the end of every task and before any branch switch (`component2_frontend/` does not exist on `dev`), using the attribution trailers the tool adds. **Never push** — the owner pushes. This replaces the 8 Oct "don't commit" instruction.
+9. **Commit policy (owner decision, 10 Oct):** the agent **commits locally** on `frontend-migration-` at the end of every task and before any branch switch (`component2_frontend/` does not exist on `dev`), using the attribution trailers the tool adds. **Keep the trailers; never remove or amend them** (owner decision 10 Oct: the repo history must match the report's AI-use disclosure). **Never push** — the owner pushes. This replaces the 8 Oct "don't commit" instruction.
 10. Never edit HMS files with Git Bash `sed` (it converts CRLF → LF).
 
 ## 5. Corpus rules
@@ -101,7 +101,9 @@ label keys use `nodeId`; field naming pending Member 01's confirmation — the l
 - WackoPicko mocks: `{timeline,labels}_wp_{guestbook,view,login,header,thumbnails}.json` (generated). Their **labels are generator placeholders**, not C1 output, and every WackoPicko read is `unresolved` (data comes through class methods in `include/*.php`). Use them for Stage 2 only.
 - Deliberate contract gap: field **`contact`** (flagged on list pages only). `sku` appears in no schema.
 - `undecided` nodes: edge_cases (1, `auth_or_display`), wp_login (1, placeholder `logic_or_display`), wp_thumbnails (1, placeholder `logic_or_display`).
-- Tests: 380 passing (after the Stage 3–4 fix-up). All 10 timeline mocks carry `loc`; `tests/test_loc.py` checks every loc against the real source bytes. The Stage 2 CLI test forces UTF-8 (the owner's Windows console uses code page cp932). Extra fixtures: `tests/fixtures/{timeline,labels}_unlabelled.json`, `tests/fixtures/{timeline,labels}_switch_case.json` (`caseNodeId`, `Stmt_Switch` are placeholders).
+- Tests: 537 passing (after Stage 5, `ab64238`). Node 24.16.0 on the owner's machine; test app `output/test-app` (create-next-app scaffold, versions pinned).
+- Stage 5 modules: `stage5_generate.py`, `markup.py`, `jsx.py`, `conditions.py`, `generation_config.py`; config `generation.json`, `react_dom.json` (from `tools/gen_react_dom.py`); `tools/compile_check.py`.
+- Earlier: 380 passing after the Stage 3–4 fix-up. All 10 timeline mocks carry `loc`; `tests/test_loc.py` checks every loc against the real source bytes. The Stage 2 CLI test forces UTF-8 (the owner's Windows console uses code page cp932). Extra fixtures: `tests/fixtures/{timeline,labels}_unlabelled.json`, `tests/fixtures/{timeline,labels}_switch_case.json` (`caseNodeId`, `Stmt_Switch` are placeholders).
 - Loader: accepts `iteration`, `branch`, `switch_case`, `try_catch` roles (unknown fields of the last two kept as opaque `extra`); rejects any other role as format drift. `queries` map optional; validated only when present.
 - Review nodes in list_while / list_foreach / detail = the loop itself, `mixed`, reason `fetch_in_loop_header` (expected; rule 4a).
   Generator `tools/gen_timelines.py` needs PHP and HMS at `777fda4`.

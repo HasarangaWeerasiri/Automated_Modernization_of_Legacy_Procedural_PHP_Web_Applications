@@ -1,8 +1,8 @@
-# Component 2 — Stage 5 Generation Specification (v0.1)
+# Component 2 — Stage 5 Generation Specification (v0.2)
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.1 — for implementation on the rule-discovery mocks only (evaluation apps stay locked) |
+| Status | Draft v0.2 — v0.1 implemented on the rule-discovery mocks (`ab64238`); v0.2 records the corrections from that run. Evaluation apps stay locked |
 | Date | 10 October 2026 |
 | Owner | Jayawardhana R D L L (IT23213876) |
 | Input | Stage 2 tree, Stage 3 needs, Stage 4 report, contract, endpoint map, timeline |
@@ -70,7 +70,7 @@ output/generated/<name>/
 |---|---|
 | `h`, `htmlspecialchars`, `htmlentities` | Dropped — React escapes by default |
 | Any other (e.g. `number_format`) | Base value + `/* TODO(C2): <wrapper> */` comment; status `review`, reason `unsupported_wrapper` |
-| Output that was **not** escaped in PHP (`<?= $comment['text'] ?>`) | Generated normally (React escapes it). Flag `escaping_changed` (info for C4 — an expected difference) |
+| Output that was **not** escaped in PHP (`<?= $comment['text'] ?>`, and every plain HMS `echo $row[...]`) | Generated normally (React escapes it). Flag `escaping_changed` (info for C4 — an expected difference). Only non-literal output; the CLI prints one line per page with the count |
 
 ## 5. Markup → JSX
 
@@ -88,6 +88,8 @@ output/generated/<name>/
 | `style="a:b; c:d"` | Style object if every declaration parses; else C2Todo `unsupported_style` on that attribute |
 | Entities (`&nbsp;`, `&nbsp` without `;`, `&#8377;`) | Decoded with HTML5 rules (Python `html.unescape`), then written as a JSX string so the rendered character is identical |
 | Text with `{`, `}`, `<`, `>` | Wrapped as `{"..."}` |
+| Attributes React's types do not declare (`name` on `<option>`, `tooltip` on `<a>`) | Omitted, flag `attribute_dropped` (`review`). Hyphenated attributes (`data-*`, `aria-*`, `tooltip-placement`) kept. The accepted list is `config/react_dom.json`, extracted from the pinned `@types/react` (record that version in the file) |
+| Elements still open at the end of an excerpt | Closed at the end, flag `unclosed_at_end` (info) |
 | Whitespace | Text with content: runs collapse to one space (as a browser does). Whitespace-only between two inline nodes: `{" "}`. Whitespace-only between block elements: dropped. Inside `<pre>`, `<textarea>`: kept exactly, as a string literal |
 | Unmatched closing tag (R-L6 flag) | Dropped; flag kept |
 | Event attributes (`onclick`, `onsubmit`, …), `<script>` | **Dropped** (inline JS is out of scope; Server Components cannot have handlers). Flag `inline_js_dropped`, status `review` |
@@ -115,9 +117,14 @@ Anything else (`$_SESSION[...]`, function calls, other variables, `mysqli_*`) �
 `review`, reason `condition_not_translatable` or `needs_auth_context`. No `condExpr` → reason
 `condition_unavailable`.
 
-**Note on PHP vs JS comparison:** loose `==` differs between PHP and JavaScript in edge cases (e.g.
-`"abc" == 0`). Every translated condition that compares a string to a number is flagged
-`loose_compare_semantics` (info) for C4.
+**PHP vs JS comparison (corrected in v0.2):**
+
+| Case | Generated |
+|---|---|
+| number vs number | Translated |
+| string vs number | **Not translated** — TypeScript rejects it (TS2367) and PHP's loose rules differ. `unresolvedCondition`, reason `loose_compare_semantics` (`review`) |
+| string vs string with `==` / `!=` | Translated, flag `numeric_string_compare` (info): PHP compares two numeric strings as numbers (`"10" == "1e1"` is true) |
+| string field used alone as a truth value | Not translated (PHP treats `"0"` as false, JS as true) → `condition_not_translatable` |
 
 **R-I6 chains are generated as separate conditionals, in source order** — one `{cond && …}` per `if`,
 never an `else`/ternary chain. So the generated code makes **no exclusivity assumption** and behaves
@@ -153,14 +160,16 @@ determinism). Two runs → byte-identical files.
 | Compiles | Copy each mock's output into the Next.js test app (`output/test-app`), run `npx tsc --noEmit`: **0 errors** for every mock. Test skips with a clear message if Node is missing |
 | Server-only | No `'use client'` anywhere; no event handler props |
 | Determinism | Two runs byte-identical |
-| No hidden gaps | Every Stage 4 `missing` / `cannot_reconcile` need and every Stage 2 abstain appears as a C2Todo |
+| No hidden gaps | Every Stage 4 `missing` / `cannot_reconcile` need and every Stage 2 abstain appears as a C2Todo — or, for a gap inside an attribute, as an `attribute_omitted:<reason>` flag carrying the node id (an attribute has nowhere to hold a C2Todo) |
+| HTML nesting (v0.2) | Serialise each generated element tree to HTML (data expressions as placeholder text), parse it with an HTML5-compliant parser (Python `html5lib`, pinned), compare the element tree. Any difference (e.g. `<form>` directly in `<table>`, which the browser re-parents but React will not) → flag `html_nesting_changed` (`review`) with the element path. `tsc` cannot see this |
+| Strict types | The test app's `tsconfig.json` has `"strict": true`; the compile check fails if it does not |
 
 ## 11. Expected results on the current mocks
 
 | Mock | Expected |
 |---|---|
 | list_while | `AppointmentsList` (`<table>`), `AppointmentsItem` (`<tr>`, 11 data cells + status cell); `contact` → C2Todo `missing_in_contract`. Status cell: three separate conditionals from `condExpr` (`row.userStatus == 1 && row.doctorStatus == 1` → `"Active"`, etc.) **if** both fields are in the item type — else `condition_not_translatable`; still `review` (R-I6). Report which happened |
-| list_foreach | Components **byte-identical** to list_while (only route/file names differ) |
+| list_foreach | Components byte-identical to list_while **after normalising node ids** (C2Todo ids are node ids, which differ between the two timelines) |
 | admin | Authorization guard → C2Todo `cuts_across_business_logic` + `Abstained_…` function; session reads → `needs_auth_context` |
 | detail | Compiles; no `missing` C2Todo |
 | edge_cases | `ambiguous_needs_schema` / `unresolved_read` C2Todos; nested `foreach`-in-`if` → C2Todo from Stage 2 abstain |
@@ -171,9 +180,11 @@ determinism). Two runs → byte-identical files.
 
 | Metric | From |
 |---|---|
-| Rendering preservation (SO4) | Server-only check + compile check |
+| Rendering preservation (SO4) | Server-only check + compile check + nesting check |
 | Components generated without C2Todo | count / total components |
-| Flag rate | C2Todo count (by reason) added to Stage 2–4 flags |
+| Flag rate | C2Todos + `review` flags only. `info` flags (`escaping_changed`, `legacy_link`, `html_comment_dropped`, `unclosed_at_end`, `numeric_string_compare`) are reported separately and **not** counted — they are expected differences, not developer work |
+
+Every flag in `stage5_<name>.json` carries `severity`: `todo` (a C2Todo or omitted attribute), `review`, or `info`.
 
 ## 13. Decision log (Appendix E)
 
@@ -187,3 +198,8 @@ determinism). Two runs → byte-identical files.
 | 10 Oct 2026 | R-I6 chains generated as separate conditionals | Faithful to PHP whatever the exclusivity; removes the behaviour risk R-I6 was flagged for |
 | 10 Oct 2026 | Unresolvable attribute → omitted, not emptied | An empty `href` or `class` is a silent guess; omission plus a flag is visible |
 | 10 Oct 2026 | Document shell (`html/head/body`) not generated in pages | Next.js puts it in `layout.tsx`; layouts wait on R-F2 |
+| 10 Oct 2026 | v0.2: gap inside an attribute is shown as `attribute_omitted:<reason>` | No place for a C2Todo in an attribute; the flag carries the node id |
+| 10 Oct 2026 | v0.2: string-vs-number comparisons are not translated | TS2367 and PHP's loose rules; flagging but translating was impossible |
+| 10 Oct 2026 | v0.2: `escaping_changed` on every non-literal unescaped echo, severity info, outside the flag rate | True for HMS too (React escapes `<` and `&`); C4 needs it; counting it would inflate the flag rate with no developer action |
+| 10 Oct 2026 | v0.2: HTML nesting check added | Invalid nesting compiles but renders differently from the browser's re-parented legacy page |
+| 10 Oct 2026 | v0.2: route clash for function files recorded, not fixed | `wp_header` and `wp_thumbnails` are functions in `html_functions.php`; they are components, not pages. Waits on R-F1/R-F2 (Member 01 Q4) |

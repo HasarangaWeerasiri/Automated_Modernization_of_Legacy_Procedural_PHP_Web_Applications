@@ -17,7 +17,9 @@ Type rules, so the output compiles and means what the PHP meant:
     JavaScript differ there and TypeScript rejects it, so it is not translated;
   - a value used as a truth value must be a number or a boolean: PHP treats
     the string "0" as false and JavaScript as true, so a string field is not
-    used as a truth value.
+    used as a truth value;
+  - == / != between two strings is translated, but noted (Translation.notes):
+    PHP compares two numeric strings as numbers, JavaScript as text.
 """
 
 import re
@@ -69,6 +71,9 @@ class Scope:
 class Translation:
     code: str | None  # the TypeScript expression; None when the condition is not translated
     reason: str | None  # why not (condition_unavailable, condition_not_translatable, needs_auth_context, ...)
+    # One entry per translated == / != between two strings (spec v0.2 section 6): PHP compares two
+    # numeric strings as numbers ("10" == "1e1"), JavaScript does not. Each becomes a numeric_string_compare flag.
+    notes: tuple[str, ...] = ()
 
 
 @dataclass
@@ -105,6 +110,7 @@ def _ts_property(base: str, name: str) -> str:
 class _Parser:
     def __init__(self, tokens, scope: Scope):
         self.tokens, self.scope, self.i = tokens, scope, 0
+        self.notes: list[str] = []
 
     def peek(self, offset=0):
         return self.tokens[self.i + offset] if self.i + offset < len(self.tokens) else (None, None)
@@ -221,7 +227,10 @@ class _Parser:
             raise NotTranslatable("loose_compare_semantics" if {left.type, right.type} == {"string", "number"}
                                   else "condition_not_translatable")
         power = _TS[op]
-        return _Node(f"{self.wrap(left, power)} {op} {self.wrap(right, power + 1)}", power, "boolean")
+        code = f"{self.wrap(left, power)} {op} {self.wrap(right, power + 1)}"
+        if op in ("==", "!=") and left.type == "string":
+            self.notes.append(code)
+        return _Node(code, power, "boolean")
 
     @staticmethod
     def wrap(node: _Node, needed: int) -> str:
@@ -240,4 +249,4 @@ def translate(cond_expr: str | None, scope: Scope, context_reasons: dict[str, st
         node = parser.truth(parser.parse())
     except NotTranslatable as e:
         return Translation(None, e.reason)
-    return Translation(node.code, None)
+    return Translation(node.code, None, tuple(parser.notes))

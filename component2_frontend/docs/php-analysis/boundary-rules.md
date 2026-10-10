@@ -1,9 +1,9 @@
-# Component 2 — UI Boundary Rules (DRAFT v0.5)
+# Component 2 — UI Boundary Rules (DRAFT v0.6)
 
 | Item | Value |
 |---|---|
 | Status | **Draft** — not frozen. Freeze when 2 consecutive new rule-discovery apps add no new pattern (saturation) |
-| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note; no rule changed) |
+| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note · v0.6, 10 Oct: Q2 note gives the exact condExpr form; no rule changed) |
 | Owner | Jayawardhana R D L L (IT23213876) — Component 2, Frontend Migration |
 | Rule-discovery corpus | HMS (`kishan0725/Hospital-Management-System`, commit `777fda4`), WackoPicko (`adamdoupe/WackoPicko`, commit `cabc1b3`, MIT) |
 | Evaluation corpus | **Locked — do not open** (see §7) |
@@ -197,7 +197,7 @@ No-output loops (R-L5): admin-panel.php 146, 315 (inside `<!-- -->`). String-bui
 
 **For Member 01 (core / timeline)**
 1. `SELECT *`: always `ambiguous`, even for a single table?
-2. Condition text for JSX: read from `ast/<fileId>.json` via `condNodeId`, or a new `condExpr` field? _(Until answered, C2 mocks carry `condExpr` — byte-exact PHP condition source — on branch enclosures as an agent extension; Stage 5 needs it.)_
+2. Condition text for JSX: read from `ast/<fileId>.json` via `condNodeId`, or a new `condExpr` field? _(Until answered, C2 mocks carry `condExpr` on branch enclosures as an agent extension; Stage 5 needs it. Form: the byte-exact source between the `if`/`elseif` parentheses, with the whitespace just inside them trimmed; no `condExpr` on `else`. Is this form acceptable, or will the core emit something else?)_
 3. `$username = $_SESSION['username']` — will the DFG trace back to the session key?
 4. Function output: does the page timeline include output of called functions (e.g. `display_specs()`, `thumbnail_pic_list()`) at the call site?
 5. Escape wrappers: `<?= h($row['x']) ?>` → `computed` with `derivedFrom` → `db_row_field`?

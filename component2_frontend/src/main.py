@@ -232,10 +232,17 @@ def print_stage4(report) -> None:
 
 def print_stage5(result) -> None:
     console.print(escape(stage5.summary(result)), style="bold")
-    counts = stage5.counts(result)
-    for title, by_reason in (("C2Todos", counts["c2todos"]), ("flags", counts["flags"])):
-        text = ", ".join(f"{reason} {n}" for reason, n in by_reason.items()) or "none"
-        console.print(f"  {title} by reason: {escape(text)}", style="dim" if title == "flags" else None)
+    severity = stage5.by_severity(result)
+    escaping = severity["info"].pop("escaping_changed", 0)
+
+    def line(by_reason):
+        return escape(", ".join(f"{reason} {n}" for reason, n in by_reason.items()) or "none")
+
+    console.print(f"  todo by reason: {line(severity['todo'])}")
+    console.print(f"  review by reason: {line(severity['review'])}", style="yellow")
+    if escaping:
+        console.print(f"  escaping_changed: {escaping} unescaped outputs (info, not in the flag rate)", style="dim")
+    console.print(f"  other info (not in the flag rate): {line(severity['info'])}", style="dim")
 
 
 def display_file(entrypoint: str) -> str:

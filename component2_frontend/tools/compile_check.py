@@ -2,7 +2,8 @@
 
 Copies one mock's generated files into the pinned Next.js test app
 (output/test-app/c2-check/<mock>/), writes a tsconfig there that extends the
-app's own, and runs `npx tsc --noEmit` on it. Target: 0 errors for every mock.
+app's own (which must set "strict": true, or the check fails), and runs
+`npx tsc --noEmit` on it. Target: 0 errors for every mock.
 
 Usage, from component2_frontend/ (after `npm ci` in output/test-app and a Stage 5 run):
     venv/Scripts/python.exe tools/compile_check.py            # every mock in output/generated
@@ -39,7 +40,18 @@ def unavailable() -> str | None:
     return None
 
 
+def strict_enabled(tsconfig: Path = TEST_APP / "tsconfig.json") -> bool:
+    """Spec v0.2 section 10: the test app must compile with "strict": true."""
+    try:
+        options = json.loads(tsconfig.read_text(encoding="utf-8")).get("compilerOptions", {})
+    except (OSError, ValueError):
+        return False
+    return options.get("strict") is True
+
+
 def check(name: str, source: Path) -> CompileResult:
+    if not strict_enabled():
+        return CompileResult(name, 1, 'output/test-app/tsconfig.json does not set "strict": true')
     target = CHECK_DIR / name
     if target.exists():
         shutil.rmtree(target)

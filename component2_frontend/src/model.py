@@ -413,6 +413,9 @@ class GenerationEntry:
     function: str  # the generated function it is in
     in_abstained: bool  # inside an Abstained_ function: generated, but not rendered
     source_line: int | None  # the PHP line, from the node's loc; None when unknown
+    # todo (a gap: C2Todo, unresolvedCondition, omitted attribute or dropped output) | review | info.
+    # The flag rate counts todo + review (spec v0.2 section 12).
+    severity: str = "review"
 
 
 @dataclass(frozen=True)

@@ -1,4 +1,4 @@
-"""Stage 5: generation (docs/generation-spec.md v0.1).
+"""Stage 5: generation (docs/generation-spec.md v0.2).
 
 Turns the Stage 2 component tree, the Stage 3 needs and the Stage 4 results
 into Next.js (App Router) Server Components:
@@ -37,7 +37,7 @@ import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from src.mapping import jsx
+from src.mapping import jsx, nesting
 from src.mapping.conditions import Scope, translate
 from src.mapping.markup import (
     HTML_SPACE,
@@ -74,6 +74,8 @@ from src.model import (
 
 COMPONENT_FILES = ("List", "Item", "Empty", "ConditionalComponent")
 REVIEW, INFO = "review", "info"
+SEVERITIES = ("todo", "review", "info")
+TODO_FLAGS = ("attribute_omitted", "output_dropped")  # flags that stand for a gap, like a C2Todo
 FLAGGED = ("missing", "cannot_reconcile")
 _SPACE_RUN = re.compile(f"[{re.escape(HTML_SPACE)}]+")
 _IDENTIFIER = re.compile(r"[A-Za-z_$][\w$]*")
@@ -713,7 +715,8 @@ class Generator:
                 node_id = part.if_id if enclosure.branch == "then" else enclosure.cond_node_id
                 failures.append((translation.reason, node_id))
                 continue
-            self.note_condition_uses(translation.code, ctx)
+            node_id = part.if_id if enclosure.branch == "then" else enclosure.cond_node_id
+            self.translated(translation, node_id, ctx, marks)
             branches.append((translation.code, value))
         if failures:
             return None, failures
@@ -791,11 +794,18 @@ class Generator:
     def condition(self, mif: MIf, branch: MBranch, ctx: _Ctx, marks: list, guard_var: str | None = None) -> str:
         translation = translate(branch.enclosure.cond_expr, self.scope(ctx, guard_var),
                                 self.config.condition_context_reasons)
-        if translation.code is not None:
-            self.note_condition_uses(translation.code, ctx)
-            return translation.code
         node_id = mif.if_id if branch.enclosure.branch == "then" else branch.enclosure.cond_node_id
+        if translation.code is not None:
+            self.translated(translation, node_id, ctx, marks)
+            return translation.code
         return self.unresolved(node_id, translation.reason, ctx, marks)
+
+    def translated(self, translation, node_id: str, ctx: _Ctx, marks: list) -> None:
+        """A condition that was translated: note the props it reads, and flag every string == / != in it."""
+        self.note_condition_uses(translation.code, ctx)
+        for comparison in translation.notes:
+            marks.append(self.flag(ctx, "numeric_string_compare", INFO, node_id,
+                                   f"{comparison}: PHP compares two numeric strings as numbers"))
 
     def if_(self, mif: MIf, ctx: _Ctx) -> list:
         if mif.if_id == self.page_guard:  # R-I1: the page renders normally
@@ -972,8 +982,10 @@ class Generator:
             root = guard
         else:
             raise GenerationError("markup_not_generatable", f"List {lst.source_ids[0]}: guard and container apart")
+        # Everything inside the List's own loop is its row (an R-L3 row is a Stage 2 leaf, so the ifs in it
+        # have no Stage 2 node); outside the loop, the container may hold only what Stage 2 put in this List.
         allowed = set(lst.node_ids) | {s for n in _walk(lst) for s in n.source_ids}
-        for inner in _markup_walk(root):
+        for inner in _markup_walk(root, skip=loop):
             owner = inner.output.id if isinstance(inner, MDynamic) else (
                 inner.enclosure.node_id if isinstance(inner, MLoop) else inner.if_id if isinstance(inner, MIf) else
                 inner.node.source_ids[0] if isinstance(inner, MAbstain) else None)
@@ -1218,8 +1230,59 @@ class Generator:
         collect(self.schema)
         return names
 
+    def nesting_check(self) -> None:
+        """Spec v0.2 section 10: flag every place an HTML5 parser would nest the rendered page differently.
+
+        Each tree checked is what a function renders: the Page, and each Abstained_ function on its own (not
+        rendered, but generated code; its flags are marked in_abstained). Component calls are expanded in place,
+        every branch of a conditional and one row of a map are included, C2Todo renders nothing."""
+        functions = {f.name: (f, file) for file in self.files.values() for f in file.functions}
+
+        def build(items: list, file: _File, function: str) -> list:
+            out = []
+            for item in items:
+                if isinstance(item, jsx.Text):
+                    if item.text.strip(HTML_SPACE):
+                        out.append(nesting.TEXT)
+                elif isinstance(item, jsx.Expr):
+                    out.append(nesting.TEXT)
+                elif isinstance(item, jsx.Element) and item.tag == "C2Todo":
+                    continue
+                elif isinstance(item, jsx.Element) and item.tag[:1].isupper():  # a component: its output here
+                    called, called_file = functions[item.tag]
+                    out += build(called.body, called_file, called.name)
+                elif isinstance(item, jsx.Element):
+                    element_id = next((a.value for a in item.attrs if a.name == "id" and a.value), None)
+                    out.append(nesting.Node(item.tag, build(item.children, file, function),
+                                            item.tag + (f"#{element_id}" if element_id else ""), (item, file, function)))
+                elif isinstance(item, jsx.Fragment):
+                    out += build(item.children, file, function)
+                elif isinstance(item, jsx.Cond):
+                    for _, content in item.branches:
+                        out += build(content, file, function)
+                    out += build(item.otherwise or [], file, function)
+                elif isinstance(item, jsx.Map):
+                    out += build(item.body, file, function)
+            return out
+
+        roots = [name for name in functions if name == "Page" or name.startswith("Abstained_")]
+        for root in sorted(roots, key=lambda name: (name != "Page", name)):
+            top, top_file = functions[root]
+            in_abstained = root != "Page"
+            for difference in nesting.compare(build(top.body, top_file, root),
+                                              frozenset(self.boundary_config.void_tags)):
+                element, file, function = difference.owner or (None, top_file, root)
+                mark = file.mark() if element is not None else top.key
+                if element is not None:
+                    element.marks = element.marks + (mark,)
+                detail = (f"{difference.path}: generated children [{', '.join(difference.ours)}]; an HTML5 parser "
+                          f"builds [{', '.join(difference.parsed)}]")
+                file.entries.append(_Entry("flag", "html_nesting_changed", "html_nesting_changed", REVIEW, "",
+                                           detail, mark, function, in_abstained))
+
     def result(self) -> GenerationResult:
         self.type_imports()
+        self.nesting_check()
         files, todos, flags = [], [], []
         for path in sorted(self.files):
             file = self.files[path]
@@ -1232,7 +1295,8 @@ class Generator:
                 entry = GenerationEntry(
                     kind=e.kind, flag=e.flag, reason=e.reason, status=e.status, file=path, line=line,
                     node_id=e.node_id, detail=e.detail, function=e.function, in_abstained=e.in_abstained,
-                    source_line=node.loc.start_line if node is not None and node.loc is not None else None)
+                    source_line=node.loc.start_line if node is not None and node.loc is not None else None,
+                    severity="todo" if e.kind != "flag" or e.flag in TODO_FLAGS else e.status)
                 (flags if e.kind == "flag" else todos).append(entry)
         for path, text in sorted(self.lib_files().items()):
             files.append(GeneratedFile(path, text))
@@ -1298,13 +1362,16 @@ def _walk(node: ComponentNode):
         yield from _walk(child)
 
 
-def _markup_walk(node):
+def _markup_walk(node, skip=None):
+    """Every markup node under `node`, without descending into `skip` (which is still yielded)."""
     yield node
+    if node is skip:
+        return
     for child in getattr(node, "children", []):
-        yield from _markup_walk(child)
+        yield from _markup_walk(child, skip)
     for branch in getattr(node, "branches", []):
         if isinstance(branch, MBranch):
-            yield from _markup_walk(branch)
+            yield from _markup_walk(branch, skip)
 
 
 # ----------------------------------------------------------------------------- entry point and output
@@ -1333,13 +1400,23 @@ def _entry_dict(e: GenerationEntry) -> dict:
     out = {"kind": e.kind}
     if e.kind == "flag":
         out["flag"] = e.flag
-    out |= {"reason": e.reason, "status": e.status, "file": e.file, "line": e.line, "nodeId": e.node_id,
-            "function": e.function, "inAbstained": e.in_abstained, "sourceLine": e.source_line, "detail": e.detail}
+    out |= {"reason": e.reason, "severity": e.severity, "status": e.status, "file": e.file, "line": e.line,
+            "nodeId": e.node_id, "function": e.function, "inAbstained": e.in_abstained, "sourceLine": e.source_line,
+            "detail": e.detail}
     return out
 
 
 def flag_key(e: GenerationEntry) -> str:
     return e.flag if e.flag == e.reason else f"{e.flag}:{e.reason}"
+
+
+def by_severity(result: GenerationResult) -> dict[str, dict[str, int]]:
+    """severity -> {reason: count}. C2Todos count by their reason, flags by flag_key."""
+    out = {severity: {} for severity in SEVERITIES}
+    for e in result.todos + result.flags:
+        key = e.reason if e.kind != "flag" else flag_key(e)
+        out[e.severity][key] = out[e.severity].get(key, 0) + 1
+    return {severity: dict(sorted(reasons.items())) for severity, reasons in out.items()}
 
 
 def counts(result: GenerationResult) -> dict:
@@ -1348,9 +1425,15 @@ def counts(result: GenerationResult) -> dict:
         todo_reasons[t.reason] = todo_reasons.get(t.reason, 0) + 1
     for f in result.flags:
         flag_reasons[flag_key(f)] = flag_reasons.get(flag_key(f), 0) + 1
+    severity = {s: sum(n.values()) for s, n in by_severity(result).items()}
+    components = len(result.components)
+    without = sum(c.todos == 0 for c in result.components)
     return {
-        "components": len(result.components),
-        "componentsWithoutC2Todo": sum(c.todos == 0 for c in result.components),
+        "components": components,
+        "componentsWithoutC2Todo": without,
+        "metrics": {"componentsWithoutC2Todo": f"{without}/{components}",
+                    "flagRate": severity["todo"] + severity["review"]},
+        "severity": severity,
         "c2todos": dict(sorted(todo_reasons.items())),
         "flags": dict(sorted(flag_reasons.items())),
     }
@@ -1384,5 +1467,7 @@ def write_report(result: GenerationResult, path: Path, output_dir: str) -> None:
 
 def summary(result: GenerationResult) -> str:
     c = counts(result)
-    return (f"[Stage 5] {c['components']} components ({c['componentsWithoutC2Todo']} without C2Todo), "
-            f"{len(result.todos)} C2Todos, {len(result.flags)} flags, {len(result.files)} files")
+    s = c["severity"]
+    return (f"[Stage 5] {c['metrics']['componentsWithoutC2Todo']} components without C2Todo · "
+            f"{s['todo']} todo, {s['review']} review, {s['info']} info · flag rate {c['metrics']['flagRate']} · "
+            f"{len(result.files)} files")

@@ -316,12 +316,29 @@ TINY_CONTRACT = {
 STATS_TOTAL = read("$s['total']", "db_row_field", "$s", ["total"], "total")
 
 
-def tiny(tmp_path, items, mapped=False):
-    """Run Stages 1-5 on a one-page timeline. Items: dicts (entries) or ("if", [(condExpr|None, items)...])."""
+LIST_CONTRACT = {
+    "openapi": "3.1.0", "info": {"title": "tiny", "version": "1"},
+    "paths": {"/api/tiny": {"get": {"responses": {"200": {"content": {"application/json": {"schema": {
+        "type": "object", "required": ["rows"], "properties": {"rows": {"type": "array", "items": {
+            "type": "object", "required": ["name", "n"],
+            "properties": {"name": {"type": "string"}, "n": {"type": "integer"}}}}}}}}}}}}},
+}
+
+
+def tiny(tmp_path, items, mapped=False, contract=TINY_CONTRACT):
+    """Run Stages 1-5 on a one-page timeline. Items: dicts (entries), ("if", [(branch, condExpr|None, items)...])
+    or ("loop", items) (a foreach over $rows as $row)."""
     sequence, labels, counter = [], {}, iter(range(1, 10_000))
 
     def add(entries, enclosed):
         for item in entries:
+            if isinstance(item, tuple) and item[0] == "loop":
+                loop_id = f"t001#{next(counter):05d}"
+                labels[loop_id] = {"concern": "presentation", "basis": "rule", "ruleId": "R05", "reason": "x"}
+                add(item[1], enclosed + [{"nodeId": loop_id, "kind": "Stmt_Foreach", "role": "iteration",
+                                          "iterExpr": "$rows", "iterSourceKind": "db_row_field", "valueVar": "$row",
+                                          "keyVar": None}])
+                continue
             if isinstance(item, tuple):  # ("if", [(branch, condExpr, items), ...])
                 if_id = f"t001#{next(counter):05d}"
                 labels[if_id] = {"concern": "presentation", "basis": "rule", "ruleId": "R08", "reason": "x"}
@@ -342,7 +359,7 @@ def tiny(tmp_path, items, mapped=False):
     (tmp_path / "t.json").write_text(json.dumps({"entrypoint": entrypoint, "schemaVersion": "1.0",
                                                  "sequence": sequence}), encoding="utf-8")
     (tmp_path / "l.json").write_text(json.dumps({"schemaVersion": "1.0", "labels": labels}), encoding="utf-8")
-    (tmp_path / "c.json").write_text(json.dumps(TINY_CONTRACT), encoding="utf-8")
+    (tmp_path / "c.json").write_text(json.dumps(contract), encoding="utf-8")
     endpoints = {entrypoint: {"method": "get", "path": "/api/tiny", "status": "200",
                               "mediaType": "application/json"}} if mapped else {}
     (tmp_path / "m.json").write_text(json.dumps({"endpoints": endpoints}), encoding="utf-8")
@@ -655,6 +672,8 @@ def test_stage5_json_lists_files_and_counts(runs):
                             "components/AppointmentsList.tsx", "lib/api-types.ts", "lib/api.ts", "lib/c2-todo.tsx"]
     assert doc["counts"]["c2todos"] == {"missing_in_contract": 1}
     assert doc["counts"]["components"] == 3 and doc["counts"]["componentsWithoutC2Todo"] == 2
+    assert doc["counts"]["metrics"] == {"componentsWithoutC2Todo": "2/3", "flagRate": 12}
+    assert doc["counts"]["severity"] == {"todo": 1, "review": 11, "info": 23}
     (todo,) = doc["c2todos"]
     assert (todo["file"], todo["line"], todo["sourceLine"]) == ("components/AppointmentsItem.tsx", 13, 468)
 
@@ -666,6 +685,136 @@ def test_cli_stage_5_writes_files_and_prints_the_summary(tmp_path):
                           "--stage", "5", "--output", str(tmp_path)], capture_output=True, encoding="utf-8",
                          env=env, cwd=ROOT)
     assert out.returncode == 0, out.stderr
-    assert "[Stage 5] 3 components (2 without C2Todo), 1 C2Todos, 34 flags, 6 files" in out.stdout
-    assert "C2Todos by reason: missing_in_contract 1" in out.stdout
+    assert ("[Stage 5] 2/3 components without C2Todo · 1 todo, 11 review, 23 info · flag rate 12 · 6 files"
+            in out.stdout)
+    assert "todo by reason: missing_in_contract 1" in out.stdout
+    assert "escaping_changed: 11 unescaped outputs (info, not in the flag rate)" in out.stdout
+    assert out.stdout.count("escaping_changed") == 1  # one line per page, not one per output
     assert (tmp_path / "list_while" / "components" / "AppointmentsItem.tsx").exists()
+
+
+# ---------------------------------------------------------------- spec v0.2: severity, metrics, string compares, nesting
+
+
+@pytest.mark.parametrize("name", ALL_MOCKS)
+def test_every_entry_has_a_severity_and_the_flag_rate_counts_todo_and_review(name, runs):
+    _, _, result = runs[name]
+    doc = json.loads(stage5.dumps(result, "x"))
+    for t in doc["c2todos"]:
+        assert t["severity"] == "todo"
+    for f in doc["flags"]:
+        expected = "todo" if f["flag"] in ("attribute_omitted", "output_dropped") else f["status"]
+        assert f["severity"] == expected, f
+    severity = doc["counts"]["severity"]
+    entries = doc["c2todos"] + doc["flags"]
+    assert severity == {s: sum(e["severity"] == s for e in entries) for s in ("todo", "review", "info")}
+    assert doc["counts"]["metrics"]["flagRate"] == severity["todo"] + severity["review"]
+    components = doc["components"]
+    assert doc["counts"]["metrics"]["componentsWithoutC2Todo"] == \
+        f"{sum(c['c2todos'] == 0 for c in components)}/{len(components)}"
+
+
+@pytest.mark.parametrize("flag", ["escaping_changed", "legacy_link", "html_comment_dropped", "unclosed_at_end",
+                                  "numeric_string_compare"])
+def test_info_flags_are_outside_the_flag_rate(flag, runs):
+    for _, _, result in runs.values():
+        assert all(f.severity == "info" for f in flags(result, flag))
+
+
+def test_escaping_changed_is_never_raised_on_literal_output(runs):
+    _, _, result = runs["list_while"]
+    literal = {"f001#00838", "f001#00870", "f001#00902"}  # echo "Active" etc.
+    assert not literal & {f.node_id for f in flags(result, "escaping_changed")}
+
+
+def test_numeric_string_compare_notes_from_the_translator():
+    assert translate("$row['s'] == 'a'", ITEM, CONTEXT).notes == ('row.s == "a"',)
+    assert translate("$row['s'] != 'a' && $row['s'] == 'b'", ITEM, CONTEXT).notes == (
+        'row.s != "a"', 'row.s == "b"')
+    assert translate("$row['s'] === 'a'", ITEM, CONTEXT).notes == ()  # strict: PHP compares as written
+    assert translate("$row['x'] == 1", ITEM, CONTEXT).notes == ()
+
+
+def test_numeric_string_compare_is_flagged_on_a_translated_condition(tmp_path):
+    name = read("$row['name']", "db_row_field", "$row", ["name"], "name")
+    result = tiny(tmp_path, [html("<ul>"), ("loop", [
+        html("<li>"), echo(name),
+        ("if", [("then", "$row['name'] == 'a'", [html("!")])]),
+        ("if", [("then", "$row['n'] == 1", [html("?")])]),
+        html("</li>")]), html("</ul>")], mapped=True, contract=LIST_CONTRACT)
+    code = "\n".join(f.text for f in result.files if f.path.startswith(("app/", "components/")))
+    assert '{row.name == "a" && "!"}' in code and '{row.n == 1 && "?"}' in code
+    (note,) = flags(result, "numeric_string_compare")
+    assert note.severity == "info" and note.detail.startswith('row.name == "a"')
+
+
+def test_html_nesting_on_the_mocks(runs):
+    found = {name: [(f.function, f.in_abstained, f.detail) for f in flags(result, "html_nesting_changed")]
+             for name, (_, _, result) in runs.items()}
+    assert found.pop("wp_login") == [("Page", False, "div > table: generated children [form]; an HTML5 parser "
+                                                     "builds [form, tbody]")]
+    assert found.pop("edge_cases") == [("EdgeCasesList1", True, "table: generated children [tr]; an HTML5 parser "
+                                                                "builds [tbody]")]
+    assert all(not v for v in found.values()), found
+
+
+def test_html_nesting_flag_points_at_the_element(runs):
+    _, _, result = runs["wp_login"]
+    (nested,) = flags(result, "html_nesting_changed")
+    line = text(result, nested.file).split("\n")[nested.line - 1]
+    assert nested.severity == "review" and line.strip().startswith("<table ")
+
+
+def test_a_div_directly_inside_a_tr_is_caught(tmp_path):
+    result = tiny(tmp_path, [html("<table><tbody><tr><div>x</div><td>y</td></tr></tbody></table>")])
+    (nested,) = flags(result, "html_nesting_changed")
+    # The browser moves the <div> out in front of the table; React would keep it in the row.
+    assert nested.detail == ("(top level): generated children [table]; an HTML5 parser builds [div, table]")
+
+
+def test_valid_nesting_is_not_flagged(tmp_path):
+    result = tiny(tmp_path, [html("<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>b<br>c</td></tr>"
+                                  "</tbody></table><ul><li><a>x</a></li></ul><p>t <b>u</b></p>")])
+    assert not flags(result, "html_nesting_changed")
+
+
+@pytest.mark.parametrize("html_in, path", [
+    ("<p><div>x</div></p>", "(top level)"),  # a <div> closes the open <p>
+    ("<table><td>x</td></table>", "table"),  # the parser adds <tbody> and <tr>
+    ("<select><option>a</option><div>b</div></select>", "select"),
+])
+def test_nesting_compare_finds_reparented_elements(html_in, path):
+    from src.mapping import nesting
+
+    def parse(markup):  # a tiny reader for these well-formed snippets
+        stack, root = [], []
+        for token in re.findall(r"</?\w+>|[^<]+", markup):
+            if token.startswith("</"):
+                stack.pop()
+            elif token.startswith("<"):
+                node = nesting.Node(token[1:-1], label=token[1:-1])
+                (stack[-1].children if stack else root).append(node)
+                stack.append(node)
+            else:
+                (stack[-1].children if stack else root).append(nesting.TEXT)
+        return root
+
+    differences = nesting.compare(parse(html_in), frozenset(CONFIG.void_tags))
+    assert differences and differences[0].path == path
+
+
+def test_test_app_tsconfig_is_strict(tmp_path):
+    assert compile_check.strict_enabled()  # output/test-app/tsconfig.json
+    loose = tmp_path / "tsconfig.json"
+    loose.write_text(json.dumps({"compilerOptions": {"strict": False}}), encoding="utf-8")
+    assert not compile_check.strict_enabled(loose)
+    loose.write_text(json.dumps({"compilerOptions": {}}), encoding="utf-8")
+    assert not compile_check.strict_enabled(loose)
+
+
+def test_cli_prints_the_metrics_for_every_mock(runs):
+    for _, _, result in runs.values():
+        c = stage5.counts(result)
+        line = stage5.summary(result)
+        assert f"{c['metrics']['componentsWithoutC2Todo']} components without C2Todo" in line
+        assert f"flag rate {c['metrics']['flagRate']}" in line
