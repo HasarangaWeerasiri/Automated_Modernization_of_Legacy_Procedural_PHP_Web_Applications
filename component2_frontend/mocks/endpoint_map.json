@@ -1,0 +1,45 @@
+{
+  "endpoints": {
+    "legacy-apps/hms/admin-panel1.php": {
+      "method": "get",
+      "path": "/api/appointments",
+      "status": "200",
+      "mediaType": "application/json"
+    },
+    "hand-written: list_foreach.php (legacy-apps/hms/admin-panel1.php with every while loop rewritten as foreach)": {
+      "method": "get",
+      "path": "/api/appointments",
+      "status": "200",
+      "mediaType": "application/json"
+    },
+    "hand-written: admin_dashboard.php (modelled on legacy-apps/hms/admin-panel.php)": {
+      "method": "get",
+      "path": "/api/admin/appointment-stats",
+      "status": "200",
+      "mediaType": "application/json"
+    },
+    "legacy-apps/hms/admin-panel.php": {
+      "method": "get",
+      "path": "/api/me/appointments",
+      "status": "200",
+      "mediaType": "application/json"
+    }
+  },
+  "_provenance": {
+    "substitute": true,
+    "replaces": "Component 1's endpoint map, which C1 does not produce yet (boundary-rules.md section 9, question 8; reconciliation-spec.md section 2.1). When it arrives, only src/mapping/loader.py changes.",
+    "author": "Component 2 coding agent, for development on mocks only. Not Component 1 output.",
+    "keyedBy": "the timeline's entrypoint string, exactly as it appears in each mocks/timeline_*.json",
+    "reasons": {
+      "legacy-apps/hms/admin-panel1.php": "timeline_list_while.json: the receptionist's appointment table (select * from appointmenttb). The contract says GET /api/appointments serves this timeline.",
+      "hand-written: list_foreach.php": "timeline_list_foreach.json: the same page with foreach loops, so the same endpoint. The contract names both timelines on GET /api/appointments.",
+      "hand-written: admin_dashboard.php": "timeline_admin.json: the authorization-guarded statistics block (total, revenue). The contract says GET /api/admin/appointment-stats serves it, and that the session values are deliberately not in its response.",
+      "legacy-apps/hms/admin-panel.php": "timeline_detail.json: the signed-in patient's appointment history (filtered on $_SESSION values). The contract says GET /api/me/appointments serves it. The real page also renders other tabs; this mock covers only the history excerpt."
+    },
+    "deliberatelyUnmapped": {
+      "hand-written: edge_cases.php": "timeline_edge_cases.json: the contract has no endpoint for this page; its own provenance says so. Mapping it to any endpoint would be a guess.",
+      "legacy-apps/wackopicko/*": "the five WackoPicko timelines: the contract has no WackoPicko endpoints at all.",
+      "GET /api/products": "serves the legacy mocks/sample_ast.json fixture, which is not a timeline."
+    }
+  }
+}

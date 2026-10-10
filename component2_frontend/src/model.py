@@ -205,3 +205,115 @@ class ComponentTree:
     entrypoint: str
     root: ComponentNode
     counts: TreeCounts
+
+
+# ----------------------------------------------------------------------------- contract and endpoint map
+
+
+@dataclass(frozen=True)
+class ResponseShape:
+    """The fields an endpoint's JSON response offers, with $refs resolved."""
+
+    properties: tuple[str, ...]  # top-level property names ("" when the response itself is an array)
+    arrays: tuple[tuple[str, tuple[str, ...]], ...]  # (array property, its item schema's property names)
+
+
+@dataclass(frozen=True)
+class Endpoint:
+    method: str  # lower case, e.g. "get"
+    path: str
+    status: str  # response status code the shape was read from, e.g. "200"
+    media_type: str
+    response: ResponseShape | None  # None when that response has no object or array schema
+
+
+@dataclass(frozen=True)
+class Contract:
+    title: str
+    endpoints: dict[tuple[str, str, str, str], Endpoint]  # by (method, path, status, media type)
+
+
+@dataclass(frozen=True)
+class EndpointRef:
+    """One entry of the endpoint map: which response serves a timeline's entrypoint."""
+
+    method: str
+    path: str
+    status: str
+    media_type: str
+
+
+# ----------------------------------------------------------------------------- Stage 3 result
+
+
+@dataclass(frozen=True)
+class NeedReference:
+    node_id: str  # the output node whose read gave the need
+    line: int | None  # its source line; None: schema 1.0 timelines carry no line per output node
+    expr: str  # the read as written, e.g. "$row['contact']"
+    wrappers: tuple[str, ...] = ()  # functions applied around it, outermost first, e.g. ("h",)
+
+
+@dataclass(frozen=True)
+class Need:
+    """One piece of data a component needs (docs/reconciliation-spec.md section 1)."""
+
+    kind: str  # field | ambiguous | unresolved | context | collection
+    name: str  # what it is called: the column, the array key, the expression, or the collection's loop
+    references: tuple[NeedReference, ...]
+    row_of: str | None = None  # id of the List whose rows this need belongs to; None outside any row
+    table: str | None = None  # field only
+    column: str | None = None  # field only
+    query_node_id: str | None = None  # field, ambiguous, collection
+    source_kind: str | None = None  # context only: session | request | server
+    flag: str | None = None  # ambiguous_needs_schema | unresolved_read
+    item_component: str | None = None  # collection only: the List's Item component id
+
+
+@dataclass(frozen=True)
+class ComponentNeeds:
+    component_id: str  # position in the Stage 2 tree, e.g. "0.1.0"
+    type: str
+    source_ids: tuple[str, ...]
+    needs: tuple[Need, ...]
+
+
+@dataclass(frozen=True)
+class RequirementsResult:
+    entrypoint: str
+    components: tuple[ComponentNeeds, ...]  # in tree order
+
+
+# ----------------------------------------------------------------------------- Stage 4 result
+
+
+@dataclass(frozen=True)
+class NeedResult:
+    component_id: str
+    component_type: str
+    need: Need
+    result: str  # matched | missing | excluded | cannot_reconcile
+    reason: str  # e.g. missing_in_contract, session, no_endpoint
+    schema_property: str | None = None  # the property matched, e.g. "appointments[].doctor"
+    type: str | None = None  # matched only: "unverified" until C3's schema is available
+    hint: str | None = None  # missing only: a property equal to the column except for case
+
+
+@dataclass(frozen=True)
+class ReconciliationCounts:
+    needs: int
+    matched: int
+    missing: int
+    excluded: int
+    cannot_reconcile: int
+    unused: int
+
+
+@dataclass(frozen=True)
+class ReconciliationReport:
+    entrypoint: str
+    endpoint: EndpointRef | None
+    results: tuple[NeedResult, ...]  # in component order, then need order
+    collections: tuple[tuple[str, str | None], ...]  # (List component id, array property it reads, or None)
+    unused: tuple[str, ...]  # contract properties no component needs
+    counts: ReconciliationCounts

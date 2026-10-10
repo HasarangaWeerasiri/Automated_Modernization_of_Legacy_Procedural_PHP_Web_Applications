@@ -8,7 +8,20 @@ import json
 import re
 from pathlib import Path
 
-from src.model import Concern, Enclosure, Label, OutputNode, Query, Read, ReadSource, Timeline
+from src.model import (
+    Concern,
+    Contract,
+    Enclosure,
+    Endpoint,
+    EndpointRef,
+    Label,
+    OutputNode,
+    Query,
+    Read,
+    ReadSource,
+    ResponseShape,
+    Timeline,
+)
 
 SCHEMA_VERSION = "1.0"
 TIMELINE_KEYS = ("entrypoint", "schemaVersion", "sequence")  # "queries" is an optional extension
@@ -230,9 +243,102 @@ def load_legacy_ast(path: Path) -> dict:
 
 
 def load_contract_json(path: Path) -> dict:
-    """Read Component 1's OpenAPI contract. Stage 4 will convert it into model types."""
+    """Read Component 1's OpenAPI contract as JSON (used by the legacy --input/--contract path)."""
     with Path(path).open("r", encoding="utf-8") as f:
         return json.load(f)
+
+
+# ----------------------------------------------------------------------------- contract (OpenAPI 3.x)
+
+HTTP_METHODS = ("get", "put", "post", "delete", "options", "head", "patch", "trace")
+
+
+def _is_type(schema: dict, name: str) -> bool:
+    kind = schema.get("type")
+    return kind == name or (isinstance(kind, list) and name in kind)
+
+
+def _resolve(doc: dict, schema, path: Path):
+    """Follow local $refs (#/components/...) until a schema without one is reached."""
+    seen = set()
+    while isinstance(schema, dict) and "$ref" in schema:
+        ref = schema["$ref"]
+        if not isinstance(ref, str) or not ref.startswith("#/") or ref in seen:
+            raise ValueError(f"{path}: unsupported or circular $ref {ref!r}")
+        seen.add(ref)
+        node = doc
+        for part in ref[2:].split("/"):
+            key = part.replace("~1", "/").replace("~0", "~")
+            if not isinstance(node, dict) or key not in node:
+                raise ValueError(f"{path}: $ref {ref!r} points nowhere")
+            node = node[key]
+        schema = node
+    return schema
+
+
+def _response_shape(doc: dict, schema, path: Path) -> ResponseShape | None:
+    schema = _resolve(doc, schema, path)
+    if not isinstance(schema, dict):
+        return None
+    if _is_type(schema, "array"):
+        items = _resolve(doc, schema.get("items", {}), path)
+        return ResponseShape(("",), (("", tuple(items.get("properties", {}))),))
+    if _is_type(schema, "object") or "properties" in schema:
+        properties = schema.get("properties", {})
+        arrays = []
+        for name, sub in properties.items():
+            sub = _resolve(doc, sub, path)
+            if isinstance(sub, dict) and _is_type(sub, "array"):
+                items = _resolve(doc, sub.get("items", {}), path)
+                arrays.append((name, tuple(items.get("properties", {})) if isinstance(items, dict) else ()))
+        return ResponseShape(tuple(properties), tuple(arrays))
+    return None
+
+
+def load_contract(path: Path) -> Contract:
+    """Load an OpenAPI 3.x contract: for every response with a body, the fields it offers."""
+    doc = load_contract_json(path)
+    if not str(doc.get("openapi", "")).startswith("3."):
+        raise ValueError(f"{path}: not an OpenAPI 3 document")
+    endpoints = {}
+    for route, item in doc.get("paths", {}).items():
+        for method, operation in item.items():
+            if method not in HTTP_METHODS:
+                continue
+            for status, response in operation.get("responses", {}).items():
+                response = _resolve(doc, response, path)
+                for media_type, content in response.get("content", {}).items():
+                    schema = content.get("schema")
+                    shape = _response_shape(doc, schema, path) if schema is not None else None
+                    endpoints[(method, route, str(status), media_type)] = Endpoint(
+                        method, route, str(status), media_type, shape)
+    return Contract(title=doc.get("info", {}).get("title", ""), endpoints=endpoints)
+
+
+# ----------------------------------------------------------------------------- endpoint map (substitute)
+
+ENDPOINT_REF_KEYS = {"method", "path", "status", "mediaType"}
+
+
+def load_endpoint_map(path: Path) -> dict[str, EndpointRef]:
+    """Load the endpoint map: which contract response serves each timeline entrypoint.
+
+    Component 1 does not produce this map yet; mocks/endpoint_map.json is a substitute.
+    When C1's map arrives, only this function changes.
+    """
+    with Path(path).open("r", encoding="utf-8") as f:
+        doc = json.load(f)
+    if not isinstance(doc.get("endpoints"), dict):
+        raise ValueError(f"{path}: expected an 'endpoints' object keyed by timeline entrypoint")
+    refs = {}
+    for entrypoint, entry in doc["endpoints"].items():
+        if not isinstance(entry, dict) or set(entry) != ENDPOINT_REF_KEYS:
+            raise ValueError(f"{path}: {entrypoint!r} needs exactly {sorted(ENDPOINT_REF_KEYS)}")
+        if entry["method"].lower() not in HTTP_METHODS:
+            raise ValueError(f"{path}: {entrypoint!r} has unknown method {entry['method']!r}")
+        refs[entrypoint] = EndpointRef(entry["method"].lower(), entry["path"], str(entry["status"]),
+                                       entry["mediaType"])
+    return refs
 
 
 def load_input(path: Path) -> tuple[str, dict]:

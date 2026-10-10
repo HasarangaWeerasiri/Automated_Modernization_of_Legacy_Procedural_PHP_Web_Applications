@@ -5,6 +5,7 @@ Pipeline: legacy-PHP output timeline + OpenAPI contract -> Next.js/TSX component
 
     python src/main.py --timeline mocks/timeline_admin.json --labels mocks/labels_admin.json --stage 1
     python src/main.py --timeline mocks/timeline_admin.json --labels mocks/labels_admin.json --stage 2
+    python src/main.py --timeline mocks/timeline_list_while.json --labels mocks/labels_list_while.json --stage all
     python src/main.py --input mocks/timeline_admin.json --contract mocks/sample_contract.json
 """
 
@@ -16,14 +17,18 @@ ROOT = Path(__file__).resolve().parents[1]
 if __package__ in (None, ""):
     sys.path.insert(0, str(ROOT))  # run as `python src/main.py`: make the `src` package importable
 
+from rich import box  # noqa: E402
 from rich.console import Console  # noqa: E402
 from rich.markup import escape  # noqa: E402
 from rich.panel import Panel  # noqa: E402
 from rich.pretty import Pretty  # noqa: E402
+from rich.table import Table  # noqa: E402
 from rich.tree import Tree  # noqa: E402
 
 from src.mapping import loader  # noqa: E402
 from src.mapping import stage2_boundaries as stage2  # noqa: E402
+from src.mapping import stage3_requirements as stage3  # noqa: E402
+from src.mapping import stage4_reconcile as stage4  # noqa: E402
 from src.mapping.boundary_config import DEFAULT_PATH as DEFAULT_BOUNDARY_CONFIG  # noqa: E402
 from src.mapping.boundary_config import load_boundary_config  # noqa: E402
 from src.mapping.stage1_isolation import isolate_presentation, summary, write_result  # noqa: E402
@@ -41,6 +46,9 @@ __all__ = ["load_contract", "load_input", "load_labels", "load_legacy_ast", "loa
 
 console = Console()
 
+DEFAULT_CONTRACT = ROOT / "mocks" / "sample_contract.json"
+DEFAULT_ENDPOINT_MAP = ROOT / "mocks" / "endpoint_map.json"
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -51,18 +59,24 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--labels", type=Path, help="Concern labels JSON (mocks/labels_*.json). Used with --stage.")
     parser.add_argument(
         "--stage",
-        type=int,
-        choices=[1, 2],
+        choices=["1", "2", "3", "4", "all"],
         help=(
-            "Run one pipeline stage and write output/stage<N>_<name>.json. "
-            "1 = presentation isolation, 2 = boundary inference (component tree)."
+            "Run the pipeline up to this stage (earlier stages run first) and write output/stage<N>_<name>.json "
+            "for each. 1 = presentation isolation, 2 = boundary inference, 3 = data requirements, "
+            "4 = contract reconciliation, all = print stages 1 to 4."
         ),
     )
     parser.add_argument(
         "--config",
         type=Path,
         default=DEFAULT_BOUNDARY_CONFIG,
-        help="Boundary-rule thresholds for --stage 2 (default: config/boundary_rules.json).",
+        help="Boundary-rule thresholds for stage 2 (default: config/boundary_rules.json).",
+    )
+    parser.add_argument(
+        "--endpoint-map",
+        type=Path,
+        default=DEFAULT_ENDPOINT_MAP,
+        help="Which contract response serves each timeline, for stage 4 (default: mocks/endpoint_map.json).",
     )
     parser.add_argument(
         "--input",
@@ -76,7 +90,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--contract",
         type=Path,
-        help="Path to the OpenAPI contract JSON produced by Component 1 (see mocks/sample_contract.json).",
+        help=(
+            "Path to the OpenAPI contract JSON produced by Component 1. Used with --input, and by stage 4 "
+            "(default there: mocks/sample_contract.json)."
+        ),
     )
     parser.add_argument(
         "--output",
@@ -108,17 +125,23 @@ def stage_output_path(stage: int, timeline_path: Path) -> Path:
     return ROOT / "output" / f"stage{stage}_{timeline_path.stem.removeprefix('timeline_')}.json"
 
 
-def run_stage1(timeline_path: Path, labels_path: Path) -> None:
-    timeline, labels = load_stage_inputs(timeline_path, labels_path)
-    result = isolate_presentation(timeline, labels)
-    out_path = stage_output_path(1, timeline_path)
-    write_result(result, out_path)
+def load_or_exit(what: str, load, path: Path):
+    try:
+        return load(path)
+    except (OSError, ValueError) as e:
+        console.print(f"[red]Invalid {what}:[/red] {escape(str(e))}")
+        sys.exit(1)
 
+
+def wrote(path: Path) -> None:
+    console.print(f"  wrote {path.relative_to(ROOT).as_posix()}", style="dim")
+
+
+def print_stage1(result) -> None:
     console.print(escape(summary(result)), style="bold")
     for node in result.kept:
         if node.status is Status.REVIEW:
             console.print(f"  review  {node.node_id}  {node.node_type} {node.kind}: {node.reason}", style="yellow")
-    console.print(f"  wrote {out_path.relative_to(ROOT).as_posix()}", style="dim")
 
 
 STATUS_STYLE = {"ok": "green", "review": "yellow", "abstain": "red"}
@@ -147,17 +170,7 @@ def component_label(node) -> str:
     return "  ".join(parts)
 
 
-def run_stage2(timeline_path: Path, labels_path: Path, config_path: Path) -> None:
-    timeline, labels = load_stage_inputs(timeline_path, labels_path)
-    try:
-        config = load_boundary_config(config_path)
-    except (OSError, ValueError) as e:
-        console.print(f"[red]Invalid boundary config:[/red] {escape(str(e))}")
-        sys.exit(1)
-    tree = stage2.infer_boundaries(isolate_presentation(timeline, labels), timeline, config)
-    out_path = stage_output_path(2, timeline_path)
-    stage2.write_tree(tree, out_path)
-
+def print_stage2(tree) -> None:
     def add(branch, node):
         child = branch.add(component_label(node))
         for sub in node.children:
@@ -168,17 +181,81 @@ def run_stage2(timeline_path: Path, labels_path: Path, config_path: Path) -> Non
         add(printed, sub)
     console.print(printed)
     console.print(escape(stage2.summary(tree)), style="bold")
-    console.print(f"  wrote {out_path.relative_to(ROOT).as_posix()}", style="dim")
+
+
+def print_stage3(requirements) -> None:
+    console.print(escape(stage3.summary(requirements)), style="bold")
+
+
+def print_stage4(report) -> None:
+    console.print(escape(stage4.summary(report)), style="bold")
+    endpoint = report.endpoint
+    console.print("  endpoint: " + (f"{endpoint.method.upper()} {endpoint.path}" if endpoint else "none mapped"),
+                  style="dim")
+    rows = stage4.flagged(report)
+    if not rows:
+        console.print("  no missing or cannot_reconcile needs", style="green")
+        return
+    console.print(f"  file: {escape(report.entrypoint)}", style="dim")
+    table = Table(box=box.SIMPLE_HEAD, show_edge=False)
+    for column in ("Component", "Field", "File:line", "Result", "Reason"):
+        table.add_column(column, overflow="fold")
+    for row in rows:
+        lines = sorted({str(ref.line) if ref.line is not None else "?" for ref in row.need.references})
+        reason = row.reason + (f" (hint: {row.hint})" if row.hint else "")
+        table.add_row(f"{row.component_type} {row.component_id}", escape(row.need.name),
+                      escape(f"{display_file(report.entrypoint)}:{','.join(lines)}"),
+                      f"[{'red' if row.result == 'missing' else 'yellow'}]{row.result}[/]", escape(reason))
+    console.print(table)
+    console.print("  line ? = the timeline has no source line per output node (schema 1.0)", style="dim")
+
+
+def display_file(entrypoint: str) -> str:
+    """Short file name for the table: the path's last part, or the hand-written mock's file name."""
+    if entrypoint.startswith("hand-written:"):
+        return entrypoint.removeprefix("hand-written:").split()[0]
+    return entrypoint.rsplit("/", 1)[-1]
+
+
+def run_stages(args) -> None:
+    """Run stages 1 to the requested one, write each stage's JSON, print the requested one (or all)."""
+    last = 4 if args.stage == "all" else int(args.stage)
+    shown = {1, 2, 3, 4} if args.stage == "all" else {last}
+    timeline, labels = load_stage_inputs(args.timeline, args.labels)
+
+    def stage(number, title, result, write, show):
+        path = stage_output_path(number, args.timeline)
+        write(result, path)
+        if number in shown:
+            if args.stage == "all":
+                console.rule(f"Stage {number}: {title}")
+            show(result)
+            wrote(path)
+        return result
+
+    result1 = stage(1, "presentation isolation", isolate_presentation(timeline, labels), write_result, print_stage1)
+    if last < 2:
+        return
+    config = load_or_exit("boundary config", load_boundary_config, args.config)
+    tree = stage(2, "boundary inference", stage2.infer_boundaries(result1, timeline, config), stage2.write_tree,
+                 print_stage2)
+    if last < 3:
+        return
+    requirements = stage(3, "data requirements", stage3.recover_requirements(tree, timeline),
+                         stage3.write_requirements, print_stage3)
+    if last < 4:
+        return
+    contract = load_or_exit("contract", loader.load_contract, args.contract or DEFAULT_CONTRACT)
+    endpoint_map = load_or_exit("endpoint map", loader.load_endpoint_map, args.endpoint_map)
+    stage(4, "contract reconciliation", stage4.reconcile(requirements, contract, endpoint_map), stage4.write_report,
+          print_stage4)
 
 
 def main() -> None:
     args = parse_args()
 
-    if args.stage == 1:
-        run_stage1(args.timeline, args.labels)
-        return
-    if args.stage == 2:
-        run_stage2(args.timeline, args.labels, args.config)
+    if args.stage is not None:
+        run_stages(args)
         return
 
     if not args.input.exists():

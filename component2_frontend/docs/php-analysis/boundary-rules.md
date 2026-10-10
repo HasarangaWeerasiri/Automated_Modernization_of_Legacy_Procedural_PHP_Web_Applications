@@ -1,9 +1,9 @@
-# Component 2 — UI Boundary Rules (DRAFT v0.3)
+# Component 2 — UI Boundary Rules (DRAFT v0.4)
 
 | Item | Value |
 |---|---|
 | Status | **Draft** — not frozen. Freeze when 2 consecutive new rule-discovery apps add no new pattern (saturation) |
-| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run) |
+| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run) |
 | Owner | Jayawardhana R D L L (IT23213876) — Component 2, Frontend Migration |
 | Rule-discovery corpus | HMS (`kishan0725/Hospital-Management-System`, commit `777fda4`), WackoPicko (`adamdoupe/WackoPicko`, commit `cabc1b3`, MIT) |
 | Evaluation corpus | **Locked — do not open** (see §7) |
@@ -87,14 +87,15 @@ rule-discovery corpus, where the largest plain content conditional had 3 element
 | Situation | Status |
 |---|---|
 | Stage 1 `review` on an **output** node | Carries through to the component that contains it |
-| Loop (or guard) labelled `mixed` because it fetches rows in its header | Information only. The List stays `ok`; the loop's concern is recorded on the List as `loopConcern` |
+| Loop labelled `mixed` (any reason — decisions use `concern` only, never the label's `reason`) | Information only. The List stays `ok`; the loop's concern is recorded on the List as `loopConcern` |
+| `if` or loop that is itself `undecided` or unlabelled | `review` carries to the node built from it (CONTEXT rules 3–4) |
 | R-I6 sibling chain | `review` (`exclusivity_not_verified`) |
 | Any abstain case (§5) | `abstain` |
 
 ## 5. Abstain (flag, do not guess)
 
 - No rule matches the structure.
-- A boundary would cut across a node labelled `business_logic`, `data_access` or `mixed`.
+- A **content** boundary (R-I4 / R-I5) would cut across a node labelled `business_logic`, `data_access` or `mixed`. **Exception:** an R-I2 list guard labelled `data_access` or `mixed` is allowed, because emptiness checks usually touch data (`if (mysqli_num_rows($r) > 0)`, `if ($result = mysqli_query(...))`). A `business_logic` guard is never a list guard.
 - Container cannot be determined (unbalanced tags that R-L6 cannot resolve).
 - A tag opens in one branch and closes outside it (unbalanced per branch).
 - Loop body closes and reopens its own container (R-L7).
@@ -228,3 +229,5 @@ No-output loops (R-L5): admin-panel.php 146, 315 (inside `<!-- -->`). String-bui
 | 7 Oct 2026 | R-I6 chains → status `review` | Collapsing non-exclusive `if`s would change behaviour; an unverified assumption must stay visible |
 | 7 Oct 2026 | A DB loop labelled `mixed` does **not** make its List `review` | Every DB-driven loop fetches in its header; flagging all of them would inflate the flag rate with no action for the developer |
 | 7 Oct 2026 | Authorization guard stays abstain; delegation rule recorded as candidate only | One hand-written case; needs C1's contract decision |
+| 7 Oct 2026 | R-I2 allows `data_access` / `mixed` guards; only `business_logic` abstains | Procedural PHP emptiness checks usually touch data; authorization is the only case that is not an empty state |
+| 7 Oct 2026 | Mixed loops are information regardless of label reason | Decisions may use `concern` only (CONTEXT hard rule 2), so the "because" cannot be checked |

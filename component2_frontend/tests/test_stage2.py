@@ -350,6 +350,25 @@ def test_large_content_if_labelled_business_logic_abstains():
     assert [n.reason for n in find(tree, type="Abstain")] == ["cuts_across_business_logic"]
 
 
+@pytest.mark.parametrize("concern", [Concern.DATA_ACCESS, Concern.MIXED, Concern.PRESENTATION])
+def test_a_list_guard_may_touch_data(concern):
+    """R-I2 and section 5 (v0.4): only a business_logic guard around a loop abstains."""
+    # The <h1> outside the guard keeps it from being a page guard (R-I1).
+    tree = synthetic(html("<h1>page</h1>"), html("<h2>t</h2>", GUARD), html("<ul>", GUARD),
+                     html("<li><b>", GUARD, LOOP), echo(GUARD, LOOP), html("</b></li>", GUARD, LOOP),
+                     html("</ul>", GUARD), concern=concern)
+    (lst,) = find(tree, type="List")
+    assert "R-I2" in lst.rules and GUARD.node_id in lst.source_ids and not find(tree, type="Abstain")
+
+
+def test_a_business_logic_guard_around_a_loop_abstains_but_keeps_the_list():
+    tree = synthetic(html("<h1>page</h1>"), html("<ul>", GUARD), html("<li><b>", GUARD, LOOP), echo(GUARD, LOOP),
+                     html("</b></li>", GUARD, LOOP), html("</ul>", GUARD), concern=Concern.BUSINESS_LOGIC)
+    (abstain,) = find(tree, type="Abstain")
+    (lst,) = find(tree, type="List")
+    assert abstain.reason == "cuts_across_business_logic" and lst in abstain.children and "R-I2" not in lst.rules
+
+
 def test_unmatched_closing_tag_is_ignored_and_flagged():
     """R-L6."""
     tree = synthetic(html("<table><tr><td>x</td></tr></a></table>"))
