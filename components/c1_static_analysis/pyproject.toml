@@ -1,0 +1,13 @@
+[project]
+name = "c1-static-analysis"
+version = "0.1.0"
+description = "J26-SE-329 Component 1: Static Analysis Core (AST extraction, schema 1.0)"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
