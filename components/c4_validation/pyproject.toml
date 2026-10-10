@@ -16,3 +16,6 @@ where = ["src"]
 # sources and other components' tests out of a C4 run.
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "environment: needs both systems running (python -m c4.containers up)",
+]

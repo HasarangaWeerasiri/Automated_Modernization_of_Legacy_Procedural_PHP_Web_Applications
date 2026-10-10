@@ -56,7 +56,7 @@ def test_probe_covers_the_web_and_database_container_of_both_systems(config, mon
         def close(self):
             pass
 
-    monkeypatch.setattr(containers.docker, "from_env", lambda: FakeClient())
+    monkeypatch.setattr(containers, "docker_client", lambda: FakeClient())
     monkeypatch.setattr(containers, "_db_ready", lambda client, name: True)
     monkeypatch.setattr(containers, "_web_ready", lambda client, name, url: url.endswith(("/", "/openapi.json")))
 

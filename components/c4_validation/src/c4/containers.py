@@ -20,9 +20,9 @@ import time
 
 import docker
 import requests
-from docker.errors import NotFound
+from docker.errors import DockerException, NotFound
 
-from c4.config import Config, load_config
+from c4.config import Config, ConfigError, load_config
 
 
 class ComposeError(RuntimeError):
@@ -31,6 +31,18 @@ class ComposeError(RuntimeError):
 
 class NotReadyError(RuntimeError):
     """One or more containers did not become ready in time."""
+
+
+class DockerUnavailableError(RuntimeError):
+    """The Docker daemon cannot be reached."""
+
+
+def docker_client() -> docker.DockerClient:
+    """Connect to the Docker daemon, or say plainly that it is not running."""
+    try:
+        return docker.from_env()
+    except DockerException as error:
+        raise DockerUnavailableError("Cannot reach Docker. Is Docker running?") from error
 
 
 def _compose(config: Config, *args: str) -> None:
@@ -92,7 +104,7 @@ def _web_ready(client: docker.DockerClient, name: str, url: str) -> bool:
 
 def probe(config: Config) -> dict[str, bool]:
     """Report, for each container, whether it is ready right now."""
-    client = docker.from_env()
+    client = docker_client()
     try:
         readiness = {}
         for system in config.systems:
@@ -129,15 +141,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--volumes", action="store_true", help="down: also remove volumes")
     args = parser.parse_args(argv)
 
-    config = load_config(args.benchmark)
-    if args.command == "down":
-        down(config, remove_volumes=args.volumes)
-        print(f"{config.benchmark}: stopped")
-        return 0
-
     try:
+        config = load_config(args.benchmark)
+        if args.command == "down":
+            down(config, remove_volumes=args.volumes)
+            print(f"{config.benchmark}: stopped")
+            return 0
         readiness = up(config, build=not args.no_build) if args.command == "up" else probe(config)
-    except NotReadyError as error:
+    except (ConfigError, ComposeError, DockerUnavailableError, NotReadyError) as error:
         print(error, file=sys.stderr)
         return 1
 

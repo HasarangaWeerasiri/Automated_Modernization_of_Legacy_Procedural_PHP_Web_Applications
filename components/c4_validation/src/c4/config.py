@@ -47,6 +47,8 @@ LEGACY_WEB_CONTAINER = "c4-legacy-web"
 LEGACY_DB_CONTAINER = "c4-legacy-db"
 MIGRATED_API_CONTAINER = "c4-migrated-api"
 MIGRATED_DB_CONTAINER = "c4-migrated-db"
+# Where each database container sees its own seed dump.
+SEED_PATH_IN_CONTAINER = "/docker-entrypoint-initdb.d/seed.sql"
 
 # Every published port is bound to loopback. The address is used rather than the
 # name "localhost", which can resolve to IPv6 and reach a different listener.
