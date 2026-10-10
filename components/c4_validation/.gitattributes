@@ -3,6 +3,7 @@
 *.sql   text eol=lf
 *.ini   text eol=lf
 *.conf  text eol=lf
+*.cfg   text eol=lf
 Dockerfile text eol=lf
 *.yml   text eol=lf
 

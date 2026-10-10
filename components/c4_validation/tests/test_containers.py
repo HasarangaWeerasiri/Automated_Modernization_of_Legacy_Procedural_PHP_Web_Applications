@@ -17,6 +17,7 @@ def config(tmp_path: Path):
 
 def _readiness(**overrides):
     readiness = {
+        "c4-gateway": True,
         "c4-legacy-db": True,
         "c4-legacy-web": True,
         "c4-migrated-db": True,
@@ -57,6 +58,7 @@ def test_probe_covers_the_web_and_database_container_of_both_systems(config, mon
             pass
 
     monkeypatch.setattr(containers, "docker_client", lambda: FakeClient())
+    monkeypatch.setattr(containers, "_state", lambda client, name: {"Status": "running"})
     monkeypatch.setattr(containers, "_db_ready", lambda client, name: True)
     monkeypatch.setattr(containers, "_web_ready", lambda client, name, url: url.endswith(("/", "/openapi.json")))
 

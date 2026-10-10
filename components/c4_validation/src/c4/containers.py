@@ -1,8 +1,8 @@
 """Stage 0 — container lifecycle and readiness.
 
 docker-compose.yml declares the topology. This module brings it up with the values
-from config and confirms that both systems are reachable before anything is
-validated (FR1).
+from config, confirms that both systems are reachable before anything is validated
+(FR1), and confirms that neither of them can reach the outside network (NFR6).
 
 Compose is invoked through its CLI because the Docker SDK has no Compose API. The
 SDK is used for everything that inspects a running container.
@@ -106,13 +106,38 @@ def probe(config: Config) -> dict[str, bool]:
     """Report, for each container, whether it is ready right now."""
     client = docker_client()
     try:
-        readiness = {}
+        # Both systems are reached through the gateway, so it is checked first.
+        gateway = _state(client, config.gateway_container).get("Status") == "running"
+        readiness = {config.gateway_container: gateway}
         for system in config.systems:
             readiness[system.db_container] = _db_ready(client, system.db_container)
             readiness[system.web_container] = _web_ready(
                 client, system.web_container, system.base_url + system.ready_path
             )
         return readiness
+    finally:
+        client.close()
+
+
+def isolated(config: Config) -> dict[str, bool]:
+    """Report, for each application and database container, whether it has no route out.
+
+    The systems under validation are driven with adversarial input, so being unable
+    to reach the outside network is a safety requirement (NFR6). A container is
+    isolated when every network it is attached to is internal. Docker is asked
+    directly, so the answer does not depend on anything inside the container.
+    """
+    client = docker_client()
+    try:
+        result = {}
+        for system in config.systems:
+            for name in (system.db_container, system.web_container):
+                attached = client.containers.get(name).attrs["NetworkSettings"]["Networks"]
+                result[name] = bool(attached) and all(
+                    client.networks.get(network["NetworkID"]).attrs["Internal"]
+                    for network in attached.values()
+                )
+        return result
     finally:
         client.close()
 
@@ -156,7 +181,12 @@ def main(argv: list[str] | None = None) -> int:
     print(f"benchmark: {config.benchmark}")
     for name, ready in readiness.items():
         print(f"  {name:<18} {'ready' if ready else 'NOT READY':<10} {urls.get(name, '')}".rstrip())
-    return 0 if all(readiness.values()) else 1
+    if not all(readiness.values()):
+        return 1
+
+    exposed = sorted(name for name, sealed in isolated(config).items() if not sealed)
+    print(f"outbound network: {'OPEN for ' + ', '.join(exposed) if exposed else 'blocked'}")
+    return 1 if exposed else 0
 
 
 if __name__ == "__main__":

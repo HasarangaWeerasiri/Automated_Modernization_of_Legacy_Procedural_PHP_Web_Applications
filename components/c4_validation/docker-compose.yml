@@ -8,10 +8,15 @@
 #
 #   docker compose --env-file .env --env-file benchmarks/<app>.env up -d --build
 #
-# .env                  machine-local settings (copy from .env.example)
+# .env                  machine-local settings
 # benchmarks/<app>.env  which benchmark application to run
 #
 # The defaults written here must match DEFAULTS in src/c4/config.py.
+#
+# Network isolation (NFR6): the two systems and their databases are attached only
+# to `private`, which has no route out, so nothing they run can reach the internet
+# or this machine's network. They publish no ports. The gateway is the single
+# container on both networks, and the only one with host ports.
 
 name: c4
 
@@ -19,13 +24,12 @@ services:
   legacy-db:
     image: mysql:5.7
     container_name: c4-legacy-db
+    networks: [private]
     environment:
-      # Benchmarks connect as root with an empty password. The port below is
-      # bound to loopback only, so this account is not reachable from the network.
+      # Benchmarks connect as root with an empty password. The database is
+      # reachable only through the gateway, which binds to loopback.
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: ${C4_LEGACY_DB_NAME:?set in benchmarks/<app>.env}
-    ports:
-      - "127.0.0.1:${C4_LEGACY_DB_PORT:-3307}:3306"
     volumes:
       - ${C4_LEGACY_SEED:?set in benchmarks/<app>.env}:/docker-entrypoint-initdb.d/seed.sql:ro
       - legacy-db-socket:/var/run/mysqld
@@ -40,8 +44,7 @@ services:
   legacy-web:
     build: ./docker/legacy
     container_name: c4-legacy-web
-    ports:
-      - "127.0.0.1:${C4_LEGACY_WEB_PORT:-8080}:80"
+    networks: [private]
     volumes:
       # Read-only: a benchmark is never modified, not even by itself.
       - ${C4_LEGACY_DOCROOT:?set in benchmarks/<app>.env}:/var/www/html:ro
@@ -53,11 +56,10 @@ services:
   migrated-db:
     image: mysql:8.0
     container_name: c4-migrated-db
+    networks: [private]
     environment:
       MYSQL_ROOT_PASSWORD: ${C4_MIGRATED_DB_PASSWORD:-c4migrated}
       MYSQL_DATABASE: ${C4_MIGRATED_DB_NAME:-${C4_LEGACY_DB_NAME}}
-    ports:
-      - "127.0.0.1:${C4_MIGRATED_DB_PORT:-3308}:3306"
     volumes:
       # The same dump as the legacy side unless a benchmark says otherwise (FR2).
       - ${C4_MIGRATED_SEED:-${C4_LEGACY_SEED}}:/docker-entrypoint-initdb.d/seed.sql:ro
@@ -70,15 +72,33 @@ services:
   migrated-api:
     build: ./docker/migrated
     container_name: c4-migrated-api
+    networks: [private]
     environment:
       DATABASE_URL: mysql+pymysql://root:${C4_MIGRATED_DB_PASSWORD:-c4migrated}@migrated-db:3306/${C4_MIGRATED_DB_NAME:-${C4_LEGACY_DB_NAME}}
-    ports:
-      - "127.0.0.1:${C4_MIGRATED_API_PORT:-8000}:8000"
     volumes:
       - ${C4_MIGRATED_APP:-./stub_api}:/app:ro
     depends_on:
       migrated-db:
         condition: service_healthy
+
+  gateway:
+    image: haproxy:3.0-alpine
+    container_name: c4-gateway
+    networks: [private, default]
+    ports:
+      - "127.0.0.1:${C4_LEGACY_WEB_PORT:-8080}:8080"
+      - "127.0.0.1:${C4_LEGACY_DB_PORT:-3307}:3307"
+      - "127.0.0.1:${C4_MIGRATED_API_PORT:-8000}:8000"
+      - "127.0.0.1:${C4_MIGRATED_DB_PORT:-3308}:3308"
+    volumes:
+      - ./docker/gateway/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      - legacy-web
+      - migrated-api
+
+networks:
+  private:
+    internal: true
 
 volumes:
   legacy-db-socket:

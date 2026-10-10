@@ -47,10 +47,11 @@ LEGACY_WEB_CONTAINER = "c4-legacy-web"
 LEGACY_DB_CONTAINER = "c4-legacy-db"
 MIGRATED_API_CONTAINER = "c4-migrated-api"
 MIGRATED_DB_CONTAINER = "c4-migrated-db"
+GATEWAY_CONTAINER = "c4-gateway"
 # Where each database container sees its own seed dump.
 SEED_PATH_IN_CONTAINER = "/docker-entrypoint-initdb.d/seed.sql"
 
-# Every published port is bound to loopback. The address is used rather than the
+# Every published port belongs to the gateway and is bound to loopback. The address is used rather than the
 # name "localhost", which can resolve to IPv6 and reach a different listener.
 HOST = "127.0.0.1"
 
@@ -81,6 +82,7 @@ class Config:
     compose_env: Mapping[str, str]
     legacy: System
     migrated: System
+    gateway_container: str
     oracle_dir: Path
     report_dir: Path
     ready_timeout: float
@@ -188,6 +190,7 @@ def load_config(
         compose_env=values,
         legacy=legacy,
         migrated=migrated,
+        gateway_container=GATEWAY_CONTAINER,
         oracle_dir=output / "oracles" / benchmark,
         report_dir=output / "reports" / benchmark,
         ready_timeout=float(values["C4_READY_TIMEOUT"]),
