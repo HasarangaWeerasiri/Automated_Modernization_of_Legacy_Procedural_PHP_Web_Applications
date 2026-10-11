@@ -1,0 +1,34 @@
+{
+  "endpoint_id": "GET /api/patients",
+  "legacy_url": "/patientsearch.php",
+  "scenario_id": "patient_search_typical_01",
+  "scenario_type": "typical",
+  "input": {
+    "method": "POST",
+    "params": {},
+    "body": {
+      "patient_contact": "9876543210",
+      "patient_search_submit": "1"
+    }
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [
+      {
+        "First Name": "Ram",
+        "Last Name": "Kumar",
+        "Email": "ram@gmail.com",
+        "Contact": "9876543210",
+        "Password": "ram123"
+      }
+    ]
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:618f6c3494ef998537f46a38ec04979c93b592cda9a2e7d6eb7cf38989864f90",
+    "delta": {}
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-11T08:55:28+00:00"
+}

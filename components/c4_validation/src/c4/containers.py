@@ -46,6 +46,7 @@ def docker_client() -> docker.DockerClient:
 
 
 def _compose(config: Config, *args: str) -> None:
+    docker_client().close()  # fail with a plain message if Docker is not running
     command = [
         "docker", "compose",
         "--project-directory", str(config.root),

@@ -1,0 +1,14 @@
+{
+  "scenario_id": "patient_search_typical_01",
+  "scenario_type": "typical",
+  "endpoint_id": "GET /api/patients",
+  "legacy_request": {
+    "method": "POST",
+    "path": "/patientsearch.php",
+    "params": {},
+    "body": {
+      "patient_contact": "9876543210",
+      "patient_search_submit": "1"
+    }
+  }
+}

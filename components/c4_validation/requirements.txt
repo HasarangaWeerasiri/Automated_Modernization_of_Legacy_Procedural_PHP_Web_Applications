@@ -11,6 +11,7 @@ pandas==3.0.6
 
 # Value extraction from legacy HTML
 beautifulsoup4==4.15.0
+html5lib==1.1
 
 # Scenario generation
 hypothesis==6.168.5

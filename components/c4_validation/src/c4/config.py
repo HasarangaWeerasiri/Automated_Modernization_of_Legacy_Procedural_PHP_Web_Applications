@@ -36,6 +36,7 @@ DEFAULTS = {
     # endpoint added to the application under validation.
     "C4_MIGRATED_READY_PATH": "/openapi.json",
     "C4_READY_TIMEOUT": "120",
+    "C4_REQUEST_TIMEOUT": "30",
     "C4_OUTPUT_DIR": ".",
 }
 
@@ -83,9 +84,11 @@ class Config:
     legacy: System
     migrated: System
     gateway_container: str
+    scenario_dir: Path
     oracle_dir: Path
     report_dir: Path
     ready_timeout: float
+    request_timeout: float
 
     @property
     def systems(self) -> tuple[System, System]:
@@ -191,7 +194,9 @@ def load_config(
         legacy=legacy,
         migrated=migrated,
         gateway_container=GATEWAY_CONTAINER,
+        scenario_dir=root / "inputs" / benchmark / "scenarios",
         oracle_dir=output / "oracles" / benchmark,
         report_dir=output / "reports" / benchmark,
         ready_timeout=float(values["C4_READY_TIMEOUT"]),
+        request_timeout=float(values["C4_REQUEST_TIMEOUT"]),
     )
