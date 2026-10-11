@@ -703,7 +703,10 @@ def test_every_entry_has_a_severity_and_the_flag_rate_counts_todo_and_review(nam
     for t in doc["c2todos"]:
         assert t["severity"] == "todo"
     for f in doc["flags"]:
-        expected = "todo" if f["flag"] in ("attribute_omitted", "output_dropped") else f["status"]
+        if f["flag"] in ("attribute_omitted", "output_dropped"):
+            expected = "todo"  # a gap, wherever it is
+        else:
+            expected = "info" if f["inAbstained"] else f["status"]  # v0.3: abstained code is counted once
         assert f["severity"] == expected, f
     severity = doc["counts"]["severity"]
     entries = doc["c2todos"] + doc["flags"]
@@ -756,6 +759,18 @@ def test_html_nesting_on_the_mocks(runs):
     assert found.pop("edge_cases") == [("EdgeCasesList1", True, "table: generated children [tr]; an HTML5 parser "
                                                                 "builds [tbody]")]
     assert all(not v for v in found.values()), found
+
+
+def test_flags_in_abstained_code_are_info_and_gaps_stay_todo(runs):
+    _, _, result = runs["edge_cases"]
+    (nested,) = flags(result, "html_nesting_changed")
+    assert (nested.in_abstained, nested.status, nested.severity) == (True, "review", "info")
+    assert stage5.counts(result)["metrics"]["flagRate"] == 16
+    assert all(t.severity == "todo" for t in result.todos if t.in_abstained)  # the gaps themselves still count
+    _, _, thumbnails = runs["wp_thumbnails"]
+    assert all(f.severity == "todo" for f in flags(thumbnails) if f.flag == "attribute_omitted" and f.in_abstained)
+    total = sum(stage5.counts(result)["metrics"]["flagRate"] for _, _, result in runs.values())
+    assert total == 110
 
 
 def test_html_nesting_flag_points_at_the_element(runs):

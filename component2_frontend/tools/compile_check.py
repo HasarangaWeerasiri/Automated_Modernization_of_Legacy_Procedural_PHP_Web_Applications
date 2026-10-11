@@ -8,6 +8,8 @@ app's own (which must set "strict": true, or the check fails), and runs
 Usage, from component2_frontend/ (after `npm ci` in output/test-app and a Stage 5 run):
     venv/Scripts/python.exe tools/compile_check.py            # every mock in output/generated
     venv/Scripts/python.exe tools/compile_check.py list_while # one mock
+
+Each run writes output/tsc_<mock>.json (error count), which tools/results_table.py reads.
 """
 
 import json
@@ -78,6 +80,8 @@ def main(names: list[str]) -> int:
     for name in names:
         result = check(name, GENERATED / name)
         print(f"{name}: tsc --noEmit {result.errors} errors")
+        record = {"check": "tsc --noEmit", "mock": name, "errors": result.errors, "strict": strict_enabled()}
+        (ROOT / "output" / f"tsc_{name}.json").write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
         if result.errors:
             failed += 1
             print(result.output)

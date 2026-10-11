@@ -1,8 +1,8 @@
-# Component 2 — Stage 5 Generation Specification (v0.2)
+# Component 2 — Stage 5 Generation Specification (v0.3)
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.2 — v0.1 implemented on the rule-discovery mocks (`ab64238`); v0.2 records the corrections from that run. Evaluation apps stay locked |
+| Status | Draft v0.3 — implemented on the rule-discovery mocks (`ab64238` v0.1, `ecdb8e0` v0.2). v0.3 records the owner's answers to the v0.2 run. Evaluation apps stay locked |
 | Date | 10 October 2026 |
 | Owner | Jayawardhana R D L L (IT23213876) |
 | Input | Stage 2 tree, Stage 3 needs, Stage 4 report, contract, endpoint map, timeline |
@@ -184,7 +184,9 @@ determinism). Two runs → byte-identical files.
 | Components generated without C2Todo | count / total components |
 | Flag rate | C2Todos + `review` flags only. `info` flags (`escaping_changed`, `legacy_link`, `html_comment_dropped`, `unclosed_at_end`, `numeric_string_compare`) are reported separately and **not** counted — they are expected differences, not developer work |
 
-Every flag in `stage5_<name>.json` carries `severity`: `todo` (a C2Todo or omitted attribute), `review`, or `info`.
+Every flag in `stage5_<name>.json` carries `severity`: `todo` (a C2Todo, an `unresolvedCondition`, an omitted attribute, `output_dropped`), `review`, or `info`.
+
+A flag found **only in abstained (never-rendered) code** is marked `inAbstained` and counted as `info`: the Abstain itself is already a `todo`, so counting what is inside it again would double-count one gap.
 
 ## 13. Decision log (Appendix E)
 
@@ -202,4 +204,6 @@ Every flag in `stage5_<name>.json` carries `severity`: `todo` (a C2Todo or omitt
 | 10 Oct 2026 | v0.2: string-vs-number comparisons are not translated | TS2367 and PHP's loose rules; flagging but translating was impossible |
 | 10 Oct 2026 | v0.2: `escaping_changed` on every non-literal unescaped echo, severity info, outside the flag rate | True for HMS too (React escapes `<` and `&`); C4 needs it; counting it would inflate the flag rate with no developer action |
 | 10 Oct 2026 | v0.2: HTML nesting check added | Invalid nesting compiles but renders differently from the browser's re-parented legacy page |
+| 10 Oct 2026 | v0.3: flags inside abstained code are `info` | Never rendered; the Abstain is already counted as `todo` |
+| 10 Oct 2026 | v0.3: `unresolvedCondition` is severity `todo` | The guarded content never renders — the same as a C2Todo |
 | 10 Oct 2026 | v0.2: route clash for function files recorded, not fixed | `wp_header` and `wp_thumbnails` are functions in `html_functions.php`; they are components, not pages. Waits on R-F1/R-F2 (Member 01 Q4) |

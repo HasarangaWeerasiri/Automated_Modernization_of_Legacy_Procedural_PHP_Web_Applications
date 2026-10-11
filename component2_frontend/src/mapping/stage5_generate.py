@@ -98,6 +98,15 @@ export function unresolvedCondition(nodeId: string, reason: string): boolean {
 """
 
 
+def severity_of(kind: str, flag: str | None, status: str, in_abstained: bool) -> str:
+    """Spec v0.3 section 12. A gap (C2Todo, unresolvedCondition, omitted attribute, dropped output) is todo,
+    wherever it is. Any other flag found only in abstained, never-rendered code is info: the Abstain is already
+    a todo, so counting what is inside it again would double-count one gap."""
+    if kind != "flag" or flag in TODO_FLAGS:
+        return "todo"
+    return "info" if in_abstained else status
+
+
 def pascal(text: str) -> str:
     parts = [p for p in re.split(r"[^A-Za-z0-9]+", text) if p]
     name = "".join(p[0].upper() + p[1:] for p in parts)
@@ -1296,7 +1305,7 @@ class Generator:
                     kind=e.kind, flag=e.flag, reason=e.reason, status=e.status, file=path, line=line,
                     node_id=e.node_id, detail=e.detail, function=e.function, in_abstained=e.in_abstained,
                     source_line=node.loc.start_line if node is not None and node.loc is not None else None,
-                    severity="todo" if e.kind != "flag" or e.flag in TODO_FLAGS else e.status)
+                    severity=severity_of(e.kind, e.flag, e.status, e.in_abstained))
                 (flags if e.kind == "flag" else todos).append(entry)
         for path, text in sorted(self.lib_files().items()):
             files.append(GeneratedFile(path, text))
