@@ -325,9 +325,14 @@ LIST_CONTRACT = {
 }
 
 
-def tiny(tmp_path, items, mapped=False, contract=TINY_CONTRACT):
+def tiny(tmp_path, items, mapped=False, contract=TINY_CONTRACT, if_concern="presentation"):
     """Run Stages 1-5 on a one-page timeline. Items: dicts (entries), ("if", [(branch, condExpr|None, items)...])
-    or ("loop", items) (a foreach over $rows as $row)."""
+    or ("loop", items) (a foreach over $rows as $row). Every if is labelled `if_concern`."""
+    return tiny_run(tmp_path, items, mapped, contract, if_concern)[2]
+
+
+def tiny_run(tmp_path, items, mapped=False, contract=TINY_CONTRACT, if_concern="presentation"):
+    """Like tiny(), returning (Stage 2 tree, Stage 4 report, Stage 5 result)."""
     sequence, labels, counter = [], {}, iter(range(1, 10_000))
 
     def add(entries, enclosed):
@@ -341,7 +346,7 @@ def tiny(tmp_path, items, mapped=False, contract=TINY_CONTRACT):
                 continue
             if isinstance(item, tuple):  # ("if", [(branch, condExpr, items), ...])
                 if_id = f"t001#{next(counter):05d}"
-                labels[if_id] = {"concern": "presentation", "basis": "rule", "ruleId": "R08", "reason": "x"}
+                labels[if_id] = {"concern": if_concern, "basis": "rule", "ruleId": "R08", "reason": "x"}
                 cond_id = f"t001#{next(counter):05d}"
                 for branch, cond, inner in item[1]:
                     enc = {"nodeId": if_id, "kind": "Stmt_If", "role": "branch", "branch": branch,
@@ -363,9 +368,8 @@ def tiny(tmp_path, items, mapped=False, contract=TINY_CONTRACT):
     endpoints = {entrypoint: {"method": "get", "path": "/api/tiny", "status": "200",
                               "mediaType": "application/json"}} if mapped else {}
     (tmp_path / "m.json").write_text(json.dumps({"endpoints": endpoints}), encoding="utf-8")
-    _, _, result = pipeline(tmp_path / "t.json", tmp_path / "l.json", load_contract(tmp_path / "c.json"),
-                            load_endpoint_map(tmp_path / "m.json"))
-    return result
+    return pipeline(tmp_path / "t.json", tmp_path / "l.json", load_contract(tmp_path / "c.json"),
+                    load_endpoint_map(tmp_path / "m.json"))
 
 
 def body(result):
@@ -701,13 +705,12 @@ def test_every_entry_has_a_severity_and_the_flag_rate_counts_todo_and_review(nam
     _, _, result = runs[name]
     doc = json.loads(stage5.dumps(result, "x"))
     for t in doc["c2todos"]:
-        assert t["severity"] == "todo"
+        assert t["severityIfRendered"] == "todo"
+        assert t["severity"] == ("info" if t["inAbstained"] else "todo"), t
     for f in doc["flags"]:
-        if f["flag"] in ("attribute_omitted", "output_dropped"):
-            expected = "todo"  # a gap, wherever it is
-        else:
-            expected = "info" if f["inAbstained"] else f["status"]  # v0.3: abstained code is counted once
-        assert f["severity"] == expected, f
+        if_rendered = "todo" if f["flag"] in ("attribute_omitted", "output_dropped") else f["status"]
+        assert f["severityIfRendered"] == if_rendered, f
+        assert f["severity"] == ("info" if f["inAbstained"] else if_rendered), f  # v0.4: abstained counted once
     severity = doc["counts"]["severity"]
     entries = doc["c2todos"] + doc["flags"]
     assert severity == {s: sum(e["severity"] == s for e in entries) for s in ("todo", "review", "info")}
@@ -761,16 +764,25 @@ def test_html_nesting_on_the_mocks(runs):
     assert all(not v for v in found.values()), found
 
 
-def test_flags_in_abstained_code_are_info_and_gaps_stay_todo(runs):
+EXPECTED_FLAG_RATES = {"list_while": 12, "list_foreach": 12, "admin": 6, "detail": 5, "edge_cases": 10,
+                       "wp_guestbook": 5, "wp_view": 29, "wp_login": 4, "wp_header": 12, "wp_thumbnails": 2}
+
+
+def test_abstained_code_is_counted_once(runs):
+    """Spec v0.4 section 12: inside abstained code every entry, review and todo alike, counts as info."""
     _, _, result = runs["edge_cases"]
     (nested,) = flags(result, "html_nesting_changed")
-    assert (nested.in_abstained, nested.status, nested.severity) == (True, "review", "info")
-    assert stage5.counts(result)["metrics"]["flagRate"] == 16
-    assert all(t.severity == "todo" for t in result.todos if t.in_abstained)  # the gaps themselves still count
+    assert (nested.in_abstained, nested.severity, nested.severity_if_rendered) == (True, "info", "review")
+    inner = [t for t in result.todos if t.in_abstained]
+    assert len(inner) == 6 and {(t.severity, t.severity_if_rendered) for t in inner} == {("info", "todo")}
+    (region,) = todos(result, "cuts_across_business_logic")
+    assert (region.in_abstained, region.severity) == (False, "todo")  # the one todo for the region
     _, _, thumbnails = runs["wp_thumbnails"]
-    assert all(f.severity == "todo" for f in flags(thumbnails) if f.flag == "attribute_omitted" and f.in_abstained)
-    total = sum(stage5.counts(result)["metrics"]["flagRate"] for _, _, result in runs.values())
-    assert total == 110
+    omitted = [f for f in flags(thumbnails, "attribute_omitted:unresolved_read")]
+    assert omitted and all((f.in_abstained, f.severity, f.severity_if_rendered) == (True, "info", "todo")
+                           for f in omitted)
+    rates = {name: stage5.counts(r)["metrics"]["flagRate"] for name, (_, _, r) in runs.items()}
+    assert rates == EXPECTED_FLAG_RATES and sum(rates.values()) == 97
 
 
 def test_html_nesting_flag_points_at_the_element(runs):
@@ -833,3 +845,77 @@ def test_cli_prints_the_metrics_for_every_mock(runs):
         line = stage5.summary(result)
         assert f"{c['metrics']['componentsWithoutC2Todo']} components without C2Todo" in line
         assert f"flag rate {c['metrics']['flagRate']}" in line
+
+
+# ---------------------------------------------------------------- boundary-rules v0.7 R-L3 scope, spec v0.4 fallback
+
+ROW_NAME = read("$row['name']", "db_row_field", "$row", ["name"], "name")
+CASE_A = [html("<select>"), ("loop", [  # an if inside the row's one element
+    html("<option>"), echo(ROW_NAME), ("if", [("then", "$row['name'] == 'a'", [html(" (default)")])]),
+    html("</option>")]), html("</select>")]
+CASE_B = [html("<h1>Rows</h1><select>"), ("loop", [  # an if wrapping the row's one element (filter-in-loop)
+    ("if", [("then", "$row['n'] > 0", [html("<option>"), echo(ROW_NAME), html("</option>")])])]),
+    html("</select>")]
+
+
+def rows_list(result):
+    return text(result, "components/RowsList.tsx")
+
+
+def compiles(result, tmp_path, name):
+    if compile_check.unavailable():
+        return  # the compile check reports why it cannot run; the other assertions still hold
+    stage5.write_files(result, tmp_path / "generated")
+    checked = compile_check.check(name, tmp_path / "generated")
+    assert checked.errors == 0, checked.output
+
+
+def test_rl3_case_a_presentation_if_is_an_inline_conditional(tmp_path):
+    tree, _, result = tiny_run(tmp_path, CASE_A, mapped=True, contract=LIST_CONTRACT)
+    (inline_map,) = find(tree, rule="R-L3")
+    assert [child.type for child in inline_map.children] == ["Static", "InlineConditional", "Static"]
+    listing = rows_list(result)
+    assert '<option key={i}>' in listing and '{row.name == "a" && " (default)"}' in listing
+    assert not result.todos
+    compiles(result, tmp_path, "rl3_case_a_presentation")
+
+
+def test_rl3_case_a_business_logic_if_abstains_like_any_other_if(tmp_path):
+    tree, _, result = tiny_run(tmp_path, CASE_A, mapped=True, contract=LIST_CONTRACT, if_concern="business_logic")
+    (abstain,) = find(tree, type="Abstain")
+    assert abstain.reason == "cuts_across_business_logic"
+    (todo,) = result.todos
+    assert (todo.reason, todo.severity) == ("cuts_across_business_logic", "todo")
+    listing = rows_list(result)
+    assert f'<C2Todo id="{abstain.source_ids[0]}" reason="cuts_across_business_logic" />' in listing
+    assert "function Abstained_t001_00005({ row }: { row: ApiTinyResponse[\"rows\"][number] })" in listing
+    compiles(result, tmp_path, "rl3_case_a_business_logic")
+
+
+def test_rl3_case_b_fallback_replaces_only_the_list(tmp_path):
+    _, _, result = tiny_run(tmp_path, CASE_B, mapped=True, contract=LIST_CONTRACT)
+    (todo,) = result.todos
+    assert (todo.reason, todo.node_id, todo.function) == ("markup_not_generatable", "t001#00002", "RowsList")
+    assert todo.detail.startswith("List RowsList: ")
+    assert "return (\n    <C2Todo id=\"t001#00002\" reason=\"markup_not_generatable\" />\n  );" in rows_list(result)
+    page = text(result, "app/page/page.tsx")
+    assert "<h1>Rows</h1>" in page and "<RowsList items={data.rows} />" in page  # the page itself survives
+    compiles(result, tmp_path, "rl3_case_b_presentation")
+
+
+def test_rl3_case_b_business_logic_if_abstains(tmp_path):
+    tree, _, result = tiny_run(tmp_path, CASE_B, mapped=True, contract=LIST_CONTRACT, if_concern="business_logic")
+    (abstain,) = find(tree, type="Abstain")
+    assert abstain.reason == "cuts_across_business_logic"
+    listing = rows_list(result)
+    assert '<C2Todo id="t001#00003" reason="cuts_across_business_logic" key={i} />' in listing
+    assert [t.reason for t in result.todos] == ["cuts_across_business_logic"]
+    compiles(result, tmp_path, "rl3_case_b_business_logic")
+
+
+def test_page_fallback_is_kept_when_the_page_is_the_smallest_component(tmp_path):
+    # A loop inside an attribute value cannot be placed anywhere: Stage 2 abstains on it, and the markup of the
+    # page itself cannot be built, so the page is the smallest enclosing component.
+    result = tiny(tmp_path, [html('<a href="'), ("loop", [html("x")]), html('">t</a>')])
+    assert [(t.node_id, t.reason) for t in result.todos if t.reason != "no_endpoint"] == [
+        ("page", "markup_not_generatable")]

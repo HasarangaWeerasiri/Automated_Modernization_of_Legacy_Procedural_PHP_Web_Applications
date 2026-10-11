@@ -1,8 +1,8 @@
-# Component 2 — Stage 5 Generation Specification (v0.3)
+# Component 2 — Stage 5 Generation Specification (v0.4)
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.3 — implemented on the rule-discovery mocks (`ab64238` v0.1, `ecdb8e0` v0.2). v0.3 records the owner's answers to the v0.2 run. Evaluation apps stay locked |
+| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. Evaluation apps stay locked |
 | Date | 10 October 2026 |
 | Owner | Jayawardhana R D L L (IT23213876) |
 | Input | Stage 2 tree, Stage 3 needs, Stage 4 report, contract, endpoint map, timeline |
@@ -186,7 +186,9 @@ determinism). Two runs → byte-identical files.
 
 Every flag in `stage5_<name>.json` carries `severity`: `todo` (a C2Todo, an `unresolvedCondition`, an omitted attribute, `output_dropped`), `review`, or `info`.
 
-A flag found **only in abstained (never-rendered) code** is marked `inAbstained` and counted as `info`: the Abstain itself is already a `todo`, so counting what is inside it again would double-count one gap.
+**Abstained code is counted once (corrected in v0.4).** Every flag found only in abstained (never-rendered) code — `review` **and** `todo` (C2Todo, `unresolvedCondition`, `attribute_omitted`, `output_dropped`) — is marked `inAbstained: true`, keeps its original severity in a field `severityIfRendered`, and is counted as `info`. The Abstain node's own C2Todo is the single `todo` for the whole region. Every inner flag stays listed (no hidden gaps); it is just not counted twice.
+
+**Last-resort fallback (v0.4).** When a structure cannot be generated (`markup_not_generatable`), the C2Todo replaces the **smallest enclosing component** (the List, Item or ConditionalComponent), never the whole page — unless the page itself is the smallest. The flag names the component.
 
 ## 13. Decision log (Appendix E)
 
@@ -204,6 +206,8 @@ A flag found **only in abstained (never-rendered) code** is marked `inAbstained`
 | 10 Oct 2026 | v0.2: string-vs-number comparisons are not translated | TS2367 and PHP's loose rules; flagging but translating was impossible |
 | 10 Oct 2026 | v0.2: `escaping_changed` on every non-literal unescaped echo, severity info, outside the flag rate | True for HMS too (React escapes `<` and `&`); C4 needs it; counting it would inflate the flag rate with no developer action |
 | 10 Oct 2026 | v0.2: HTML nesting check added | Invalid nesting compiles but renders differently from the browser's re-parented legacy page |
-| 10 Oct 2026 | v0.3: flags inside abstained code are `info` | Never rendered; the Abstain is already counted as `todo` |
+| 10 Oct 2026 | v0.3: review flags inside abstained code are `info` | Never rendered; the Abstain is already counted as `todo` |
+| 11 Oct 2026 | v0.4: **todo** flags inside abstained code are `info` too (owner's v0.3 expected totals were wrong) | v0.3 only removed the double count for review flags; a C2Todo inside an abstained region is the same double count. Rule now: one abstained region = one todo |
+| 11 Oct 2026 | v0.4: last-resort fallback replaces the smallest enclosing component | A synthetic R-L3 case replaced a whole page for one small structure |
 | 10 Oct 2026 | v0.3: `unresolvedCondition` is severity `todo` | The guarded content never renders — the same as a C2Todo |
 | 10 Oct 2026 | v0.2: route clash for function files recorded, not fixed | `wp_header` and `wp_thumbnails` are functions in `html_functions.php`; they are components, not pages. Waits on R-F1/R-F2 (Member 01 Q4) |

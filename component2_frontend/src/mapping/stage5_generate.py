@@ -98,13 +98,13 @@ export function unresolvedCondition(nodeId: string, reason: string): boolean {
 """
 
 
-def severity_of(kind: str, flag: str | None, status: str, in_abstained: bool) -> str:
-    """Spec v0.3 section 12. A gap (C2Todo, unresolvedCondition, omitted attribute, dropped output) is todo,
-    wherever it is. Any other flag found only in abstained, never-rendered code is info: the Abstain is already
-    a todo, so counting what is inside it again would double-count one gap."""
-    if kind != "flag" or flag in TODO_FLAGS:
-        return "todo"
-    return "info" if in_abstained else status
+def severity_of(kind: str, flag: str | None, status: str, in_abstained: bool) -> tuple[str, str]:
+    """(severity, severity if rendered), spec v0.4 section 12. A gap (C2Todo, unresolvedCondition, omitted
+    attribute, dropped output) is todo; any other flag keeps its status. Everything found only in abstained,
+    never-rendered code counts as info: the Abstain's own C2Todo is the one todo for the region. The entry is
+    still listed, with what it would be if rendered."""
+    if_rendered = "todo" if kind != "flag" or flag in TODO_FLAGS else status
+    return ("info" if in_abstained else if_rendered), if_rendered
 
 
 def pascal(text: str) -> str:
@@ -917,7 +917,11 @@ class Generator:
             elements = [b for b in body if isinstance(b, jsx.Element)]
             if len(body) != 1 or len(elements) != 1:
                 raise GenerationError("markup_not_generatable", f"inline map {mloop.enclosure.node_id}")
-            elements[0].attrs.insert(0, jsx.Attr("key", code="i"))
+            key = jsx.Attr("key", code="i")
+            if elements[0].tag == "C2Todo":  # keep every C2Todo written as <C2Todo id=... reason=... />
+                elements[0].attrs.append(key)
+            else:
+                elements[0].attrs.insert(0, key)
         out.append(jsx.Map("items", "row, i", body, marks=tuple(marks)))
         return out
 
@@ -927,10 +931,11 @@ class Generator:
         node = item.node
         source = node.source_ids[0]
         todo = self.todo(source, node.reason, ctx, "Stage 2 abstained; content in " + f"Abstained_{safe_id(source)}()")
-        ctx.pending.append(item)
+        ctx.pending.append((item, ctx.row))  # the row in scope where the region stands (e.g. an R-L3 row)
         return [todo]
 
-    def abstained_function(self, item: MAbstain, ctx: _Ctx) -> None:
+    def abstained_function(self, pending: tuple, ctx: _Ctx) -> None:
+        item, row = pending
         node, file = item.node, ctx.file
         source = node.source_ids[0]
         name = f"Abstained_{safe_id(source)}"
@@ -941,11 +946,18 @@ class Generator:
             return
         key = file.mark()
         inner = _Ctx(file=file, markup=markup, boundary=self.boundaries(markup), function=name, function_key=key,
-                     row=ctx.row, in_abstained=True)
+                     row=row, in_abstained=True)
         self.queue_markup_flags(markup)
         slot = _Function(name, "", [], [], key)
         file.functions.append(slot)
-        body = self.nodes(markup.children, inner)
+        entries = len(file.entries)
+        try:
+            body = self.nodes(markup.children, inner)
+        except GenerationError as e:  # leave no trace of the half-written function, only the flag
+            del file.entries[entries:]
+            file.functions.remove(slot)
+            self.flag(ctx, "abstained_code_not_generated", INFO, source, e.detail, mark=ctx.function_key)
+            return
         self.place_markup_flags(None, inner, [])
         slot.header = f"function {name}({self.signature(inner.uses, inner.row, required=())}) {{"
         slot.locals, slot.body = inner.locals, body
@@ -1031,20 +1043,17 @@ class Generator:
         root = self.roots[id(component)]
         ctx = _Ctx(file=file, markup=caller.markup, boundary=caller.boundary, function=name, function_key=key,
                    root=root, row=row, in_abstained=caller.in_abstained)
+        required = {"List": ("items",), "Item": ("row",)}.get(component.type, ())
         if component.type == "List":
             ctx.list_node = component
-            body = self.nodes([root], ctx)
-            required = ("items",)
         elif component.type == "Item":
             ctx.row = self.row_scope(self.parents[id(component)])
-            body = self.nodes(root.children, ctx)
-            required = ("row",)
-        elif component.type == "Empty":
-            body = self.nodes(root.children, ctx)
-            required = ()
-        else:  # ConditionalComponent
-            body = self.nodes([root], ctx)
-            required = ()
+        files, generated = set(self.files), set(self.generated)
+        pending_flags = {k: list(v) for k, v in self.pending_flags.items()}
+        try:
+            body = self.nodes(root.children if component.type in ("Item", "Empty") else [root], ctx)
+        except GenerationError as e:
+            body = self.component_fallback(component, name, ctx, e, files, generated, pending_flags)
         slot = _Function(name, "", ctx.locals, body, key)
         file.functions.insert(0, slot)
         props = set(ctx.uses) | set(required)
@@ -1053,6 +1062,33 @@ class Generator:
             self.abstained_function(pending, ctx)
         self.generated[id(component)] = (name, props)
         return name, props
+
+    def component_fallback(self, component: ComponentNode, name: str, ctx: _Ctx, error: GenerationError,
+                           files: set, generated: set, pending_flags: dict) -> list:
+        """Spec v0.4 section 12: a component that cannot be generated becomes one C2Todo, never the whole page.
+
+        Everything the attempt wrote is undone (its own file's code and entries, any component file it created),
+        and markup flags it had placed are queued again so they still reach the flag file."""
+        file = ctx.file
+        for path in set(self.files) - files:
+            del self.files[path]
+        for key in set(self.generated) - generated:
+            del self.generated[key]
+        for state in (file.entries, file.functions, file.imports, file.type_imports):
+            state.clear()
+        ctx.uses.clear()
+        ctx.locals.clear()
+        ctx.pending.clear()
+        self.pending_flags = pending_flags
+        live = {id(f) for f in self.files.values()}
+        for key, (old_file, *_rest) in list(self.cond_marks.items()):  # reviews now point at the fallback
+            if old_file is file or id(old_file) not in live:
+                self.cond_marks[key] = (file, ctx.function_key, name, ctx.in_abstained)
+        for node_id, (old_file, *_rest) in list(self.emitted_in.items()):
+            if old_file is file or id(old_file) not in live:
+                self.emitted_in[node_id] = (file, name, ctx.function_key, ctx.in_abstained)
+        source = component.source_ids[0] if component.source_ids else component.node_ids[0]
+        return [self.todo(source, error.reason, ctx, f"{component.type} {name}: {error.detail}")]
 
     def signature(self, props: set, row: _Row | None, required: tuple = (), component=None) -> str:
         names, types = [], []
@@ -1301,11 +1337,12 @@ class Generator:
             for e in file.entries:
                 line = marks.get(e.mark) or fallback.get(e.function, 1)
                 node = self.output_by_id.get(e.node_id)
+                severity, if_rendered = severity_of(e.kind, e.flag, e.status, e.in_abstained)
                 entry = GenerationEntry(
                     kind=e.kind, flag=e.flag, reason=e.reason, status=e.status, file=path, line=line,
                     node_id=e.node_id, detail=e.detail, function=e.function, in_abstained=e.in_abstained,
                     source_line=node.loc.start_line if node is not None and node.loc is not None else None,
-                    severity=severity_of(e.kind, e.flag, e.status, e.in_abstained))
+                    severity=severity, severity_if_rendered=if_rendered)
                 (flags if e.kind == "flag" else todos).append(entry)
         for path, text in sorted(self.lib_files().items()):
             files.append(GeneratedFile(path, text))
@@ -1409,7 +1446,8 @@ def _entry_dict(e: GenerationEntry) -> dict:
     out = {"kind": e.kind}
     if e.kind == "flag":
         out["flag"] = e.flag
-    out |= {"reason": e.reason, "severity": e.severity, "status": e.status, "file": e.file, "line": e.line,
+    out |= {"reason": e.reason, "severity": e.severity, "severityIfRendered": e.severity_if_rendered,
+            "status": e.status, "file": e.file, "line": e.line,
             "nodeId": e.node_id, "function": e.function, "inAbstained": e.in_abstained, "sourceLine": e.source_line,
             "detail": e.detail}
     return out

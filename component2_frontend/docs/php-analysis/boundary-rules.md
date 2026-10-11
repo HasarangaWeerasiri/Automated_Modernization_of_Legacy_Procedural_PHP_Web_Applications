@@ -1,9 +1,9 @@
-# Component 2 — UI Boundary Rules (DRAFT v0.6)
+# Component 2 — UI Boundary Rules (DRAFT v0.7)
 
 | Item | Value |
 |---|---|
 | Status | **Draft** — not frozen. Freeze when 2 consecutive new rule-discovery apps add no new pattern (saturation) |
-| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note · v0.6, 10 Oct: Q2 note gives the exact condExpr form; no rule changed) |
+| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note · v0.6, 10 Oct: Q2 note gives the exact condExpr form · v0.7, 11 Oct: R-L3 scope clarified; filter-in-loop added to the checklist as not yet seen) |
 | Owner | Jayawardhana R D L L (IT23213876) — Component 2, Frontend Migration |
 | Rule-discovery corpus | HMS (`kishan0725/Hospital-Management-System`, commit `777fda4`), WackoPicko (`adamdoupe/WackoPicko`, commit `cabc1b3`, MIT) |
 | Evaluation corpus | **Locked — do not open** (see §7) |
@@ -46,7 +46,7 @@ byte-exact `raw`), which does not have these limits.
 | **R-L1** | A loop with output → **Item** component (loop body) + **List** component (container) | HMS 10/10, WackoPicko 8/9 (the 9th is the chunked loop → R-L7) |
 | **R-L2a** | List container = nearest HTML tag still open at loop start, **walking past** `tbody`, `thead`, `tr` | Tight cut: HMS 10/10, WackoPicko 6/9 |
 | **R-L2b** | If the loop item has **multiple root elements and no wrapper tag**, the List component has **no wrapper** (renders a Fragment); do not take the enclosing section | The 2 WackoPicko loops where R-L2a cut too broad (`guestbook.php` 35–41, `pictures/view.php` 51–59) |
-| **R-L3** | Loop body that emits **one element with no child elements** (e.g. `<option>`) → keep `.map()` inline, no Item component. Otherwise → Item component | HMS `<option>` loops in `newfunc.php`, `func1.php`, `func3.php` |
+| **R-L3** | Loop body that emits **one element with no child elements** (e.g. `<option>`) → keep `.map()` inline, no Item component. Otherwise → Item component. **Scope (v0.7):** an `if` inside that one element is classified by §3 and §4a exactly like any other `if` (incl. abstain `cuts_across_business_logic`); R-L3 changes only whether an Item component is created, never how its `if`s are judged. An `if` that wraps the whole element is **not** R-L3 (see §8, filter-in-loop) | HMS `<option>` loops in `newfunc.php`, `func1.php`, `func3.php` (none has an `if`; all are in functions, so no mock has R-L3 until Member 01 Q4) |
 | **R-L4** | Nested loops → resolve innermost first; the inner List becomes one node of the outer Item | **Design only — not observed** in any in-scope app (seen only in out-of-scope osCommerce / vBulletin) |
 | **R-L5** | Loop with no output → not a UI boundary; ignore | HMS 3/3 (incl. one inside an HTML comment) |
 | **R-L6** | Tag tracker **ignores unmatched closing tags** and flags them for Stage 5 (JSX will not compile them). Tag balance is checked **per branch**, not only on the linear sequence | HMS `doctor-panel.php` 246 (`</tr></a>`); WackoPicko `<form>` inside `<table>`, `<p>` inside `<ul>` |
@@ -189,7 +189,7 @@ No-output loops (R-L5): admin-panel.php 146, 315 (inside `<!-- -->`). String-bui
 | Malformed HTML | HMS, WackoPicko |
 | Cross-file output (function echoes `<option>` into a page's `<select>`) | HMS |
 | Escape wrapper on output (`h()` — 89 of 116 `<?= ?>` tags) | WackoPicko |
-| **Not yet seen:** layout via `include header.php`; nested loops; plain content `if` > 3 elements | — |
+| **Not yet seen:** layout via `include header.php`; nested loops; plain content `if` > 3 elements; **filter-in-loop** (`if` wrapping the whole loop body, e.g. `while(...) { if ($row['n'] > 0) { echo '<option>…'; } }` — synthetic test only; until seen in a real app it abstains via the narrowed fallback) | — |
 
 ---
 

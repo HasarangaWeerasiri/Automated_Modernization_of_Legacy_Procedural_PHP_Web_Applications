@@ -11,7 +11,8 @@ How the rules are applied:
           container -> abstain. Otherwise R-L1: a List holding one Item.
           R-L2b when the item has several root elements (no wrapper), else
           R-L2a (container = nearest open tag, walking past table sections).
-          R-L3: a one-element item stays inline, no Item component.
+          R-L3: a one-element item stays inline, no Item component; an if
+          inside it is still judged by the if rules (boundary-rules v0.7).
           R-L4 needs no code of its own: the walk is innermost first.
   ifs     R-I3 output in attribute position. R-L6 tags crossing a branch ->
           abstain. An if labelled business_logic is an authorization guard ->
@@ -346,8 +347,12 @@ class _Builder:
         label = region.enclosure.label
         common = {"reason": reason, "container": container, "loop_concern": label.concern.value if label else None}
         if len(roots) == 1 and tagtrack.element_count(run) == 1:  # R-L3: stays an inline map
+            # v0.7 scope: R-L3 decides only that there is no Item component. An if in the row is judged by the
+            # if rules like any other (an inline map whose body holds one gets those nodes as children).
+            regions = [item for item in region.items if not isinstance(item, KeptNode)]
+            children = self.items(region.items) if regions else ()
             return common | {"rules": ("R-L1", container_rule, "R-L3"),
-                             "child": self.node("Static", ("R-L3",), "inline_map", nodes)}
+                             "child": self.node("Static", ("R-L3",), "inline_map", nodes, (), children)}
         item = self.node("Item", ("R-L1",), "loop_body", nodes, (), self.items(region.items), root_tags=roots)
         return common | {"rules": ("R-L1", container_rule), "child": item}
 
