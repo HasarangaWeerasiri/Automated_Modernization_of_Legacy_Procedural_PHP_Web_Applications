@@ -1,0 +1,123 @@
+{
+  "endpoint_id": "GET /api/patients",
+  "legacy_url": "/admin-panel1.php",
+  "scenario_id": "patient_list_typical_01",
+  "scenario_type": "typical",
+  "input": {
+    "method": "GET",
+    "params": {},
+    "body": null
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [
+      {
+        "Patient ID": "1",
+        "First Name": "Ram",
+        "Last Name": "Kumar",
+        "Gender": "Male",
+        "Email": "ram@gmail.com",
+        "Contact": "9876543210",
+        "Password": "ram123"
+      },
+      {
+        "Patient ID": "2",
+        "First Name": "Alia",
+        "Last Name": "Bhatt",
+        "Gender": "Female",
+        "Email": "alia@gmail.com",
+        "Contact": "8976897689",
+        "Password": "alia123"
+      },
+      {
+        "Patient ID": "3",
+        "First Name": "Shahrukh",
+        "Last Name": "khan",
+        "Gender": "Male",
+        "Email": "shahrukh@gmail.com",
+        "Contact": "8976898463",
+        "Password": "shahrukh123"
+      },
+      {
+        "Patient ID": "4",
+        "First Name": "Kishan",
+        "Last Name": "Lal",
+        "Gender": "Male",
+        "Email": "kishansmart0@gmail.com",
+        "Contact": "8838489464",
+        "Password": "kishan123"
+      },
+      {
+        "Patient ID": "5",
+        "First Name": "Gautam",
+        "Last Name": "Shankararam",
+        "Gender": "Male",
+        "Email": "gautam@gmail.com",
+        "Contact": "9070897653",
+        "Password": "gautam123"
+      },
+      {
+        "Patient ID": "6",
+        "First Name": "Sushant",
+        "Last Name": "Singh",
+        "Gender": "Male",
+        "Email": "sushant@gmail.com",
+        "Contact": "9059986865",
+        "Password": "sushant123"
+      },
+      {
+        "Patient ID": "7",
+        "First Name": "Nancy",
+        "Last Name": "Deborah",
+        "Gender": "Female",
+        "Email": "nancy@gmail.com",
+        "Contact": "9128972454",
+        "Password": "nancy123"
+      },
+      {
+        "Patient ID": "8",
+        "First Name": "Kenny",
+        "Last Name": "Sebastian",
+        "Gender": "Male",
+        "Email": "kenny@gmail.com",
+        "Contact": "9809879868",
+        "Password": "kenny123"
+      },
+      {
+        "Patient ID": "9",
+        "First Name": "William",
+        "Last Name": "Blake",
+        "Gender": "Male",
+        "Email": "william@gmail.com",
+        "Contact": "8683619153",
+        "Password": "william123"
+      },
+      {
+        "Patient ID": "10",
+        "First Name": "Peter",
+        "Last Name": "Norvig",
+        "Gender": "Male",
+        "Email": "peter@gmail.com",
+        "Contact": "9609362815",
+        "Password": "peter123"
+      },
+      {
+        "Patient ID": "11",
+        "First Name": "Shraddha",
+        "Last Name": "Kapoor",
+        "Gender": "Female",
+        "Email": "shraddha@gmail.com",
+        "Contact": "9768946252",
+        "Password": "shraddha123"
+      }
+    ]
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:618f6c3494ef998537f46a38ec04979c93b592cda9a2e7d6eb7cf38989864f90",
+    "delta": {}
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-12T08:18:36+00:00"
+}

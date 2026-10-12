@@ -1,0 +1,26 @@
+{
+  "benchmark": "hms",
+  "endpoints": {
+    "GET /api/patients": {
+      "verdict": "PASS",
+      "scenarios": [
+        {
+          "scenario_id": "patient_list_typical_01",
+          "scenario_type": "typical",
+          "verdict": "PASS",
+          "oracle_record": "oracles/hms/patient_list_typical_01.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "patient_search_typical_01",
+          "scenario_type": "typical",
+          "verdict": "PASS",
+          "oracle_record": "oracles/hms/patient_search_typical_01.json",
+          "differences": [],
+          "abstentions": []
+        }
+      ]
+    }
+  }
+}

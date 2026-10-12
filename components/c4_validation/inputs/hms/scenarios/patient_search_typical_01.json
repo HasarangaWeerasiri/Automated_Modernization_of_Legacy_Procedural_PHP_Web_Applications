@@ -10,5 +10,14 @@
       "patient_contact": "9876543210",
       "patient_search_submit": "1"
     }
+  },
+  "migrated_request": {
+    "method": "GET",
+    "path": "/api/patients",
+    "params": {
+      "contact": "9876543210"
+    },
+    "body": null,
+    "records_at": "patients"
   }
 }

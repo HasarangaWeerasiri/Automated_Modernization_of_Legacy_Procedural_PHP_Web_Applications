@@ -60,8 +60,13 @@ def load_scenario(path: Path) -> dict[str, Any]:
     return scenario
 
 
-def _observe(config: Config, scenario: dict[str, Any], baseline: dbstate.Snapshot) -> Observation:
-    before = dbstate.ensure_baseline(config.legacy, baseline)
+def _observe(
+    config: Config, scenario: dict[str, Any], baselines: dict[str, dbstate.Snapshot]
+) -> Observation:
+    # Both databases are brought to the baseline before every scenario, although
+    # only the legacy system is driven here.
+    dbstate.ensure_baseline(config.migrated, baselines["migrated"])
+    before = dbstate.ensure_baseline(config.legacy, baselines["legacy"])
 
     request = scenario["legacy_request"]
     session = requests.Session()  # a fresh session: no cookies carried between runs
@@ -114,15 +119,22 @@ def _volatile_labels(scenario_id: str, observations: list[Observation]) -> list[
     return [label for label in labels if label in volatile]
 
 
-def _outcome(status_code: int) -> str:
+def outcome_of(status_code: int) -> str:
+    """The class of result a status code stands for.
+
+    Outcomes are compared, not status codes: a legacy 200 or 302 and a migrated 201
+    are the same outcome.
+    """
     if status_code < 400:
         return "success"
     return "rejection" if status_code < 500 else "error"
 
 
-def capture(config: Config, scenario: dict[str, Any], baseline: dbstate.Snapshot) -> dict[str, Any]:
+def capture(
+    config: Config, scenario: dict[str, Any], baselines: dict[str, dbstate.Snapshot]
+) -> dict[str, Any]:
     """Observe one scenario on the legacy system and return its oracle record."""
-    observations = [_observe(config, scenario, baseline) for _ in range(CAPTURE_RUNS)]
+    observations = [_observe(config, scenario, baselines) for _ in range(CAPTURE_RUNS)]
     volatile = _volatile_labels(scenario["scenario_id"], observations)
     observed = observations[0]
     request = scenario["legacy_request"]
@@ -138,13 +150,13 @@ def capture(config: Config, scenario: dict[str, Any], baseline: dbstate.Snapshot
         },
         "legacy_response": {
             "status_code": observed.status_code,
-            "outcome": _outcome(observed.status_code),
+            "outcome": outcome_of(observed.status_code),
             "records": list(observed.records),
         },
         "db_state": {
             # The content fingerprint, so replay can confirm that the migrated
             # database starts from the same logical baseline.
-            "baseline_fingerprint": baseline.data_fingerprint,
+            "baseline_fingerprint": baselines["legacy"].data_fingerprint,
             "delta": observed.delta,
         },
         "excluded_fields": [
@@ -157,8 +169,17 @@ def capture(config: Config, scenario: dict[str, Any], baseline: dbstate.Snapshot
 
 
 def write_record(config: Config, record: dict[str, Any]) -> Path:
+    """Store an oracle record, keeping the stored one if nothing observed has changed.
+
+    Capturing again and seeing the same behaviour must not rewrite the evidence, so
+    `captured_at` is the time the stored behaviour was first observed.
+    """
     config.oracle_dir.mkdir(parents=True, exist_ok=True)
     path = config.oracle_dir / f"{record['scenario_id']}.json"
+    if path.is_file():
+        stored = json.loads(path.read_text(encoding="utf-8"))
+        if {**stored, "captured_at": None} == {**record, "captured_at": None}:
+            return path
     text = json.dumps(record, indent=2, ensure_ascii=False) + "\n"
     path.write_text(text, encoding="utf-8", newline="\n")
     return path
@@ -178,11 +199,11 @@ def main(argv: list[str] | None = None) -> int:
         if not files:
             raise CaptureError(f"No matching scenario in {config.scenario_dir}.")
         containers.wait_until_ready(config, timeout=0)
-        baseline = dbstate.reset(config.legacy)
+        baselines = {system.name: dbstate.reset(system) for system in config.systems}
 
         print(f"benchmark: {config.benchmark}")
         for file in files:
-            record = capture(config, load_scenario(file), baseline)
+            record = capture(config, load_scenario(file), baselines)
             path = write_record(config, record)
             changed = ", ".join(record["db_state"]["delta"]) or "none"
             print(

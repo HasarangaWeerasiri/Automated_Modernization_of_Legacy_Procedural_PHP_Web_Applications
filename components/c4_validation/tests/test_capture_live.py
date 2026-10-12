@@ -24,22 +24,22 @@ def _without_timestamp(record):
 
 def test_capture_is_repeatable(at_baseline, baselines, scenarios):
     for scenario in scenarios:
-        first = capture(at_baseline, scenario, baselines["legacy"])
-        second = capture(at_baseline, scenario, baselines["legacy"])
+        first = capture(at_baseline, scenario, baselines)
+        second = capture(at_baseline, scenario, baselines)
 
         assert _without_timestamp(first) == _without_timestamp(second), scenario["scenario_id"]
 
 
 def test_record_is_tied_to_the_baseline_both_systems_share(at_baseline, baselines, scenarios):
     for scenario in scenarios:
-        record = capture(at_baseline, scenario, baselines["legacy"])
+        record = capture(at_baseline, scenario, baselines)
 
         assert record["db_state"]["baseline_fingerprint"] == baselines["migrated"].data_fingerprint
 
 
 def test_capture_leaves_the_migrated_system_untouched(at_baseline, baselines, scenarios):
     for scenario in scenarios:
-        capture(at_baseline, scenario, baselines["legacy"])
+        capture(at_baseline, scenario, baselines)
 
     migrated = dbstate.snapshot(at_baseline.migrated)
     assert migrated.state_fingerprint == baselines["migrated"].state_fingerprint
@@ -52,7 +52,7 @@ def test_stored_oracle_records_are_reproduced_by_a_fresh_capture(at_baseline, ba
         stored = at_baseline.oracle_dir / f"{scenario['scenario_id']}.json"
         if not stored.is_file():
             continue
-        fresh = capture(at_baseline, scenario, baselines["legacy"])
+        fresh = capture(at_baseline, scenario, baselines)
         recorded = json.loads(stored.read_text(encoding="utf-8"))
 
         assert _without_timestamp(fresh) == _without_timestamp(recorded), scenario["scenario_id"]

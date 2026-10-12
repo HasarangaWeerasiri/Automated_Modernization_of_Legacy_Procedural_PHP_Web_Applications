@@ -7,7 +7,7 @@ from config, confirms that both systems are reachable before anything is validat
 Compose is invoked through its CLI because the Docker SDK has no Compose API. The
 SDK is used for everything that inspects a running container.
 
-    python -m c4.containers up | down | status
+    python -m c4.containers up | down | status | restart
 """
 
 from __future__ import annotations
@@ -73,6 +73,12 @@ def up(config: Config, *, build: bool = True) -> dict[str, bool]:
 def down(config: Config, *, remove_volumes: bool = False) -> None:
     """Stop and remove the containers. Volumes hold only the shared database socket."""
     _compose(config, "down", *(["-v"] if remove_volumes else []))
+
+
+def restart(config: Config) -> dict[str, bool]:
+    """Restart both systems, for example after the migrated application has changed."""
+    _compose(config, "restart")
+    return wait_until_ready(config)
 
 
 def _state(client: docker.DockerClient, name: str) -> dict:
@@ -161,7 +167,7 @@ def wait_until_ready(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m c4.containers", description=__doc__.splitlines()[0])
-    parser.add_argument("command", choices=("up", "down", "status"))
+    parser.add_argument("command", choices=("up", "down", "status", "restart"))
     parser.add_argument("--benchmark", help="benchmark name; defaults to C4_BENCHMARK")
     parser.add_argument("--no-build", action="store_true", help="up: do not rebuild images")
     parser.add_argument("--volumes", action="store_true", help="down: also remove volumes")
@@ -173,7 +179,12 @@ def main(argv: list[str] | None = None) -> int:
             down(config, remove_volumes=args.volumes)
             print(f"{config.benchmark}: stopped")
             return 0
-        readiness = up(config, build=not args.no_build) if args.command == "up" else probe(config)
+        if args.command == "up":
+            readiness = up(config, build=not args.no_build)
+        elif args.command == "restart":
+            readiness = restart(config)
+        else:
+            readiness = probe(config)
     except (ConfigError, ComposeError, DockerUnavailableError, NotReadyError) as error:
         print(error, file=sys.stderr)
         return 1

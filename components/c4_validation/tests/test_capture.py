@@ -23,6 +23,7 @@ SCENARIO = {
 }
 
 BASELINE = SimpleNamespace(data_fingerprint="sha256:baseline")
+BASELINES = {"legacy": BASELINE, "migrated": BASELINE}
 
 
 @pytest.fixture
@@ -40,7 +41,7 @@ def observed(*records, status=200, delta=None):
 
 def replay_observations(monkeypatch, *observations):
     runs = iter(observations)
-    monkeypatch.setattr(capture_module, "_observe", lambda config, scenario, baseline: next(runs))
+    monkeypatch.setattr(capture_module, "_observe", lambda config, scenario, baselines: next(runs))
 
 
 # ------------------------------------------------------------------ oracle record
@@ -50,7 +51,7 @@ def test_record_holds_what_the_legacy_system_was_observed_to_do(config, monkeypa
     row = {"Name": "Ram", "Fee": "550"}
     replay_observations(monkeypatch, observed(row), observed(row))
 
-    record = capture(config, SCENARIO, BASELINE)
+    record = capture(config, SCENARIO, BASELINES)
 
     assert record["endpoint_id"] == "GET /api/things"
     assert record["legacy_url"] == "/search.php"
@@ -67,7 +68,7 @@ def test_record_never_contains_markup(config, monkeypatch):
     row = {"Name": "Ram"}
     replay_observations(monkeypatch, observed(row), observed(row))
 
-    text = json.dumps(capture(config, SCENARIO, BASELINE))
+    text = json.dumps(capture(config, SCENARIO, BASELINES))
 
     assert "<" not in text and ">" not in text
 
@@ -76,7 +77,7 @@ def test_database_delta_is_recorded(config, monkeypatch):
     delta = {"contact": {"inserted": [{"name": "Anu"}], "updated": [], "deleted": []}}
     replay_observations(monkeypatch, observed(delta=delta), observed(delta=delta))
 
-    assert capture(config, SCENARIO, BASELINE)["db_state"]["delta"] == delta
+    assert capture(config, SCENARIO, BASELINES)["db_state"]["delta"] == delta
 
 
 @pytest.mark.parametrize(
@@ -86,7 +87,7 @@ def test_database_delta_is_recorded(config, monkeypatch):
 def test_outcome_follows_the_status_class(config, monkeypatch, status, outcome):
     replay_observations(monkeypatch, observed(status=status), observed(status=status))
 
-    assert capture(config, SCENARIO, BASELINE)["legacy_response"]["outcome"] == outcome
+    assert capture(config, SCENARIO, BASELINES)["legacy_response"]["outcome"] == outcome
 
 
 # -------------------------------------------------------------- repeated capture
@@ -99,7 +100,7 @@ def test_a_value_that_changes_between_captures_is_excluded_not_expected(config, 
         observed({"Name": "Ram", "Seen At": "10:00:02", "Fee": "550"}),
     )
 
-    record = capture(config, SCENARIO, BASELINE)
+    record = capture(config, SCENARIO, BASELINES)
 
     assert record["excluded_fields"] == [
         {"scope": "response", "field": "Seen At", "reason": "observed_nondeterministic"}
@@ -113,7 +114,7 @@ def test_excluded_fields_are_listed_in_page_order(config, monkeypatch):
         observed({"Token": "b", "Name": "Ram", "Seen At": "2"}),
     )
 
-    fields = [entry["field"] for entry in capture(config, SCENARIO, BASELINE)["excluded_fields"]]
+    fields = [entry["field"] for entry in capture(config, SCENARIO, BASELINES)["excluded_fields"]]
 
     assert fields == ["Token", "Seen At"]
 
@@ -122,14 +123,14 @@ def test_a_different_number_of_records_is_not_a_stable_observation(config, monke
     replay_observations(monkeypatch, observed({"Name": "Ram"}), observed({"Name": "Ram"}, {"Name": "Alia"}))
 
     with pytest.raises(CaptureError, match="did not behave the same way"):
-        capture(config, SCENARIO, BASELINE)
+        capture(config, SCENARIO, BASELINES)
 
 
 def test_a_different_status_is_not_a_stable_observation(config, monkeypatch):
     replay_observations(monkeypatch, observed(status=200), observed(status=500))
 
     with pytest.raises(CaptureError, match="did not behave the same way"):
-        capture(config, SCENARIO, BASELINE)
+        capture(config, SCENARIO, BASELINES)
 
 
 def test_a_different_database_delta_is_not_a_stable_observation(config, monkeypatch):
@@ -138,7 +139,7 @@ def test_a_different_database_delta_is_not_a_stable_observation(config, monkeypa
     replay_observations(monkeypatch, observed(delta=first), observed(delta=second))
 
     with pytest.raises(CaptureError, match="did not behave the same way"):
-        capture(config, SCENARIO, BASELINE)
+        capture(config, SCENARIO, BASELINES)
 
 
 # ---------------------------------------------------------------- driving a page
@@ -176,7 +177,7 @@ TWO_TABLES = ONE_TABLE + "<table><tr><th>Doctor</th></tr><tr><td>Ganesh</td></tr
 def test_the_legacy_request_is_sent_as_the_scenario_describes(config, page):
     session = page(ONE_TABLE)
 
-    capture(config, SCENARIO, BASELINE)
+    capture(config, SCENARIO, BASELINES)
 
     method, url, options = session.requests[0]
     assert (method, url) == ("POST", "http://127.0.0.1:8080/search.php")
@@ -189,27 +190,27 @@ def test_the_legacy_request_is_sent_as_the_scenario_describes(config, page):
 def test_the_only_table_of_a_page_is_used(config, page):
     page(ONE_TABLE)
 
-    assert capture(config, SCENARIO, BASELINE)["legacy_response"]["records"] == [{"Name": "Ram"}]
+    assert capture(config, SCENARIO, BASELINES)["legacy_response"]["records"] == [{"Name": "Ram"}]
 
 
 def test_a_page_with_no_table_is_refused_not_recorded_as_empty(config, page):
     page("<script>alert('No entries found!')</script>")
 
     with pytest.raises(CaptureError, match="0 tables"):
-        capture(config, SCENARIO, BASELINE)
+        capture(config, SCENARIO, BASELINES)
 
 
 def test_several_tables_without_a_pointer_are_refused(config, page):
     page(TWO_TABLES)
 
     with pytest.raises(CaptureError, match="2 tables"):
-        capture(config, SCENARIO, BASELINE)
+        capture(config, SCENARIO, BASELINES)
 
 
 def test_a_scenario_can_point_at_one_table_of_several(config, page):
     page(TWO_TABLES)
 
-    record = capture(config, {**SCENARIO, "legacy_table": 1}, BASELINE)
+    record = capture(config, {**SCENARIO, "legacy_table": 1}, BASELINES)
 
     assert record["legacy_response"]["records"] == [{"Doctor": "Ganesh"}]
 
@@ -227,6 +228,26 @@ def test_record_is_written_under_the_benchmark_as_stable_json(config):
     assert raw.endswith(b"\n") and b"\r" not in raw
     assert json.loads(raw.decode("utf-8")) == record
     assert "Renée" in raw.decode("utf-8")
+
+
+def test_capturing_the_same_behaviour_again_leaves_the_stored_record_untouched(config):
+    first = {"scenario_id": "s", "legacy_response": {"records": [{"Name": "Ram"}]}, "captured_at": "2026-10-11T08:00:00+00:00"}
+    again = {**first, "captured_at": "2026-10-12T09:30:00+00:00"}
+
+    path = write_record(config, first)
+    write_record(config, again)
+
+    assert json.loads(path.read_text(encoding="utf-8"))["captured_at"] == "2026-10-11T08:00:00+00:00"
+
+
+def test_capturing_different_behaviour_replaces_the_stored_record(config):
+    first = {"scenario_id": "s", "legacy_response": {"records": [{"Name": "Ram"}]}, "captured_at": "2026-10-11T08:00:00+00:00"}
+    changed = {"scenario_id": "s", "legacy_response": {"records": [{"Name": "Rama"}]}, "captured_at": "2026-10-12T09:30:00+00:00"}
+
+    path = write_record(config, first)
+    write_record(config, changed)
+
+    assert json.loads(path.read_text(encoding="utf-8")) == changed
 
 
 def test_a_scenario_file_missing_a_required_part_is_refused(tmp_path):
