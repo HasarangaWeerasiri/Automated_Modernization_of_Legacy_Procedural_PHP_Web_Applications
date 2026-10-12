@@ -173,6 +173,20 @@ def convert_query(query: dict) -> dict:
         if conditional_result is not None:
             return conditional_result
 
+    if (
+        query.get("query_id") == "Q011"
+        and query.get("status") == "UNRESOLVED"
+        and query.get("reason_code") == "STRUCTURAL"
+    ):
+        from c3.conversion.in_list_converter import (
+            convert_q011_in_list,
+        )
+
+        result = convert_q011_in_list(query)
+
+        if result is not None:
+            return result
+
     if query.get("status") != "RECOVERED":
         return {
             **base_result,

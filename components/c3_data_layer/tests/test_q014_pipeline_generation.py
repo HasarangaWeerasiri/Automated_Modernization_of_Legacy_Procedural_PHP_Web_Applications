@@ -54,7 +54,7 @@ def test_q014_generated_in_full_pipeline():
 
     assert len(recovered) == 21
     assert len(converted) == 21
-    assert sum(q["status"] == "CONVERTED" for q in converted) == 16
+    assert sum(q["status"] == "CONVERTED" for q in converted) == 17
 
     q014 = next(q for q in converted if q["query_id"] == "Q014")
 

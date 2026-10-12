@@ -234,6 +234,52 @@ def _build_conditional_function(query: dict) -> str:
     return marker + generated.split(marker, 1)[1].rstrip()
 
 
+def _build_expanding_in_function(query: dict) -> str:
+    """Generate only the validated Q011 expanding-IN query."""
+
+    from c3.conversion.in_list_converter import (
+        PARAMETERIZED_SQL,
+    )
+    from c3.conversion.in_list_source_gate import (
+        validate_q011_source_shape,
+    )
+
+    source_file = query.get("source_file")
+
+    expected = {
+        "query_id": "Q011",
+        "status": "CONVERTED",
+        "query_shape": "EXPANDING_IN_SELECT",
+        "operation": "SELECT",
+        "table": "patients",
+        "parameterized_sql": PARAMETERIZED_SQL,
+        "parameters": ["ids"],
+        "binding_type": "expanding_integer_list",
+        "input_source": "_GET",
+        "input_key": "ids",
+        "fallback": "1,2",
+    }
+
+    if (
+        not isinstance(query, dict)
+        or any(query.get(key) != value for key, value in expected.items())
+        or not isinstance(source_file, str)
+        or Path(source_file).name != "11_in_values.php"
+        or not validate_q011_source_shape(source_file)
+    ):
+        raise ValueError("Invalid Q011 expanding-IN representation.")
+
+    return "\n".join([
+        "def select_patients_q011(session, inputs):",
+        '    """Safely execute the supported Q011 integer ID list."""',
+        "    ids = resolve_q011_ids(inputs)",
+        f"    statement = text({PARAMETERIZED_SQL!r}).bindparams(",
+        '        bindparam("ids", expanding=True)',
+        "    )",
+        '    return session.execute(statement, {"ids": ids}).mappings().all()',
+    ])
+
+
 def generate_data_access_source(
     converted_queries: list[dict],
 ) -> str:
@@ -263,17 +309,22 @@ def generate_data_access_source(
 
     functions = []
     has_conditional = False
+    has_expanding_in = False
 
     for query in converted_queries:
         if query.get("status") == "CONVERTED":
-            if "query_shape" in query:
-                if query["query_shape"] != "CONDITIONAL_SELECT":
-                    raise ValueError("Unsupported converted query shape.")
+            shape = query.get("query_shape")
 
+            if shape == "CONDITIONAL_SELECT":
                 functions.append(_build_conditional_function(query))
                 has_conditional = True
-            else:
+            elif shape == "EXPANDING_IN_SELECT":
+                functions.append(_build_expanding_in_function(query))
+                has_expanding_in = True
+            elif shape is None:
                 functions.append(_build_function(query))
+            else:
+                raise ValueError("Unsupported converted query shape.")
 
         elif query.get("status") == "UNRESOLVED":
             functions.append(_build_unresolved_stub(query))
@@ -282,6 +333,16 @@ def generate_data_access_source(
         lines.insert(
             lines.index("from sqlalchemy import text") + 1,
             "from c3.conversion.branch_binding import resolve_isset_condition",
+        )
+
+    if has_expanding_in:
+        lines.insert(
+            lines.index("from sqlalchemy import text") + 1,
+            "from sqlalchemy import bindparam",
+        )
+        lines.insert(
+            lines.index("from sqlalchemy import bindparam") + 1,
+            "from c3.conversion.in_list_binding import resolve_q011_ids",
         )
 
     lines.append("\n\n\n".join(functions))
