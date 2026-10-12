@@ -1237,6 +1237,41 @@ def recover_queries_from_ast(
             }
         )
 
+    # Preserve validated conditional SQL as diagnostic metadata.
+    # Do not promote unresolved queries to RECOVERED.
+    from c3.mapping.branch_recovery import (
+        recover_simple_if_else_candidate,
+    )
+
+    unsupported_operations = ast_data.get("unsupported_operations")
+
+    for query in recovered_queries:
+        if (
+            query.get("status") != "UNRESOLVED"
+            or query.get("reason_code") != "BRANCHING"
+        ):
+            continue
+
+        candidate = recover_simple_if_else_candidate(
+            query,
+            assignments,
+            unsupported_operations,
+        )
+
+        if candidate is not None:
+            from c3.mapping.branch_source_gate import (
+                validate_q014_source_shape,
+            )
+
+            source_file = query.get("source_file")
+
+            candidate["source_shape_verified"] = (
+                isinstance(source_file, str)
+                and validate_q014_source_shape(source_file)
+            )
+
+            query["conditional_candidate"] = candidate
+
     return recovered_queries
 
 def recover_queries(

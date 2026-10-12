@@ -13,6 +13,17 @@ import json
 import re
 from pathlib import Path
 
+from c3.conversion.conditional_converter import (
+    EXPECTED_BRANCHES,
+    EXPECTED_CONDITION,
+)
+from c3.generation.branch_emitter import (
+    generate_conditional_select_source,
+)
+from c3.mapping.branch_source_gate import (
+    validate_q014_source_shape,
+)
+
 
 def _singularize(name: str) -> str:
     """Simple deterministic table-name singularization."""
@@ -183,6 +194,46 @@ def _build_unresolved_stub(query: dict) -> str:
     ])
 
 
+def _build_conditional_function(query: dict) -> str:
+    """Generate only the explicitly supported, validated Q014 function."""
+
+    source_file = query.get("source_file")
+
+    if (
+        query.get("status") != "CONVERTED"
+        or query.get("query_shape") != "CONDITIONAL_SELECT"
+        or query.get("query_id") != "Q014"
+        or query.get("operation") != "SELECT"
+        or query.get("table") != "doctors"
+        or not isinstance(source_file, str)
+        or Path(source_file).name != "14_branch_query.php"
+        or not validate_q014_source_shape(source_file)
+        or query.get("condition") != EXPECTED_CONDITION
+        or query.get("branches") != EXPECTED_BRANCHES
+    ):
+        raise ValueError("Invalid converted conditional SELECT IR.")
+
+    diagnostic_ir = {
+        "query_shape": "CONDITIONAL_SELECT",
+        "query_id": "Q014",
+        "operation": "SELECT",
+        "status": "DIAGNOSTIC_ONLY",
+        "safe_for_conversion": False,
+        "unsupported_operations_checked": True,
+        "condition": query["condition"],
+        "branches": query["branches"],
+    }
+
+    generated = generate_conditional_select_source(diagnostic_ir)
+
+    marker = "def select_doctors_q014("
+
+    if generated.count(marker) != 1:
+        raise ValueError("Unexpected conditional generator output.")
+
+    return marker + generated.split(marker, 1)[1].rstrip()
+
+
 def generate_data_access_source(
     converted_queries: list[dict],
 ) -> str:
@@ -211,11 +262,27 @@ def generate_data_access_source(
     ]
 
     functions = []
+    has_conditional = False
+
     for query in converted_queries:
         if query.get("status") == "CONVERTED":
-            functions.append(_build_function(query))
+            if "query_shape" in query:
+                if query["query_shape"] != "CONDITIONAL_SELECT":
+                    raise ValueError("Unsupported converted query shape.")
+
+                functions.append(_build_conditional_function(query))
+                has_conditional = True
+            else:
+                functions.append(_build_function(query))
+
         elif query.get("status") == "UNRESOLVED":
             functions.append(_build_unresolved_stub(query))
+
+    if has_conditional:
+        lines.insert(
+            lines.index("from sqlalchemy import text") + 1,
+            "from c3.conversion.branch_binding import resolve_isset_condition",
+        )
 
     lines.append("\n\n\n".join(functions))
 

@@ -157,6 +157,22 @@ def convert_query(query: dict) -> dict:
         "operation": query.get("operation"),
     }
 
+    # Guarded conditional SELECT conversion.
+    # Only the strictly validated Q014 source is eligible.
+    if (
+        query.get("query_id") == "Q014"
+        and query.get("status") == "UNRESOLVED"
+        and query.get("reason_code") == "BRANCHING"
+    ):
+        from c3.conversion.conditional_converter import (
+            convert_q014_conditional,
+        )
+
+        conditional_result = convert_q014_conditional(query)
+
+        if conditional_result is not None:
+            return conditional_result
+
     if query.get("status") != "RECOVERED":
         return {
             **base_result,
