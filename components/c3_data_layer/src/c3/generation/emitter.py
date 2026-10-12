@@ -280,6 +280,47 @@ def _build_expanding_in_function(query: dict) -> str:
     ])
 
 
+def _build_order_by_function(query: dict) -> str:
+    """Generate only the validated Q012 ORDER BY query."""
+
+    from c3.conversion.order_by_converter import BASE_SQL
+    from c3.conversion.order_by_source_gate import (
+        validate_q012_source_shape,
+    )
+
+    source_file = query.get("source_file") if isinstance(query, dict) else None
+
+    expected = {
+        "query_id": "Q012",
+        "status": "CONVERTED",
+        "query_shape": "ORDER_BY_SELECT",
+        "operation": "SELECT",
+        "table": "patients",
+        "base_sql": BASE_SQL,
+        "allowed_columns": ["id", "full_name"],
+        "input_source": "_GET",
+        "input_key": "sort",
+        "fallback": "full_name",
+    }
+
+    if (
+        not isinstance(query, dict)
+        or any(query.get(key) != value for key, value in expected.items())
+        or not isinstance(source_file, str)
+        or Path(source_file).name != "12_order_by.php"
+        or not validate_q012_source_shape(source_file)
+    ):
+        raise ValueError("Invalid Q012 ORDER BY representation.")
+
+    return "\n".join([
+        "def select_patients_q012(session, inputs):",
+        '    """Execute Q012 using a validated ORDER BY identifier."""',
+        "    column = resolve_q012_sort(inputs)",
+        f"    statement = text(f\"{BASE_SQL} ORDER BY {{column}}\")",
+        "    return session.execute(statement).mappings().all()",
+    ])
+
+
 def generate_data_access_source(
     converted_queries: list[dict],
 ) -> str:
@@ -310,6 +351,7 @@ def generate_data_access_source(
     functions = []
     has_conditional = False
     has_expanding_in = False
+    has_order_by = False
 
     for query in converted_queries:
         if query.get("status") == "CONVERTED":
@@ -321,6 +363,9 @@ def generate_data_access_source(
             elif shape == "EXPANDING_IN_SELECT":
                 functions.append(_build_expanding_in_function(query))
                 has_expanding_in = True
+            elif shape == "ORDER_BY_SELECT":
+                functions.append(_build_order_by_function(query))
+                has_order_by = True
             elif shape is None:
                 functions.append(_build_function(query))
             else:
@@ -343,6 +388,12 @@ def generate_data_access_source(
         lines.insert(
             lines.index("from sqlalchemy import bindparam") + 1,
             "from c3.conversion.in_list_binding import resolve_q011_ids",
+        )
+
+    if has_order_by:
+        lines.insert(
+            lines.index("from sqlalchemy import text") + 1,
+            "from c3.conversion.order_by_binding import resolve_q012_sort",
         )
 
     lines.append("\n\n\n".join(functions))

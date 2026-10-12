@@ -35,7 +35,7 @@ def generated_q011():
     converted = convert_queries(recovered)
 
     assert len(converted) == 21
-    assert sum(q["status"] == "CONVERTED" for q in converted) == 17
+    assert sum(q["status"] == "CONVERTED" for q in converted) == 18
 
     source = generate_data_access_source(converted)
     compile(source, "<generated_q011>", "exec")
