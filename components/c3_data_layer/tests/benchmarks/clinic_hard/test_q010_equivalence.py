@@ -78,7 +78,7 @@ def generated_q010():
     assert q010["status"] == "CONVERTED"
     assert q010["table"] == "patients"
     assert len(converted) == 21
-    assert sum(q["status"] == "CONVERTED" for q in converted) == 18
+    assert sum(q["status"] == "CONVERTED" for q in converted) == 19
 
     source = generate_data_access_source(converted)
 

@@ -69,4 +69,4 @@ def test_q014_guarded_conversion_in_main_pipeline():
     assert sum(
         q["status"] == "CONVERTED"
         for q in converted
-    ) == 18
+    ) == 19

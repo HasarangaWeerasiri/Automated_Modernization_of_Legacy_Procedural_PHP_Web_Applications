@@ -321,6 +321,47 @@ def _build_order_by_function(query: dict) -> str:
     ])
 
 
+def _build_table_identifier_function(query: dict) -> str:
+    """Generate Q013 only from its strictly validated representation."""
+
+    from c3.conversion.table_converter import SQL_TEMPLATE
+    from c3.conversion.table_source_gate import (
+        validate_q013_source_shape,
+    )
+
+    source_file = query.get("source_file") if isinstance(query, dict) else None
+
+    expected = {
+        "query_id": "Q013",
+        "status": "CONVERTED",
+        "query_shape": "TABLE_IDENTIFIER_SELECT",
+        "operation": "SELECT",
+        "table": "patients",
+        "sql_template": SQL_TEMPLATE,
+        "allowed_tables": ["patients"],
+        "input_source": "_GET",
+        "input_key": "table",
+        "fallback": "patients",
+    }
+
+    if (
+        not isinstance(query, dict)
+        or any(query.get(key) != value for key, value in expected.items())
+        or not isinstance(source_file, str)
+        or Path(source_file).name != "13_dynamic_table.php"
+        or not validate_q013_source_shape(source_file)
+    ):
+        raise ValueError("Invalid Q013 table identifier representation.")
+
+    return "\n".join([
+        "def select_q013(session, inputs):",
+        '    """Execute Q013 with a validated table identifier."""',
+        "    table = resolve_q013_table(inputs)",
+        '    statement = text(f"SELECT id FROM {table} WHERE id = 1")',
+        "    return session.execute(statement).mappings().all()",
+    ])
+
+
 def generate_data_access_source(
     converted_queries: list[dict],
 ) -> str:
@@ -352,6 +393,7 @@ def generate_data_access_source(
     has_conditional = False
     has_expanding_in = False
     has_order_by = False
+    has_table_identifier = False
 
     for query in converted_queries:
         if query.get("status") == "CONVERTED":
@@ -366,6 +408,9 @@ def generate_data_access_source(
             elif shape == "ORDER_BY_SELECT":
                 functions.append(_build_order_by_function(query))
                 has_order_by = True
+            elif shape == "TABLE_IDENTIFIER_SELECT":
+                functions.append(_build_table_identifier_function(query))
+                has_table_identifier = True
             elif shape is None:
                 functions.append(_build_function(query))
             else:
@@ -394,6 +439,12 @@ def generate_data_access_source(
         lines.insert(
             lines.index("from sqlalchemy import text") + 1,
             "from c3.conversion.order_by_binding import resolve_q012_sort",
+        )
+
+    if has_table_identifier:
+        lines.insert(
+            lines.index("from sqlalchemy import text") + 1,
+            "from c3.conversion.table_binding import resolve_q013_table",
         )
 
     lines.append("\n\n\n".join(functions))
