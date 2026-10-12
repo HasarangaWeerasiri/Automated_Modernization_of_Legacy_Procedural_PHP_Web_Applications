@@ -213,6 +213,20 @@ def convert_query(query: dict) -> dict:
         if result is not None:
             return result
 
+    if (
+        query.get("query_id") == "Q016"
+        and query.get("status") == "UNRESOLVED"
+        and query.get("reason_code") == "BRANCHING"
+    ):
+        from c3.conversion.conditional_concat_converter import (
+            convert_q016_conditional_concat,
+        )
+
+        result = convert_q016_conditional_concat(query)
+
+        if result is not None:
+            return result
+
     if query.get("status") != "RECOVERED":
         return {
             **base_result,

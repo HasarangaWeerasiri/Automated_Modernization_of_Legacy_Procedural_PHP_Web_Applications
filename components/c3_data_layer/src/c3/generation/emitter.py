@@ -362,6 +362,54 @@ def _build_table_identifier_function(query: dict) -> str:
     ])
 
 
+def _build_conditional_concat_function(query: dict) -> str:
+    """Generate Q016 only from its guarded converted representation."""
+
+    from c3.conversion.conditional_concat_converter import (
+        BASE_SQL,
+        FILTERED_SQL,
+    )
+    from c3.conversion.conditional_concat_source_gate import (
+        validate_q016_source_shape,
+    )
+
+    source_file = query.get("source_file") if isinstance(query, dict) else None
+
+    expected = {
+        "query_id": "Q016",
+        "status": "CONVERTED",
+        "query_shape": "CONDITIONAL_CONCAT_SELECT",
+        "operation": "SELECT",
+        "table": "patients",
+        "base_sql": BASE_SQL,
+        "filtered_sql": FILTERED_SQL,
+        "condition_source": "_GET",
+        "condition_key": "department_id",
+        "condition_type": "isset",
+        "parameter": "department_id",
+    }
+
+    if (
+        not isinstance(query, dict)
+        or any(query.get(key) != value for key, value in expected.items())
+        or not isinstance(source_file, str)
+        or Path(source_file).name != "16_conditional_concat.php"
+        or not validate_q016_source_shape(source_file)
+    ):
+        raise ValueError("Invalid Q016 conditional concatenation representation.")
+
+    return "\n".join([
+        "def select_patients_q016(session, inputs):",
+        '    """Execute Q016 using safe conditional SQL binding."""',
+        "    department_id = resolve_q016_department(inputs)",
+        "    if department_id is None:",
+        f"        statement = text({BASE_SQL!r})",
+        "        return session.execute(statement).mappings().all()",
+        f"    statement = text({FILTERED_SQL!r})",
+        '    return session.execute(statement, {"department_id": department_id}).mappings().all()',
+    ])
+
+
 def generate_data_access_source(
     converted_queries: list[dict],
 ) -> str:
@@ -394,6 +442,7 @@ def generate_data_access_source(
     has_expanding_in = False
     has_order_by = False
     has_table_identifier = False
+    has_conditional_concat = False
 
     for query in converted_queries:
         if query.get("status") == "CONVERTED":
@@ -411,6 +460,9 @@ def generate_data_access_source(
             elif shape == "TABLE_IDENTIFIER_SELECT":
                 functions.append(_build_table_identifier_function(query))
                 has_table_identifier = True
+            elif shape == "CONDITIONAL_CONCAT_SELECT":
+                functions.append(_build_conditional_concat_function(query))
+                has_conditional_concat = True
             elif shape is None:
                 functions.append(_build_function(query))
             else:
@@ -445,6 +497,12 @@ def generate_data_access_source(
         lines.insert(
             lines.index("from sqlalchemy import text") + 1,
             "from c3.conversion.table_binding import resolve_q013_table",
+        )
+
+    if has_conditional_concat:
+        lines.insert(
+            lines.index("from sqlalchemy import text") + 1,
+            "from c3.conversion.conditional_concat_binding import resolve_q016_department",
         )
 
     lines.append("\n\n\n".join(functions))

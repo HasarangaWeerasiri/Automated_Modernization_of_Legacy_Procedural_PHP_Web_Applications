@@ -33,7 +33,7 @@ def generated_q013():
     converted = convert_queries(queries)
 
     assert len(converted) == 21
-    assert sum(q["status"] == "CONVERTED" for q in converted) == 19
+    assert sum(q["status"] == "CONVERTED" for q in converted) == 20
 
     q013 = next(q for q in converted if q["query_id"] == "Q013")
     assert q013["query_shape"] == "TABLE_IDENTIFIER_SELECT"

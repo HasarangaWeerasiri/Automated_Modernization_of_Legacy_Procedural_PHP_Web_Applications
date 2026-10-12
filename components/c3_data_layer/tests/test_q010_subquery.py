@@ -56,7 +56,7 @@ def test_q010_generated_through_main_pipeline():
     converted = convert_queries(recovered)
 
     assert len(converted) == 21
-    assert sum(q["status"] == "CONVERTED" for q in converted) == 19
+    assert sum(q["status"] == "CONVERTED" for q in converted) == 20
 
     source = generate_data_access_source(converted)
 
