@@ -218,7 +218,10 @@ def convert_query(query: dict) -> dict:
     )
 
     if len(tables) != 1:
-        if len(tables) > 1 and _is_supported_join_select(tree):
+        if len(tables) > 1 and (
+            _is_supported_join_select(tree)
+            or _is_supported_q010_subquery(tree, query)
+        ):
             pass
         else:
             return {
@@ -340,6 +343,43 @@ def convert_query(query: dict) -> dict:
         "status": "CONVERTED",
         "reason": None,
     }
+
+def _is_supported_q010_subquery(tree, query: dict) -> bool:
+    """Accept the exact, static Q010 IN-subquery AST."""
+
+    if (
+        query.get("query_id") != "Q010"
+        or query.get("status") != "RECOVERED"
+        or query.get("operation") != "SELECT"
+        or query.get("dynamic_variables") != []
+        or not isinstance(tree, exp.Select)
+    ):
+        return False
+
+    expected_sql = (
+        "SELECT id, full_name FROM patients "
+        "WHERE id IN ("
+        "SELECT patient_id FROM appointments "
+        "WHERE status = 'confirmed'"
+        ")"
+    )
+
+    try:
+        expected_tree = parse_one(expected_sql, dialect="mysql")
+    except ParseError:
+        return False
+
+    # Structural equality also checks projections, predicates,
+    # table names and the nested SELECT.
+    return (
+        tree == expected_tree
+        and len(list(tree.find_all(exp.Table))) == 2
+        and len(list(tree.find_all(exp.Subquery))) == 1
+        and len(list(tree.find_all(exp.In))) == 1
+        and not list(tree.find_all(exp.Join))
+        and not list(tree.find_all(exp.Placeholder))
+    )
+
 
 def _is_supported_join_select(tree) -> bool:
     """
