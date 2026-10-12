@@ -919,3 +919,21 @@ def test_page_fallback_is_kept_when_the_page_is_the_smallest_component(tmp_path)
     result = tiny(tmp_path, [html('<a href="'), ("loop", [html("x")]), html('">t</a>')])
     assert [(t.node_id, t.reason) for t in result.todos if t.reason != "no_endpoint"] == [
         ("page", "markup_not_generatable")]
+
+
+def test_list_whose_container_holds_page_output_falls_back_alone(tmp_path):
+    # HMS: `if(!$result){ echo mysqli_error($con); }` sits in the <table>, before the row loop. The table is
+    # the List's container (R-L2a) but also holds page output, so the List cannot own it: the List becomes one
+    # C2Todo (spec v0.4 section 12: the smallest enclosing component, never the page).
+    result = tiny(tmp_path, [
+        html("<h1>Rows</h1><table><tbody>"),
+        ("if", [("then", "!$result", [echo(read("mysqli_error($con)"))])]),
+        ("loop", [html("<tr><td>"), echo(ROW_NAME), html("</td></tr>")]),
+        html("</tbody></table>")], mapped=True, contract=LIST_CONTRACT)
+    fallback = [t for t in result.todos if t.reason == "markup_not_generatable"]
+    assert [(t.function, t.node_id) for t in fallback] == [("RowsList", "t001#00005")]  # the loop's id
+    assert "its container also holds" in fallback[0].detail
+    page = text(result, "app/page/page.tsx")
+    assert "<h1>Rows</h1>" in page and "<table>" in page and "<RowsList items={data.rows} />" in page
+    assert not any(f.path == "components/RowsItem.tsx" for f in result.files)
+    compiles(result, tmp_path, "list_container_shared")

@@ -1,0 +1,13 @@
+{
+    "name": "j26-se-329/c2-harness",
+    "description": "Component 2 whole-app test harness: parses procedural PHP with nikic/php-parser (parse only, never execute).",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.4",
+        "nikic/php-parser": "5.9.0"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

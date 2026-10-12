@@ -1,9 +1,9 @@
-# Component 2 — UI Boundary Rules (DRAFT v0.7)
+# Component 2 — UI Boundary Rules (DRAFT v0.8)
 
 | Item | Value |
 |---|---|
 | Status | **Draft** — not frozen. Freeze when 2 consecutive new rule-discovery apps add no new pattern (saturation) |
-| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note · v0.6, 10 Oct: Q2 note gives the exact condExpr form · v0.7, 11 Oct: R-L3 scope clarified; filter-in-loop added to the checklist as not yet seen) |
+| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note · v0.6, 10 Oct: Q2 note gives the exact condExpr form · v0.7, 11 Oct: R-L3 scope clarified; filter-in-loop added to the checklist as not yet seen · v0.8, 12 Oct: corpus extended — 2 discovery apps queued, 3 evaluation apps added by random split; no rule changed) |
 | Owner | Jayawardhana R D L L (IT23213876) — Component 2, Frontend Migration |
 | Rule-discovery corpus | HMS (`kishan0725/Hospital-Management-System`, commit `777fda4`), WackoPicko (`adamdoupe/WackoPicko`, commit `cabc1b3`, MIT) |
 | Evaluation corpus | **Locked — do not open** (see §7) |
@@ -168,9 +168,12 @@ No-output loops (R-L5): admin-panel.php 146, 315 (inside `<!-- -->`). String-bui
 
 | Group | Apps |
 |---|---|
-| Rule discovery | HMS, WackoPicko |
-| Evaluation (**locked**) | crud-php-mysqli, PHP-MySQL-CRUD-Application (procedural) — **need 3–4 more** (proposal target: 5–8) |
-| Out of scope | osCommerce 2 (2.4-dev, namespaced OOP core, DB wrapper), vBulletin 3.8.11 (DB-stored templates via `eval`; commercial licence), PHPMailer, Monolog (libraries) |
+| Rule discovery (done) | HMS, WackoPicko |
+| Rule discovery (queue, in this order) | 1. `codeplay-code/phpBlog-blogScript` @ `4ffe3c9` (GPL-3.0, blog) · 2. `ihumaunkabir/online-attendance-management-system-1.0` @ `3178104` (MIT, attendance, `mysql_*`) · reserve, only if saturation is not reached: `siamon123/warehouse-inventory-system` @ `69fdd1c` (MIT, inventory; DB wrapper class — borderline) |
+| Evaluation (**locked**) | crud-php-mysqli, PHP-MySQL-CRUD-Application (procedural), `anirbandutta9/College-Notes-Gallery` @ `8c1cf3d` (MIT), `m45rud/ams-native` @ `3c4d475` (MIT), `omd01/School-Management-System` @ `1e5426d` (MIT) — 5 apps |
+| Out of scope | osCommerce 2 (2.4-dev, namespaced OOP core, DB wrapper), vBulletin 3.8.11 (DB-stored templates via `eval`; commercial licence), PHPMailer, Monolog (libraries). Borderline (OO mysqli / wrapper): AliDev-0/PHP-E-commerce-Platform, buddhirangana/alumni-management-system, psyclone20/Library. Licence doubt: naemazam/Methuen-Online-Food-Ordering-System |
+
+**How the 5 new apps were split (12 Oct 2026):** a shallow metadata scan (file counts, grep counts, licence; no code read) found 5 clean, licensed, procedural candidates. They were split **at random** before anyone read their code: `random.Random(20261012).sample(sorted(apps), 3)` → evaluation; the other 2 → discovery queue, ordered by `random.Random(20261013).shuffle`. Reproducible, and not chosen by looking at the code.
 
 ---
 
@@ -234,3 +237,5 @@ No-output loops (R-L5): admin-panel.php 146, 315 (inside `<!-- -->`). String-bui
 | 7 Oct 2026 | Authorization guard stays abstain; delegation rule recorded as candidate only | One hand-written case; needs C1's contract decision |
 | 7 Oct 2026 | R-I2 allows `data_access` / `mixed` guards; only `business_logic` abstains | Procedural PHP emptiness checks usually touch data; authorization is the only case that is not an empty state |
 | 7 Oct 2026 | Mixed loops are information regardless of label reason | Decisions may use `concern` only (CONTEXT hard rule 2), so the "because" cannot be checked |
+| 12 Oct 2026 | 5 new licensed procedural apps split at random: 3 evaluation, 2 discovery | Avoids picking easy evaluation apps; seed recorded so the split is reproducible |
+| 12 Oct 2026 | Saturation is judged on **whole apps** run through the harness, not on excerpts | Excerpts were chosen by us and hide patterns |

@@ -70,6 +70,47 @@ def check(name: str, source: Path) -> CompileResult:
     return CompileResult(name, errors, output)
 
 
+def check_many(name: str, sources: dict[str, Path]) -> tuple[dict[str, int], str]:
+    """One tsc run over many generated pages (each in its own folder): errors per page, and tsc's output.
+
+    Used for whole apps, where a run per page would take minutes. A failure tsc does not attribute to a page
+    is counted under the key ""."""
+    if not strict_enabled():
+        return {key: 1 for key in sources}, 'output/test-app/tsconfig.json does not set "strict": true'
+    target = CHECK_DIR / name
+    if target.exists():
+        shutil.rmtree(target)
+    for key, source in sources.items():
+        shutil.copytree(source, target / key)
+    # moduleDetection "force": each page's files are modules of their own. Without it, the lib/api.ts of every
+    # no-endpoint page (no import or export, so a global script) would declare the same global authHeaders and
+    # the pages would collide with each other. No type is loosened; a page checked alone needs no such option.
+    config = {"extends": "../../tsconfig.json",
+              "compilerOptions": {"incremental": False, "noEmit": True, "moduleDetection": "force"},
+              "include": ["**/*.ts", "**/*.tsx"]}
+    target.mkdir(parents=True, exist_ok=True)
+    (target / "tsconfig.json").write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+    run = subprocess.run([shutil.which("npx"), "--no-install", "tsc", "--noEmit", "-p", str(target / "tsconfig.json")],
+                         cwd=TEST_APP, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    output = (run.stdout + run.stderr).strip()
+    errors = {key: 0 for key in sources}
+    prefix = f"c2-check/{name}/"
+    attributed = 0
+    for line in output.splitlines():
+        if not re.search(r"error TS\d+", line):
+            continue
+        path = line.replace("\\", "/")
+        key = next((k for k in sorted(sources, key=len, reverse=True) if path.startswith(prefix + k + "/")), None)
+        if key is not None:
+            errors[key] += 1
+            attributed += 1
+        else:
+            errors[""] = errors.get("", 0) + 1
+    if run.returncode != 0 and attributed == 0 and "" not in errors:
+        errors[""] = 1  # tsc failed without an error line: never report a pass
+    return errors, output
+
+
 def main(names: list[str]) -> int:
     reason = unavailable()
     if reason:

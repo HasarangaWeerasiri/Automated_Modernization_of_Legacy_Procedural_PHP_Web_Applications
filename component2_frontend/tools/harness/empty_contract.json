@@ -1,0 +1,9 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "No contract (whole-app harness)",
+    "version": "0",
+    "description": "Component 1 has produced no contract for whole apps yet. The harness runs Stage 4 against this empty contract and an empty endpoint map, so every page is no_endpoint: nothing is matched and nothing is guessed."
+  },
+  "paths": {}
+}

@@ -249,6 +249,7 @@ class Generator:
         self.emitted_in: dict[str, tuple[_File, str, str, bool]] = {}  # node id -> file, function, mark, abstained
         self.pending_flags: dict[int, list] = {}  # id(markup anchor) -> markup flags not yet placed
         self.roots: dict[int, object] = {}  # id(component) -> its markup root (an MBranch for an Empty)
+        self.failed: dict[int, GenerationError] = {}  # id(List) -> why its root could not be determined
         self._index_tree()
         self._index_results()
         self._endpoint(contract)
@@ -973,7 +974,13 @@ class Generator:
             loop = markup.loops.get(lst.source_ids[0])
             if loop is None:
                 continue
-            root = self.list_root(lst, loop, markup)
+            try:
+                root = self.list_root(lst, loop, markup)
+            except GenerationError as error:
+                # The List cannot own its container (spec v0.4 section 12: the smallest enclosing component is
+                # replaced, never the page). Its loop marks its place; the component becomes one C2Todo.
+                root = loop
+                self.failed[id(lst)] = error
             self.roots[id(lst)] = root
             out[id(root)] = lst
         for source, node in self.conds.items():
@@ -1051,6 +1058,8 @@ class Generator:
         files, generated = set(self.files), set(self.generated)
         pending_flags = {k: list(v) for k, v in self.pending_flags.items()}
         try:
+            if id(component) in self.failed:  # its place in the markup could not be determined
+                raise self.failed[id(component)]
             body = self.nodes(root.children if component.type in ("Item", "Empty") else [root], ctx)
         except GenerationError as e:
             body = self.component_fallback(component, name, ctx, e, files, generated, pending_flags)

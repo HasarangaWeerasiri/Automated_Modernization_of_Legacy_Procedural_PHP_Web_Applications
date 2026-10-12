@@ -35,3 +35,8 @@ legacy-apps/*/
 output/generated/
 output/stage*_*.json
 output/tsc_*.json
+output/apps/
+
+# Whole-app harness: installed by `composer install` in tools/harness (composer.lock is committed)
+tools/harness/vendor/
+tools/harness/composer.phar

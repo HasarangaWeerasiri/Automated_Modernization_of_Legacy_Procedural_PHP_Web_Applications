@@ -1,6 +1,6 @@
 # Component 2 — Agent Context (read this first, every task)
 
-_Version 10 — 11 Oct 2026 (Stage 5 close-out reviewed; commit policy and hashes corrected)._
+_Version 12 — 12 Oct 2026 (C2 roadmap to 100% — `docs/c2-roadmap.md`; Phase 1 = whole-app harness)._
 
 This file is the handoff between the research chat and the coding agent. It records decisions
 already made. **Do not change a decision recorded here.** If something here looks wrong or a task
@@ -89,10 +89,11 @@ label keys use `nodeId`; field naming pending Member 01's confirmation — the l
 
 | Group | Apps | Agent may |
 |---|---|---|
-| Rule discovery | HMS (`legacy-apps/hms`), WackoPicko (`legacy-apps/wackopicko`, MIT, PHP under `website/`). Pinned commits are recorded in `legacy-apps/PINS.md` | Read, build mocks, test |
-| Evaluation | crud-php-mysqli, PHP-MySQL-CRUD-Application (+ more to come) | **Do not open, read or build mocks from these.** They stay locked until the owner **freezes** the boundary rules (the rules doc header says *Frozen*). Finishing a stage does not unlock them |
+| Rule discovery (active) | HMS (`legacy-apps/hms`), WackoPicko (`legacy-apps/wackopicko`, MIT, PHP under `website/`). Pinned commits are recorded in `legacy-apps/PINS.md` | Read, build mocks, test |
+| Rule discovery (queued) | phpBlog-blogScript @ `4ffe3c9`, online-attendance-management-system-1.0 @ `3178104`; reserve warehouse-inventory-system @ `69fdd1c` | **Not yet.** Opened only when the roadmap phase says so (Phase 3) |
+| Evaluation | crud-php-mysqli, PHP-MySQL-CRUD-Application, College-Notes-Gallery @ `8c1cf3d`, ams-native @ `3c4d475`, School-Management-System (omd01) @ `1e5426d` | **Do not open, clone, read or build mocks from these.** Locked until the owner **freezes** the boundary rules (the rules doc header says *Frozen*) **and** the owner's gold standard is committed (roadmap Phase 5). Finishing a stage does not unlock them |
 
-## 6. Repo state (as of 10 Oct 2026)
+## 6. Repo state (as of 12 Oct 2026)
 
 - Branch `frontend-migration-`. Pushed: `65674b8` (Stage 2 v0.3 decisions), `b695210` (CONTEXT v4 + rules v0.3), `cf56444` (main Stage 2 work). Stage 3–4 committed by the owner as `f14a1cc` (pushed). The loc / fromAbstained fix-up (21 modified + 1 new file) is committed by the owner before Stage 5 starts (see `git log`).
 - Substitute endpoint map: `mocks/endpoint_map.json` (maps only list_while, list_foreach, admin, detail; others → `no_endpoint`). The contract and map were both written by the agent, so the `contact` gap is planted, not discovered.
@@ -101,8 +102,9 @@ label keys use `nodeId`; field naming pending Member 01's confirmation — the l
 - WackoPicko mocks: `{timeline,labels}_wp_{guestbook,view,login,header,thumbnails}.json` (generated). Their **labels are generator placeholders**, not C1 output, and every WackoPicko read is `unresolved` (data comes through class methods in `include/*.php`). Use them for Stage 2 only.
 - Deliberate contract gap: field **`contact`** (flagged on list pages only). `sku` appears in no schema.
 - `undecided` nodes: edge_cases (1, `auth_or_display`), wp_login (1, placeholder `logic_or_display`), wp_thumbnails (1, placeholder `logic_or_display`).
-- Tests: 568 passing (after the Stage 5 close-out, uncommitted on base `ee21ff8`). Results table: `tools/results_table.py` → `docs/c2-results.md` (re-run after each commit).
-- Earlier: 564 passing after Stage 5 v0.2 (`ee21ff8`). `html5lib==1.1` pinned for the nesting check. All-mock totals after the close-out: 71 todo, 39 review, 107 info, flag rate 110, 9/27 components without C2Todo (changes again under spec v0.4 §12).
+- Tests: 573 passing (after Stage 5 v0.4 / rules v0.7, committed by the owner on top of `3d1d798`).
+- Earlier: 568 passing after the Stage 5 close-out (`3d1d798`). Results table: `tools/results_table.py` → `docs/c2-results.md` (re-run after each commit).
+- Earlier: 564 passing after Stage 5 v0.2 (`ee21ff8`). `html5lib==1.1` pinned for the nesting check. All-mock totals (spec v0.4): 58 todo, 39 review, 120 info, **flag rate 97**, 9/27 components without C2Todo, 0 tsc errors, 2 nesting flags. Stage 1–4 outputs unchanged since `ee21ff8` (482,900 bytes compared).
 - Earlier: 537 passing after Stage 5 v0.1 (`aead7db`). Node 24.16.0 on the owner's machine; test app `output/test-app` (create-next-app scaffold, versions pinned).
 - Stage 5 modules: `stage5_generate.py`, `markup.py`, `jsx.py`, `conditions.py`, `generation_config.py`; config `generation.json`, `react_dom.json` (from `tools/gen_react_dom.py`); `tools/compile_check.py`.
 - Earlier: 380 passing after the Stage 3–4 fix-up. All 10 timeline mocks carry `loc`; `tests/test_loc.py` checks every loc against the real source bytes. The Stage 2 CLI test forces UTF-8 (the owner's Windows console uses code page cp932). Extra fixtures: `tests/fixtures/{timeline,labels}_unlabelled.json`, `tests/fixtures/{timeline,labels}_switch_case.json` (`caseNodeId`, `Stmt_Switch` are placeholders).
