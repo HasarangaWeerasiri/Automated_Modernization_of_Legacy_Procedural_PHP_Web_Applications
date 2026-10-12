@@ -629,6 +629,7 @@ def _detect_operation(
 def _collect_cross_file_diagnostics(
     assignment_chain: list[dict],
     functions: list[dict],
+    includes: list[dict],
 ) -> dict | None:
     """Collect non-executable diagnostics for simple function calls."""
 
@@ -668,6 +669,51 @@ def _collect_cross_file_diagnostics(
         }
 
     function = matching_functions[0]
+
+
+    # Verify that the function's defining file was explicitly
+    # included by the caller before the SQL assignment.
+    caller_file = assignment.get("source_file")
+    function_file = function.get("source_file")
+    assignment_line = assignment.get("source_line")
+
+    if (
+        not isinstance(caller_file, str)
+        or not isinstance(function_file, str)
+        or not isinstance(assignment_line, int)
+    ):
+        return {
+            "function_name": function_name,
+            "resolution_status": "UNRESOLVED",
+            "reason": "Missing function/include location metadata.",
+        }
+
+    caller_path = Path(caller_file).resolve()
+    function_path = Path(function_file).resolve()
+
+    matching_includes = [
+        include
+        for include in includes
+        if isinstance(include, dict)
+        and isinstance(include.get("source_file"), str)
+        and isinstance(include.get("target_file"), str)
+        and Path(include["source_file"]).resolve() == caller_path
+        and Path(include["target_file"]).resolve() == function_path
+        and include.get("supported") is True
+        and include.get("control_flow") == []
+        and isinstance(include.get("source_line"), int)
+        and include["source_line"] < assignment_line
+    ]
+
+    if not matching_includes:
+        return {
+            "function_name": function_name,
+            "resolution_status": "UNRESOLVED",
+            "reason": (
+                "Function definition is not available through "
+                "a verified unconditional include."
+            ),
+        }
 
     parameters = function.get("parameters")
     return_expression = function.get("return_expression")
@@ -724,10 +770,44 @@ def _collect_cross_file_diagnostics(
             "reason": "Function argument expression is unsupported.",
         }
 
+    # Describe parameter binding without evaluating PHP input
+    # or enabling automatic SQL conversion.
+    binding_plan = []
+
+    for parameter, argument in zip(parameters, arguments):
+        default_expression = argument["default_expression"]
+
+        # Currently support only single- or double-quoted
+        # literal fallbacks, without escape sequences.
+        if (
+            len(default_expression) < 2
+            or default_expression[0] not in ("'", '"')
+            or default_expression[-1] != default_expression[0]
+            or "\\" in default_expression
+        ):
+            return {
+                "function_name": function_name,
+                "resolution_status": "UNRESOLVED",
+                "reason": "Unsupported fallback expression.",
+            }
+
+        fallback = default_expression[1:-1]
+
+        binding_plan.append({
+            "parameter": parameter,
+            "source": "_GET",
+            "key": argument["input_key"],
+            "fallback": fallback,
+            "fallback_policy": "null_coalescing",
+            "binding_type": "scalar",
+            "requires_validation": True,
+        })
+
     return {
         "function_name": function_name,
         "function_source_file": function.get("source_file"),
         "resolution_status": "DIAGNOSTIC_ONLY",
+        "binding_plan": binding_plan,
         "sql_template": _normalize_sql(template),
         "parameter_bindings": [
             {
@@ -736,9 +816,92 @@ def _collect_cross_file_diagnostics(
             }
             for parameter, argument in zip(parameters, arguments)
         ],
-        "requires_include_validation": True,
+        "requires_include_validation": False,
         "safe_for_conversion": False,
     }
+
+
+
+def _validated_cross_file_candidate(
+    diagnostics: dict | None,
+    branching_reason_code: str | None,
+) -> dict | None:
+    """Prepare a cross-file SQL candidate without changing recovery status."""
+
+    if branching_reason_code is not None:
+        return None
+
+    if not isinstance(diagnostics, dict):
+        return None
+
+    if diagnostics.get("resolution_status") != "DIAGNOSTIC_ONLY":
+        return None
+
+    if diagnostics.get("requires_include_validation") is not False:
+        return None
+
+    template = diagnostics.get("sql_template")
+    binding_plan = diagnostics.get("binding_plan")
+
+    if not isinstance(template, str) or not template.strip():
+        return None
+
+    if not isinstance(binding_plan, list) or not binding_plan:
+        return None
+
+    # Verify every input binding before preparing a candidate.
+    for binding in binding_plan:
+        if not isinstance(binding, dict):
+            return None
+
+        if (
+            not isinstance(binding.get("parameter"), str)
+            or not binding["parameter"]
+            or binding.get("source") != "_GET"
+            or not isinstance(binding.get("key"), str)
+            or not binding["key"]
+            or binding.get("fallback_policy") != "null_coalescing"
+            or not isinstance(binding.get("fallback"), str)
+            or binding.get("binding_type") != "scalar"
+            or binding.get("requires_validation") is not True
+        ):
+            return None
+
+    placeholders = set(
+        re.findall(
+            r"\{\{([A-Za-z_][A-Za-z0-9_]*)\}\}",
+            template,
+        )
+    )
+
+    parameters = {
+        binding.get("parameter")
+        for binding in binding_plan
+        if isinstance(binding, dict)
+        and isinstance(binding.get("parameter"), str)
+    }
+
+    if not placeholders or placeholders != parameters:
+        return None
+
+    if len(parameters) != len(binding_plan):
+        return None
+
+    if _detect_operation(template) != "SELECT":
+        return None
+
+    structural_code, _ = _detect_structural_placeholder(template)
+
+    if structural_code is not None:
+        return None
+
+    return {
+        "recovered_sql": template,
+        "operation": "SELECT",
+        "dynamic_variables": sorted(parameters),
+        "binding_plan": binding_plan,
+    }
+
 
 def recover_queries_from_ast(
     ast_data: dict,
@@ -758,6 +921,7 @@ def recover_queries_from_ast(
     )
 
     functions = ast_data.get("functions", [])
+    includes = ast_data.get("includes", [])
 
     recovered_queries = []
 
@@ -818,6 +982,7 @@ def recover_queries_from_ast(
             cross_file_diagnostics = _collect_cross_file_diagnostics(
                 assignment_chain,
                 functions,
+                includes,
             )
 
 
@@ -896,6 +1061,18 @@ def recover_queries_from_ast(
             recovered_sql
         )
 
+        # Promote only fully validated cross-file SQL candidates.
+        cross_file_candidate = _validated_cross_file_candidate(
+            cross_file_diagnostics,
+            branching_reason_code,
+        )
+
+        if cross_file_candidate is not None:
+            recovered_sql = cross_file_candidate["recovered_sql"]
+            operation = cross_file_candidate["operation"]
+            dynamic_variables = cross_file_candidate["dynamic_variables"]
+            fully_supported = True
+
         reason_code = None
 
         if branching_reason_code is not None:
@@ -955,6 +1132,11 @@ def recover_queries_from_ast(
                 "operation": operation,
                 "dynamic_variables": (
                     dynamic_variables
+                ),
+                **(
+                    {"binding_plan": cross_file_candidate["binding_plan"]}
+                    if cross_file_candidate is not None
+                    else {}
                 ),
                 "status": status,
                 "reason_code": reason_code,

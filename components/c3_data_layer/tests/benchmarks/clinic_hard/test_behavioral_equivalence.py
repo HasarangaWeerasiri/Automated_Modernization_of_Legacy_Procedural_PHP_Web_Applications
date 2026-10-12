@@ -26,6 +26,7 @@ PHP_HARNESSES = {
     "Q007": "php_q006_q009_test.php",
     "Q008": "php_q008_test.php",
     "Q009": "php_q006_q009_test.php",
+    "Q015": "php_q015_test.php",
     "Q018": "php_q017_q021_test.php",
     "Q019": "php_q017_q021_test.php",
     "Q021": "php_q017_q021_test.php",
@@ -108,7 +109,7 @@ def run_php(query_id, *args):
             str(HARNESS_DIR / PHP_HARNESSES[query_id]),
             *(
                 list(map(str, args))
-                if query_id == "Q008"
+                if query_id in ("Q008", "Q015")
                 else [query_id, *map(str, args)]
             ),
         ],
@@ -168,6 +169,20 @@ def run_python(query_id, *args):
                     session
                 )
 
+            elif query_id == "Q015":
+                from c3.conversion.input_binding import (
+                    validate_numeric_identifier,
+                )
+
+                department_id = validate_numeric_identifier(
+                    str(args[0]) if args else "1"
+                )
+
+                rows = module.select_doctors_q015(
+                    session,
+                    departmentId=department_id,
+                )
+
             elif query_id == "Q018":
                 rows = module.select_doctors_q018(
                     session,
@@ -213,6 +228,10 @@ def run_python(query_id, *args):
         ("Q008", (2,)),
         ("Q008", (999,)),
         ("Q009", ()),
+        ("Q015", ()),
+        ("Q015", ("1",)),
+        ("Q015", ("2",)),
+        ("Q015", ("0",)),
         ("Q018", (100,)),
         ("Q018", (150,)),
         ("Q019", (2, 0)),

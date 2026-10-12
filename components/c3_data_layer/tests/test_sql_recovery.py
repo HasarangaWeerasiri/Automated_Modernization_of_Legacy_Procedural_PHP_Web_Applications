@@ -273,3 +273,158 @@ def test_q016_preserves_conditional_append_variants():
         ),
         "fully_supported": False,
     }
+
+
+def test_q015_cross_file_include_validation():
+    from copy import deepcopy
+    from pathlib import Path
+
+    from c3.mapping.sql_locator import analyze_php_ast
+    from c3.mapping.sql_recovery import recover_queries_from_ast
+
+    root = (
+        Path(__file__).resolve().parents[3]
+        / "benchmarks"
+        / "apps"
+        / "clinic_inventory_legacy_hard"
+        / "legacy"
+    )
+
+    original = analyze_php_ast(root)
+
+    def resolve(data):
+        queries = recover_queries_from_ast(data)
+        return next(
+            q for q in queries
+            if q["query_id"] == "Q015"
+        )
+
+    valid = resolve(original)
+
+    assert valid["status"] == "RECOVERED"
+    assert valid["cross_file_diagnostics"]["resolution_status"] == (
+        "DIAGNOSTIC_ONLY"
+    )
+    assert valid["binding_plan"]
+
+    def assert_rejected(data):
+        query = resolve(data)
+        assert query["status"] == "UNRESOLVED"
+        assert query["cross_file_diagnostics"]["resolution_status"] == (
+            "UNRESOLVED"
+        )
+
+    # Missing include.
+    missing = deepcopy(original)
+    missing["includes"] = []
+    assert_rejected(missing)
+
+    # Conditional include.
+    conditional = deepcopy(original)
+
+    for include in conditional["includes"]:
+        if (
+            Path(include["source_file"]).name == "15_cross_file.php"
+            and include.get("target_file")
+            and Path(include["target_file"]).name == "query_factory.php"
+        ):
+            include["control_flow"] = ["IF"]
+
+    assert_rejected(conditional)
+
+    # Include appears after the SQL assignment.
+    late = deepcopy(original)
+
+    for include in late["includes"]:
+        if (
+            Path(include["source_file"]).name == "15_cross_file.php"
+            and include.get("target_file")
+            and Path(include["target_file"]).name == "query_factory.php"
+        ):
+            include["source_line"] = 100
+
+    assert_rejected(late)
+
+    # Ambiguous function definitions.
+    ambiguous = deepcopy(original)
+    ambiguous["functions"].append(
+        deepcopy(ambiguous["functions"][0])
+    )
+    assert_rejected(ambiguous)
+
+    # Incorrect function argument count.
+    mismatched = deepcopy(original)
+
+    for assignment in mismatched["assignments"]:
+        if (
+            Path(assignment["source_file"]).name == "15_cross_file.php"
+            and assignment["variable"] == "$sql"
+        ):
+            assignment["function_call"]["arguments"] = []
+
+    assert_rejected(mismatched)
+
+
+
+def test_q015_binding_plan_and_fallback_validation():
+    from copy import deepcopy
+    from pathlib import Path
+
+    from c3.mapping.sql_locator import analyze_php_ast
+    from c3.mapping.sql_recovery import recover_queries_from_ast
+
+    root = (
+        Path(__file__).resolve().parents[3]
+        / "benchmarks"
+        / "apps"
+        / "clinic_inventory_legacy_hard"
+        / "legacy"
+    )
+
+    original = analyze_php_ast(root)
+
+    def get_q015(data):
+        queries = recover_queries_from_ast(data)
+        return next(
+            query for query in queries
+            if query["query_id"] == "Q015"
+        )
+
+    # Valid parameter binding.
+    q015 = get_q015(original)
+    diagnostics = q015["cross_file_diagnostics"]
+
+    assert q015["status"] == "RECOVERED"
+    assert diagnostics["resolution_status"] == "DIAGNOSTIC_ONLY"
+    assert diagnostics["safe_for_conversion"] is False
+
+    assert diagnostics["binding_plan"] == [{
+        "parameter": "departmentId",
+        "source": "_GET",
+        "key": "department_id",
+        "fallback": "1",
+        "fallback_policy": "null_coalescing",
+        "binding_type": "scalar",
+        "requires_validation": True,
+    }]
+
+    # Unsupported fallback must remain unresolved.
+    invalid = deepcopy(original)
+
+    for assignment in invalid["assignments"]:
+        if (
+            Path(assignment["source_file"]).name
+            == "15_cross_file.php"
+            and assignment["variable"] == "$sql"
+        ):
+            argument = assignment["function_call"]["arguments"][0]
+            argument["default_expression"] = "getDefaultDepartment()"
+
+    invalid_q015 = get_q015(invalid)
+    invalid_diagnostics = invalid_q015["cross_file_diagnostics"]
+
+    assert invalid_q015["status"] == "UNRESOLVED"
+    assert invalid_diagnostics["resolution_status"] == "UNRESOLVED"
+    assert invalid_diagnostics["reason"] == (
+        "Unsupported fallback expression."
+    )

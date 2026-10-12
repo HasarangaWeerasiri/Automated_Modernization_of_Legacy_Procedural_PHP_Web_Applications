@@ -187,6 +187,7 @@ function getControlFlowContext(
 $results = [];
 $assignments = [];
 $functions = [];
+$includes = [];
 $phpFiles = collectPhpFiles($inputPath);
 
 
@@ -278,6 +279,66 @@ foreach ($phpFiles as $phpFile) {
             'parameters' => $parameters,
             'return_expression' => $returnExpression,
             'simple_return' => $returnExpression !== null,
+        ];
+    }
+
+
+    /*
+     * Collect PHP include/require relationships.
+     * Only static __DIR__ + literal paths are resolved.
+     */
+    $includeNodes = $nodeFinder->findInstanceOf(
+        $ast,
+        Node\Expr\Include_::class
+    );
+
+    foreach ($includeNodes as $includeNode) {
+        $includeTypes = [
+            Node\Expr\Include_::TYPE_INCLUDE => 'include',
+            Node\Expr\Include_::TYPE_INCLUDE_ONCE => 'include_once',
+            Node\Expr\Include_::TYPE_REQUIRE => 'require',
+            Node\Expr\Include_::TYPE_REQUIRE_ONCE => 'require_once',
+        ];
+
+        $expression = $includeNode->expr;
+        $targetFile = null;
+
+        if (
+            $expression instanceof Node\Expr\BinaryOp\Concat
+            && $expression->left instanceof Node\Scalar\MagicConst\Dir
+            && $expression->right instanceof Node\Scalar\String_
+        ) {
+            $relativePath = ltrim(
+                str_replace(
+                    '\\',
+                    '/',
+                    $expression->right->value
+                ),
+                '/'
+            );
+
+            $candidate = dirname($phpFile)
+                . DIRECTORY_SEPARATOR
+                . $relativePath;
+
+            if (is_file($candidate)) {
+                $targetFile = realpath($candidate);
+            }
+        }
+
+        $includes[] = [
+            'source_file' => $phpFile,
+            'source_line' => $includeNode->getStartLine(),
+            'include_type' => $includeTypes[$includeNode->type] ?? 'unknown',
+            'expression' => expressionToString(
+                $expression,
+                $prettyPrinter
+            ),
+            'target_file' => $targetFile,
+            'supported' => $targetFile !== null,
+            'control_flow' => getControlFlowContext(
+                $includeNode
+            ),
         ];
     }
 
@@ -548,6 +609,7 @@ $output = [
     'sql_calls' => $results,
     'assignments' => $assignments,
     'functions' => $functions,
+    'includes' => $includes,
 ];
 
 echo json_encode(

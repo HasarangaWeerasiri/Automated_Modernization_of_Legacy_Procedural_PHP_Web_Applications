@@ -252,6 +252,54 @@ def convert_query(query: dict) -> dict:
             ),
         }
 
+    # Preserve validated calling-layer input bindings.
+    binding_plan = query.get("binding_plan")
+
+    if binding_plan is not None:
+        if not isinstance(binding_plan, list):
+            return {
+                **base_result,
+                "status": "UNRESOLVED",
+                "reason": "Invalid input-binding plan.",
+            }
+
+        bound_parameters = []
+
+        for binding in binding_plan:
+            if not isinstance(binding, dict):
+                return {
+                    **base_result,
+                    "status": "UNRESOLVED",
+                    "reason": "Invalid input-binding entry.",
+                }
+
+            if (
+                binding.get("binding_type") != "scalar"
+                or binding.get("fallback_policy") != "null_coalescing"
+                or binding.get("source") != "_GET"
+                or not isinstance(binding.get("key"), str)
+                or not binding.get("key")
+                or not isinstance(binding.get("fallback"), str)
+                or not isinstance(binding.get("parameter"), str)
+            ):
+                return {
+                    **base_result,
+                    "status": "UNRESOLVED",
+                    "reason": "Unsupported input-binding configuration.",
+                }
+
+            bound_parameters.append(binding["parameter"])
+
+        if (
+            len(bound_parameters) != len(set(bound_parameters))
+            or set(bound_parameters) != set(parameters)
+        ):
+            return {
+                **base_result,
+                "status": "UNRESOLVED",
+                "reason": "Input-binding parameters do not match SQL.",
+            }
+
     like_wildcard_parameters = _unique(
         [
             match.group(2)
@@ -268,6 +316,11 @@ def convert_query(query: dict) -> dict:
         "parameters": parameters,
         "like_wildcard_parameters": like_wildcard_parameters,
         "parameterized_sql": parameterized_sql,
+        **(
+            {"binding_plan": binding_plan}
+            if binding_plan is not None
+            else {}
+        ),
         "status": "CONVERTED",
         "reason": None,
     }
