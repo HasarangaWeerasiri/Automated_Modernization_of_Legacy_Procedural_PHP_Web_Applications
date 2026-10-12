@@ -1,20 +1,24 @@
-"""Component 2 whole-app test harness: nikic/php-parser AST -> output timelines (schema 1.0).
+"""Component 2 whole-app test harness, timeline builder: an AST -> output timelines (schema 1.0).
 
-A **test harness, not Member 01's core** (docs/c2-roadmap.md Phase 1). It lets Stages 1-5 run on
-whole procedural PHP apps before the real static analysis exists. It emits the same shapes and the
-same id scheme as tools/gen_timelines.py ("<fileId>#<token index>"), so src/mapping/loader.py
-reads its output unchanged. PHP is parsed (tools/harness/parse.php), never executed.
+A **test harness, not Member 01's core** (docs/c2-roadmap.md Phases 1 and 1b). It lets Stages 1-5 run
+on whole procedural PHP apps before the real static analysis exists. It reads an AST in Member 01's
+format through src/mapping/loader.py - the harness's own (tools/harness/parse.php) or Member 01's -
+and uses Member 01's conventions: node ids are the AST's pre-order ids, `loc` is the AST node's loc
+(1-based lines, 0-based columns and bytes, exclusive ends), and condExpr is the source of the `cond` node.
 
 One PHP file gives one page timeline (its top-level output) and one timeline per function that
-produces output ("<file>#<function>"). Function calls and includes are recorded, not inlined
-(extension lists `calls` and `includes`, pending Member 01 Q4).
+produces output ("<file>#<function>"). A function's output is never inlined: the call site is a
+sequence entry {kind: "call", callee, outputsInside} (Member 01 Q4, proposed). Includes are recorded
+in the extension list `includes`.
 
 Reads are conservative; nothing is guessed:
 
   $row['x'], $row from mysqli_fetch_* / mysql_fetch_* on a $result from mysqli_query / mysql_query
-  with string-literal SQL          -> db_row_field. Single-table SELECT: table and column
-                                      (SELECT * as in the mocks, pending Member 01 Q1);
-                                      a join or anything else: ambiguous
+  with string-literal SQL          -> db_row_field. Single-table SELECT with a column list: table
+                                      and column. Single-table SELECT *: resolved, with basis
+                                      "schema-expanded", only when the app ships a schema that
+                                      declares the table (Member 01 Q1, proposed); else ambiguous.
+                                      A join or anything else: ambiguous
   $_SESSION / $_GET ... / $_SERVER -> session / request / server
   a literal                        -> literal
   h(), htmlspecialchars(), htmlentities() around a read -> computed, with derivedFrom
@@ -44,22 +48,81 @@ SUPERGLOBALS = {"$_SESSION": "session", "$_GET": "request", "$_POST": "request",
 ESCAPE_WRAPPERS = ("h", "htmlspecialchars", "htmlentities")
 OUTPUT_FUNCTIONS = ("printf", "vprintf", "print_r", "var_dump", "var_export", "readfile", "fpassthru", "passthru")
 SCOPE_BREAKERS = ("extract", "eval", "parse_str", "import_request_variables")  # may define any variable
+DYNAMIC_CALLERS = ("call_user_func", "call_user_func_array")  # call a function chosen at run time
 LOOP_NODES = ("Stmt_While", "Stmt_Do", "Stmt_For", "Stmt_Foreach")
+CALL_NODES = ("Expr_FuncCall", "Expr_StaticCall", "Expr_MethodCall", "Expr_NullsafeMethodCall")
 INCLUDE_KINDS = {1: "include", 2: "include_once", 3: "require", 4: "require_once"}
 CONFIDENCE = ("resolved", "ambiguous", "unresolved")
+OUTPUTS_INSIDE = (False, "unknown", True)  # weakest first: what is known about a function's output
+SCHEMA_BASIS = "schema-expanded"
 
-LOC_NOTE = ("Harness extension, pending Member 01 Q13-Q15: loc {startLine, endLine, startCol, endCol} on every "
-            "sequence entry; 1-based, columns count bytes, the end is the statement's last byte (an echo's ';' is "
-            "included; a print's is not).")
-COND_EXPR_NOTE = ("Harness extension, pending Member 01 Q2: condExpr on then/elseif branch enclosures is the "
-                  "byte-exact source between the if/elseif parentheses, whitespace just inside them trimmed.")
-CALLS_NOTE = ("Harness extensions, pending Member 01 Q4: `calls` lists every call of a function defined in the "
-              "app (producesOutput: the callee prints, directly or through a function it calls) and `includes` "
-              "every include/require, each with its node id, line and enclosedBy. Recorded only: no output is "
-              "inlined.")
+LOC_NOTE = ("Member 01's convention (Q13-Q15): loc {startLine, endLine, startCol, endCol, startByte, endByte} is the "
+            "AST node's own loc, on every sequence entry and on loop and branch enclosures (the node named by "
+            "nodeId). Lines are 1-based; columns and bytes are 0-based; every end is exclusive. An echo closed by "
+            "'?>' ends after that tag, as its AST node does.")
+COND_EXPR_NOTE = ("Member 01's convention (Q2): condExpr on then/elseif branch enclosures is the exact source of the "
+                  "if/elseif `cond` node; condNodeId is that node's id.")
+CALLS_NOTE = ("Member 01 Q4 (proposed): a call site is a sequence entry {kind: \"call\", callee, outputsInside}; no "
+              "output is inlined. callee is the called function's node id, or null when the call is not resolved to "
+              "one function of the app (a method call on an object, a dynamic call, a name defined more than once). "
+              "outputsInside is true, false or \"unknown\" (the callee, or something it calls, cannot be followed). "
+              "Calls of PHP's own functions have no entry. Harness extensions: `callNames` (call id -> the name as "
+              "written) and `includes` (every include/require, with node id, line and enclosedBy).")
+SELECT_STAR_NOTE = ("Member 01 Q1 (proposed): a single-table SELECT * is resolved only when the app ships a schema "
+                    "(.sql with CREATE TABLE) that declares the table; such reads carry basis \"schema-expanded\". "
+                    "Otherwise it is ambiguous.")
 QUERIES_NOTE = "Agent extension: `queries` holds the SQL of every query a read was traced to."
 NOTES_NOTE = ("Harness extension: `harnessNotes` lists output the schema cannot express or that the harness left "
               "unresolved on purpose (for docs/php-analysis/pattern-log.md).")
+
+
+class _N:
+    """One AST node, with its roles resolved to nodes (a view over src.model.AstNode)."""
+
+    __slots__ = ("id", "kind", "loc", "attrs", "fields", "kids")
+
+    def __init__(self, node):
+        if node.loc is None:
+            raise ValueError(f"{node.id}: the timeline builder needs loc on every AST node")
+        self.id, self.kind, self.loc, self.attrs = node.id, node.kind, node.loc, node.attrs
+        self.fields, self.kids = {}, []
+
+    def get(self, name: str, default=None):
+        """A role (a node, a list of nodes) or an attribute; `default` when the node has neither."""
+        if name in self.fields:
+            return self.fields[name]
+        return self.attrs.get(name, default)
+
+    @property
+    def start(self) -> int:
+        return self.loc.start_byte
+
+    @property
+    def end(self) -> int:
+        return self.loc.end_byte
+
+    @property
+    def line(self) -> int:
+        return self.loc.start_line
+
+
+def node_views(ast) -> dict:
+    """id -> _N for every node of an AST (src.model.Ast)."""
+    views = {node_id: _N(node) for node_id, node in ast.nodes.items()}
+    for node_id, node in ast.nodes.items():
+        view = views[node_id]
+        view.kids = [views[child] for child in node.children]
+        for role, value in node.fields.items():
+            if isinstance(value, tuple):
+                view.fields[role] = [views[ref] if ref is not None else None for ref in value]
+            else:
+                view.fields[role] = views[value] if value is not None else None
+    return views
+
+
+def loc_dict(loc) -> dict:
+    return {"startLine": loc.start_line, "endLine": loc.end_line, "startCol": loc.start_col, "endCol": loc.end_col,
+            "startByte": loc.start_byte, "endByte": loc.end_byte}
 
 
 @dataclass
@@ -69,42 +132,38 @@ class _Def:
     pos: int
     chain: tuple  # control path: ((node id, arm), ...), outermost first
     kind: str  # assign | foreach | other
-    node: dict | None = None  # assign: the right-hand side; foreach: the Stmt_Foreach
+    node: object = None  # assign: the right-hand side; foreach: the Stmt_Foreach
 
 
 @dataclass
 class _Scope:
     name: str | None  # None: the file's top level
     line: int = 1
+    node_id: str | None = None  # the function's AST node; None for the top level
     outputs: list = field(default_factory=list)  # (node, kind, chain, enclosures)
     defs: dict = field(default_factory=dict)  # "$name" -> [_Def]
     breakers: list = field(default_factory=list)  # positions of include / extract / eval
-    calls: list = field(default_factory=list)
+    calls: list = field(default_factory=list)  # {node, name, plain, enclosures}
     includes: list = field(default_factory=list)
     notes: list = field(default_factory=list)
 
 
-def _attr(node: dict, name: str, default=None):
-    return node.get("attributes", {}).get(name, default)
-
-
-def _is(node, *types) -> bool:
-    return isinstance(node, dict) and node.get("nodeType") in types
+def _is(node, *kinds) -> bool:
+    return isinstance(node, _N) and node.kind in kinds
 
 
 def _name(node) -> str | None:
     """A Name / Identifier node as text."""
-    if not isinstance(node, dict):
-        return None
-    if node.get("nodeType", "").startswith("Name") or node.get("nodeType") in ("Identifier", "VarLikeIdentifier"):
-        return node.get("name")
+    if isinstance(node, _N) and (node.kind.startswith("Name") or node.kind in ("Identifier", "VarLikeIdentifier")):
+        name = node.attrs.get("name")
+        return name if isinstance(name, str) else None
     return None
 
 
 def _variable(node) -> str | None:
     """"$name" for a plain variable; None for $$x, ${expr} and everything else."""
-    if _is(node, "Expr_Variable") and isinstance(node.get("name"), str):
-        return "$" + node["name"]
+    if _is(node, "Expr_Variable") and isinstance(node.attrs.get("name"), str):
+        return "$" + node.attrs["name"]
     return None
 
 
@@ -117,59 +176,54 @@ def _callee(node) -> str | None:
 
 
 def _args(node) -> list:
-    return [a["value"] for a in node.get("args", []) if _is(a, "Arg")]
+    return [a.get("value") for a in node.get("args") or [] if _is(a, "Arg")]
+
+
+def weakest(values) -> bool | str:
+    """What is known about several outputs taken together: true if any prints, else unknown if any is."""
+    return max(values, key=OUTPUTS_INSIDE.index, default=False)
 
 
 class FileHarness:
-    """The timelines of one PHP file. `parsed` is parse.php's output for it."""
+    """The timelines of one PHP file. `ast` is its AST as the loader gives it (src.model.Ast).
 
-    def __init__(self, source: bytes, parsed: dict, file_id: str, entrypoint: str):
-        self.source, self.parsed, self.file_id, self.entrypoint = source, parsed, file_id, entrypoint
+    `schema` maps a table name to its columns, for the app's own schema files; None or a missing table
+    means SELECT * on it cannot be expanded.
+    """
+
+    def __init__(self, source: bytes, ast, entrypoint: str, schema: dict | None = None):
+        self.source, self.ast, self.file_id, self.entrypoint = source, ast, ast.file_id, entrypoint
+        self.schema = schema or {}
         try:
             source.decode("utf-8")
             self.encoding = "utf-8"
         except UnicodeDecodeError:
             self.encoding = "cp1252"  # legacy files: decoded for JSON; byte offsets are unaffected
-        self.line_starts = [0] + [m.end() for m in re.finditer(b"\n", source)]
         self.top = _Scope(None)
         self.functions: dict[str, _Scope] = {}  # name as written -> scope (first definition wins)
-        self.errors = list(parsed.get("errors", []))
+        self.errors = list(ast.parse_errors)
         self._class: str | None = None  # the class whose methods are being walked
         self._loops: dict[str, tuple] = {}  # loop id -> (enclosure, node, scope, chain around it)
-        self._walk_list(parsed.get("ast") or [], self.top, (), [])
+        self.nodes = node_views(ast)
+        self._walk_list(self.nodes[ast.root_id].get("stmts"), self.top, (), [])
 
-    # ---- source positions
+    # ---- source text
 
     def text(self, start: int, end: int) -> str:
         """Source bytes start..end-1 as text."""
         return self.source[start:end].decode(self.encoding, errors="replace")
 
-    def node_text(self, node: dict) -> str:
-        return self.text(_attr(node, "startFilePos"), _attr(node, "endFilePos") + 1)
+    def node_text(self, node: _N) -> str:
+        return self.text(node.start, node.end)
 
-    def node_id(self, token: int) -> str:
-        return f"{self.file_id}#{token:05d}"
+    def quoted(self, node: _N) -> bool:
+        """A '...' or "..." string (not a heredoc or nowdoc)."""
+        return self.source[node.start:node.start + 1] in (b"'", b'"')
 
-    def position(self, offset: int) -> tuple[int, int]:
-        """1-based (line, column) of a byte offset; the column counts bytes."""
-        lo, hi = 0, len(self.line_starts) - 1
-        while lo < hi:
-            mid = (lo + hi + 1) // 2
-            if self.line_starts[mid] <= offset:
-                lo = mid
-            else:
-                hi = mid - 1
-        return lo + 1, offset - self.line_starts[lo] + 1
-
-    def loc(self, start: int, end: int) -> dict:
-        start_line, start_col = self.position(start)
-        end_line, end_col = self.position(end)
-        return {"startLine": start_line, "endLine": end_line, "startCol": start_col, "endCol": end_col}
-
-    def paren_text(self, node: dict) -> str | None:
-        if _attr(node, "parenStartPos") is None:
-            return None
-        return self.text(_attr(node, "parenStartPos"), _attr(node, "parenEndPos")).strip()
+    def header_text(self, node: _N) -> str:
+        """A C-style for's header expressions as written: from the first one to the last one."""
+        parts = [e for role in ("init", "cond", "loop") for e in node.get(role) or [] if e is not None]
+        return self.text(min(e.start for e in parts), max(e.end for e in parts)) if parts else ""
 
     # ---- the walk: outputs, definitions, calls and includes, with the control path of each
 
@@ -181,10 +235,9 @@ class FileHarness:
         if isinstance(node, list):
             self._walk_list(node, scope, chain, enclosures)
             return
-        if not isinstance(node, dict) or "nodeType" not in node:
+        if not isinstance(node, _N):
             return
-        kind = node["nodeType"]
-        start = _attr(node, "startTokenPos", 0)
+        kind = node.kind
 
         if kind in ("Stmt_InlineHTML", "Stmt_Echo", "Expr_Print"):
             scope.outputs.append((node, kind, chain, list(enclosures)))
@@ -195,22 +248,23 @@ class FileHarness:
             self._loop(node, scope, chain, enclosures)
         elif kind == "Stmt_Switch":
             self._walk(node.get("cond"), scope, chain, enclosures)
-            switch_id = self.node_id(start)
-            for case in node.get("cases", []):
-                case_id = self.node_id(_attr(case, "startTokenPos", 0))
+            switch_id = node.id
+            for case in node.get("cases") or []:
+                case_id = case.id
                 enclosure = {"nodeId": switch_id, "kind": "Stmt_Switch", "role": "switch_case", "caseNodeId": case_id,
-                             "caseExpr": self.node_text(case["cond"]) if case.get("cond") else None}
+                             "caseExpr": self.node_text(case.get("cond")) if case.get("cond") else None}
+                self._walk(case.get("cond"), scope, chain, enclosures)
                 self._walk_list(case.get("stmts"), scope, chain + ((switch_id, case_id),), enclosures + [enclosure])
         elif kind == "Stmt_TryCatch":
-            try_id = self.node_id(start)
+            try_id = node.id
             parts = [("try", node.get("stmts"))]
-            parts += [("catch", c.get("stmts")) for c in node.get("catches", [])]
+            parts += [("catch", c.get("stmts")) for c in node.get("catches") or []]
             if node.get("finally"):
-                parts.append(("finally", node["finally"].get("stmts")))
+                parts.append(("finally", node.get("finally").get("stmts")))
             for index, (part, stmts) in enumerate(parts):
                 enclosure = {"nodeId": try_id, "kind": "Stmt_TryCatch", "role": "try_catch", "part": part}
                 self._walk_list(stmts, scope, chain + ((try_id, f"{part}{index}"),), enclosures + [enclosure])
-            for catch in node.get("catches", []):
+            for catch in node.get("catches") or []:
                 self._define(scope, _variable(catch.get("var")), catch, chain, "other")
         elif kind in ("Stmt_Function", "Stmt_ClassMethod", "Expr_Closure", "Expr_ArrowFunction"):
             self._function(node, kind, scope)
@@ -220,13 +274,11 @@ class FileHarness:
             self._class = previous
         else:
             self._expression(node, kind, scope, chain, enclosures)
-            for key, value in node.items():
-                if key != "attributes" and isinstance(value, (dict, list)):
-                    self._walk(value, scope, chain, enclosures)
+            self._walk_list(node.kids, scope, chain, enclosures)
 
-    def _expression(self, node: dict, kind: str, scope: _Scope, chain: tuple, enclosures: list) -> None:
+    def _expression(self, node: _N, kind: str, scope: _Scope, chain: tuple, enclosures: list) -> None:
         """Record what a non-control node means for the scope: definitions, calls, includes, notes."""
-        pos, line = _attr(node, "startFilePos", 0), _attr(node, "startLine", 0)
+        pos, line, col = node.start, node.line, node.loc.column
         if kind == "Expr_Assign":
             target = node.get("var")
             if _variable(target):
@@ -238,114 +290,115 @@ class FileHarness:
         elif kind in ("Expr_PreInc", "Expr_PreDec", "Expr_PostInc", "Expr_PostDec"):
             self._define_all(scope, node.get("var"), node, chain)
         elif kind in ("Stmt_Global", "Stmt_Static", "Stmt_Unset"):
-            for item in node.get("vars", []):
+            for item in node.get("vars") or []:
                 self._define_all(scope, item.get("var") if _is(item, "StaticVar") else item, node, chain)
         elif kind == "Expr_Include":
             scope.breakers.append(pos)
             expr = node.get("expr")
             scope.includes.append({
-                "nodeId": self.node_id(_attr(node, "startTokenPos", 0)), "line": line,
+                "nodeId": node.id, "line": line, "col": col,
                 "kind": INCLUDE_KINDS.get(node.get("type"), "include"), "expr": self.node_text(expr),
                 "literal": expr.get("value") if _is(expr, "Scalar_String") else None,
                 "enclosedBy": list(enclosures)})
         elif kind == "Expr_Eval":
             scope.breakers.append(pos)
-        elif kind == "Expr_Exit" and node.get("expr") and not _is(node["expr"], "Scalar_Int"):
-            scope.notes.append({"kind": "exit_with_output", "line": line,
+        elif kind == "Expr_Exit" and node.get("expr") and not _is(node.get("expr"), "Scalar_Int"):
+            scope.notes.append({"kind": "exit_with_output", "line": line, "col": col,
                                 "detail": self.node_text(node)[:80]})
-        elif kind in ("Expr_FuncCall", "Expr_StaticCall"):
-            callee = _callee(node)
+        elif kind in CALL_NODES:
+            callee = _callee(node)  # None: a dynamic call or a method call on an object
             if kind == "Expr_StaticCall":
                 cls, method = _name(node.get("class")), _name(node.get("name"))
+                if cls and cls.lower() in ("self", "static") and self._class:
+                    cls = self._class
                 callee = f"{cls}::{method}".lower() if cls and method else None
             if callee in SCOPE_BREAKERS:
                 scope.breakers.append(pos)
             if callee in OUTPUT_FUNCTIONS:
-                scope.notes.append({"kind": "output_function", "line": line, "detail": callee})
+                scope.notes.append({"kind": "output_function", "line": line, "col": col, "detail": callee})
             if callee == "ob_start":
-                scope.notes.append({"kind": "output_buffering", "line": line, "detail": "ob_start()"})
-            if callee:
-                scope.calls.append({"nodeId": self.node_id(_attr(node, "startTokenPos", 0)), "line": line,
-                                    "callee": callee, "enclosedBy": list(enclosures)})
+                scope.notes.append({"kind": "output_buffering", "line": line, "col": col,
+                                    "detail": "ob_start()"})
+            # plain: a call by plain function name, which is PHP's own function when the app does not define it
+            scope.calls.append({"node": node, "name": callee, "enclosures": list(enclosures),
+                                "plain": kind == "Expr_FuncCall" and callee is not None
+                                and callee not in DYNAMIC_CALLERS})
 
-    def _define(self, scope: _Scope, name: str | None, node: dict, chain: tuple, kind: str, rhs=None) -> None:
+    def _define(self, scope: _Scope, name: str | None, node: _N, chain: tuple, kind: str, rhs=None) -> None:
         if name:
-            scope.defs.setdefault(name, []).append(
-                _Def(_attr(node, "startFilePos", 0), chain, kind, rhs if kind == "assign" else node))
+            scope.defs.setdefault(name, []).append(_Def(node.start, chain, kind, rhs if kind == "assign" else node))
 
-    def _define_all(self, scope: _Scope, target, node: dict, chain: tuple) -> None:
+    def _define_all(self, scope: _Scope, target, node: _N, chain: tuple) -> None:
         """Every plain variable written through `target` (a list(), an array element, a property) is redefined."""
         if isinstance(target, list):
             for item in target:
                 self._define_all(scope, item, node, chain)
-        elif isinstance(target, dict):
+        elif isinstance(target, _N):
             if _variable(target):
                 self._define(scope, _variable(target), node, chain, "other")
             for key in ("var", "items", "value"):
-                if key in target:
-                    self._define_all(scope, target[key], node, chain)
+                if key in target.fields:
+                    self._define_all(scope, target.fields[key], node, chain)
 
-    def _if(self, node: dict, scope: _Scope, chain: tuple, enclosures: list) -> None:
-        if_id = self.node_id(_attr(node, "startTokenPos", 0))
-        cond_id = self.node_id(_attr(node, "parenFirstToken", _attr(node.get("cond") or {}, "startTokenPos", 0)))
-        self._walk(node.get("cond"), scope, chain, enclosures)
-        arms = [("then", node, cond_id, node.get("stmts"))]
-        for elseif in node.get("elseifs", []):
-            arms.append(("elseif", elseif, self.node_id(_attr(elseif, "parenFirstToken",
-                                                              _attr(elseif.get("cond") or {}, "startTokenPos", 0))),
-                         elseif.get("stmts")))
+    def _if(self, node: _N, scope: _Scope, chain: tuple, enclosures: list) -> None:
+        if_id, cond = node.id, node.get("cond")
+        self._walk(cond, scope, chain, enclosures)
+        arms = [("then", cond, node.get("stmts"))]
+        for elseif in node.get("elseifs") or []:
+            arms.append(("elseif", elseif.get("cond"), elseif.get("stmts")))
         if node.get("else"):
-            arms.append(("else", None, cond_id, node["else"].get("stmts")))
-        for index, (branch, owner, cond_node_id, stmts) in enumerate(arms):
+            arms.append(("else", cond, node.get("else").get("stmts")))  # an else points at its if's condition
+        for index, (branch, branch_cond, stmts) in enumerate(arms):
             if branch == "elseif":
-                self._walk(owner.get("cond"), scope, chain, enclosures)
+                self._walk(branch_cond, scope, chain, enclosures)
             enclosure = {"nodeId": if_id, "kind": "Stmt_If", "role": "branch", "branch": branch,
-                         "condNodeId": cond_node_id}
-            cond_expr = self.paren_text(owner) if owner is not None else None
-            if cond_expr:
-                enclosure["condExpr"] = cond_expr
+                         "condNodeId": branch_cond.id}
+            if branch != "else":
+                enclosure["condExpr"] = self.node_text(branch_cond)
+            enclosure["loc"] = loc_dict(node.loc)
             self._walk_list(stmts, scope, chain + ((if_id, f"{branch}{index}"),), enclosures + [enclosure])
 
-    def _loop(self, node: dict, scope: _Scope, chain: tuple, enclosures: list) -> None:
-        kind = node["nodeType"]
-        loop_id = self.node_id(_attr(node, "startTokenPos", 0))
+    def _loop(self, node: _N, scope: _Scope, chain: tuple, enclosures: list) -> None:
+        kind, loop_id = node.kind, node.id
         inner = chain + ((loop_id, "loop"),)
-        enclosure = {"nodeId": loop_id, "kind": kind, "role": "iteration", "iterExpr": self.paren_text(node) or "",
-                     "iterSourceKind": "unresolved", "valueVar": None, "keyVar": None}
+        enclosure = {"nodeId": loop_id, "kind": kind, "role": "iteration", "iterExpr": "",
+                     "iterSourceKind": "unresolved", "valueVar": None, "keyVar": None, "loc": loc_dict(node.loc)}
         if kind in ("Stmt_While", "Stmt_Do"):
             cond = node.get("cond")
+            enclosure["iterExpr"] = self.node_text(cond)
             if _is(cond, "Expr_Assign") and _variable(cond.get("var")):
-                enclosure["valueVar"] = self.node_text(cond["var"])
+                enclosure["valueVar"] = self.node_text(cond.get("var"))
                 if _callee(cond.get("expr")) in FETCH_ROW:
                     enclosure["iterSourceKind"] = "db_row_field"
             self._walk(cond, scope, inner, enclosures)  # the header runs once per iteration
         elif kind == "Stmt_Foreach":
-            enclosure["iterExpr"] = self.node_text(node["expr"])
-            enclosure["valueVar"] = self.node_text(node["valueVar"])
-            enclosure["keyVar"] = self.node_text(node["keyVar"]) if node.get("keyVar") else None
+            enclosure["iterExpr"] = self.node_text(node.get("expr"))
+            enclosure["valueVar"] = self.node_text(node.get("valueVar"))
+            enclosure["keyVar"] = self.node_text(node.get("keyVar")) if node.get("keyVar") else None
             self._walk(node.get("expr"), scope, chain, enclosures)
             self._define_all(scope, node.get("keyVar"), node, inner)
             if _variable(node.get("valueVar")):
-                self._define(scope, _variable(node["valueVar"]), node, inner, "foreach")
+                self._define(scope, _variable(node.get("valueVar")), node, inner, "foreach")
             else:
                 self._define_all(scope, node.get("valueVar"), node, inner)
         else:  # Stmt_For: which fields a C-style for fills is open (Member 01 Q10), so the variables stay null
+            enclosure["iterExpr"] = self.header_text(node)
             for part in ("init", "cond", "loop"):
                 self._walk(node.get(part), scope, inner, enclosures)
         self._loops[loop_id] = (enclosure, node, scope, chain)
         self._walk_list(node.get("stmts"), scope, inner, enclosures + [enclosure])
 
-    def _function(self, node: dict, kind: str, outer: _Scope) -> None:
+    def _function(self, node: _N, kind: str, outer: _Scope) -> None:
         if kind == "Stmt_Function":
             name = _name(node.get("name"))
         elif kind == "Stmt_ClassMethod":
             name = f"{self._class or 'class'}::{_name(node.get('name'))}"
         else:
-            name = f"closure@{_attr(node, 'startLine', 0)}"
-        scope = _Scope(name, _attr(node, "startLine", 0))
-        for param in node.get("params", []):
+            name = f"closure@{node.line}"
+        scope = _Scope(name, node.line, node.id)
+        for param in node.get("params") or []:
             self._define(scope, _variable(param.get("var")), param, (), "other")
-        for use in node.get("uses", []):
+        for use in node.get("uses") or []:
             self._define(scope, _variable(use.get("var")), use, (), "other")
         body = node.get("stmts") if kind != "Expr_ArrowFunction" else [node.get("expr")]
         self._walk_list(body, scope, (), [])
@@ -371,17 +424,17 @@ class FileHarness:
 
     def _sql(self, scope: _Scope, node, pos: int, chain: tuple):
         """(sql text, source text) for a string-literal SQL argument, directly or through a variable."""
-        if _is(node, "Scalar_String") and _attr(node, "kind") in (1, 2):
-            return node["value"], self.node_text(node)
+        if _is(node, "Scalar_String") and self.quoted(node):
+            return node.get("value"), self.node_text(node)
         name = _variable(node)
         if name:
             reaching = self._reaching(scope, name, pos, chain)
             if reaching and reaching.kind == "assign" and _is(reaching.node, "Scalar_String") \
-                    and _attr(reaching.node, "kind") in (1, 2):
-                return reaching.node["value"], self.node_text(reaching.node)
+                    and self.quoted(reaching.node):
+                return reaching.node.get("value"), self.node_text(reaching.node)
         return None
 
-    def _query_of(self, scope: _Scope, fetch: dict, pos: int, chain: tuple):
+    def _query_of(self, scope: _Scope, fetch: _N, pos: int, chain: tuple):
         """The query call a fetch call reads from: the call node, or None when that is not certain."""
         args = _args(fetch)
         if not args:
@@ -415,10 +468,10 @@ class FileHarness:
             source = reaching.node.get("expr")
             outer = reaching.chain[:-1]
             if _callee(source) in FETCH_ALL:
-                return source, _attr(source, "startFilePos", 0), outer
+                return source, source.start, outer
             rows = _variable(source)
             if rows:
-                loop_pos = _attr(reaching.node, "startFilePos", 0)
+                loop_pos = reaching.node.start
                 filled = self._reaching(scope, rows, loop_pos, outer)
                 if filled and filled.kind == "assign" and _callee(filled.node) in FETCH_ALL and all(
                         d.kind == "assign" and _callee(d.node) in FETCH_ALL for d in scope.defs.get(rows, [])):
@@ -427,17 +480,17 @@ class FileHarness:
 
     # ---- reads
 
-    def _var_read(self, scope: _Scope, node: dict, chain: tuple, queries: dict, notes: list) -> dict | None:
+    def _var_read(self, scope: _Scope, node: _N, chain: tuple, queries: dict, notes: list) -> dict | None:
         """A read of $name or $name['k']...: None when `node` is not that shape."""
         path, base = [], node
         while _is(base, "Expr_ArrayDimFetch"):
             dim = base.get("dim")
             if _is(dim, "Scalar_String"):
-                path.insert(0, dim["value"])
+                path.insert(0, dim.get("value"))
             elif _is(dim, "Scalar_Int"):
-                path.insert(0, str(dim["value"]))
+                path.insert(0, str(dim.get("value")))
             elif _is(dim, "Expr_ConstFetch") and _name(dim.get("name")):
-                path.insert(0, _name(dim["name"]))
+                path.insert(0, _name(dim.get("name")))
             else:
                 return None
             base = base.get("var")
@@ -445,7 +498,7 @@ class FileHarness:
         if name is None:
             return None
         read = {"expr": self.node_text(node), "var": name, "path": path}
-        pos = _attr(node, "startFilePos", 0)
+        pos = node.start
         if name in SUPERGLOBALS:
             return read | {"sourceKind": SUPERGLOBALS[name], "confidence": "resolved", "source": None}
         unresolved = read | {"sourceKind": "unresolved", "confidence": "unresolved", "source": None}
@@ -453,61 +506,65 @@ class FileHarness:
         if fetched is None:
             return unresolved
         fetch, fetch_pos, fetch_chain = fetched
-        line = _attr(node, "startLine", 0)
+        line, col = node.line, node.loc.column
         found = self._query_of(scope, fetch, fetch_pos, fetch_chain)
         if found is None:
-            notes.append({"kind": "row_read_not_traced", "line": line, "detail": "the fetch's result is not "
-                          "certainly one query call"})
+            notes.append({"kind": "row_read_not_traced", "line": line, "col": col,
+                          "detail": "the fetch's result is not certainly one query call"})
             return unresolved
         query, result_var = found
-        query_pos = _attr(query, "startFilePos", 0)
+        query_pos = query.start
         query_chain = next((d.chain for d in scope.defs.get(result_var, []) if d.node is query), fetch_chain)
         arguments = _args(query)
         index = QUERY_FUNCTIONS[_callee(query)]
         sql = self._sql(scope, arguments[index], query_pos, query_chain) if len(arguments) > index else None
         if sql is None:  # interpolated or computed SQL: never guessed
-            notes.append({"kind": "row_read_not_traced", "line": line, "detail": "the SQL is not a string literal "
-                          "(interpolated or built)"})
+            notes.append({"kind": "row_read_not_traced", "line": line, "col": col,
+                          "detail": "the SQL is not a string literal (interpolated or built)"})
             return unresolved
         sql_value, sql_source = sql
         shape = parse_select(sql_value)
-        fetch_id = self.node_id(_attr(fetch, "startTokenPos", 0))
-        query_id = self.node_id(_attr(query, "startTokenPos", 0))
-        queries[query_id] = {"line": _attr(query, "startLine", 0), "sql": sql_source,
-                             "tables": [shape.table] if shape.table else [], "columns": shape.columns,
-                             "resultVar": result_var}
+        columns, basis = shape.columns, None
+        if shape.table is not None and columns is None:  # SELECT * on one table (Member 01 Q1)
+            columns = self.schema.get(shape.table)
+            basis = SCHEMA_BASIS if columns is not None else None
+        fetch_id, query_id = fetch.id, query.id
+        queries[query_id] = {"line": query.line, "sql": sql_source,
+                             "tables": [shape.table] if shape.table else [],
+                             "columns": list(columns) if columns is not None else None, "resultVar": result_var}
         source = {"fetchNodeId": fetch_id, "queryNodeId": query_id, "table": None, "column": None}
-        if shape.table is None or len(path) != 1:
-            return read | {"sourceKind": "db_row_field", "confidence": "ambiguous", "source": source}
+        ambiguous = read | {"sourceKind": "db_row_field", "confidence": "ambiguous", "source": source}
+        if shape.table is None or columns is None or len(path) != 1:
+            return ambiguous  # a join, anything not plain, or SELECT * with no schema to expand it
         column = path[0]
-        if shape.columns is not None and column not in shape.columns:
-            if _is(node.get("dim"), "Scalar_Int"):  # a numeric index on a row: a column, but not which one
-                return read | {"sourceKind": "db_row_field", "confidence": "ambiguous", "source": source}
+        if _is(node.get("dim"), "Scalar_Int"):  # a numeric index on a row: a column, but not which one
+            return ambiguous
+        if column not in columns:
             return unresolved  # not in the select list
-        if _is(node.get("dim"), "Scalar_Int"):
-            return read | {"sourceKind": "db_row_field", "confidence": "ambiguous", "source": source}
-        return read | {"sourceKind": "db_row_field", "confidence": "resolved",
-                       "source": source | {"table": shape.table, "column": column}}
+        resolved = read | {"sourceKind": "db_row_field", "confidence": "resolved",
+                           "source": source | {"table": shape.table, "column": column}}
+        return resolved | {"basis": basis} if basis else resolved
 
-    def _opaque(self, node: dict) -> dict:
+    def _opaque(self, node: _N) -> dict:
         text = self.node_text(node)
         return {"expr": text, "var": text, "path": [], "sourceKind": "unresolved", "confidence": "unresolved",
                 "source": None}
 
-    def _reads(self, scope: _Scope, node: dict, chain: tuple, queries: dict, notes: list) -> list[dict]:
+    def _reads(self, scope: _Scope, node: _N, chain: tuple, queries: dict, notes: list) -> list[dict]:
         """The reads an output expression prints, in order (one per piece of a concatenation)."""
         if _is(node, "Expr_BinaryOp_Concat"):
-            return (self._reads(scope, node["left"], chain, queries, notes)
-                    + self._reads(scope, node["right"], chain, queries, notes))
-        line = _attr(node, "startLine", 0)
-        if _is(node, "Scalar_String") and _attr(node, "kind") in (1, 2) or _is(node, "Scalar_Int", "Scalar_Float"):
+            return (self._reads(scope, node.get("left"), chain, queries, notes)
+                    + self._reads(scope, node.get("right"), chain, queries, notes))
+        line = node.line
+        if _is(node, "Scalar_String") and self.quoted(node) or _is(node, "Scalar_Int", "Scalar_Float"):
             return [{"expr": self.node_text(node), "var": None, "path": None, "sourceKind": "literal",
                      "confidence": "resolved", "source": None}]
         if _is(node, "Scalar_String", "Scalar_InterpolatedString"):
             text = self.node_text(node)
-            heredoc = _attr(node, "kind") in (3, 4)
+            heredoc = self.source[node.start:node.start + 3] == b"<<<"
             kind = "heredoc_output" if heredoc else "interpolated_string_output"
-            notes.append({"kind": kind, "line": line, "markup": "<" in text, "detail": text[:80]})
+            notes.append({"kind": kind, "line": line, "col": node.loc.column, "markup": "<" in text,
+                          "detail": text[:80]})
             return [self._opaque(node)]
         if _callee(node) in ESCAPE_WRAPPERS and _args(node):
             inner = [r for r in self._reads(scope, _args(node)[0], chain, queries, notes)
@@ -528,68 +585,159 @@ class FileHarness:
     def loop_enclosure(self, enclosure: dict) -> dict:
         """iterSourceKind for a foreach over fetched rows needs the definitions, which are complete only now."""
         entry = self._loops.get(enclosure["nodeId"])
-        if entry is None or entry[1]["nodeType"] != "Stmt_Foreach":
+        if entry is None or entry[1].kind != "Stmt_Foreach":
             return enclosure
         _, node, scope, chain = entry
         source = node.get("expr")
         if _callee(source) in FETCH_ALL:
             enclosure["iterSourceKind"] = "db_row_field"
         elif _variable(source):
-            filled = self._reaching(scope, _variable(source), _attr(node, "startFilePos", 0), chain)
+            filled = self._reaching(scope, _variable(source), node.start, chain)
             if filled and filled.kind == "assign" and _callee(filled.node) in FETCH_ALL:
                 enclosure["iterSourceKind"] = "db_row_field"
         return enclosure
 
-    def output_functions(self) -> dict[str, bool]:
-        """lower-case name -> prints directly, for every function this file defines."""
-        return {name.lower(): bool(scope.outputs) for name, scope in self.functions.items()}
+    def direct_output(self, scope: _Scope) -> bool | str:
+        """Whether a scope prints by itself: true, or "unknown" when it includes a file, else false."""
+        if scope.outputs or any(n["kind"] == "output_function" for n in scope.notes):
+            return True
+        return "unknown" if scope.includes else False
 
-    def timeline(self, scope: _Scope, provenance: dict, produces_output=None) -> dict | None:
-        """The schema 1.0 document of one scope, or None when it prints nothing.
+    def timeline(self, scope: _Scope, provenance: dict, resolve=None) -> dict | None:
+        """The schema 1.0 document of one scope, or None when it prints nothing itself.
 
-        `produces_output(name)` says whether an app function prints (None: not an app function); without it,
-        only this file's own functions are known."""
+        `resolve(name)` gives (callee node id or None, outputsInside) for a function of the app and None for
+        any other name; without it, only this file's own functions are known."""
         if not scope.outputs:
             return None
-        if produces_output is None:
-            produces_output = self.output_functions().get
-        queries, notes, sequence = {}, list(scope.notes), []
-        for node, kind, chain, enclosures in sorted(scope.outputs, key=lambda o: _attr(o[0], "startTokenPos", 0)):
-            start = _attr(node, "startFilePos", 0)
-            entry = {"id": self.node_id(_attr(node, "startTokenPos", 0)), "kind": kind}
+        if resolve is None:
+            resolve = function_resolver({self.file_id: self})
+        queries, notes, sequence, call_names = {}, list(scope.notes), [], {}
+        for node, kind, chain, enclosures in scope.outputs:
+            entry = {"id": node.id, "kind": kind}
             if kind == "Stmt_InlineHTML":
-                end = _attr(node, "endFilePos", start)
-                entry["raw"] = self.text(start, end + 1)
+                entry["raw"] = self.node_text(node)
             else:
-                end = _attr(node, "spanEndPos", _attr(node, "endFilePos", start))
                 exprs = node.get("exprs") if kind == "Stmt_Echo" else [node.get("expr")]
                 entry["reads"] = [read for expr in exprs for read in self._reads(scope, expr, chain, queries, notes)]
                 if len(entry["reads"]) > 1 and any(
                         r["sourceKind"] == "literal" and "<" in r["expr"] for r in entry["reads"]):
-                    notes.append({"kind": "markup_in_concatenated_echo", "line": _attr(node, "startLine", 0),
-                                  "markup": True, "detail": self.text(start, min(end + 1, start + 80))})
+                    notes.append({"kind": "markup_in_concatenated_echo", "line": node.line,
+                                  "col": node.loc.column, "markup": True,
+                                  "detail": self.text(node.start, min(node.end, node.start + 80))})
             entry["enclosedBy"] = [self.loop_enclosure(e) if e["role"] == "iteration" else e for e in enclosures]
-            entry["loc"] = self.loc(start, end)
-            sequence.append(entry)
-        calls = [c | {"producesOutput": produces_output(c["callee"])} for c in scope.calls
-                 if produces_output(c["callee"]) is not None]
+            entry["loc"] = loc_dict(node.loc)
+            sequence.append((node.start, entry))
+        for call in scope.calls:
+            found = resolve(call["name"]) if call["name"] else None
+            if found is None and call["plain"]:
+                continue  # PHP's own function (or one the app does not define): not a call site of the app
+            callee, outputs_inside = found if found is not None else (None, "unknown")
+            node = call["node"]
+            sequence.append((node.start, {
+                "id": node.id, "kind": "call", "callee": callee, "outputsInside": outputs_inside,
+                "enclosedBy": [self.loop_enclosure(e) if e["role"] == "iteration" else e for e in call["enclosures"]],
+                "loc": loc_dict(node.loc)}))
+            if call["name"]:
+                call_names[node.id] = call["name"]
+        sequence.sort(key=lambda item: (item[0], item[1]["id"]))
         entrypoint = self.entrypoint if scope.name is None else f"{self.entrypoint}#{scope.name}"
-        notes.sort(key=lambda n: (n["line"], n["kind"], n["detail"]))
+        notes.sort(key=lambda n: (n["line"], n["col"], n["kind"], n["detail"]))
         return {
             "entrypoint": entrypoint,
             "schemaVersion": SCHEMA_VERSION,
-            "sequence": sequence,
+            "sequence": [entry for _, entry in sequence],
             "queries": dict(sorted(queries.items())),
-            "calls": sorted(calls, key=lambda c: c["nodeId"]),
+            "callNames": dict(sorted(call_names.items())),
             "includes": sorted(scope.includes, key=lambda i: i["nodeId"]),
             "harnessNotes": notes,
             "_provenance": provenance | {
                 "function": scope.name,
+                "functionNodeId": scope.node_id,
                 "sourceEncoding": self.encoding,
-                "locExtension": LOC_NOTE, "condExprExtension": COND_EXPR_NOTE, "callsExtension": CALLS_NOTE,
+                "locConvention": LOC_NOTE, "condExprConvention": COND_EXPR_NOTE, "callsConvention": CALLS_NOTE,
+                "selectStarConvention": SELECT_STAR_NOTE,
                 "queriesExtension": QUERIES_NOTE, "harnessNotesExtension": NOTES_NOTE,
             },
         }
+
+
+def function_resolver(harnesses: dict):
+    """resolve(name) for a set of files that form one app: (callee node id or None, outputsInside), or None.
+
+    A function prints if it prints itself or calls a function that prints. It is "unknown" when it, or something
+    it calls, includes a file or makes a call that cannot be followed. A name defined more than once has no
+    single callee: its id is None and its output is what all its definitions agree on, else "unknown".
+    """
+    definitions: dict[str, list] = {}  # lower-case name -> [(harness, scope)]
+    for key in sorted(harnesses):
+        for name, scope in harnesses[key].functions.items():
+            definitions.setdefault(name.lower(), []).append((harnesses[key], scope))
+    state = {name: [harness.direct_output(scope) for harness, scope in found] for name, found in definitions.items()}
+
+    def together(name: str) -> bool | str:
+        values = set(state[name])
+        return values.pop() if len(values) == 1 else "unknown"
+
+    def called(call: dict) -> bool | str:
+        if call["name"] in state:
+            return together(call["name"])
+        return False if call["plain"] else "unknown"
+
+    changed = True
+    while changed:
+        changed = False
+        for name, found in definitions.items():
+            for index, (_, scope) in enumerate(found):
+                value = weakest([state[name][index]] + [called(call) for call in scope.calls])
+                if value != state[name][index]:
+                    state[name][index] = value
+                    changed = True
+
+    def resolve(name: str):
+        found = definitions.get(name.lower())
+        if not found:
+            return None
+        return (found[0][1].node_id if len(found) == 1 else None), together(name.lower())
+
+    return resolve
+
+
+def parse_schema(sql: str) -> dict:
+    """{table: [columns]} for every CREATE TABLE of a schema file, as far as it is plain to read."""
+    tables = {}
+    for found in re.finditer(r"create\s+table\s+(?:if\s+not\s+exists\s+)?[`\"]?(\w+)[`\"]?\s*\(", sql, re.I):
+        items, depth, start, quote, index = [], 1, found.end(), None, found.end()
+        while index < len(sql) and depth:
+            ch = sql[index]
+            if quote:
+                if ch == "\\":
+                    index += 1
+                elif ch == quote:
+                    quote = None
+            elif ch in "'\"":
+                quote = ch
+            elif ch == "(":
+                depth += 1
+            elif ch == ")":
+                depth -= 1
+                if depth == 0:
+                    items.append(sql[start:index])
+            elif ch == "," and depth == 1:
+                items.append(sql[start:index])
+                start = index + 1
+            index += 1
+        if depth:
+            continue  # unbalanced: not plain
+        columns = []
+        for item in items:
+            column = re.match(r"\s*(?:`([^`]+)`|(\w+))\s+\w", item)
+            if column and (column.group(1) or column.group(2).upper() not in (
+                    "PRIMARY", "KEY", "UNIQUE", "CONSTRAINT", "INDEX", "FOREIGN", "FULLTEXT", "SPATIAL", "CHECK")):
+                columns.append(column.group(1) or column.group(2))
+        tables.setdefault(found.group(1), []).append(columns)
+    # a table declared twice with different columns is not certain: left out
+    return {table: versions[0] for table, versions in tables.items() if all(v == versions[0] for v in versions)}
 
 
 @dataclass(frozen=True)

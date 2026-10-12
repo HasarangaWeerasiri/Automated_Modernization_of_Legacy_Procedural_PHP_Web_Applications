@@ -1,6 +1,6 @@
 # Component 2 — Agent Context (read this first, every task)
 
-_Version 12 — 12 Oct 2026 (C2 roadmap to 100% — `docs/c2-roadmap.md`; Phase 1 = whole-app harness)._
+_Version 14 — 12 Oct 2026 (Member 01 answered Q1–Q4, Q11, Q13–Q15 and sent the first **real AST**; Phase 1b = align with it, then Phase 2a)._
 
 This file is the handoff between the research chat and the coding agent. It records decisions
 already made. **Do not change a decision recorded here.** If something here looks wrong or a task
@@ -64,10 +64,24 @@ label keys use `nodeId`; field naming pending Member 01's confirmation — the l
   (reporting, later C3 join). Reads must still work with `source.queryNodeId` alone. Stage 1 and Stage 2 must not need it.
 - `source: null` for non-DB reads; an `else` branch's `condNodeId` points at its `if` condition;
   `_provenance` blocks (kept as opaque metadata, never used in a decision).
-- `loc {startLine, endLine, startCol, endCol}` on sequence entries — **optional**. Mock convention: 1-based,
-  columns in bytes, end inclusive (Member 01 Q13–Q15). Used only for file:line in reports.
-- `condExpr` on branch enclosures — **optional**, byte-exact PHP condition source (Member 01 Q2). Used only
-  by Stage 5's whitelist translator; missing → `condition_unavailable`, never guessed.
+**Member 01's answers (12 Oct 2026) — these are now the conventions. "Confirmed" = built; "proposed" = design, not built.**
+
+| Topic | Convention | State |
+|---|---|---|
+| AST | `ast/<fileId>.json`: `{schemaVersion "1.0", fileId, path, sha256, bytes, parseOk, parseErrors, rootId, nodeCount, nodes:[{id, kind, parent, children, fields, attrs, loc}]}`. Roles are in `fields` (`cond`, `stmts`, `else`, `elseifs`, `exprs`, `parts`…). Literal values in `attrs` (`value`, `_rawValue`) | **Confirmed** — real file `legacy-apps/real/f001_admin-panel1_php_ast.json` (HMS `admin-panel1.php` @ `777fda4`, sha256 `492d63d9…`, 602 nodes) |
+| Node ids | `fNNN#NNNNN`, numbered in **pre-order** (parent before children, children in `children` order) from `#00000` = root `File`. **The id is the join key** between AST, timeline and labels | **Confirmed** |
+| `loc` | `{startLine, endLine}` 1-based; `{startCol, endCol}` **0-based, end exclusive**; `{startByte, endByte}` 0-based, end exclusive; `source[startByte:endByte]` = exact node text. Lines/cols are computed from bytes | **Confirmed**. Timeline entries and loops will carry the same six numbers |
+| `condExpr` | Exact source of the `cond` node (no parentheses, already trimmed); none on `else`; each `elseif` has its own; comments kept | **Confirmed** (Q2/Q3) |
+| Function output (Q4) | No inlining. At the call site the timeline has an entry `{kind: "call", callee: <function id> \| null, outputsInside: true \| false \| "unknown"}`; the function's echoes stay in the function's own timeline | **Proposed** |
+| `SELECT *` (Q1) | `ambiguous` by default; `resolved` only if a schema is in the repo **and** one table, no JOIN; then the read carries `basis: "schema-expanded"` | **Proposed** (to confirm with C3) |
+| DFG through calls (Q11) | v1: plain function calls; `new ClassName`, `Class::method` when the class name is unique; `$obj->method()` only with a visible `new` in the same flow; else `unresolved` | **Proposed** — not built |
+| Timeline, labels, contract, endpoint map | Do not exist yet (need the CFG). Keep the hand-written contract and endpoint map; their `missing` results stay "planted" | — |
+
+**C2 extensions still pending:** `queries` map (optional); `source: null` for non-DB reads; `_provenance`
+(opaque); harness `includes` list and `parts` on echo entries (Q16 — the AST already holds them as
+`Scalar_InterpolatedString.parts` / concat nodes, so `parts` must reference AST node ids); copy
+propagation and interpolated-SQL values (Q17). All **optional** in the loader. The harness is a **test
+harness, not Member 01's core** (`_provenance.generator = "c2-harness"`).
 
 ## 4. Hard rules
 
@@ -79,7 +93,7 @@ label keys use `nodeId`; field naming pending Member 01's confirmation — the l
     An enclosure's status (e.g. a loop labelled `mixed` because its condition fetches rows) is **information
     for Stage 2, not a block**: a `mixed` or `business_logic` loop/guard is still used as a structural boundary.
 5. `session` and `request` reads are **excluded** from contract matching.
-6. `ambiguous` reads (e.g. `SELECT *`) need C3's schema → until then, flag them.
+6. `ambiguous` reads need C3's schema → until then, flag them. `SELECT *` follows Member 01's Q1 rule (table above): resolved only with a schema in the repo, one table, no JOIN, `basis: "schema-expanded"`.
 7. Output must be **deterministic**: same input → byte-identical output, stable ordering.
 8. Do not modify mock files unless the task says so. Never change `raw` values.
 9. **Commit policy (owner decision, 11 Oct):** the **owner commits**. The agent does **not** commit or push. At the end of every task it lists the changed and new files and proposes a commit message whose last line is the trailer `AI-assisted-by: Claude Code (Anthropic)` (this replaces `Co-Authored-By`). AI involvement is always disclosed: in that trailer and in the report's Appendix F. Before any branch switch, stop and ask the owner to commit (`component2_frontend/` does not exist on `dev`).
@@ -102,7 +116,8 @@ label keys use `nodeId`; field naming pending Member 01's confirmation — the l
 - WackoPicko mocks: `{timeline,labels}_wp_{guestbook,view,login,header,thumbnails}.json` (generated). Their **labels are generator placeholders**, not C1 output, and every WackoPicko read is `unresolved` (data comes through class methods in `include/*.php`). Use them for Stage 2 only.
 - Deliberate contract gap: field **`contact`** (flagged on list pages only). `sku` appears in no schema.
 - `undecided` nodes: edge_cases (1, `auth_or_display`), wp_login (1, placeholder `logic_or_display`), wp_thumbnails (1, placeholder `logic_or_display`).
-- Tests: 573 passing (after Stage 5 v0.4 / rules v0.7, committed by the owner on top of `3d1d798`).
+- Tests: 636 passing (after Phase 1). Whole-app harness `tools/harness/` (nikic/php-parser 5.9.0, composer.lock committed, `vendor/` ignored); reads each app at its pinned commit via `git archive` (the HMS working copy has 11 locally patched files). Whole-app outputs `output/apps/` (ignored); tables `docs/c2-apps-results.md`, `docs/php-analysis/pattern-log.md`. Phase 1 totals: HMS 33 timelines, WackoPicko 33, 0 crashes, 0 tsc errors. Review counts are dominated by `unlabelled` (no C1 labels for whole apps). Docker 29.7.2 is installed (Phase 4).
+- Earlier: 573 passing after Stage 5 v0.4 / rules v0.7 (`3d1d798` + owner commit).
 - Earlier: 568 passing after the Stage 5 close-out (`3d1d798`). Results table: `tools/results_table.py` → `docs/c2-results.md` (re-run after each commit).
 - Earlier: 564 passing after Stage 5 v0.2 (`ee21ff8`). `html5lib==1.1` pinned for the nesting check. All-mock totals (spec v0.4): 58 todo, 39 review, 120 info, **flag rate 97**, 9/27 components without C2Todo, 0 tsc errors, 2 nesting flags. Stage 1–4 outputs unchanged since `ee21ff8` (482,900 bytes compared).
 - Earlier: 537 passing after Stage 5 v0.1 (`aead7db`). Node 24.16.0 on the owner's machine; test app `output/test-app` (create-next-app scaffold, versions pinned).
@@ -114,7 +129,7 @@ label keys use `nodeId`; field naming pending Member 01's confirmation — the l
 - Stage 1 summary: list_while 35→32 ok/1 review/2 excl · list_foreach same · admin 18→15/0/3 · detail 27→24/1/2 · edge_cases 27→23/1/3.
   Summary semantics: `kept` = status ok; ok + review + excluded = total.
 - `src/main.py` keeps dict-returning aliases only so the original 50 mock tests pass; all format knowledge is in the loader.
-- Single-table `SELECT *` currently `resolved` in the list mocks — **pending Member 01**, do not change yet.
+- Single-table `SELECT *` in the list mocks: Phase 1b applies Member 01's Q1 rule (HMS ships `myhmsdb.sql`, so `appointmenttb` reads stay resolved, now with `basis: "schema-expanded"`).
 
 - Stage 5 compile check needs Node.js + `npx tsc`; the test skips with a clear message if Node is missing (report it).
 

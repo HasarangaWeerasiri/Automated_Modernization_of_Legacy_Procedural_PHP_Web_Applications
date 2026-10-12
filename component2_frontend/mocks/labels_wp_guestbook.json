@@ -1,79 +1,79 @@
 {
   "schemaVersion": "1.0",
   "labels": {
-    "f006#00139": {
+    "f006#00066": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R01",
       "reason": "output_statement"
     },
-    "f006#00148": {
+    "f006#00072": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R01",
       "reason": "output_statement"
     },
-    "f006#00156": {
+    "f006#00076": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R01",
       "reason": "output_statement"
     },
-    "f006#00159": {
+    "f006#00077": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R08",
       "reason": "display_conditional"
     },
-    "f006#00167": {
+    "f006#00079": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R05",
       "reason": "iterates_prefetched_rows"
     },
-    "f006#00180": {
+    "f006#00082": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R01",
       "reason": "output_statement"
     },
-    "f006#00181": {
+    "f006#00083": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R01",
       "reason": "output_statement"
     },
-    "f006#00189": {
+    "f006#00087": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R01",
       "reason": "output_statement"
     },
-    "f006#00190": {
+    "f006#00088": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R01",
       "reason": "output_statement"
     },
-    "f006#00202": {
+    "f006#00095": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R01",
       "reason": "output_statement"
     },
-    "f006#00213": {
+    "f006#00096": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R01",
       "reason": "output_statement"
     },
-    "f006#00214": {
+    "f006#00097": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R01",
       "reason": "output_statement"
     },
-    "f006#00224": {
+    "f006#00104": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R01",

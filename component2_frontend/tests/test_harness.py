@@ -1,11 +1,14 @@
-"""The whole-app test harness (docs/c2-roadmap.md Phase 1): tools/harness.
+"""The whole-app test harness (docs/c2-roadmap.md Phases 1 and 1b): tools/harness.
 
-Unit tests parse small PHP snippets with nikic/php-parser and check the timeline the harness
-emits: one test per row of the read table, one per enclosure kind, function and include
-recording. Then the regression check against the existing mocks, and a smoke test that runs
-every page of HMS and WackoPicko through Stages 1-5.
+The harness has two halves: an AST producer that writes Member 01's AST format (parse.php,
+ast_producer.py) and a timeline builder that reads an AST through the loader (harness.py). Unit
+tests parse small PHP snippets and check the AST and the timeline: one test per row of the read
+table, one per enclosure kind, call entries and include recording. Then the regression check
+against the mocks, and a smoke test that runs every page of HMS and WackoPicko through Stages 1-5.
+tests/test_real_ast.py compares the producer with Member 01's real AST.
 """
 
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -21,9 +24,10 @@ import compile_check  # noqa: E402
 import pattern_log  # noqa: E402
 import regress  # noqa: E402
 import run_apps  # noqa: E402
-from harness import FileHarness, parse_select  # noqa: E402
+from ast_producer import SourceFile, parse_sources, write_asts  # noqa: E402
+from harness import FileHarness, parse_schema, parse_select  # noqa: E402
 
-from src.mapping.loader import load_timeline  # noqa: E402
+from src.mapping.loader import load_ast, load_timeline  # noqa: E402
 
 pytestmark = pytest.mark.skipif(harness_app.unavailable() is not None,
                                 reason=f"harness skipped: {harness_app.unavailable()}")
@@ -31,18 +35,34 @@ clones = all((config["root"] / ".git").exists() for config in harness_app.APPS.v
 needs_clones = pytest.mark.skipif(not clones, reason="HMS or WackoPicko clone not present")
 
 
-def timelines(tmp_path, php: str, name: str = "page.php") -> dict:
+def app_of(tmp_path, files: dict, schema: dict | None = None) -> dict:
+    """{(file name, function name or None for the page): timeline} for PHP files that form one small app."""
+    sources = []
+    for index, (name, php) in enumerate(sorted(files.items()), start=1):
+        (tmp_path / name).write_bytes(php.encode("utf-8"))
+        sources.append(SourceFile(tmp_path / name, f"t{index:03d}", f"legacy-apps/tiny/{name}"))
+    asts, _ = parse_sources(sources)
+    harnesses = {Path(s.source).name: FileHarness(s.source.read_bytes(), ast, s.path, schema)
+                 for s, ast in zip(sources, asts)}
+    pages, _ = harness_app.build_timelines(harnesses, lambda path: {"generator": "c2-harness"})
+    return {(page.path, page.function): page.timeline for page in pages}
+
+
+def timelines(tmp_path, php: str, schema: dict | None = None) -> dict:
     """{function name or None for the page: timeline} for one PHP source text."""
-    source = tmp_path / name
-    source.write_bytes(php.encode("utf-8"))
-    (parsed,) = harness_app.parse_files([source])
-    harness = FileHarness(source.read_bytes(), parsed, "t001", f"legacy-apps/tiny/{name}")
-    pages, _ = harness_app.build_timelines({name: harness}, lambda path: {"generator": "c2-harness"})
-    return {page.function: page.timeline for page in pages}
+    return {function: timeline for (_, function), timeline in app_of(tmp_path, {"page.php": php}, schema).items()}
 
 
-def page(tmp_path, php: str) -> dict:
-    return timelines(tmp_path, php)[None]
+def page(tmp_path, php: str, schema: dict | None = None) -> dict:
+    return timelines(tmp_path, php, schema)[None]
+
+
+def outputs(timeline: dict) -> list[dict]:
+    return [entry for entry in timeline["sequence"] if entry["kind"] != "call"]
+
+
+def calls(timeline: dict) -> list[dict]:
+    return [entry for entry in timeline["sequence"] if entry["kind"] == "call"]
 
 
 def reads(timeline: dict) -> list[dict]:
@@ -57,6 +77,130 @@ FETCH = """<?php
 $result = mysqli_query($con, %s);
 while ($row = mysqli_fetch_array($result)) { echo $row['name']; }
 """
+USERS = {"users": ["id", "name"]}
+
+
+# ---------------------------------------------------------------- the AST producer (Member 01's format)
+
+SMALL = "<p>café</p>\n<?php if ($a) { echo 'y'; } ?>\n"
+
+
+def small_ast(tmp_path) -> tuple[dict, bytes, Path]:
+    source = tmp_path / "small.php"
+    source.write_bytes(SMALL.encode("utf-8"))
+    (path,), _ = write_asts([SourceFile(source, "t001", "apps/small.php")], tmp_path / "ast")
+    return json.loads(path.read_text(encoding="utf-8")), source.read_bytes(), path
+
+
+def test_ast_file_has_member_01s_header(tmp_path):
+    doc, source, _ = small_ast(tmp_path)
+    assert list(doc) == ["bytes", "fileId", "nodeCount", "nodes", "parseErrors", "parseOk", "path", "rootId",
+                         "schemaVersion", "sha256"]  # keys in sorted order, as in Member 01's files
+    assert {k: v for k, v in doc.items() if k != "nodes"} == {
+        "schemaVersion": "1.0", "fileId": "t001", "path": "apps/small.php",
+        "sha256": hashlib.sha256(source).hexdigest(), "bytes": len(source), "parseOk": True, "parseErrors": [],
+        "rootId": "t001#00000", "nodeCount": 6}
+
+
+def test_ast_nodes_are_numbered_in_pre_order_from_the_root_file(tmp_path):
+    doc, _, _ = small_ast(tmp_path)
+    assert [(n["id"], n["kind"], n["parent"]) for n in doc["nodes"]] == [
+        ("t001#00000", "File", None), ("t001#00001", "Stmt_InlineHTML", "t001#00000"),
+        ("t001#00002", "Stmt_If", "t001#00000"), ("t001#00003", "Expr_Variable", "t001#00002"),
+        ("t001#00004", "Stmt_Echo", "t001#00002"), ("t001#00005", "Scalar_String", "t001#00004")]
+    assert all(list(n) == ["attrs", "children", "fields", "id", "kind", "loc", "parent"] for n in doc["nodes"])
+    root, _, branch, _, echo, _ = doc["nodes"]
+    assert root["children"] == root["fields"]["stmts"] == ["t001#00001", "t001#00002"]
+    assert branch["children"] == ["t001#00003", "t001#00004"]  # children: every child, in order
+
+
+def test_ast_roles_are_fields_and_literal_values_are_attrs(tmp_path):
+    doc, _, _ = small_ast(tmp_path)
+    _, html, branch, variable, echo, string = doc["nodes"]
+    # no else: the role is still there, with null (as in Member 01's real AST); an empty list stays a list
+    assert branch["fields"] == {"cond": "t001#00003", "else": None, "elseifs": [], "stmts": ["t001#00004"]}
+    assert branch["attrs"] == {}
+    assert echo["fields"] == {"exprs": ["t001#00005"]}
+    assert (variable["fields"], variable["attrs"]) == ({}, {"name": "a"})
+    assert string["attrs"] == {"_kind": 1, "_rawValue": "'y'", "value": "y"}  # _kind 1: single-quoted
+    assert html["attrs"] == {"value": "<p>café</p>\n"}
+
+
+def test_ast_loc_is_computed_from_bytes_with_exclusive_ends(tmp_path):
+    doc, source, _ = small_ast(tmp_path)
+    root, html, branch, variable, echo, string = doc["nodes"]
+    assert root["loc"] == {"startLine": 1, "endLine": 3, "startCol": 0, "endCol": 0, "startByte": 0,
+                           "endByte": len(source)}
+    # the html ends with its newline: the exclusive end is the start of line 2. "é" is two bytes.
+    assert html["loc"] == {"startLine": 1, "endLine": 2, "startCol": 0, "endCol": 0, "startByte": 0, "endByte": 13}
+    assert variable["loc"] == {"startLine": 2, "endLine": 2, "startCol": 10, "endCol": 12, "startByte": 23,
+                               "endByte": 25}
+    for node in doc["nodes"]:
+        loc = node["loc"]
+        text = source[loc["startByte"]:loc["endByte"]]
+        assert loc["startCol"] == loc["startByte"] - (source.rfind(b"\n", 0, loc["startByte"]) + 1)
+        assert loc["startLine"] == source.count(b"\n", 0, loc["startByte"]) + 1
+        assert loc["endLine"] == source.count(b"\n", 0, loc["endByte"]) + 1
+        if "_rawValue" in node["attrs"]:
+            assert text.decode("utf-8") == node["attrs"]["_rawValue"]
+    assert source[branch["loc"]["startByte"]:branch["loc"]["endByte"]] == b"if ($a) { echo 'y'; }"
+    assert source[echo["loc"]["startByte"]:echo["loc"]["endByte"]] == b"echo 'y';"
+
+
+def test_ast_producer_is_deterministic_and_a_parse_error_is_recorded(tmp_path):
+    good, bad = tmp_path / "good.php", tmp_path / "bad.php"
+    good.write_bytes(SMALL.encode("utf-8"))
+    bad.write_bytes(b"<?php if ($a { echo 1; }")
+    files = [SourceFile(good, "t001", "good.php"), SourceFile(bad, "t002", "bad.php")]
+    first, meta = write_asts(files, tmp_path / "a")
+    second, _ = write_asts(files, tmp_path / "b")
+    assert [p.read_bytes() for p in first] == [p.read_bytes() for p in second]
+    assert meta["parser"].startswith("nikic/php-parser v5.9.0") and set(meta["syntax"]) == {"t001", "t002"}
+    broken = load_ast(first[1])
+    assert broken.parse_ok is False and broken.parse_errors and "line 1" in broken.parse_errors[0]
+    assert broken.root.kind == "File"  # a file that does not parse still gives a root
+
+
+def test_the_loader_reads_the_ast_into_internal_types(tmp_path):
+    _, source, path = small_ast(tmp_path)
+    ast = load_ast(path)
+    assert (ast.file_id, ast.path, ast.bytes, ast.parse_ok, ast.node_count, ast.root_id) == (
+        "t001", "apps/small.php", len(source), True, 6, "t001#00000")
+    assert ast.root.kind == "File" and list(ast.nodes) == [f"t001#{i:05d}" for i in range(6)]
+    branch = ast.nodes["t001#00002"]
+    assert (branch.parent, branch.children) == ("t001#00000", ("t001#00003", "t001#00004"))
+    assert branch.fields == {"cond": "t001#00003", "else": None, "elseifs": (), "stmts": ("t001#00004",)}
+    assert source[branch.loc.start_byte:branch.loc.end_byte].startswith(b"if ($a)")
+    assert (branch.loc.start_line, branch.loc.start_col, branch.loc.column) == (2, 6, 7)
+
+
+def _drop_loc_key(doc):
+    del doc["nodes"][3]["loc"]["endByte"]
+
+
+@pytest.mark.parametrize("change, message", [
+    (lambda d: d.pop("sha256"), "AST keys"),
+    (lambda d: d.update(extra=1), "AST keys"),
+    (lambda d: d.update(schemaVersion="2.0"), "schemaVersion"),
+    (lambda d: d.update(sha256="abc"), "sha256"),
+    (lambda d: d.update(nodeCount=7), "nodeCount"),
+    (lambda d: d["nodes"][2].update(id="t001#00009"), "pre-order numbering"),
+    (lambda d: d["nodes"][2].pop("attrs"), "node 2 keys"),
+    (lambda d: d["nodes"][0].update(kind="Program"), "root"),
+    (lambda d: d["nodes"][3].update(parent="t001#00000"), "parent / children"),
+    (lambda d: d["nodes"][2].update(children=["t001#00004", "t001#00003"]), "parent / children"),
+    (lambda d: d["nodes"][2]["fields"].update(cond="t001#00005"), "not one of its children"),
+    (lambda d: d["nodes"][2]["fields"].update(cond="t001#00099"), "not a node of this AST"),
+    (_drop_loc_key, "loc needs exactly"),
+    (lambda d: d["nodes"][3]["loc"].update(endByte=9999, endCol=9999), "ends after the file"),
+])
+def test_the_loader_rejects_an_ast_that_drifts_from_schema_1_0(tmp_path, change, message):
+    doc, _, _ = small_ast(tmp_path)
+    change(doc)
+    path = tmp_path / "drift.json"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    with pytest.raises(ValueError, match=message):
+        load_ast(path)
 
 
 # ---------------------------------------------------------------- reads, one test per row of the table
@@ -66,15 +210,37 @@ def test_row_of_a_single_table_select_is_a_resolved_db_field(tmp_path):
     (read,) = reads(page(tmp_path, FETCH % '"select id, name from users where id = 3"'))
     assert (read["sourceKind"], read["confidence"]) == ("db_row_field", "resolved")
     assert (read["source"]["table"], read["source"]["column"]) == ("users", "name")
+    assert "basis" not in read  # the column list is in the query itself
     assert read["source"]["fetchNodeId"].startswith("t001#") and read["source"]["queryNodeId"].startswith("t001#")
 
 
-def test_select_star_on_one_table_is_resolved_like_the_mocks(tmp_path):
+def test_select_star_is_ambiguous_without_a_schema(tmp_path):
+    """Member 01 Q1 (proposed): `SELECT *` is ambiguous by default, even on one table."""
     timeline = page(tmp_path, FETCH % '"select * from users;"')
     (read,) = reads(timeline)
-    assert (read["confidence"], read["source"]["table"], read["source"]["column"]) == ("resolved", "users", "name")
+    assert (read["sourceKind"], read["confidence"]) == ("db_row_field", "ambiguous")
+    assert (read["source"]["table"], read["source"]["column"]) == (None, None) and "basis" not in read
     (query,) = timeline["queries"].values()
     assert (query["tables"], query["columns"], query["resultVar"]) == (["users"], None, "$result")
+
+
+def test_select_star_is_resolved_from_a_schema_the_app_ships(tmp_path):
+    timeline = page(tmp_path, FETCH % '"select * from users;"', USERS)
+    (read,) = reads(timeline)
+    assert (read["confidence"], read["source"]["table"], read["source"]["column"]) == ("resolved", "users", "name")
+    assert read["basis"] == "schema-expanded"
+    (query,) = timeline["queries"].values()
+    assert query["columns"] == ["id", "name"]  # the columns come from the schema
+
+
+@pytest.mark.parametrize("sql, schema, expected", [
+    ('"select * from users"', {"users": ["id", "email"]}, ("unresolved", "unresolved")),  # not a column of it
+    ('"select * from users"', {"other": ["name"]}, ("db_row_field", "ambiguous")),  # the schema lacks the table
+    ('"select * from users u inner join b on u.id = b.id"', USERS, ("db_row_field", "ambiguous")),  # a JOIN
+])
+def test_select_star_is_expanded_only_for_one_declared_table(tmp_path, sql, schema, expected):
+    (read,) = reads(page(tmp_path, FETCH % sql, schema))
+    assert (read["sourceKind"], read["confidence"]) == expected and "basis" not in read
 
 
 def test_sql_in_a_variable_assigned_a_literal_is_literal_sql(tmp_path):
@@ -105,9 +271,10 @@ def test_a_join_is_ambiguous(tmp_path):
 @pytest.mark.parametrize("sql", ['"select * from users where id = \'$id\'"', '"select * from users where id=" . $id',
                                  "$sql"])
 def test_interpolated_or_built_sql_is_unresolved(tmp_path, sql):
-    timeline = page(tmp_path, FETCH % sql)
+    timeline = page(tmp_path, FETCH % sql, USERS)
     assert kinds(timeline) == [("$row['name']", "unresolved", "unresolved")]
-    assert [n["kind"] for n in timeline["harnessNotes"]] == ["row_read_not_traced"]
+    (note,) = timeline["harnessNotes"]
+    assert (note["kind"], note["line"], note["col"]) == ("row_read_not_traced", 3, 51)  # col: 1-based
 
 
 def test_a_column_not_in_the_select_list_is_unresolved(tmp_path):
@@ -152,6 +319,11 @@ def test_an_interpolated_string_is_one_unresolved_read_and_noted(tmp_path):
     assert kinds(timeline) == [('"<td>$name</td>"', "unresolved", "unresolved")]
     (note,) = timeline["harnessNotes"]
     assert (note["kind"], note["markup"]) == ("interpolated_string_output", True)
+
+
+def test_a_heredoc_is_noted_as_one(tmp_path):
+    timeline = page(tmp_path, "<?php echo <<<HTML\n<b>$x</b>\nHTML;\n")
+    assert [n["kind"] for n in timeline["harnessNotes"]] == ["heredoc_output"]
 
 
 def test_a_concatenated_echo_gives_one_read_per_piece(tmp_path):
@@ -215,6 +387,23 @@ def test_parse_select(sql, table, columns):
     assert (shape.table, shape.columns) == (table, columns)
 
 
+def test_parse_schema_reads_create_table_statements():
+    sql = """-- dump
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) DEFAULT 'a, b (c)',
+  price decimal(10,2) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `name` (`name`)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS logs (msg text);
+INSERT INTO `users` VALUES (1, 'x', 2.0);
+"""
+    assert parse_schema(sql) == {"users": ["id", "name", "price"], "logs": ["msg"]}
+    twice = sql + "CREATE TABLE logs (msg text, level int);"
+    assert "logs" not in parse_schema(twice)  # declared two ways: which one is live is not certain
+
+
 # ---------------------------------------------------------------- enclosures, one test per kind
 
 
@@ -223,10 +412,13 @@ def enclosures(timeline: dict) -> list[dict]:
 
 
 def test_while_enclosure(tmp_path):
-    (loop,) = enclosures(page(tmp_path, "<?php while ($row = mysqli_fetch_array($r)) { echo 'x'; }"))
+    php = "<?php while ($row = mysqli_fetch_array($r)) { echo 'x'; }"
+    (loop,) = enclosures(page(tmp_path, php))
     assert loop == {"nodeId": "t001#00001", "kind": "Stmt_While", "role": "iteration",
                     "iterExpr": "$row = mysqli_fetch_array($r)", "iterSourceKind": "db_row_field",
-                    "valueVar": "$row", "keyVar": None}
+                    "valueVar": "$row", "keyVar": None,
+                    "loc": {"startLine": 1, "endLine": 1, "startCol": 6, "endCol": len(php), "startByte": 6,
+                            "endByte": len(php)}}  # the loop's own loc (Member 01 Q15)
 
 
 def test_foreach_enclosure(tmp_path):
@@ -236,7 +428,7 @@ def test_foreach_enclosure(tmp_path):
 
 
 def test_for_enclosure_leaves_the_variables_null(tmp_path):
-    (loop,) = enclosures(page(tmp_path, "<?php for ($i = 0; $i < 3; $i++) { echo 'x'; }"))
+    (loop,) = enclosures(page(tmp_path, "<?php for ( $i = 0; $i < 3; $i++ ) { echo 'x'; }"))
     assert (loop["kind"], loop["iterExpr"], loop["valueVar"], loop["keyVar"]) == (
         "Stmt_For", "$i = 0; $i < 3; $i++", None, None)
 
@@ -255,6 +447,15 @@ def test_if_elseif_else_enclosures_carry_condexpr(tmp_path):
     assert otherwise["branch"] == "else" and "condExpr" not in otherwise
     assert then["nodeId"] == elseif["nodeId"] == otherwise["nodeId"]
     assert otherwise["condNodeId"] == then["condNodeId"] != elseif["condNodeId"]
+    assert then["loc"] == elseif["loc"] == otherwise["loc"]  # the loc of the node nodeId names: the whole if
+    assert (then["loc"]["startCol"], then["loc"]["endByte"]) == (6, len(php))
+
+
+def test_condexpr_is_the_source_of_the_cond_node(tmp_path):
+    """Member 01 Q2: parentheses that only wrap the whole condition are not part of the cond node."""
+    php = "<?php if (($a)) { echo 'x'; } while ( ( $r = f() ) ) { echo 'y'; }"
+    first, second = (entry["enclosedBy"][0] for entry in page(tmp_path, php)["sequence"])
+    assert (first["condExpr"], second["iterExpr"]) == ("$a", "$r = f()")
 
 
 def test_else_if_is_a_nested_if(tmp_path):
@@ -282,17 +483,21 @@ def test_switch_and_try_enclosures(tmp_path):
         ("try_catch", "try"), ("try_catch", "catch"), ("try_catch", "finally")]
 
 
-def test_entries_have_byte_exact_raw_ids_and_loc(tmp_path):
+def test_entries_have_byte_exact_raw_ast_ids_and_the_ast_nodes_loc(tmp_path):
     php = "<p>café</p>\r\n<?php echo $x; ?>\r\n<b><?= $y ?></b>"
+    source = php.encode("utf-8")
     first, echo, tag, short, close = page(tmp_path, php)["sequence"]
     assert (first["kind"], first["raw"]) == ("Stmt_InlineHTML", "<p>café</p>\r\n")
-    assert (echo["kind"], echo["loc"]) == ("Stmt_Echo", {"startLine": 2, "endLine": 2, "startCol": 7, "endCol": 14})
-    assert (short["kind"], short["loc"]["startCol"], short["loc"]["endCol"]) == ("Stmt_Echo", 4, 9)  # "<?= $y"
-    assert [e["id"] for e in (first, echo, tag, short, close)] == sorted(e["id"] for e in (first, echo, tag, short,
-                                                                                         close))
+    assert (echo["kind"], echo["loc"]) == ("Stmt_Echo", {"startLine": 2, "endLine": 2, "startCol": 6, "endCol": 14,
+                                                         "startByte": 20, "endByte": 28})  # "echo $x;"
+    # an echo closed by "?>" ends after the tag, as nikic's node (and so Member 01's loc) does
+    assert source[short["loc"]["startByte"]:short["loc"]["endByte"]] == b"<?= $y ?>"
+    assert (short["kind"], short["loc"]["startCol"], short["loc"]["endCol"]) == ("Stmt_Echo", 3, 12)
+    ids = [e["id"] for e in (first, echo, tag, short, close)]
+    assert ids == ["t001#00001", "t001#00002", "t001#00004", "t001#00005", "t001#00007"]  # pre-order AST ids
 
 
-# ---------------------------------------------------------------- functions and includes: recorded, not inlined
+# ---------------------------------------------------------------- calls (Member 01 Q4) and includes: not inlined
 
 FUNCTIONS = """<?php
 include 'header.php';
@@ -311,20 +516,82 @@ def test_each_printing_function_gets_its_own_timeline(tmp_path):
     assert sorted(k for k in found if k) == ["View.title", "row"]  # table() and helper() print nothing themselves
     assert found["row"]["entrypoint"] == "legacy-apps/tiny/page.php#row"
     assert found["View.title"]["sequence"][0]["raw"] == "<h1>T</h1>"
-    assert [e["kind"] for e in found[None]["sequence"]] == ["Stmt_InlineHTML", "Stmt_InlineHTML"]  # not inlined
+    assert [e["kind"] for e in outputs(found[None])] == ["Stmt_InlineHTML", "Stmt_InlineHTML"]  # not inlined
 
 
-def test_calls_are_recorded_with_whether_the_callee_prints(tmp_path):
-    calls = timelines(tmp_path, FUNCTIONS)[None]["calls"]
-    assert [(c["callee"], c["producesOutput"], c["line"]) for c in calls] == [
+def test_a_call_site_is_a_sequence_entry_in_source_order(tmp_path):
+    found = timelines(tmp_path, FUNCTIONS)
+    timeline = found[None]
+    assert [e["kind"] for e in timeline["sequence"]] == ["Stmt_InlineHTML", "call", "call", "call", "Stmt_InlineHTML"]
+    names = timeline["callNames"]
+    assert [(names[c["id"]], c["outputsInside"], c["loc"]["startLine"]) for c in calls(timeline)] == [
         ("table", True, 9), ("helper", False, 9), ("view::title", True, 9)]  # table prints through row()
-    assert all(c["nodeId"].startswith("t001#") and c["enclosedBy"] == [] for c in calls)  # strlen: not an app function
+    assert all(set(c) == {"id", "kind", "callee", "outputsInside", "enclosedBy", "loc"} for c in calls(timeline))
+    title = calls(timeline)[2]
+    assert title["callee"] == found["View.title"]["_provenance"]["functionNodeId"]  # the function's AST node
+    assert all(c["enclosedBy"] == [] for c in calls(timeline))  # strlen: PHP's own function, no entry
+    (inner,) = calls(timelines(tmp_path, FUNCTIONS)["row"]) or [None]
+    assert inner is None  # row() calls nothing
+
+
+def test_a_call_inside_a_loop_carries_the_loop(tmp_path):
+    php = "<?php function cell() { echo 'x'; } ?><tr><?php foreach ($l as $v) { cell(); } ?></tr>"
+    (call,) = calls(page(tmp_path, php))
+    assert [(e["role"], e["kind"]) for e in call["enclosedBy"]] == [("iteration", "Stmt_Foreach")]
+
+
+def test_a_call_that_cannot_be_followed_is_unknown(tmp_path):
+    php = """<?php
+function wrapper($o) { $o->draw(); }
+function loader() { include 'part.php'; }
+function quiet() { return strlen('x'); }
+echo 'x';
+$obj->render(); $fn(); Other::make(); call_user_func('a'); wrapper($obj); loader(); quiet();
+"""
+    timeline = page(tmp_path, php)
+    assert [(c["callee"] is not None, c["outputsInside"]) for c in calls(timeline)] == [
+        (False, "unknown"), (False, "unknown"), (False, "unknown"), (False, "unknown"),  # not one app function
+        (True, "unknown"), (True, "unknown"), (True, False)]  # resolved: a method call inside, an include, nothing
+
+
+def test_a_function_defined_twice_has_no_single_callee(tmp_path):
+    files = {"a.php": "<?php function options() { echo '<option>'; }",
+             "b.php": "<?php function options() { echo '<option>'; } function mixed() { }",
+             "c.php": "<?php function mixed() { echo 'x'; }",
+             "page.php": "<select><?php options(); mixed(); ?></select>"}
+    first, second = calls(app_of(tmp_path, files)[("page.php", None)])
+    assert (first["callee"], first["outputsInside"]) == (None, True)  # both definitions print
+    assert (second["callee"], second["outputsInside"]) == (None, "unknown")  # one prints, one does not
+
+
+def test_the_loader_keeps_call_entries_apart_from_the_output_nodes(tmp_path):
+    path = tmp_path / "timeline.json"
+    path.write_text(harness_app.dump_timeline(page(tmp_path, FUNCTIONS)), encoding="utf-8")
+    timeline = load_timeline(path)
+    assert [n.kind for n in timeline.sequence] == ["Stmt_InlineHTML", "Stmt_InlineHTML"]
+    assert [(c.outputs_inside, c.callee is not None, c.loc.start_line) for c in timeline.calls] == [
+        (True, True, 9), (False, True, 9), (True, True, 9)]
+
+
+@pytest.mark.parametrize("change, message", [
+    (lambda c: c.update(outputsInside="maybe"), "outputsInside"),
+    (lambda c: c.update(callee="not an id"), "callee"),
+    (lambda c: c.pop("callee"), "call keys"),
+    (lambda c: c.update(reads=[]), "call keys"),
+])
+def test_the_loader_rejects_a_malformed_call_entry(tmp_path, change, message):
+    doc = page(tmp_path, FUNCTIONS)
+    change(calls(doc)[0])
+    path = tmp_path / "timeline.json"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    with pytest.raises(ValueError, match=message):
+        load_timeline(path)
 
 
 def test_includes_are_recorded(tmp_path):
     includes = timelines(tmp_path, FUNCTIONS)[None]["includes"]
-    assert [(i["kind"], i["expr"], i["literal"], i["line"]) for i in includes] == [
-        ("include", "'header.php'", "header.php", 2), ("require_once", '"lib/" . $name', None, 3)]
+    assert [(i["kind"], i["expr"], i["literal"], i["line"], i["col"]) for i in includes] == [
+        ("include", "'header.php'", "header.php", 2, 1), ("require_once", '"lib/" . $name', None, 3, 1)]
 
 
 def test_output_the_schema_cannot_express_is_noted(tmp_path):
@@ -332,10 +599,11 @@ def test_output_the_schema_cannot_express_is_noted(tmp_path):
     assert sorted(n["kind"] for n in notes) == ["exit_with_output", "output_buffering", "output_function"]
 
 
-def test_provenance_marks_the_harness_and_its_extensions(tmp_path):
+def test_provenance_marks_the_harness_and_the_conventions(tmp_path):
     provenance = page(tmp_path, "<?php echo 'x';")["_provenance"]
     assert provenance["generator"] == "c2-harness"
-    assert "Member 01 Q4" in provenance["callsExtension"] and "Member 01 Q2" in provenance["condExprExtension"]
+    assert "Q4" in provenance["callsConvention"] and "Q2" in provenance["condExprConvention"]
+    assert "Q1" in provenance["selectStarConvention"] and "exclusive" in provenance["locConvention"]
 
 
 def test_a_file_that_prints_nothing_has_no_page_timeline(tmp_path):
@@ -364,6 +632,9 @@ switch ($x) { case 1: echo 'a'; }
     assert [n["reason"] for n in nodes if n["status"] == "abstain"] == ["switch_case_enclosure"]
     assert [n["type"] for n in nodes if n["type"] in ("List", "Item")] == ["List", "Item"]
     assert (folder / "generated" / "lib" / "c2-todo.tsx").exists()
+    stage5 = json.loads((folder / "stage5.json").read_text(encoding="utf-8"))
+    assert {(t["sourceLine"], t["sourceCol"]) for t in stage5["c2todos"] if t["reason"] == "unresolved_read"} <= {
+        (3, 67)}  # file:line:col, the column 1-based
 
 
 # ---------------------------------------------------------------- regression against the mocks (brief section 2)
@@ -381,7 +652,7 @@ def test_harness_reproduces_the_mocks_except_where_the_read_rules_differ(tmp_pat
                and d["mock"][0]["sourceKind"] == "db_row_field" for d in differences["detail"])
     # wp_view: date(...) inside h() is a function result (unresolved); the mock made it a computed read.
     (view,) = differences["wp_view"]
-    assert view["id"] == "f007#00406" and view["harness"][0]["derivedFrom"][0]["sourceKind"] == "unresolved"
+    assert view["id"] == "f007#00211" and view["harness"][0]["derivedFrom"][0]["sourceKind"] == "unresolved"
 
 
 # ---------------------------------------------------------------- whole apps (brief section 3)
@@ -420,6 +691,39 @@ def test_libraries_are_excluded_and_only_discovery_apps_are_configured(apps_outp
     assert not any(p["path"].startswith(("TCPDF/", "vendor/")) for p in indexes["hms"]["pages"])
 
 
+def test_whole_app_totals_are_those_of_phase_1(apps_output):
+    """Aligning ids, loc, calls and SELECT * with Member 01 changed no page's result (roadmap Phase 1b)."""
+    output, indexes = apps_output
+    totals = {}
+    for app, index in indexes.items():
+        rows = [apps_results_table.page_row(output / app, entry) for entry in index["pages"]]
+        totals[app] = tuple(sum(r[key] for r in rows) for key in ("nodes", "components", "abstain", "review", "todo",
+                                                                    "s5review", "info"))
+    assert totals == {"hms": (269, 59, 8, 180, 133, 397, 230), "wackopicko": (383, 58, 4, 278, 164, 276, 113)}
+
+
+def test_hms_select_star_reads_are_expanded_from_its_own_schema(apps_output):
+    output, indexes = apps_output
+    assert indexes["hms"]["schemaFiles"] == ["myhmsdb.sql"]
+    timeline = json.loads((output / "hms" / "admin-panel1.php" / "timeline.json").read_text(encoding="utf-8"))
+    expanded = [r for r in reads(timeline) if r.get("basis")]
+    assert len(expanded) == 15 and {r["basis"] for r in expanded} == {"schema-expanded"}
+    assert {r["source"]["table"] for r in expanded} == {"appointmenttb", "contact"}
+    assert not [r for r in reads(timeline) if r["confidence"] == "ambiguous"]
+
+
+def test_call_entries_name_functions_of_the_app(apps_output):
+    output, indexes = apps_output
+    index = indexes["wackopicko"]
+    timeline = json.loads((output / "wackopicko" / "website__guestbook.php" / "timeline.json").read_text(
+        encoding="utf-8"))
+    by_name = {timeline["callNames"][c["id"]]: c for c in calls(timeline)}
+    header = by_name["our_header"]
+    assert header["outputsInside"] is True
+    assert index["functions"][header["callee"]] == {"name": "our_header", "path": "website/include/html_functions.php"}
+    assert sum(p["calls"] for p in index["pages"]) == 231
+
+
 @needs_clones
 def test_two_harness_runs_give_byte_identical_timelines():
     first, second = harness_app.app_timelines("wackopicko"), harness_app.app_timelines("wackopicko")
@@ -436,6 +740,7 @@ def test_reports_are_deterministic_and_only_read_the_outputs(apps_output, tmp_pa
     assert "| **hms total** |" in table and "| **wackopicko total** |" in table and "not from Member 01" in table
     log = pattern_log.render(output, tmp_path / "a.md")
     assert "Page output inside the list's container, outside the loop" in log and "§8 mapping" in log
+    assert "`hms/admin-panel1.php:286:23`" in log  # file:line:col, the column 1-based
 
 
 def test_batch_compile_check_attributes_a_planted_error_to_its_page(apps_output, tmp_path):

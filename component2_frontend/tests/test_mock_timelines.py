@@ -197,10 +197,14 @@ def canonical(timeline, labels):
     def c(node_id):
         return ids.setdefault(node_id, f"#{len(ids)}")
 
+    def loc(o):
+        """Lines and columns only: the rewritten loop header is longer, so every byte offset after it differs."""
+        return {k: v for k, v in o["loc"].items() if not k.endswith("Byte")}
+
     def enclosure(o):
         if o["role"] == "iteration":
-            return {**o, "nodeId": c(o["nodeId"]), "kind": "<loop>", "iterExpr": "<loop header>"}
-        return {**o, "nodeId": c(o["nodeId"]), "condNodeId": c(o["condNodeId"])}
+            return {**o, "nodeId": c(o["nodeId"]), "kind": "<loop>", "iterExpr": "<loop header>", "loc": loc(o)}
+        return {**o, "nodeId": c(o["nodeId"]), "condNodeId": c(o["condNodeId"]), "loc": loc(o)}
 
     def read(r):
         r = copy.deepcopy(r)
@@ -212,7 +216,7 @@ def canonical(timeline, labels):
 
     seq = []
     for e in timeline["sequence"]:
-        entry = {**e, "id": c(e["id"]), "enclosedBy": [enclosure(o) for o in e["enclosedBy"]]}
+        entry = {**e, "id": c(e["id"]), "enclosedBy": [enclosure(o) for o in e["enclosedBy"]], "loc": loc(e)}
         if "reads" in e:
             entry["reads"] = [read(r) for r in e["reads"]]
         seq.append(entry)

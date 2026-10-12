@@ -1,5 +1,6 @@
-"""condExpr on branch enclosures (agent extension, pending Member 01 Q2; generation-spec.md section 6),
-and the typed contract schema Stage 5 reads (loader.SchemaType)."""
+"""condExpr on branch enclosures (Member 01 Q2, answered 12 Oct 2026: the exact source of the `cond` node;
+generation-spec.md section 6), and the typed contract schema Stage 5 reads (loader.SchemaType).
+tests/test_loc.py checks each condExpr against its AST cond node."""
 
 import json
 import re
@@ -19,7 +20,7 @@ def test_then_and_elseif_carry_condexpr_and_else_does_not(name):
     doc = load_timeline_json(MOCKS / f"timeline_{name}.json")
     for enc in branches(doc):
         assert ("condExpr" in enc) == (enc["branch"] != "else"), enc
-    assert "Member 01 Q2" in doc["_provenance"]["condExprExtension"]
+    assert "Q2" in doc["_provenance"]["condExprConvention"]
 
 
 @needs_clones

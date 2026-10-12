@@ -155,6 +155,8 @@ def _read_dict(read: Read) -> dict:
     }
     if read.derived_from:
         d["derivedFrom"] = [_read_dict(r) for r in read.derived_from]
+    if read.basis is not None:
+        d["basis"] = read.basis
     return d
 
 

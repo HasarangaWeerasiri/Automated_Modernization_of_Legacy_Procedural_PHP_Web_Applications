@@ -2,14 +2,21 @@
 
 Every Stmt_InlineHTML `raw` is the exact T_INLINE_HTML token text produced by
 PHP's own lexer (token_get_all, which nikic/PHP-Parser is built on), so it is
-byte-exact against the source it was lexed from. Node ids are
-"<fileId>#<token index>", so they are stable as long as the source is.
+byte-exact against the source it was lexed from.
+
+Node ids and loc follow Member 01's conventions (CONTEXT.md section 3, answers of
+12 Oct 2026): every id is the pre-order id of the node in the file's AST, and every
+loc is that AST node's loc. The generator still finds the statements in the token
+stream; each one is then matched to its AST node by kind and start byte, and a
+statement with no such node stops the run. The AST comes from the harness's AST
+producer (tools/harness), which writes Member 01's format.
 
 Usage, from component2_frontend/:
     venv/Scripts/python.exe tools/gen_timelines.py
 
-Needs PHP (PHP_BIN env var, `php` on PATH, or XAMPP at C:/xampp/php/php.exe)
-and the HMS clone at legacy-apps/hms checked out at UPSTREAM_COMMIT.
+Needs PHP (PHP_BIN env var, `php` on PATH, or XAMPP at C:/xampp/php/php.exe),
+tools/harness/vendor (`composer install` in tools/harness) and the HMS clone at
+legacy-apps/hms checked out at UPSTREAM_COMMIT.
 """
 
 import base64
@@ -17,9 +24,15 @@ import json
 import os
 import shutil
 import subprocess
+import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(Path(__file__).resolve().parent / "harness"))
+from ast_producer import SourceFile, parse_sources  # noqa: E402
+from harness import SCHEMA_BASIS, loc_dict, parse_schema, parse_select  # noqa: E402
+
 HMS = ROOT / "legacy-apps" / "hms"
 WACKOPICKO = ROOT / "legacy-apps" / "wackopicko"
 MOCKS = ROOT / "mocks"
@@ -40,14 +53,19 @@ LOOP_TOKENS = {"T_WHILE": "Stmt_While", "T_FOREACH": "Stmt_Foreach", "T_FOR": "S
 LITERALS = {"T_CONSTANT_ENCAPSED_STRING", "T_LNUMBER", "T_DNUMBER"}
 CONFIDENCE_ORDER = ["resolved", "ambiguous", "unresolved"]
 
-LOC_NOTE = ("Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry "
-            "carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, "
-            "computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the "
-            "statement's last byte (an echo's ';' is included; a print's is not).")
-COND_EXPR_NOTE = ("Agent extension, pending Member 01 Q2 (boundary-rules.md section 9): every then/elseif branch "
-                  "enclosure carries condExpr, the byte-exact PHP source of its if/elseif condition from PHP's "
-                  "lexer, without the outer parentheses and the whitespace just inside them. else branches have "
-                  "none: their meaning comes from the chain.")
+LOC_NOTE = ("Member 01's convention (Q13-Q15, answered 12 Oct 2026): every sequence entry, loop and branch "
+            "enclosure carries loc {startLine, endLine, startCol, endCol, startByte, endByte}, the loc of its AST "
+            "node (for an enclosure: the node named by nodeId). Lines are 1-based; columns and bytes are 0-based; "
+            "every end is exclusive. An echo closed by '?>' ends after that tag, as its AST node does.")
+COND_EXPR_NOTE = ("Member 01's convention (Q2, answered 12 Oct 2026): every then/elseif branch enclosure carries "
+                  "condExpr, the exact source of its if/elseif `cond` node (no outer parentheses), and condNodeId "
+                  "is that node's id. else branches have no condExpr: their meaning comes from the chain.")
+IDS_NOTE = ("Member 01's convention (answered 12 Oct 2026): node ids are the pre-order ids of the file's AST "
+            "(<fileId>#00000 = root File). The AST is produced by the C2 test harness in Member 01's format ({ast}); "
+            "it is not Member 01's own output.")
+SELECT_STAR_NOTE = ("Member 01 Q1 (proposed): a single-table SELECT * is resolved only because the app ships a "
+                    "schema that declares the table ({schema}); those reads carry basis \"schema-expanded\".")
+OUTPUT_KINDS = ("Stmt_Echo", "Stmt_InlineHTML", "Expr_Print")
 
 # If-condition source text per node id, filled during generation (tests read it).
 CONDITIONS: dict[str, str] = {}
@@ -71,6 +89,18 @@ def upstream_blob(name: str, clone: Path = HMS, commit: str = UPSTREAM_COMMIT) -
     if head != commit:
         raise RuntimeError(f"legacy-apps/{clone.name} is at {head}, expected {commit}")
     return subprocess.run(["git", "-C", str(clone), "show", f"HEAD:{name}"], capture_output=True, check=True).stdout
+
+
+def app_schema(clone: Path = HMS, commit: str = UPSTREAM_COMMIT) -> tuple[dict, list[str]]:
+    """({table: [columns]}, schema files) from the .sql files the app ships at its pinned commit."""
+    names = subprocess.run(["git", "-C", str(clone), "ls-tree", "-r", "--name-only", commit], capture_output=True,
+                           text=True, check=True).stdout.splitlines()
+    tables, files = {}, []
+    for name in sorted(n for n in names if n.lower().endswith(".sql")):
+        found = parse_schema(upstream_blob(name, clone, commit).decode("utf-8", errors="replace"))
+        files += [name] if found else []
+        tables |= found
+    return tables, files
 
 
 def lex(src: bytes, php: str) -> list[tuple[str, bytes, int]]:
@@ -315,6 +345,96 @@ class Source:
         raise ValueError(f"no assignment reaching SQL argument {arg} at line {query['line']}")
 
 
+class AstIds:
+    """Token-based ids -> Member 01's AST node ids, for one file.
+
+    A statement found in the token stream is matched to the AST node of the right kind that starts at
+    the same byte. Nothing is matched by position in a list or by guess: no node there is an error.
+    """
+
+    GROUPS = {"Stmt_If": "if", "Expr_FuncCall": "call", "Stmt_While": "loop", "Stmt_Foreach": "loop",
+              "Stmt_For": "loop"} | {kind: "output" for kind in OUTPUT_KINDS}
+
+    def __init__(self, src, ast):
+        self.src, self.ast, self.map = src, ast, {}
+        self.at = {}
+        for node in ast.nodes.values():  # pre-order: the outermost node at a byte comes first
+            if node.kind in self.GROUPS:
+                self.at.setdefault((node.loc.start_byte, self.GROUPS[node.kind]), node)
+        for out in src.outputs:
+            self.add(src.nid(out["tok"]), self.node(out["tok"], "output", out["kind"]))
+        for loop_id, loop in src.loops.items():
+            self.add(loop_id, self.node(int(loop_id.split("#")[1]), "loop", loop["kind"]))
+        for call_id, call in src.calls.items():
+            self.add(call_id, self.node(call["tok"], "call", "Expr_FuncCall"))
+        for if_id, info in src.ifs.items():
+            node = self.node(int(if_id.split("#")[1]), "if", "Stmt_If")
+            self.add(if_id, node)
+            self.add(info["condNodeId"], ast.nodes[node.fields["cond"]])
+            assert src.source[slice(*self.span(node.fields["cond"]))].decode("utf-8") == info["cond"], \
+                f"{if_id}: condExpr {info['cond']!r} is not the source of the AST cond node"
+        for out in src.outputs:  # elseif conditions: the Stmt_ElseIf of that if which starts last before them
+            for frame in out["frames"]:
+                if frame["kind"] == "branch" and frame["branch"] == "elseif" and frame["condNodeId"] not in self.map:
+                    offset = src.offsets[int(frame["condNodeId"].split("#")[1])]
+                    root = ast.nodes[self.map[frame["id"]]]
+                    arms = [ast.nodes[e] for e in root.fields["elseifs"] if ast.nodes[e].loc.start_byte < offset]
+                    cond = ast.nodes[arms[-1].fields["cond"]]
+                    assert src.source[cond.loc.start_byte:cond.loc.end_byte].decode("utf-8") == frame["cond"]
+                    self.add(frame["condNodeId"], cond)
+
+    def span(self, node_id):
+        loc = self.ast.nodes[node_id].loc
+        return loc.start_byte, loc.end_byte
+
+    def node(self, token, group, kind):
+        node = self.at.get((self.src.offsets[token], group))
+        if node is None or node.kind != kind:
+            raise ValueError(f"{self.ast.path}: no {kind} AST node starts at token {token} "
+                             f"(line {self.src.t[token][2]})")
+        return node
+
+    def add(self, old, node):
+        if self.map.setdefault(old, node.id) != node.id:
+            raise ValueError(f"{self.ast.path}: token id {old} names two AST nodes "
+                             f"({self.map[old]} and {node.id})")
+
+    def loc(self, new_id):
+        return loc_dict(self.ast.nodes[new_id].loc)
+
+
+def to_ast_ids(timeline, labels, ids):
+    """Rewrite a generated timeline and its labels from token ids to AST ids, and take every loc from the AST."""
+    new = ids.map.__getitem__
+
+    def read(r):
+        if r["source"] is not None:
+            r["source"]["fetchNodeId"], r["source"]["queryNodeId"] = new(r["source"]["fetchNodeId"]), \
+                new(r["source"]["queryNodeId"])
+        for inner in r.get("derivedFrom", []):
+            read(inner)
+
+    seen = {}
+    for entry in timeline["sequence"]:
+        entry["id"] = new(entry["id"])
+        entry["loc"] = ids.loc(entry["id"])
+        for r in entry.get("reads", []):
+            read(r)
+        enclosed = []
+        for enclosure in entry["enclosedBy"]:
+            key = (enclosure["nodeId"], enclosure.get("branch"), enclosure.get("condNodeId"))
+            if key not in seen:  # a loop object is shared by every entry inside it; rewrite it once
+                enclosure = dict(enclosure, nodeId=new(enclosure["nodeId"]))
+                if "condNodeId" in enclosure:
+                    enclosure["condNodeId"] = new(enclosure["condNodeId"])
+                enclosure["loc"] = ids.loc(enclosure["nodeId"])
+                seen[key] = enclosure
+            enclosed.append(seen[key])
+        entry["enclosedBy"] = enclosed
+    timeline["queries"] = dict(sorted((new(q), value) for q, value in timeline["queries"].items()))
+    labels["labels"] = dict(sorted((new(node_id), value) for node_id, value in labels["labels"].items()))
+
+
 def loop_object(src, loop_id):
     lp = src.loops[loop_id]
     lo, hi = lp["cond"]
@@ -381,9 +501,10 @@ def parse_reads(src, lo, hi):
     return reads
 
 
-def build(spec, php, lexer_note):
+def build(spec, php, lexer_note, ast, ast_note):
     src_bytes = spec["src"]
     src = Source(lex(src_bytes, php), spec["file_id"])
+    assert src.source == src_bytes and ast.bytes == len(src_bytes), "tokens, AST and source must be the same bytes"
     lo, hi = spec["lines"]
     selected = [o for o in src.outputs if lo <= o["line"] <= hi and o["function"] == spec.get("function")]
     query_cfg = spec["queries"]
@@ -392,7 +513,7 @@ def build(spec, php, lexer_note):
     for lid in src.loops:
         loop_objs[lid], loop_fetch[lid] = loop_object(src, lid)
 
-    queries, labels = {}, {}
+    queries, labels, schema_files = {}, {}, set()
 
     def db_source(fetch, path):
         query = src.query_of_fetch(fetch)
@@ -404,11 +525,21 @@ def build(spec, php, lexer_note):
         labels[qid] = label("data_access", "SQL-EXEC", "sql_execution")
         if cfg["ambiguous"]:
             return "ambiguous", {"fetchNodeId": src.nid(fetch["tok"]), "queryNodeId": qid,
-                                 "table": None, "column": None}
+                                 "table": None, "column": None}, None
         column = path[0]
         assert column in cfg["columns"], f"{column} not selected by query at line {query['line']}"
+        basis = None
+        sql = queries[qid]["sql"]
+        shape = parse_select(sql[1:-1]) if sql[:1] in "'\"" else None
+        if shape is not None and shape.table is not None and shape.columns is None:
+            # SELECT * on one table (Member 01 Q1): resolved only because the app ships that table's schema.
+            schema, files = spec["schema"]
+            assert schema.get(shape.table) == cfg["columns"] and cfg["tables"] == [shape.table], \
+                f"SELECT * at line {query['line']}: the configured columns are not the shipped schema's"
+            basis = SCHEMA_BASIS
+            schema_files.update(files)
         return "resolved", {"fetchNodeId": src.nid(fetch["tok"]), "queryNodeId": qid,
-                            "table": cfg["tables"][0], "column": column}
+                            "table": cfg["tables"][0], "column": column}, basis
 
     def resolve(r, out):
         if r["form"] == "literal":
@@ -428,8 +559,9 @@ def build(spec, php, lexer_note):
                      if f["kind"] == "loop" and loop_objs[f["id"]]["valueVar"] == var), None)
         fetch = loop_fetch[loop["id"]] if loop else src.latest_call(out["tok"], FETCH_FNS, var)
         if fetch:
-            confidence, source = db_source(fetch, r["path"])
-            return base | {"sourceKind": "db_row_field", "confidence": confidence, "source": source}
+            confidence, source, basis = db_source(fetch, r["path"])
+            found = base | {"sourceKind": "db_row_field", "confidence": confidence, "source": source}
+            return found | {"basis": basis} if basis else found
         kind = SUPERGLOBALS.get(var) or spec["var_kinds"].get(var) or spec.get("unknown_vars")
         if kind is None:
             raise ValueError(f"{spec['entrypoint']}: unresolved read {r['expr']} at line {out['line']}")
@@ -465,21 +597,29 @@ def build(spec, php, lexer_note):
         labels[entry["id"]] = label("presentation", "OUTPUT", "output_statement")
         sequence.append(entry)
 
-    provenance = dict(spec["provenance"])
-    provenance["notes"] = [n.format(query=", ".join(sorted(queries))) for n in provenance["notes"]]
     timeline = {
         "entrypoint": spec["entrypoint"],
         "schemaVersion": SCHEMA_VERSION,
         "sequence": sequence,
-        "queries": dict(sorted(queries.items())),
-        "_provenance": provenance | {
-            "linesCovered": [selected[0]["line"], selected[-1]["end_line"]],
-            "lexer": lexer_note,
-            "locExtension": LOC_NOTE,
-            "condExprExtension": COND_EXPR_NOTE,
-        },
+        "queries": queries,
     }
-    return timeline, {"schemaVersion": SCHEMA_VERSION, "labels": dict(sorted(labels.items()))}
+    labels = {"schemaVersion": SCHEMA_VERSION, "labels": labels}
+    ids = AstIds(src, ast)
+    to_ast_ids(timeline, labels, ids)
+    for old in [key for key in CONDITIONS if key.startswith(spec["file_id"] + "#") and key in ids.map]:
+        CONDITIONS[ids.map[old]] = CONDITIONS.pop(old)
+    provenance = dict(spec["provenance"])
+    provenance["notes"] = [n.format(query=", ".join(timeline["queries"])) for n in provenance["notes"]]
+    timeline["_provenance"] = provenance | {
+        "linesCovered": [selected[0]["line"], selected[-1]["end_line"]],
+        "lexer": lexer_note,
+        "idConvention": IDS_NOTE.format(ast=ast_note),
+        "locConvention": LOC_NOTE,
+        "condExprConvention": COND_EXPR_NOTE,
+    }
+    if schema_files:
+        timeline["_provenance"]["selectStarConvention"] = SELECT_STAR_NOTE.format(schema=", ".join(sorted(schema_files)))
+    return timeline, labels
 
 
 # Placeholder rule ids in the backend member's "R01" format, until Component 1 publishes its own.
@@ -594,10 +734,11 @@ def specs():
     list_while_src = upstream_blob("admin-panel1.php")
     assert list_while_src.count(WHILE_HDR) == 5
     list_queries = {458: {"tables": ["appointmenttb"], "columns": APPOINTMENT_COLUMNS, "ambiguous": False}}
+    hms_schema = app_schema()  # the schema HMS ships (myhmsdb.sql): what a SELECT * may be expanded from
     return {
         "list_while": {
             "file_id": "f001", "entrypoint": "legacy-apps/hms/admin-panel1.php", "src": list_while_src,
-            "lines": (414, 562), "queries": list_queries, "var_kinds": {},
+            "lines": (414, 562), "queries": list_queries, "var_kinds": {}, "schema": hms_schema,
             "provenance": {
                 "source": "legacy-apps/hms/admin-panel1.php", "upstream": UPSTREAM,
                 "scenario": "list page: appointment table rendered by a Stmt_While loop",
@@ -615,7 +756,7 @@ def specs():
             "entrypoint": "hand-written: list_foreach.php (legacy-apps/hms/admin-panel1.php with every while loop "
                           "rewritten as foreach)",
             "src": list_while_src.replace(WHILE_HDR, FOREACH_HDR),
-            "lines": (414, 562), "queries": list_queries, "var_kinds": {},
+            "lines": (414, 562), "queries": list_queries, "var_kinds": {}, "schema": hms_schema,
             "provenance": {
                 "source": "hand-written", "derivedFrom": "legacy-apps/hms/admin-panel1.php", "upstream": UPSTREAM,
                 "scenario": "list page: same page as timeline_list_while.json, loop written as Stmt_Foreach",
@@ -624,7 +765,7 @@ def specs():
                                          "line, so line numbers are unchanged"},
                 "notes": [
                     "The only source change is the loop header. Stmt_InlineHTML raw values are therefore "
-                    "byte-identical to timeline_list_while.json; ids differ because the file id and token "
+                    "byte-identical to timeline_list_while.json; ids differ because the file id and the AST "
                     "ordinals differ.",
                     "Must infer the same component tree as timeline_list_while.json.",
                 ]},
@@ -754,6 +895,21 @@ def wackopicko_specs():
     }
 
 
+def spec_asts(all_specs: dict) -> tuple[dict, str]:
+    """{file id: AST} for the sources of the specs (two specs may share a file), and how the ASTs were made."""
+    sources = {}
+    for spec in all_specs.values():
+        assert sources.setdefault(spec["file_id"], spec)["src"] == spec["src"], "one file id, two sources"
+    with tempfile.TemporaryDirectory() as work:
+        files = []
+        for file_id, spec in sorted(sources.items()):
+            path = Path(work) / f"{file_id}.php"
+            path.write_bytes(spec["src"])
+            files.append(SourceFile(path, file_id, spec["entrypoint"]))
+        asts, meta = parse_sources(files)
+    return {ast.file_id: ast for ast in asts}, f"tools/harness/parse.php, {meta['parser']}"
+
+
 def generate_all() -> dict[str, dict]:
     """Return {filename: document} for every timeline and labels file.
 
@@ -766,8 +922,9 @@ def generate_all() -> dict[str, dict]:
     CONDITIONS.clear()
     docs = {}
     all_specs = specs() | (wackopicko_specs() if (WACKOPICKO / ".git").exists() else {})
+    asts, ast_note = spec_asts(all_specs)
     for name, spec in all_specs.items():
-        timeline, labels = build(spec, php, lexer_note)
+        timeline, labels = build(spec, php, lexer_note, asts[spec["file_id"]], ast_note)
         docs[f"timeline_{name}.json"] = timeline
         docs[f"labels_{name}.json"] = labels
     return docs

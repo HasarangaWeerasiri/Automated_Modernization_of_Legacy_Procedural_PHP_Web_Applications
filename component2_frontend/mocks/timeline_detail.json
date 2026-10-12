@@ -3,41 +3,53 @@
   "schemaVersion": "1.0",
   "sequence": [
     {
-      "id": "f004#01075",
+      "id": "f004#00700",
       "kind": "Stmt_InlineHTML",
       "raw": "                    </select>\r\n                  </div><br/><br/> \r\n\r\n\r\n                        <script>\r\n              document.getElementById('doctor').onchange = function updateFees(e) {\r\n                var selection = document.querySelector(`[value=${this.value}]`).getAttribute('data-value');\r\n                document.getElementById('docFees').value = selection;\r\n              };\r\n            </script>\r\n\r\n                  \r\n                  \r\n\r\n                  \r\n                        <!-- <div class=\"col-md-4\"><label for=\"doctor\">Doctors:</label></div>\r\n                                <div class=\"col-md-8\">\r\n                                    <select name=\"doctor\" class=\"form-control\" id=\"doctor1\" required=\"required\">\r\n                                      <option value=\"\" disabled selected>Select Doctor</option>\r\n                                      \r\n                                    </select>\r\n                                </div>\r\n                                <br><br> -->\r\n\r\n                                <!-- <script>\r\n                                  document.getElementById(\"spec\").onchange = function updateSpecs(event) {\r\n                                      var selected = document.querySelector(`[data-value=${this.value}]`).getAttribute(\"value\");\r\n                                      console.log(selected);\r\n\r\n                                      var options = document.getElementById(\"doctor1\").querySelectorAll(\"option\");\r\n\r\n                                      for (i = 0; i < options.length; i++) {\r\n                                        var currentOption = options[i];\r\n                                        var category = options[i].getAttribute(\"data-spec\");\r\n\r\n                                        if (category == selected) {\r\n                                          currentOption.style.display = \"block\";\r\n                                        } else {\r\n                                          currentOption.style.display = \"none\";\r\n                                        }\r\n                                      }\r\n                                    }\r\n                                </script> -->\r\n\r\n                        \r\n                    <!-- <script>\r\n                    let data = \r\n                \r\n              document.getElementById('spec').onchange = function updateSpecs(e) {\r\n                let values = data.filter(obj => obj.spec == this.value).map(o => o.username);   \r\n                document.getElementById('doctor1').value = document.querySelector(`[value=${values}]`).getAttribute('data-value');\r\n              };\r\n            </script> -->\r\n\r\n\r\n                  \r\n                  <div class=\"col-md-4\"><label for=\"consultancyfees\">\r\n                                Consultancy Fees\r\n                              </label></div>\r\n                              <div class=\"col-md-8\">\r\n                              <!-- <div id=\"docFees\">Select a doctor</div> -->\r\n                              <input class=\"form-control\" type=\"text\" name=\"docFees\" id=\"docFees\" readonly=\"readonly\"/>\r\n                  </div><br><br>\r\n\r\n                  <div class=\"col-md-4\"><label>Appointment Date</label></div>\r\n                  <div class=\"col-md-8\"><input type=\"date\" class=\"form-control datepicker\" name=\"appdate\"></div><br><br>\r\n\r\n                  <div class=\"col-md-4\"><label>Appointment Time</label></div>\r\n                  <div class=\"col-md-8\">\r\n                    <!-- <input type=\"time\" class=\"form-control\" name=\"apptime\"> -->\r\n                    <select name=\"apptime\" class=\"form-control\" id=\"apptime\" required=\"required\">\r\n                      <option value=\"\" disabled selected>Select Time</option>\r\n                      <option value=\"08:00:00\">8:00 AM</option>\r\n                      <option value=\"10:00:00\">10:00 AM</option>\r\n                      <option value=\"12:00:00\">12:00 PM</option>\r\n                      <option value=\"14:00:00\">2:00 PM</option>\r\n                      <option value=\"16:00:00\">4:00 PM</option>\r\n                    </select>\r\n\r\n                  </div><br><br>\r\n\r\n                  <div class=\"col-md-4\">\r\n                    <input type=\"submit\" name=\"app-submit\" value=\"Create new entry\" class=\"btn btn-primary\" id=\"inputbtn\">\r\n                  </div>\r\n                  <div class=\"col-md-8\"></div>                  \r\n                </div>\r\n              </form>\r\n            </div>\r\n          </div>\r\n        </div><br>\r\n      </div>\r\n      \r\n<div class=\"tab-pane fade\" id=\"app-hist\" role=\"tabpanel\" aria-labelledby=\"list-pat-list\">\r\n        \r\n              <table class=\"table table-hover\">\r\n                <thead>\r\n                  <tr>\r\n                    \r\n                    <th scope=\"col\">Doctor Name</th>\r\n                    <th scope=\"col\">Consultancy Fees</th>\r\n                    <th scope=\"col\">Appointment Date</th>\r\n                    <th scope=\"col\">Appointment Time</th>\r\n                    <th scope=\"col\">Current Status</th>\r\n                    <th scope=\"col\">Action</th>\r\n                  </tr>\r\n                </thead>\r\n                <tbody>\r\n                  ",
       "enclosedBy": [],
       "loc": {
         "startLine": 360,
         "endLine": 467,
-        "startCol": 1,
-        "endCol": 18
+        "startCol": 0,
+        "endCol": 18,
+        "startByte": 14209,
+        "endByte": 19364
       }
     },
     {
-      "id": "f004#01145",
+      "id": "f004#00742",
       "kind": "Stmt_InlineHTML",
       "raw": "                      <tr>\r\n                        <td>",
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         }
       ],
       "loc": {
         "startLine": 481,
         "endLine": 482,
-        "startCol": 1,
-        "endCol": 28
+        "startCol": 0,
+        "endCol": 28,
+        "startByte": 20001,
+        "endByte": 20057
       }
     },
     {
-      "id": "f004#01147",
+      "id": "f004#00743",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -49,8 +61,8 @@
           "sourceKind": "db_row_field",
           "confidence": "resolved",
           "source": {
-            "fetchNodeId": "f004#01129",
-            "queryNodeId": "f004#01114",
+            "fetchNodeId": "f004#00737",
+            "queryNodeId": "f004#00728",
             "table": "appointmenttb",
             "column": "doctor"
           }
@@ -58,46 +70,66 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         }
       ],
       "loc": {
         "startLine": 482,
         "endLine": 482,
-        "startCol": 35,
-        "endCol": 54
+        "startCol": 34,
+        "endCol": 54,
+        "startByte": 20063,
+        "endByte": 20083
       }
     },
     {
-      "id": "f004#01155",
+      "id": "f004#00747",
       "kind": "Stmt_InlineHTML",
       "raw": "</td>\r\n                        <td>",
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         }
       ],
       "loc": {
         "startLine": 482,
         "endLine": 483,
-        "startCol": 57,
-        "endCol": 28
+        "startCol": 56,
+        "endCol": 28,
+        "startByte": 20085,
+        "endByte": 20120
       }
     },
     {
-      "id": "f004#01157",
+      "id": "f004#00748",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -109,8 +141,8 @@
           "sourceKind": "db_row_field",
           "confidence": "resolved",
           "source": {
-            "fetchNodeId": "f004#01129",
-            "queryNodeId": "f004#01114",
+            "fetchNodeId": "f004#00737",
+            "queryNodeId": "f004#00728",
             "table": "appointmenttb",
             "column": "docFees"
           }
@@ -118,46 +150,66 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         }
       ],
       "loc": {
         "startLine": 483,
         "endLine": 483,
-        "startCol": 35,
-        "endCol": 55
+        "startCol": 34,
+        "endCol": 55,
+        "startByte": 20126,
+        "endByte": 20147
       }
     },
     {
-      "id": "f004#01165",
+      "id": "f004#00752",
       "kind": "Stmt_InlineHTML",
       "raw": "</td>\r\n                        <td>",
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         }
       ],
       "loc": {
         "startLine": 483,
         "endLine": 484,
-        "startCol": 58,
-        "endCol": 28
+        "startCol": 57,
+        "endCol": 28,
+        "startByte": 20149,
+        "endByte": 20184
       }
     },
     {
-      "id": "f004#01167",
+      "id": "f004#00753",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -169,8 +221,8 @@
           "sourceKind": "db_row_field",
           "confidence": "resolved",
           "source": {
-            "fetchNodeId": "f004#01129",
-            "queryNodeId": "f004#01114",
+            "fetchNodeId": "f004#00737",
+            "queryNodeId": "f004#00728",
             "table": "appointmenttb",
             "column": "appdate"
           }
@@ -178,46 +230,66 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         }
       ],
       "loc": {
         "startLine": 484,
         "endLine": 484,
-        "startCol": 35,
-        "endCol": 55
+        "startCol": 34,
+        "endCol": 55,
+        "startByte": 20190,
+        "endByte": 20211
       }
     },
     {
-      "id": "f004#01175",
+      "id": "f004#00757",
       "kind": "Stmt_InlineHTML",
       "raw": "</td>\r\n                        <td>",
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         }
       ],
       "loc": {
         "startLine": 484,
         "endLine": 485,
-        "startCol": 58,
-        "endCol": 28
+        "startCol": 57,
+        "endCol": 28,
+        "startByte": 20213,
+        "endByte": 20248
       }
     },
     {
-      "id": "f004#01177",
+      "id": "f004#00758",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -229,8 +301,8 @@
           "sourceKind": "db_row_field",
           "confidence": "resolved",
           "source": {
-            "fetchNodeId": "f004#01129",
-            "queryNodeId": "f004#01114",
+            "fetchNodeId": "f004#00737",
+            "queryNodeId": "f004#00728",
             "table": "appointmenttb",
             "column": "apptime"
           }
@@ -238,46 +310,66 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         }
       ],
       "loc": {
         "startLine": 485,
         "endLine": 485,
-        "startCol": 35,
-        "endCol": 55
+        "startCol": 34,
+        "endCol": 55,
+        "startByte": 20254,
+        "endByte": 20275
       }
     },
     {
-      "id": "f004#01185",
+      "id": "f004#00762",
       "kind": "Stmt_InlineHTML",
       "raw": "</td>\r\n                        \r\n                          <td>\r\n                    ",
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         }
       ],
       "loc": {
         "startLine": 485,
         "endLine": 488,
-        "startCol": 58,
-        "endCol": 20
+        "startCol": 57,
+        "endCol": 20,
+        "startByte": 20277,
+        "endByte": 20362
       }
     },
     {
-      "id": "f004#01212",
+      "id": "f004#00775",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -291,32 +383,50 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         },
         {
-          "nodeId": "f004#01187",
+          "nodeId": "f004#00763",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f004#01189",
-          "condExpr": "($row['userStatus']==1) && ($row['doctorStatus']==1)"
+          "condNodeId": "f004#00764",
+          "condExpr": "($row['userStatus']==1) && ($row['doctorStatus']==1)",
+          "loc": {
+            "startLine": 488,
+            "endLine": 491,
+            "startCol": 26,
+            "endCol": 21,
+            "startByte": 20368,
+            "endByte": 20510
+          }
         }
       ],
       "loc": {
         "startLine": 490,
         "endLine": 490,
-        "startCol": 23,
-        "endCol": 36
+        "startCol": 22,
+        "endCol": 36,
+        "startByte": 20473,
+        "endByte": 20487
       }
     },
     {
-      "id": "f004#01244",
+      "id": "f004#00789",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -330,32 +440,50 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         },
         {
-          "nodeId": "f004#01219",
+          "nodeId": "f004#00777",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f004#01221",
-          "condExpr": "($row['userStatus']==0) && ($row['doctorStatus']==1)"
+          "condNodeId": "f004#00778",
+          "condExpr": "($row['userStatus']==0) && ($row['doctorStatus']==1)",
+          "loc": {
+            "startLine": 492,
+            "endLine": 495,
+            "startCol": 20,
+            "endCol": 21,
+            "startByte": 20532,
+            "endByte": 20684
+          }
         }
       ],
       "loc": {
         "startLine": 494,
         "endLine": 494,
-        "startCol": 23,
-        "endCol": 46
+        "startCol": 22,
+        "endCol": 46,
+        "startByte": 20637,
+        "endByte": 20661
       }
     },
     {
-      "id": "f004#01276",
+      "id": "f004#00803",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -369,84 +497,130 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         },
         {
-          "nodeId": "f004#01251",
+          "nodeId": "f004#00791",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f004#01253",
-          "condExpr": "($row['userStatus']==1) && ($row['doctorStatus']==0)"
+          "condNodeId": "f004#00792",
+          "condExpr": "($row['userStatus']==1) && ($row['doctorStatus']==0)",
+          "loc": {
+            "startLine": 497,
+            "endLine": 500,
+            "startCol": 20,
+            "endCol": 21,
+            "startByte": 20708,
+            "endByte": 20863
+          }
         }
       ],
       "loc": {
         "startLine": 499,
         "endLine": 499,
-        "startCol": 23,
-        "endCol": 49
+        "startCol": 22,
+        "endCol": 49,
+        "startByte": 20813,
+        "endByte": 20840
       }
     },
     {
-      "id": "f004#01284",
+      "id": "f004#00805",
       "kind": "Stmt_InlineHTML",
       "raw": "</td>\r\n\r\n                        <td>\r\n                        ",
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         }
       ],
       "loc": {
         "startLine": 501,
         "endLine": 504,
-        "startCol": 27,
-        "endCol": 24
+        "startCol": 26,
+        "endCol": 24,
+        "startByte": 20891,
+        "endByte": 20954
       }
     },
     {
-      "id": "f004#01312",
+      "id": "f004#00818",
       "kind": "Stmt_InlineHTML",
       "raw": "\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t                        <a href=\"admin-panel.php?ID=",
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         },
         {
-          "nodeId": "f004#01286",
+          "nodeId": "f004#00806",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f004#01288",
-          "condExpr": "($row['userStatus']==1) && ($row['doctorStatus']==1)"
+          "condNodeId": "f004#00807",
+          "condExpr": "($row['userStatus']==1) && ($row['doctorStatus']==1)",
+          "loc": {
+            "startLine": 504,
+            "endLine": 514,
+            "startCol": 30,
+            "endCol": 33,
+            "startByte": 20960,
+            "endByte": 21548
+          }
         }
       ],
       "loc": {
         "startLine": 506,
         "endLine": 508,
-        "startCol": 1,
-        "endCol": 53
+        "startCol": 0,
+        "endCol": 53,
+        "startByte": 21050,
+        "endByte": 21120
       }
     },
     {
-      "id": "f004#01314",
+      "id": "f004#00819",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -458,8 +632,8 @@
           "sourceKind": "db_row_field",
           "confidence": "resolved",
           "source": {
-            "fetchNodeId": "f004#01129",
-            "queryNodeId": "f004#01114",
+            "fetchNodeId": "f004#00737",
+            "queryNodeId": "f004#00728",
             "table": "appointmenttb",
             "column": "ID"
           }
@@ -467,62 +641,98 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         },
         {
-          "nodeId": "f004#01286",
+          "nodeId": "f004#00806",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f004#01288",
-          "condExpr": "($row['userStatus']==1) && ($row['doctorStatus']==1)"
+          "condNodeId": "f004#00807",
+          "condExpr": "($row['userStatus']==1) && ($row['doctorStatus']==1)",
+          "loc": {
+            "startLine": 504,
+            "endLine": 514,
+            "startCol": 30,
+            "endCol": 33,
+            "startByte": 20960,
+            "endByte": 21548
+          }
         }
       ],
       "loc": {
         "startLine": 508,
         "endLine": 508,
-        "startCol": 60,
-        "endCol": 74
+        "startCol": 59,
+        "endCol": 76,
+        "startByte": 21126,
+        "endByte": 21143
       }
     },
     {
-      "id": "f004#01321",
+      "id": "f004#00823",
       "kind": "Stmt_InlineHTML",
       "raw": "&cancel=update\" \r\n                              onClick=\"return confirm('Are you sure you want to cancel this appointment ?')\"\r\n                              title=\"Cancel Appointment\" tooltip-placement=\"top\" tooltip=\"Remove\"><button class=\"btn btn-danger\">Cancel</button></a>\r\n\t                        ",
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         },
         {
-          "nodeId": "f004#01286",
+          "nodeId": "f004#00806",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f004#01288",
-          "condExpr": "($row['userStatus']==1) && ($row['doctorStatus']==1)"
+          "condNodeId": "f004#00807",
+          "condExpr": "($row['userStatus']==1) && ($row['doctorStatus']==1)",
+          "loc": {
+            "startLine": 504,
+            "endLine": 514,
+            "startCol": 30,
+            "endCol": 33,
+            "startByte": 20960,
+            "endByte": 21548
+          }
         }
       ],
       "loc": {
         "startLine": 508,
         "endLine": 511,
-        "startCol": 77,
-        "endCol": 25
+        "startCol": 76,
+        "endCol": 25,
+        "startByte": 21143,
+        "endByte": 21446
       }
     },
     {
-      "id": "f004#01329",
+      "id": "f004#00825",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -536,66 +746,96 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         },
         {
-          "nodeId": "f004#01286",
+          "nodeId": "f004#00806",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "else",
-          "condNodeId": "f004#01288"
+          "condNodeId": "f004#00807",
+          "loc": {
+            "startLine": 504,
+            "endLine": 514,
+            "startCol": 30,
+            "endCol": 33,
+            "startByte": 20960,
+            "endByte": 21548
+          }
         }
       ],
       "loc": {
         "startLine": 513,
         "endLine": 513,
-        "startCol": 33,
-        "endCol": 49
+        "startCol": 32,
+        "endCol": 49,
+        "startByte": 21496,
+        "endByte": 21513
       }
     },
     {
-      "id": "f004#01337",
+      "id": "f004#00827",
       "kind": "Stmt_InlineHTML",
       "raw": "                        \r\n                        </td>\r\n                      </tr>\r\n                    ",
       "enclosedBy": [
         {
-          "nodeId": "f004#01122",
+          "nodeId": "f004#00734",
           "kind": "Stmt_While",
           "role": "iteration",
           "iterExpr": "$row = mysqli_fetch_array($result)",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 474,
+            "endLine": 518,
+            "startCol": 20,
+            "endCol": 27,
+            "startByte": 19722,
+            "endByte": 21666
+          }
         }
       ],
       "loc": {
         "startLine": 515,
         "endLine": 518,
-        "startCol": 1,
-        "endCol": 20
+        "startCol": 0,
+        "endCol": 20,
+        "startByte": 21553,
+        "endByte": 21659
       }
     },
     {
-      "id": "f004#01342",
+      "id": "f004#00828",
       "kind": "Stmt_InlineHTML",
       "raw": "                </tbody>\r\n              </table>\r\n        <br>\r\n      </div>\r\n\r\n\r\n\r\n      <div class=\"tab-pane fade\" id=\"list-pres\" role=\"tabpanel\" aria-labelledby=\"list-pres-list\">\r\n        \r\n              <table class=\"table table-hover\">\r\n                <thead>\r\n                  <tr>\r\n                    \r\n                    <th scope=\"col\">Doctor Name</th>\r\n                    <th scope=\"col\">Appointment ID</th>\r\n                    <th scope=\"col\">Appointment Date</th>\r\n                    <th scope=\"col\">Appointment Time</th>\r\n                    <th scope=\"col\">Diseases</th>\r\n                    <th scope=\"col\">Allergies</th>\r\n                    <th scope=\"col\">Prescriptions</th>\r\n                    <th scope=\"col\">Bill Payment</th>\r\n                  </tr>\r\n                </thead>\r\n                <tbody>\r\n                  ",
       "enclosedBy": [],
       "loc": {
         "startLine": 519,
         "endLine": 543,
-        "startCol": 1,
-        "endCol": 18
+        "startCol": 0,
+        "endCol": 18,
+        "startByte": 21671,
+        "endByte": 22521
       }
     }
   ],
   "queries": {
-    "f004#01114": {
+    "f004#00728": {
       "line": 473,
       "sql": "\"select ID,doctor,docFees,appdate,apptime,userStatus,doctorStatus from appointmenttb where fname ='$fname' and lname='$lname';\"",
       "tables": [
@@ -621,7 +861,7 @@
       "Excerpt: the booking form's tail and the 'Appointment History' tab (#app-hist). Chosen because HMS has no DB-backed single-record page; this is a per-patient list, not a single record.",
       "Source file uses CRLF line endings; raw values keep the \\r\\n.",
       "The else branch (line 511) is recorded as branch \"else\" of the Stmt_If at line 504.",
-      "f004#01114's WHERE clause filters on $fname/$lname, which the page reads from $_SESSION (lines 11, 13).",
+      "f004#00728's WHERE clause filters on $fname/$lname, which the page reads from $_SESSION (lines 11, 13).",
       "No contract gap: every db field read here is in the PatientAppointment schema (success path)."
     ],
     "linesCovered": [
@@ -629,7 +869,8 @@
       543
     ],
     "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
-    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not).",
-    "condExprExtension": "Agent extension, pending Member 01 Q2 (boundary-rules.md section 9): every then/elseif branch enclosure carries condExpr, the byte-exact PHP source of its if/elseif condition from PHP's lexer, without the outer parentheses and the whitespace just inside them. else branches have none: their meaning comes from the chain."
+    "idConvention": "Member 01's convention (answered 12 Oct 2026): node ids are the pre-order ids of the file's AST (<fileId>#00000 = root File). The AST is produced by the C2 test harness in Member 01's format (tools/harness/parse.php, nikic/php-parser v5.9.0); it is not Member 01's own output.",
+    "locConvention": "Member 01's convention (Q13-Q15, answered 12 Oct 2026): every sequence entry, loop and branch enclosure carries loc {startLine, endLine, startCol, endCol, startByte, endByte}, the loc of its AST node (for an enclosure: the node named by nodeId). Lines are 1-based; columns and bytes are 0-based; every end is exclusive. An echo closed by '?>' ends after that tag, as its AST node does.",
+    "condExprConvention": "Member 01's convention (Q2, answered 12 Oct 2026): every then/elseif branch enclosure carries condExpr, the exact source of its if/elseif `cond` node (no outer parentheses), and condNodeId is that node's id. else branches have no condExpr: their meaning comes from the chain."
   }
 }

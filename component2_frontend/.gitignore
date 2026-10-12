@@ -27,9 +27,10 @@ Thumbs.db
 # Docker volumes
 mysql_data/
 
-# Cloned legacy apps (keep the sql/ subfolder for auto-import dumps)
+# Cloned legacy apps (keep the sql/ subfolder for auto-import dumps, and real/ for Member 01's real outputs)
 legacy-apps/*/
 !legacy-apps/sql/
+!legacy-apps/real/
 
 # Generated output
 output/generated/

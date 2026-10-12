@@ -9,6 +9,9 @@ import re
 from pathlib import Path
 
 from src.model import (
+    Ast,
+    AstNode,
+    CallEntry,
     Concern,
     Contract,
     Enclosure,
@@ -28,6 +31,7 @@ from src.model import (
 SCHEMA_VERSION = "1.0"
 TIMELINE_KEYS = ("entrypoint", "schemaVersion", "sequence")  # "queries" is an optional extension
 OUTPUT_KINDS = ("Stmt_InlineHTML", "Stmt_Echo", "Expr_Print")
+CALL_KIND = "call"  # a call site (Member 01 Q4, proposed): {id, kind, callee, outputsInside, enclosedBy}
 LOOP_KINDS = ("Stmt_While", "Stmt_Foreach", "Stmt_For", "Stmt_Do")
 BRANCHES = ("then", "elseif", "else")
 # In the schema, but their fields are not specified yet: accepted and carried through as-is.
@@ -44,7 +48,11 @@ READ_KEYS = {"expr", "var", "path", "sourceKind", "confidence", "source"}
 SOURCE_KEYS = {"fetchNodeId", "queryNodeId", "table", "column"}
 QUERY_KEYS = {"line", "sql", "tables", "columns", "resultVar"}
 LABEL_KEYS = {"concern", "basis", "ruleId", "reason"}
-LOC_KEYS = {"startLine", "endLine", "startCol", "endCol"}
+LOC_KEYS = {"startLine", "endLine", "startCol", "endCol", "startByte", "endByte"}
+AST_KEYS = {"schemaVersion", "fileId", "path", "sha256", "bytes", "parseOk", "parseErrors", "rootId", "nodeCount",
+            "nodes"}
+AST_NODE_KEYS = {"id", "kind", "parent", "children", "fields", "attrs", "loc"}
+AST_ROOT_KIND = "File"
 
 
 # ----------------------------------------------------------------------------- schema 1.0 checks
@@ -57,8 +65,9 @@ def _check_node_id(value, where: str) -> None:
 
 def _check_read(read: dict, where: str) -> None:
     keys = READ_KEYS | ({"derivedFrom"} if read.get("sourceKind") == "computed" else set())
-    if set(read) != keys:
-        raise ValueError(f"{where}: read keys {sorted(read)} != {sorted(keys)}")
+    # basis is optional (Member 01 Q1, proposed): how a resolved db read was decided ("schema-expanded").
+    if not keys <= set(read) <= keys | {"basis"}:
+        raise ValueError(f"{where}: read keys {sorted(read)} != {sorted(keys)} (and optionally basis)")
     where = f"{where} read {read['expr']!r}"
     kind, confidence = read["sourceKind"], read["confidence"]
     if kind not in SOURCE_KINDS:
@@ -88,6 +97,10 @@ def _check_read(read: dict, where: str) -> None:
     elif source is not None:
         raise ValueError(f"{where}: only db_row_field reads carry a source")
 
+    if "basis" in read and (not isinstance(read["basis"], str) or not read["basis"]
+                            or (kind, confidence) != ("db_row_field", "resolved")):
+        raise ValueError(f"{where}: basis is a non-empty string on a resolved db_row_field read only")
+
     if kind == "computed":
         if not read["derivedFrom"]:
             raise ValueError(f"{where}: computed reads list what they derive from")
@@ -96,13 +109,23 @@ def _check_read(read: dict, where: str) -> None:
 
 
 def _check_loc(loc, where: str) -> None:
-    """loc is optional (pending Member 01 Q13); when present it has the AST envelope's four positions."""
+    """loc follows Member 01's convention (Q13-Q15): 1-based lines; 0-based columns and bytes; exclusive ends."""
     if not isinstance(loc, dict) or set(loc) != LOC_KEYS:
         raise ValueError(f"{where}: loc needs exactly {sorted(LOC_KEYS)}")
-    if not all(isinstance(loc[k], int) and not isinstance(loc[k], bool) and loc[k] >= 1 for k in LOC_KEYS):
-        raise ValueError(f"{where}: loc positions must be integers >= 1")
-    if (loc["endLine"], loc["endCol"]) < (loc["startLine"], loc["startCol"]):
+    if not all(isinstance(loc[k], int) and not isinstance(loc[k], bool) for k in LOC_KEYS):
+        raise ValueError(f"{where}: loc positions must be integers")
+    if min(loc["startLine"], loc["endLine"]) < 1:
+        raise ValueError(f"{where}: loc lines are 1-based")
+    if min(loc["startCol"], loc["endCol"], loc["startByte"], loc["endByte"]) < 0:
+        raise ValueError(f"{where}: loc columns and bytes are 0-based")
+    if loc["endByte"] < loc["startByte"] or (loc["endLine"], loc["endCol"]) < (loc["startLine"], loc["startCol"]):
         raise ValueError(f"{where}: loc ends before it starts")
+
+
+def _loc(d: dict | None) -> Loc | None:
+    if d is None:
+        return None
+    return Loc(d["startLine"], d["endLine"], d["startCol"], d["endCol"], d["startByte"], d["endByte"])
 
 
 def load_timeline_json(path: Path) -> dict:
@@ -138,13 +161,23 @@ def load_timeline_json(path: Path) -> dict:
         if eid in seen:
             raise ValueError(f"{where}: duplicate sequence id")
         seen.add(eid)
-        if entry.get("kind") not in OUTPUT_KINDS:
-            raise ValueError(f"{where}: kind {entry.get('kind')!r}, expected one of {OUTPUT_KINDS}")
-        payload = "raw" if entry["kind"] == "Stmt_InlineHTML" else "reads"
-        required = {"id", "kind", "enclosedBy", payload}
-        if not required <= set(entry) <= required | {"loc"}:
-            raise ValueError(f"{where}: {entry['kind']} keys {sorted(entry)}; expected id/kind/enclosedBy/{payload} "
-                             "and optionally loc")
+        if entry.get("kind") == CALL_KIND:
+            required = {"id", "kind", "enclosedBy", "callee", "outputsInside"}
+            if not required <= set(entry) <= required | {"loc"}:
+                raise ValueError(f"{where}: call keys {sorted(entry)}; expected {sorted(required)} and optionally loc")
+            if entry["callee"] is not None:
+                _check_node_id(entry["callee"], f"{where} callee")
+            if not isinstance(entry["outputsInside"], bool) and entry["outputsInside"] != "unknown":
+                raise ValueError(f"{where}: outputsInside {entry['outputsInside']!r}, expected true, false or "
+                                 '"unknown"')
+        elif entry.get("kind") not in OUTPUT_KINDS:
+            raise ValueError(f"{where}: kind {entry.get('kind')!r}, expected one of {OUTPUT_KINDS + (CALL_KIND,)}")
+        else:
+            payload = "raw" if entry["kind"] == "Stmt_InlineHTML" else "reads"
+            required = {"id", "kind", "enclosedBy", payload}
+            if not required <= set(entry) <= required | {"loc"}:
+                raise ValueError(f"{where}: {entry['kind']} keys {sorted(entry)}; expected id/kind/enclosedBy/"
+                                 f"{payload} and optionally loc")
         if "loc" in entry:
             _check_loc(entry["loc"], where)
         for read in entry.get("reads", []):
@@ -152,15 +185,18 @@ def load_timeline_json(path: Path) -> dict:
 
         for enc in entry["enclosedBy"]:
             _check_node_id(enc.get("nodeId"), where)
+            if "loc" in enc and enc.get("role") in ("iteration", "branch"):
+                _check_loc(enc["loc"], f"{where} enclosure {enc['nodeId']}")  # optional (Member 01 Q15)
             if enc.get("role") == "iteration":
-                if set(enc) != LOOP_KEYS or enc["kind"] not in LOOP_KINDS or enc["iterSourceKind"] not in SOURCE_KINDS:
+                if (not LOOP_KEYS <= set(enc) <= LOOP_KEYS | {"loc"} or enc["kind"] not in LOOP_KINDS
+                        or enc["iterSourceKind"] not in SOURCE_KINDS):
                     raise ValueError(f"{where}: malformed loop {enc}")
                 # The loop object is repeated on every entry it encloses; copies must agree.
                 if loops_seen.setdefault(enc["nodeId"], enc) != enc:
                     raise ValueError(f"{where}: loop {enc['nodeId']} differs from its earlier copy")
             elif enc.get("role") == "branch":
                 # condExpr is optional (agent extension, pending Member 01 Q2): the condition's PHP source.
-                if (not BRANCH_KEYS <= set(enc) <= BRANCH_KEYS | {"condExpr"} or enc["kind"] != "Stmt_If"
+                if (not BRANCH_KEYS <= set(enc) <= BRANCH_KEYS | {"condExpr", "loc"} or enc["kind"] != "Stmt_If"
                         or enc["branch"] not in BRANCHES):
                     raise ValueError(f"{where}: malformed branch {enc}")
                 _check_node_id(enc["condNodeId"], where)
@@ -206,16 +242,18 @@ def _read(d: dict) -> Read:
         confidence=d["confidence"],
         source=None if src is None else ReadSource(src["fetchNodeId"], src["queryNodeId"], src["table"], src["column"]),
         derived_from=tuple(_read(x) for x in d.get("derivedFrom", ())),
+        basis=d.get("basis"),
     )
 
 
 def _enclosure(d: dict) -> Enclosure:
     if d["role"] == "iteration":
         return Enclosure(node_id=d["nodeId"], kind=d["kind"], role="iteration", iter_expr=d["iterExpr"],
-                         iter_source_kind=d["iterSourceKind"], value_var=d["valueVar"], key_var=d["keyVar"])
+                         iter_source_kind=d["iterSourceKind"], value_var=d["valueVar"], key_var=d["keyVar"],
+                         loc=_loc(d.get("loc")))
     if d["role"] == "branch":
         return Enclosure(node_id=d["nodeId"], kind=d["kind"], role="branch", branch=d["branch"],
-                         cond_node_id=d["condNodeId"], cond_expr=d.get("condExpr"))
+                         cond_node_id=d["condNodeId"], cond_expr=d.get("condExpr"), loc=_loc(d.get("loc")))
     extra = tuple(sorted((k, v) for k, v in d.items() if k not in ENCLOSURE_BASE_KEYS))
     return Enclosure(node_id=d["nodeId"], kind=d["kind"], role=d["role"], extra=extra)
 
@@ -230,10 +268,14 @@ def load_timeline(path: Path) -> Timeline:
             raw=e.get("raw"),
             reads=tuple(_read(r) for r in e.get("reads", ())),
             enclosed_by=tuple(_enclosure(x) for x in e["enclosedBy"]),
-            loc=None if "loc" not in e else Loc(e["loc"]["startLine"], e["loc"]["endLine"], e["loc"]["startCol"],
-                                                e["loc"]["endCol"]),
+            loc=_loc(e.get("loc")),
         )
-        for e in doc["sequence"]
+        for e in doc["sequence"] if e["kind"] != CALL_KIND
+    )
+    calls = tuple(
+        CallEntry(id=e["id"], callee=e["callee"], outputs_inside=e["outputsInside"],
+                  enclosed_by=tuple(_enclosure(x) for x in e["enclosedBy"]), loc=_loc(e.get("loc")))
+        for e in doc["sequence"] if e["kind"] == CALL_KIND
     )
     queries = {
         qid: Query(node_id=qid, line=q["line"], sql=q["sql"], tables=tuple(q["tables"]),
@@ -241,7 +283,7 @@ def load_timeline(path: Path) -> Timeline:
         for qid, q in doc.get("queries", {}).items()
     }
     return Timeline(entrypoint=doc["entrypoint"], schema_version=doc["schemaVersion"], sequence=sequence,
-                    queries=queries, provenance=doc.get("_provenance", {}))
+                    queries=queries, provenance=doc.get("_provenance", {}), calls=calls)
 
 
 def load_labels(path: Path) -> dict[str, Label]:
@@ -252,6 +294,99 @@ def load_labels(path: Path) -> dict[str, Label]:
                        reason=lab["reason"])
         for node_id, lab in doc["labels"].items()
     }
+
+
+# ----------------------------------------------------------------------------- AST (Member 01, ast/<fileId>.json)
+
+
+def _check_ast_ref(value, nodes: dict, where: str) -> None:
+    if not isinstance(value, str) or value not in nodes:
+        raise ValueError(f"{where}: {value!r} is not a node of this AST")
+
+
+def load_ast_json(path: Path) -> dict:
+    """Read an AST file and check it against schema 1.0; return the validated JSON.
+
+    Node ids are "<fileId>#<ordinal>", numbered in pre-order from the root `File` at ordinal 0, so the
+    order of `nodes`, every `parent` and every `children` list must agree with the ids.
+    """
+    with Path(path).open("r", encoding="utf-8", newline="") as f:
+        doc = json.load(f)
+    if not isinstance(doc, dict) or set(doc) != AST_KEYS:
+        keys = sorted(doc) if isinstance(doc, dict) else type(doc).__name__
+        raise ValueError(f"{path}: AST keys {keys} != {sorted(AST_KEYS)}")
+    if doc["schemaVersion"] != SCHEMA_VERSION:
+        raise ValueError(f"{path}: schemaVersion {doc['schemaVersion']!r}, expected {SCHEMA_VERSION!r}")
+    if not isinstance(doc["fileId"], str) or not isinstance(doc["path"], str):
+        raise ValueError(f"{path}: fileId and path must be strings")
+    if not isinstance(doc["sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", doc["sha256"]):
+        raise ValueError(f"{path}: sha256 must be 64 lower-case hex digits")
+    if not isinstance(doc["bytes"], int) or isinstance(doc["bytes"], bool) or doc["bytes"] < 0:
+        raise ValueError(f"{path}: bytes must be a non-negative integer")
+    if not isinstance(doc["parseOk"], bool) or not isinstance(doc["parseErrors"], list):
+        raise ValueError(f"{path}: parseOk must be a boolean and parseErrors a list")
+    if not isinstance(doc["nodes"], list) or not doc["nodes"] or doc["nodeCount"] != len(doc["nodes"]):
+        raise ValueError(f"{path}: nodeCount {doc['nodeCount']!r} does not match the nodes list")
+
+    nodes = {}
+    for ordinal, node in enumerate(doc["nodes"]):
+        if not isinstance(node, dict) or set(node) != AST_NODE_KEYS:
+            keys = sorted(node) if isinstance(node, dict) else type(node).__name__
+            raise ValueError(f"{path}: node {ordinal} keys {keys} != {sorted(AST_NODE_KEYS)}")
+        expected = f"{doc['fileId']}#{ordinal:05d}"
+        if node["id"] != expected:
+            raise ValueError(f"{path}: node {ordinal} has id {node['id']!r}; pre-order numbering gives {expected!r}")
+        if not isinstance(node["kind"], str) or not node["kind"]:
+            raise ValueError(f"{path}: {expected} has no kind")
+        if not isinstance(node["children"], list) or not isinstance(node["fields"], dict) \
+                or not isinstance(node["attrs"], dict):
+            raise ValueError(f"{path}: {expected} needs a children list and fields / attrs objects")
+        if node["loc"] is not None:
+            _check_loc(node["loc"], f"{path}: {expected}")
+            if node["loc"]["endByte"] > doc["bytes"]:
+                raise ValueError(f"{path}: {expected} ends after the file's {doc['bytes']} bytes")
+        nodes[expected] = node
+    root = doc["nodes"][0]
+    if doc["rootId"] != root["id"] or root["kind"] != AST_ROOT_KIND or root["parent"] is not None:
+        raise ValueError(f"{path}: the first node must be the root {AST_ROOT_KIND!r} named by rootId, with no parent")
+
+    # In pre-order a node's first child follows it and each subtree is contiguous.
+    stack = [(root["id"], list(root["children"]))]
+    for node in doc["nodes"][1:]:
+        where = f"{path}: {node['id']}"
+        while stack and not stack[-1][1]:
+            stack.pop()
+        if not stack or stack[-1][1].pop(0) != node["id"] or node["parent"] != stack[-1][0]:
+            raise ValueError(f"{where}: parent / children do not agree with the pre-order ids")
+        stack.append((node["id"], list(node["children"])))
+    if any(pending for _, pending in stack):
+        raise ValueError(f"{path}: children name nodes that are not in the nodes list")
+    for node in doc["nodes"]:
+        where = f"{path}: {node['id']}"
+        for child in node["children"]:
+            _check_ast_ref(child, nodes, where)
+        for role, value in node["fields"].items():
+            for ref in value if isinstance(value, list) else [value]:
+                if ref is not None:
+                    _check_ast_ref(ref, nodes, f"{where} field {role!r}")
+                    if ref not in node["children"]:
+                        raise ValueError(f"{where}: field {role!r} names {ref}, which is not one of its children")
+    return doc
+
+
+def load_ast(path: Path) -> Ast:
+    """Load and validate one AST file (Member 01's ast/<fileId>.json, or the harness's copy of that format)."""
+    doc = load_ast_json(path)
+    nodes = {
+        n["id"]: AstNode(
+            id=n["id"], kind=n["kind"], parent=n["parent"], children=tuple(n["children"]),
+            fields={role: tuple(v) if isinstance(v, list) else v for role, v in n["fields"].items()},
+            attrs=dict(n["attrs"]), loc=_loc(n["loc"]))
+        for n in doc["nodes"]
+    }
+    return Ast(schema_version=doc["schemaVersion"], file_id=doc["fileId"], path=doc["path"], sha256=doc["sha256"],
+               bytes=doc["bytes"], parse_ok=doc["parseOk"], parse_errors=tuple(doc["parseErrors"]),
+               root_id=doc["rootId"], node_count=doc["nodeCount"], nodes=nodes)
 
 
 # ----------------------------------------------------------------------------- legacy fixture

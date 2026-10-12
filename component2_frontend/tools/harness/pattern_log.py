@@ -130,15 +130,22 @@ def _walk(node, parents=()):
         yield from _walk(child, parents + (node,))
 
 
-def where(app: str, entry: dict, line) -> str:
+def where(app: str, entry: dict, line, col=None) -> str:
+    """file:line:col, the column 1-based (loc.startCol + 1); `?` when the node has no loc."""
     function = f" ({entry['function']})" if entry["function"] else ""
-    return f"`{app}/{entry['path']}:{line if line is not None else '?'}`{function}"
+    place = "?" if line is None else f"{line}:{col}" if col is not None else str(line)
+    return f"`{app}/{entry['path']}:{place}`{function}"
+
+
+def last_line(loc: dict) -> int:
+    """The last line a node has bytes on (its end is exclusive, so an end at column 0 is the line before)."""
+    return loc["endLine"] if loc["endCol"] > 0 or loc["endLine"] == loc["startLine"] else loc["endLine"] - 1
 
 
 def collect(output: Path) -> dict:
     found: dict[str, list] = {}  # kind -> [(where, detail)]
     rules: dict[str, dict] = {app: {} for app in APPS}
-    calls: dict[tuple, list] = {}  # (app, callee) -> [where]
+    calls: dict[tuple, list] = {}  # (app, name, prints, resolved) -> [where]
     includes: dict[tuple, list] = {}  # (app, target, prints) -> [where]
     conditions: dict[str, dict] = {}  # reason -> {condExpr: [where]}
     checklist = {"r_i5": [], "nested": [], "r_l3": [], "page_guard": [], "for": [], "do": []}
@@ -167,12 +174,12 @@ def collect(output: Path) -> dict:
                         cond_of[enc["nodeId"] if enc["branch"] == "then" else enc["condNodeId"]] = enc["condExpr"]
                     if enc["role"] == "iteration" and enc["kind"] in ("Stmt_For", "Stmt_Do"):
                         checklist["for" if enc["kind"] == "Stmt_For" else "do"].append(
-                            where(app, entry, e["loc"]["startLine"]))
+                            where(app, entry, e["loc"]["startLine"], e["loc"]["startCol"] + 1))
             markup_lines = {n["line"] for n in timeline["harnessNotes"] if n.get("markup")}
 
             for node, parents in _walk(stage2["tree"]):
                 locs = [line_of[i] for i in node["nodeIds"] if i in line_of]
-                first = locs[0]["startLine"] if locs else None
+                first = (locs[0]["startLine"], locs[0]["startCol"] + 1) if locs else (None, None)
                 for rule in node["rules"]:
                     rules[app][rule] = rules[app].get(rule, 0) + 1
                 if node["status"] == "abstain":
@@ -180,21 +187,21 @@ def collect(output: Path) -> dict:
                     if node["reason"] == "container_undetermined":
                         kind += "@function" if entry["function"] else "@page"
                     elif node["reason"] == "no_rule":
-                        in_string = any(loc["startLine"] <= line <= loc["endLine"] for loc in locs
+                        in_string = any(loc["startLine"] <= line <= last_line(loc) for loc in locs
                                         for line in markup_lines)
                         kind += "@markup_in_string" if in_string else "@text_only"
-                    add(kind, where(app, entry, first))
+                    add(kind, where(app, entry, *first))
                 if node["type"] == "ConditionalComponent":
-                    checklist["r_i5"].append((where(app, entry, first), node["elements"]))
+                    checklist["r_i5"].append((where(app, entry, *first), node["elements"]))
                 if node["type"] == "List" and any(p["type"] == "Item" for p in parents):
-                    checklist["nested"].append(where(app, entry, first))
+                    checklist["nested"].append(where(app, entry, *first))
                 if node["rule"] == "R-L3":
-                    checklist["r_l3"].append(where(app, entry, first))
+                    checklist["r_l3"].append(where(app, entry, *first))
                 if node["type"] == "Page" and node["rule"] == "R-I1":
-                    checklist["page_guard"].append(where(app, entry, first))
+                    checklist["page_guard"].append(where(app, entry, *first))
 
             for todo in stage5["c2todos"]:
-                place = where(app, entry, todo["sourceLine"])
+                place = where(app, entry, todo["sourceLine"], todo["sourceCol"])
                 if todo["kind"] == "unresolvedCondition":
                     text = cond_of.get(todo["nodeId"], "(no condExpr)")
                     conditions.setdefault(todo["reason"], {}).setdefault(text, []).append(place)
@@ -206,7 +213,7 @@ def collect(output: Path) -> dict:
                                         "dynamic_raw_text"):
                     add(f"fallback:{todo['reason']}", place, todo["detail"])
             for flag in stage5["flags"]:
-                place = where(app, entry, flag["sourceLine"])
+                place = where(app, entry, flag["sourceLine"], flag["sourceCol"])
                 if flag["flag"] == "attribute_omitted" and flag["reason"] in (
                         "condition_not_translatable", "condition_unavailable", "loose_compare_semantics"):
                     text = cond_of.get(flag["nodeId"], "(no condExpr)")
@@ -218,10 +225,14 @@ def collect(output: Path) -> dict:
 
             for note in timeline["harnessNotes"]:
                 kind = f"note:{note['kind']}" + ("+markup" if note.get("markup") else "")
-                add(kind, where(app, entry, note["line"]), " ".join(note["detail"].split())[:70])
-            for call in timeline["calls"]:
-                if call["producesOutput"]:
-                    calls.setdefault((app, call["callee"]), []).append(where(app, entry, call["line"]))
+                add(kind, where(app, entry, note["line"], note["col"]), " ".join(note["detail"].split())[:70])
+            for call in timeline["sequence"]:  # call sites (Member 01 Q4): callee id, outputsInside
+                if call["kind"] == "call" and call["outputsInside"] is not False:
+                    name = timeline["callNames"].get(call["id"], "(a method or dynamic call)")
+                    key = (app, name, "yes" if call["outputsInside"] is True else "unknown",
+                           "one function" if call["callee"] else "not one function")
+                    calls.setdefault(key, []).append(
+                        where(app, entry, call["loc"]["startLine"], call["loc"]["startCol"] + 1))
             for include in timeline["includes"]:
                 target = include["literal"]
                 resolved = None
@@ -230,7 +241,7 @@ def collect(output: Path) -> dict:
                                   posixpath.normpath(target)]
                     resolved = next((c for c in candidates if c in printing_pages), None)
                 key = (app, target if target is not None else include["expr"], resolved is not None)
-                includes.setdefault(key, []).append(where(app, entry, include["line"]))
+                includes.setdefault(key, []).append(where(app, entry, include["line"], include["col"]))
     return {"found": found, "rules": rules, "calls": calls, "includes": includes, "conditions": conditions,
             "checklist": checklist, "summary": summary}
 
@@ -291,12 +302,17 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
                       f"- Examples: {examples(found[kind])}", ""]
 
     lines += [f"## {number}. Functions and includes (evidence for R-F1 / R-F2)", "",
-              "Recorded by the harness, not inlined (pending Member 01 Q4).", "",
-              "| App | Function that prints | Call sites | Examples | §8 mapping |", "|---|---|---|---|---|"]
+              "Call sites are timeline entries `{kind: \"call\", callee, outputsInside}` (Member 01 Q4, proposed); "
+              "nothing is inlined. *Callee* says whether the call is resolved to one function of the app "
+              "(`callee` is its node id) or not (`callee` is null: a method call on an object, a dynamic call, or "
+              "a name the app defines more than once). Calls whose callee prints nothing are not listed.", "",
+              "| App | Called | Prints | Callee | Call sites | Examples | §8 mapping |", "|---|---|---|---|---|---|---|"]
     number += 1
-    for (app, callee), places in sorted(data["calls"].items()):
-        lines.append(f"| {app} | `{callee}()` | {len(places)} | {examples([(p, '') for p in places[:3]])} | "
-                     "existing: Function = component / Layout via functions / Cross-file output |")
+    for (app, callee, prints, resolved), places in sorted(data["calls"].items()):
+        mapping = ("existing: Function = component / Layout via functions / Cross-file output" if prints == "yes"
+                   else "not known: the callee, or something it calls, cannot be followed (Member 01 Q11)")
+        lines.append(f"| {app} | `{callee}` | {prints} | {resolved} | {len(places)} | "
+                     f"{examples([(p, '') for p in places[:3]])} | {mapping} |")
     lines += ["", "| App | Included file | Prints at its top level | Includes | Examples | §8 mapping |",
               "|---|---|---|---|---|---|"]
     for (app, target, prints), places in sorted(data["includes"].items()):

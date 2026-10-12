@@ -3,49 +3,69 @@
   "schemaVersion": "1.0",
   "sequence": [
     {
-      "id": "f008#00192",
+      "id": "f008#00095",
       "kind": "Stmt_InlineHTML",
       "raw": "\n<div class=\"column prepend-1 span-23 first last\">\n    <h2>Login</h2>\n    ",
       "enclosedBy": [
         {
-          "nodeId": "f008#00178",
+          "nodeId": "f008#00090",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f008#00181",
-          "condExpr": "$bad_login"
+          "condNodeId": "f008#00091",
+          "condExpr": "$bad_login",
+          "loc": {
+            "startLine": 29,
+            "endLine": 49,
+            "startCol": 0,
+            "endCol": 1,
+            "startByte": 731,
+            "endByte": 1330
+          }
         }
       ],
       "loc": {
         "startLine": 34,
         "endLine": 37,
-        "startCol": 1,
-        "endCol": 4
+        "startCol": 0,
+        "endCol": 4,
+        "startByte": 773,
+        "endByte": 847
       }
     },
     {
-      "id": "f008#00200",
+      "id": "f008#00099",
       "kind": "Stmt_InlineHTML",
       "raw": "    <table style=\"width:320px\" cellspacing=\"0\">\n      <form action=\"",
       "enclosedBy": [
         {
-          "nodeId": "f008#00178",
+          "nodeId": "f008#00090",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f008#00181",
-          "condExpr": "$bad_login"
+          "condNodeId": "f008#00091",
+          "condExpr": "$bad_login",
+          "loc": {
+            "startLine": 29,
+            "endLine": 49,
+            "startCol": 0,
+            "endCol": 1,
+            "startByte": 731,
+            "endByte": 1330
+          }
         }
       ],
       "loc": {
         "startLine": 38,
         "endLine": 39,
-        "startCol": 1,
-        "endCol": 20
+        "startCol": 0,
+        "endCol": 20,
+        "startByte": 873,
+        "endByte": 941
       }
     },
     {
-      "id": "f008#00201",
+      "id": "f008#00100",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -71,40 +91,60 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f008#00178",
+          "nodeId": "f008#00090",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f008#00181",
-          "condExpr": "$bad_login"
+          "condNodeId": "f008#00091",
+          "condExpr": "$bad_login",
+          "loc": {
+            "startLine": 29,
+            "endLine": 49,
+            "startCol": 0,
+            "endCol": 1,
+            "startByte": 731,
+            "endByte": 1330
+          }
         }
       ],
       "loc": {
         "startLine": 39,
         "endLine": 39,
-        "startCol": 21,
-        "endCol": 48
+        "startCol": 20,
+        "endCol": 50,
+        "startByte": 941,
+        "endByte": 971
       }
     },
     {
-      "id": "f008#00212",
+      "id": "f008#00107",
       "kind": "Stmt_InlineHTML",
       "raw": "\" method=\"POST\">\n      <tr><td>Username :</td><td> <input type=\"text\" name=\"username\" /></td></tr>\n      <tr><td>Password :</td><td> <input type=\"password\" name=\"password\" /></td></tr>\n      <tr><td><input type=\"submit\" value=\"login\" /></td><td> <a href=\"/users/register.php\">Register</a></td></tr>\n   </form>\n </table>\n</div>\n   ",
       "enclosedBy": [
         {
-          "nodeId": "f008#00178",
+          "nodeId": "f008#00090",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f008#00181",
-          "condExpr": "$bad_login"
+          "condNodeId": "f008#00091",
+          "condExpr": "$bad_login",
+          "loc": {
+            "startLine": 29,
+            "endLine": 49,
+            "startCol": 0,
+            "endCol": 1,
+            "startByte": 731,
+            "endByte": 1330
+          }
         }
       ],
       "loc": {
         "startLine": 39,
         "endLine": 46,
-        "startCol": 51,
-        "endCol": 3
+        "startCol": 50,
+        "endCol": 3,
+        "startByte": 971,
+        "endByte": 1301
       }
     }
   ],
@@ -125,7 +165,8 @@
       46
     ],
     "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
-    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not).",
-    "condExprExtension": "Agent extension, pending Member 01 Q2 (boundary-rules.md section 9): every then/elseif branch enclosure carries condExpr, the byte-exact PHP source of its if/elseif condition from PHP's lexer, without the outer parentheses and the whitespace just inside them. else branches have none: their meaning comes from the chain."
+    "idConvention": "Member 01's convention (answered 12 Oct 2026): node ids are the pre-order ids of the file's AST (<fileId>#00000 = root File). The AST is produced by the C2 test harness in Member 01's format (tools/harness/parse.php, nikic/php-parser v5.9.0); it is not Member 01's own output.",
+    "locConvention": "Member 01's convention (Q13-Q15, answered 12 Oct 2026): every sequence entry, loop and branch enclosure carries loc {startLine, endLine, startCol, endCol, startByte, endByte}, the loc of its AST node (for an enclosure: the node named by nodeId). Lines are 1-based; columns and bytes are 0-based; every end is exclusive. An echo closed by '?>' ends after that tag, as its AST node does.",
+    "condExprConvention": "Member 01's convention (Q2, answered 12 Oct 2026): every then/elseif branch enclosure carries condExpr, the exact source of its if/elseif `cond` node (no outer parentheses), and condNodeId is that node's id. else branches have no condExpr: their meaning comes from the chain."
   }
 }

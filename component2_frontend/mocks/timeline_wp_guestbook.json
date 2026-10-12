@@ -3,73 +3,97 @@
   "schemaVersion": "1.0",
   "sequence": [
     {
-      "id": "f006#00139",
+      "id": "f006#00066",
       "kind": "Stmt_InlineHTML",
       "raw": "\n",
       "enclosedBy": [],
       "loc": {
         "startLine": 24,
-        "endLine": 24,
-        "startCol": 1,
-        "endCol": 1
+        "endLine": 25,
+        "startCol": 0,
+        "endCol": 0,
+        "startByte": 499,
+        "endByte": 500
       }
     },
     {
-      "id": "f006#00148",
+      "id": "f006#00072",
       "kind": "Stmt_InlineHTML",
       "raw": "\n<div class=\"column prepend-1 span-24 first last\">\n<h2>Guestbook</h2>\n",
       "enclosedBy": [],
       "loc": {
         "startLine": 26,
-        "endLine": 28,
-        "startCol": 1,
-        "endCol": 19
+        "endLine": 29,
+        "startCol": 0,
+        "endCol": 0,
+        "startByte": 534,
+        "endByte": 604
       }
     },
     {
-      "id": "f006#00156",
+      "id": "f006#00076",
       "kind": "Stmt_InlineHTML",
       "raw": "<h4>See what people are saying about us!</h4>\n\n",
       "enclosedBy": [],
       "loc": {
         "startLine": 30,
-        "endLine": 31,
-        "startCol": 1,
-        "endCol": 1
+        "endLine": 32,
+        "startCol": 0,
+        "endCol": 0,
+        "startByte": 630,
+        "endByte": 677
       }
     },
     {
-      "id": "f006#00180",
+      "id": "f006#00082",
       "kind": "Stmt_InlineHTML",
       "raw": "\t<p class=\"comment\">",
       "enclosedBy": [
         {
-          "nodeId": "f006#00159",
+          "nodeId": "f006#00077",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f006#00162",
-          "condExpr": "$guestbook"
+          "condNodeId": "f006#00078",
+          "condExpr": "$guestbook",
+          "loc": {
+            "startLine": 33,
+            "endLine": 43,
+            "startCol": 3,
+            "endCol": 4,
+            "startByte": 686,
+            "endByte": 872
+          }
         },
         {
-          "nodeId": "f006#00167",
+          "nodeId": "f006#00079",
           "kind": "Stmt_Foreach",
           "role": "iteration",
           "iterExpr": "$guestbook",
           "iterSourceKind": "unresolved",
           "valueVar": "$guest",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 35,
+            "endLine": 41,
+            "startCol": 5,
+            "endCol": 6,
+            "startByte": 713,
+            "endByte": 858
+          }
         }
       ],
       "loc": {
         "startLine": 38,
         "endLine": 38,
-        "startCol": 1,
-        "endCol": 20
+        "startCol": 0,
+        "endCol": 20,
+        "startByte": 755,
+        "endByte": 775
       }
     },
     {
-      "id": "f006#00181",
+      "id": "f006#00083",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -85,62 +109,98 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f006#00159",
+          "nodeId": "f006#00077",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f006#00162",
-          "condExpr": "$guestbook"
+          "condNodeId": "f006#00078",
+          "condExpr": "$guestbook",
+          "loc": {
+            "startLine": 33,
+            "endLine": 43,
+            "startCol": 3,
+            "endCol": 4,
+            "startByte": 686,
+            "endByte": 872
+          }
         },
         {
-          "nodeId": "f006#00167",
+          "nodeId": "f006#00079",
           "kind": "Stmt_Foreach",
           "role": "iteration",
           "iterExpr": "$guestbook",
           "iterSourceKind": "unresolved",
           "valueVar": "$guest",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 35,
+            "endLine": 41,
+            "startCol": 5,
+            "endCol": 6,
+            "startByte": 713,
+            "endByte": 858
+          }
         }
       ],
       "loc": {
         "startLine": 38,
         "endLine": 38,
-        "startCol": 21,
-        "endCol": 41
+        "startCol": 20,
+        "endCol": 44,
+        "startByte": 775,
+        "endByte": 799
       }
     },
     {
-      "id": "f006#00189",
+      "id": "f006#00087",
       "kind": "Stmt_InlineHTML",
       "raw": "</p>\n\t<p> - by ",
       "enclosedBy": [
         {
-          "nodeId": "f006#00159",
+          "nodeId": "f006#00077",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f006#00162",
-          "condExpr": "$guestbook"
+          "condNodeId": "f006#00078",
+          "condExpr": "$guestbook",
+          "loc": {
+            "startLine": 33,
+            "endLine": 43,
+            "startCol": 3,
+            "endCol": 4,
+            "startByte": 686,
+            "endByte": 872
+          }
         },
         {
-          "nodeId": "f006#00167",
+          "nodeId": "f006#00079",
           "kind": "Stmt_Foreach",
           "role": "iteration",
           "iterExpr": "$guestbook",
           "iterSourceKind": "unresolved",
           "valueVar": "$guest",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 35,
+            "endLine": 41,
+            "startCol": 5,
+            "endCol": 6,
+            "startByte": 713,
+            "endByte": 858
+          }
         }
       ],
       "loc": {
         "startLine": 38,
         "endLine": 39,
-        "startCol": 45,
-        "endCol": 10
+        "startCol": 44,
+        "endCol": 10,
+        "startByte": 799,
+        "endByte": 814
       }
     },
     {
-      "id": "f006#00190",
+      "id": "f006#00088",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -166,74 +226,112 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f006#00159",
+          "nodeId": "f006#00077",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f006#00162",
-          "condExpr": "$guestbook"
+          "condNodeId": "f006#00078",
+          "condExpr": "$guestbook",
+          "loc": {
+            "startLine": 33,
+            "endLine": 43,
+            "startCol": 3,
+            "endCol": 4,
+            "startByte": 686,
+            "endByte": 872
+          }
         },
         {
-          "nodeId": "f006#00167",
+          "nodeId": "f006#00079",
           "kind": "Stmt_Foreach",
           "role": "iteration",
           "iterExpr": "$guestbook",
           "iterSourceKind": "unresolved",
           "valueVar": "$guest",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 35,
+            "endLine": 41,
+            "startCol": 5,
+            "endCol": 6,
+            "startByte": 713,
+            "endByte": 858
+          }
         }
       ],
       "loc": {
         "startLine": 39,
         "endLine": 39,
-        "startCol": 11,
-        "endCol": 32
+        "startCol": 10,
+        "endCol": 35,
+        "startByte": 814,
+        "endByte": 839
       }
     },
     {
-      "id": "f006#00202",
+      "id": "f006#00095",
       "kind": "Stmt_InlineHTML",
       "raw": " </p>\n\t",
       "enclosedBy": [
         {
-          "nodeId": "f006#00159",
+          "nodeId": "f006#00077",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f006#00162",
-          "condExpr": "$guestbook"
+          "condNodeId": "f006#00078",
+          "condExpr": "$guestbook",
+          "loc": {
+            "startLine": 33,
+            "endLine": 43,
+            "startCol": 3,
+            "endCol": 4,
+            "startByte": 686,
+            "endByte": 872
+          }
         },
         {
-          "nodeId": "f006#00167",
+          "nodeId": "f006#00079",
           "kind": "Stmt_Foreach",
           "role": "iteration",
           "iterExpr": "$guestbook",
           "iterSourceKind": "unresolved",
           "valueVar": "$guest",
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 35,
+            "endLine": 41,
+            "startCol": 5,
+            "endCol": 6,
+            "startByte": 713,
+            "endByte": 858
+          }
         }
       ],
       "loc": {
         "startLine": 39,
         "endLine": 40,
-        "startCol": 36,
-        "endCol": 1
+        "startCol": 35,
+        "endCol": 1,
+        "startByte": 839,
+        "endByte": 846
       }
     },
     {
-      "id": "f006#00213",
+      "id": "f006#00096",
       "kind": "Stmt_InlineHTML",
       "raw": "\n\n\n\n<form action=\"",
       "enclosedBy": [],
       "loc": {
         "startLine": 45,
         "endLine": 49,
-        "startCol": 1,
-        "endCol": 14
+        "startCol": 0,
+        "endCol": 14,
+        "startByte": 876,
+        "endByte": 894
       }
     },
     {
-      "id": "f006#00214",
+      "id": "f006#00097",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -259,20 +357,24 @@
       "loc": {
         "startLine": 49,
         "endLine": 49,
-        "startCol": 15,
-        "endCol": 47
+        "startCol": 14,
+        "endCol": 49,
+        "startByte": 894,
+        "endByte": 929
       }
     },
     {
-      "id": "f006#00224",
+      "id": "f006#00104",
       "kind": "Stmt_InlineHTML",
       "raw": "\" method=\"POST\">\n   Name: <br>\n   <input type=\"text\" name=\"name\" /><br>\n   Comment: <br>\n   <textarea id=\"comment-box\" name=\"comment\"></textarea> <br>\n   <input type=\"submit\" value=\"Submit\" />\n</form>\n\n\n</div>\n",
       "enclosedBy": [],
       "loc": {
         "startLine": 49,
-        "endLine": 58,
-        "startCol": 50,
-        "endCol": 7
+        "endLine": 59,
+        "startCol": 49,
+        "endCol": 0,
+        "startByte": 929,
+        "endByte": 1139
       }
     }
   ],
@@ -293,7 +395,8 @@
       58
     ],
     "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
-    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not).",
-    "condExprExtension": "Agent extension, pending Member 01 Q2 (boundary-rules.md section 9): every then/elseif branch enclosure carries condExpr, the byte-exact PHP source of its if/elseif condition from PHP's lexer, without the outer parentheses and the whitespace just inside them. else branches have none: their meaning comes from the chain."
+    "idConvention": "Member 01's convention (answered 12 Oct 2026): node ids are the pre-order ids of the file's AST (<fileId>#00000 = root File). The AST is produced by the C2 test harness in Member 01's format (tools/harness/parse.php, nikic/php-parser v5.9.0); it is not Member 01's own output.",
+    "locConvention": "Member 01's convention (Q13-Q15, answered 12 Oct 2026): every sequence entry, loop and branch enclosure carries loc {startLine, endLine, startCol, endCol, startByte, endByte}, the loc of its AST node (for an enclosure: the node named by nodeId). Lines are 1-based; columns and bytes are 0-based; every end is exclusive. An echo closed by '?>' ends after that tag, as its AST node does.",
+    "condExprConvention": "Member 01's convention (Q2, answered 12 Oct 2026): every then/elseif branch enclosure carries condExpr, the exact source of its if/elseif `cond` node (no outer parentheses), and condNodeId is that node's id. else branches have no condExpr: their meaning comes from the chain."
   }
 }

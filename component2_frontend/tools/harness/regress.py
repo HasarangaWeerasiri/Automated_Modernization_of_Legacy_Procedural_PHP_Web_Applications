@@ -2,7 +2,7 @@
 
 For each mock made from a real source file, the harness runs on that file with the mock's file id,
 and every sequence entry of the mock is compared with the harness entry of the same id: kind, raw,
-loc, enclosedBy (incl. condExpr) and reads. list_foreach, admin and edge_cases are rewrites or
+loc, enclosedBy (incl. condExpr and loc) and reads. Both sides use Member 01's AST node ids. list_foreach, admin and edge_cases are rewrites or
 hand-written, so they are not compared.
 
 Usage, from component2_frontend/:
@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from app import APPS, ROOT, parse_files  # noqa: E402
+from app import APPS, ROOT, SourceFile, commit_schema, parse_sources  # noqa: E402
 from harness import FileHarness  # noqa: E402
 
 MOCKS = {  # mock -> (app, file, function, the mock's file id)
@@ -40,14 +40,17 @@ def harness_timeline(mock: str, work: Path) -> dict:
     app, path, function, file_id = MOCKS[mock]
     source = work / f"{mock}.php"
     source.write_bytes(source_bytes(app, path))
-    (parsed,) = parse_files([source])
-    harness = FileHarness(source.read_bytes(), parsed, file_id, f"{APPS[app]['prefix']}/{path}")
+    entrypoint = f"{APPS[app]['prefix']}/{path}"
+    (ast,), _ = parse_sources([SourceFile(source, file_id, entrypoint)])
+    harness = FileHarness(source.read_bytes(), ast, entrypoint, commit_schema(app))
     scope = harness.top if function is None else harness.functions[function]
     return harness.timeline(scope, {"generator": "c2-harness"})
 
 
 def compare(mock_doc: dict, harness_doc: dict) -> list[dict]:
-    """Every difference between the mock's entries and the harness entries of the same id."""
+    """Every difference between the mock's entries and the harness entries of the same id.
+
+    Call entries are left out: the mocks do not have them."""
     ours = {entry["id"]: entry for entry in harness_doc["sequence"]}
     differences = []
     for entry in mock_doc["sequence"]:
@@ -62,7 +65,8 @@ def compare(mock_doc: dict, harness_doc: dict) -> list[dict]:
     lines = [entry["loc"]["startLine"] for entry in mock_doc["sequence"]]
     known = {entry["id"] for entry in mock_doc["sequence"]}
     for entry in harness_doc["sequence"]:
-        if entry["id"] not in known and min(lines) <= entry["loc"]["startLine"] <= max(lines):
+        if entry["kind"] != "call" and entry["id"] not in known \
+                and min(lines) <= entry["loc"]["startLine"] <= max(lines):
             differences.append({"id": entry["id"], "field": "(entry)", "mock": "missing", "harness": entry["kind"]})
     return differences
 

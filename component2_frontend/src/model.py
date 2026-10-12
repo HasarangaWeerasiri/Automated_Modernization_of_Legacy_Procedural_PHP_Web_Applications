@@ -46,6 +46,9 @@ class Read:
     confidence: str  # resolved | ambiguous | unresolved
     source: ReadSource | None  # only for db_row_field reads
     derived_from: tuple["Read", ...] = ()  # only for computed reads
+    # Optional (Member 01 Q1, proposed): how a resolved db read was decided, e.g. "schema-expanded" for a
+    # single-table SELECT * expanded from a schema in the repo. Reporting only; never used in a decision.
+    basis: str | None = None
 
 
 @dataclass(frozen=True)
@@ -71,16 +74,29 @@ class Enclosure:
     extra: tuple[tuple[str, object], ...] = ()
     # The enclosing node's own label. The loader leaves it None; Stage 1 attaches it.
     label: Label | None = None
+    # Optional (Member 01 Q15): where the node `node_id` is. Reporting only.
+    loc: "Loc | None" = None
 
 
 @dataclass(frozen=True)
 class Loc:
-    """Where a node is in its source file (the shape of Member 01's AST node envelope)."""
+    """Where a node is in its source file: Member 01's convention (answers of 12 Oct 2026).
+
+    Lines are 1-based. Columns and bytes are 0-based, and every end is exclusive, so
+    source[start_byte:end_byte] is the node's exact text. Columns count bytes from the line start.
+    """
 
     start_line: int
     end_line: int
     start_col: int
     end_col: int
+    start_byte: int
+    end_byte: int
+
+    @property
+    def column(self) -> int:
+        """The 1-based start column, as reports print it (file:line:col)."""
+        return self.start_col + 1
 
 
 @dataclass(frozen=True)
@@ -93,6 +109,50 @@ class OutputNode:
     reads: tuple[Read, ...]  # Stmt_Echo / Expr_Print only
     enclosed_by: tuple[Enclosure, ...]  # outermost first
     loc: Loc | None = None  # optional: absent when the timeline does not give it; never guessed
+
+
+@dataclass(frozen=True)
+class CallEntry:
+    """A call site in the timeline (Member 01 Q4, proposed): the callee's output is not inlined."""
+
+    id: str
+    callee: str | None  # the called function's node id; None when the call is not resolved to one function
+    outputs_inside: bool | str  # True | False | "unknown"
+    enclosed_by: tuple[Enclosure, ...]  # outermost first
+    loc: Loc | None = None
+
+
+@dataclass(frozen=True)
+class AstNode:
+    """One node of Member 01's AST (ast/<fileId>.json)."""
+
+    id: str
+    kind: str  # nikic node name; the root is "File"
+    parent: str | None  # None for the root only
+    children: tuple[str, ...]  # child node ids, in order
+    fields: dict  # role -> child id, or a tuple of child ids (None for an empty position)
+    attrs: dict  # literal values and other non-node data
+    loc: Loc | None
+
+
+@dataclass(frozen=True)
+class Ast:
+    """One PHP file's AST. Node ids are the join key between AST, timeline and labels."""
+
+    schema_version: str
+    file_id: str
+    path: str
+    sha256: str  # of the PHP source
+    bytes: int  # length of the PHP source
+    parse_ok: bool
+    parse_errors: tuple
+    root_id: str
+    node_count: int
+    nodes: dict  # id -> AstNode, in pre-order
+
+    @property
+    def root(self) -> AstNode:
+        return self.nodes[self.root_id]
 
 
 @dataclass(frozen=True)
@@ -116,6 +176,9 @@ class Timeline:
     # Raw SQL for reporting only; no stage may need it (reads carry source.query_node_id).
     queries: dict[str, Query]
     provenance: dict  # opaque metadata about how the mock was made; never used in decisions
+    # Call sites, in source order (Member 01 Q4, proposed). Kept apart from `sequence`, which holds the
+    # output statements only. No rule reads them yet (R-F1 / R-F2, roadmap Phase 2b).
+    calls: tuple[CallEntry, ...] = ()
 
 
 # ----------------------------------------------------------------------------- Stage 1 result
@@ -318,6 +381,7 @@ class NeedReference:
     wrappers: tuple[str, ...] = ()  # functions applied around it, outermost first, e.g. ("h",)
     file: str = ""  # the timeline's entrypoint
     from_abstained: bool = False  # the output node is inside a Stage 2 Abstain node
+    col: int | None = None  # the node's 1-based start column (loc.startCol + 1), for file:line:col; None with no loc
 
 
 @dataclass(frozen=True)
@@ -417,6 +481,7 @@ class GenerationEntry:
     # The flag rate counts todo + review (spec section 12). Inside abstained code everything is info.
     severity: str = "review"
     severity_if_rendered: str = "review"  # the severity it would have outside abstained code
+    source_col: int | None = None  # the PHP column, 1-based (loc.startCol + 1); None when unknown
 
 
 @dataclass(frozen=True)

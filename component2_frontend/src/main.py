@@ -209,12 +209,13 @@ def print_stage4(report) -> None:
     else:
         console.print(f"  file: {escape(report.entrypoint)}", style="dim")
         table = Table(box=box.SIMPLE_HEAD, show_edge=False)
-        for column in ("Component", "Field", "File:line", "Result", "Reason", "Abstained"):
+        for column in ("Component", "Field", "File:line:col", "Result", "Reason", "Abstained"):
             table.add_column(column, overflow="fold")
         for row in rows:
-            lines = sorted({ref.line for ref in row.need.references if ref.line is not None})
+            # line:col, the column 1-based (loc.startCol + 1), as editors count it
+            places = sorted({(ref.line, ref.col) for ref in row.need.references if ref.line is not None})
             unknown = any(ref.line is None for ref in row.need.references)
-            where = ",".join([str(line) for line in lines] + (["?"] if unknown else []))
+            where = ",".join([f"{line}:{col}" for line, col in places] + (["?"] if unknown else []))
             reason = row.reason + (f" (hint: {row.hint})" if row.hint else "")
             table.add_row(f"{row.component_type} {row.component_id}", escape(row.need.name),
                           escape(f"{display_file(report.entrypoint)}:{where}"),

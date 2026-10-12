@@ -1,155 +1,148 @@
 <?php
 /**
- * Component 2 whole-app test harness, PHP side: parse only, never execute.
+ * Component 2 whole-app test harness, AST producer: parse only, never execute.
  *
- * Reads a manifest (JSON list of {"source": <php file>, "out": <json file>}) and, for each file,
- * writes nikic/php-parser's AST as JSON. Three attributes are added from the token stream, because
- * the timeline needs exact source positions that the AST alone does not give:
+ * Writes one AST file per PHP source in Member 01's format (CONTEXT.md section 3):
  *
- *   parenFirstToken / parenStartPos / parenEndPos
- *       on if, elseif, while, do, for, foreach, switch: the first significant token inside the
- *       statement's parentheses (the condition's node id) and the byte range between them
- *       (condExpr / iterExpr). The AST drops redundant parentheses; the tokens do not.
- *   spanEndPos
- *       on echo: the statement's last byte. Its ";" is included; a closing tag is not.
+ *   {schemaVersion, fileId, path, sha256, bytes, parseOk, parseErrors, rootId, nodeCount,
+ *    nodes: [{id, kind, parent, children, fields, attrs, loc}]}
+ *
+ * Nodes are nikic/php-parser's nodes under one root `File`, numbered in pre-order from
+ * "<fileId>#00000" (parent before children, children in sub-node order). A sub-node that is a node,
+ * a list of nodes or absent (null) is a role in `fields` (an id, a list of ids, or null); any other
+ * sub-node value is in `attrs`, together with nikic's `kind` and `rawValue` attributes as `_kind`
+ * and `_rawValue`. `loc` comes from the node's byte range only: lines 1-based, columns 0-based, every
+ * end exclusive. Object keys are written in sorted order, as in Member 01's files.
+ *
+ * Checked node by node against Member 01's real AST of HMS admin-panel1.php
+ * (legacy-apps/real/, tests/test_real_ast.py). Not shown by that file, so still our own choice:
+ * the items of `parseErrors` (message strings), other nikic attributes (e.g. a heredoc's label),
+ * and how non-ASCII text is escaped.
  *
  * Usage: php parse.php <manifest.json>
+ *   manifest = {"meta": <json file>, "files": [{"source", "out", "fileId", "path"}]}
+ *   meta receives {"parser", "php", "syntax": {<fileId>: "newest" | "5.6"}}
  */
 
 require __DIR__ . '/vendor/autoload.php';
 
 use PhpParser\ErrorHandler\Collecting;
 use PhpParser\Node;
-use PhpParser\NodeTraverser;
-use PhpParser\NodeVisitorAbstract;
 use PhpParser\ParserFactory;
 use PhpParser\PhpVersion;
 
 const PARSER_PACKAGE = 'nikic/php-parser';
+const SCHEMA_VERSION = '1.0';
 
-function is_ignorable($token): bool
+final class AstWriter
 {
-    return in_array($token->id, [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true);
+    /** @var array<int, array> */
+    public array $nodes = [];
+    /** @var int[] byte offset of the start of each line */
+    private array $lineStarts = [0];
+
+    public function __construct(private string $fileId, private string $code)
+    {
+        $offset = 0;
+        while (($offset = strpos($code, "\n", $offset)) !== false) {
+            $this->lineStarts[] = ++$offset;
+        }
+    }
+
+    private function id(int $ordinal): string
+    {
+        return sprintf('%s#%05d', $this->fileId, $ordinal);
+    }
+
+    /** [1-based line, 0-based byte column] of a byte offset. */
+    private function position(int $offset): array
+    {
+        $lo = 0;
+        $hi = count($this->lineStarts) - 1;
+        while ($lo < $hi) {
+            $mid = intdiv($lo + $hi + 1, 2);
+            if ($this->lineStarts[$mid] <= $offset) {
+                $lo = $mid;
+            } else {
+                $hi = $mid - 1;
+            }
+        }
+        return [$lo + 1, $offset - $this->lineStarts[$lo]];
+    }
+
+    private function loc(int $startByte, int $endByte): array
+    {
+        [$startLine, $startCol] = $this->position($startByte);
+        [$endLine, $endCol] = $this->position($endByte);
+        return ['startLine' => $startLine, 'endLine' => $endLine, 'startCol' => $startCol, 'endCol' => $endCol,
+                'startByte' => $startByte, 'endByte' => $endByte];
+    }
+
+    /** @param Node[] $stmts */
+    public function file(array $stmts): void
+    {
+        $this->nodes[0] = null;  // reserve the root's place: ids are pre-order
+        $children = [];
+        foreach ($stmts as $stmt) {
+            $children[] = $this->node($stmt, $this->id(0));
+        }
+        $this->nodes[0] = ['id' => $this->id(0), 'kind' => 'File', 'parent' => null, 'children' => $children,
+                           'fields' => ['stmts' => $children], 'attrs' => new stdClass(),
+                           'loc' => $this->loc(0, strlen($this->code))];
+    }
+
+    private function node(Node $node, string $parent): string
+    {
+        $ordinal = count($this->nodes);
+        $id = $this->id($ordinal);
+        $this->nodes[$ordinal] = null;
+        $children = [];
+        $fields = [];
+        $attrs = [];
+        foreach ($node->getSubNodeNames() as $name) {
+            $value = $node->$name;
+            if ($value instanceof Node) {
+                $fields[$name] = $children[] = $this->node($value, $id);
+            } elseif ($value === null) {
+                $fields[$name] = null;  // an absent node (no else, an unnamed argument) is still a role
+            } elseif (is_array($value)) {
+                $ids = [];
+                foreach ($value as $item) {
+                    if ($item instanceof Node) {
+                        $ids[] = $children[] = $this->node($item, $id);
+                    } else {
+                        $ids[] = null;  // e.g. a skipped position in list(, $b)
+                    }
+                }
+                $fields[$name] = $ids;
+            } else {
+                $attrs[$name] = $value;
+            }
+        }
+        foreach (['kind', 'rawValue'] as $attribute) {
+            if ($node->hasAttribute($attribute)) {
+                $attrs['_' . $attribute] = $node->getAttribute($attribute);
+            }
+        }
+        $this->nodes[$ordinal] = [
+            'id' => $id, 'kind' => $node->getType(), 'parent' => $parent, 'children' => $children,
+            'fields' => $fields ?: new stdClass(), 'attrs' => $attrs ?: new stdClass(),
+            'loc' => $this->loc($node->getStartFilePos(), $node->getEndFilePos() + 1),
+        ];
+        return $id;
+    }
 }
 
-final class Positions extends NodeVisitorAbstract
+/** The same value with every object's keys in sorted order (lists keep their order). */
+function sorted_keys($value)
 {
-    /** @var \PhpParser\Token[] */
-    private array $tokens;
-
-    public function __construct(array $tokens)
-    {
-        $this->tokens = $tokens;
+    if (!is_array($value)) {
+        return $value;
     }
-
-    public function enterNode(Node $node)
-    {
-        if ($node instanceof Node\Stmt\If_ || $node instanceof Node\Stmt\ElseIf_ || $node instanceof Node\Stmt\While_
-            || $node instanceof Node\Stmt\For_ || $node instanceof Node\Stmt\Foreach_
-            || $node instanceof Node\Stmt\Switch_) {
-            $open = $this->firstOpenParen($node->getStartTokenPos() + 1);
-            if ($open !== null) {
-                $this->setParens($node, $open, $this->matchForward($open));
-            }
-        } elseif ($node instanceof Node\Stmt\Do_) {
-            $close = $this->lastCloseParen($node->getEndTokenPos());
-            if ($close !== null) {
-                $this->setParens($node, $this->matchBackward($close), $close);
-            }
-        } elseif ($node instanceof Node\Stmt\Echo_) {
-            $node->setAttribute('spanEndPos', $this->echoEnd($node->getStartTokenPos()));
-        }
-        return null;
+    if (!array_is_list($value)) {
+        ksort($value, SORT_STRING);
     }
-
-    private function setParens(Node $node, ?int $open, ?int $close): void
-    {
-        if ($open === null || $close === null) {
-            return;
-        }
-        $first = $open + 1;
-        while ($first < $close && is_ignorable($this->tokens[$first])) {
-            $first++;
-        }
-        $node->setAttribute('parenFirstToken', $first);
-        $node->setAttribute('parenStartPos', $this->tokens[$open]->pos + 1);
-        $node->setAttribute('parenEndPos', $this->tokens[$close]->pos);
-    }
-
-    private function firstOpenParen(int $from): ?int
-    {
-        for ($i = $from; $i < count($this->tokens); $i++) {
-            if ($this->tokens[$i]->text === '(') {
-                return $i;
-            }
-            if (!is_ignorable($this->tokens[$i])) {
-                return null;
-            }
-        }
-        return null;
-    }
-
-    private function lastCloseParen(int $from): ?int
-    {
-        for ($i = $from; $i >= 0; $i--) {
-            if ($this->tokens[$i]->text === ')') {
-                return $i;
-            }
-        }
-        return null;
-    }
-
-    private function matchForward(int $open): ?int
-    {
-        $depth = 0;
-        for ($i = $open; $i < count($this->tokens); $i++) {
-            if ($this->tokens[$i]->text === '(') {
-                $depth++;
-            } elseif ($this->tokens[$i]->text === ')' && --$depth === 0) {
-                return $i;
-            }
-        }
-        return null;
-    }
-
-    private function matchBackward(int $close): ?int
-    {
-        $depth = 0;
-        for ($i = $close; $i >= 0; $i--) {
-            if ($this->tokens[$i]->text === ')') {
-                $depth++;
-            } elseif ($this->tokens[$i]->text === '(' && --$depth === 0) {
-                return $i;
-            }
-        }
-        return null;
-    }
-
-    /** The echo statement's last byte: up to its ";" (included), or the last token before a closing tag. */
-    private function echoEnd(int $start): int
-    {
-        $depth = 0;
-        $count = count($this->tokens);
-        for ($j = $start + 1; $j < $count; $j++) {
-            $token = $this->tokens[$j];
-            if ($depth === 0 && ($token->id === T_CLOSE_TAG || $token->text === ';')) {
-                break;
-            }
-            if ($token->text === '(' || $token->text === '[') {
-                $depth++;
-            } elseif ($token->text === ')' || $token->text === ']') {
-                $depth--;
-            }
-        }
-        $last = $j;
-        if ($j >= $count || $this->tokens[$j]->text !== ';') {
-            $last = min($j, $count) - 1;
-            while ($last > $start && (is_ignorable($this->tokens[$last]) || $this->tokens[$last]->text === "\0")) {
-                $last--;
-            }
-        }
-        return $this->tokens[$last]->pos + strlen($this->tokens[$last]->text) - 1;
-    }
+    return array_map('sorted_keys', $value);
 }
 
 function parse_file(string $code): array
@@ -159,10 +152,9 @@ function parse_file(string $code): array
                  '5.6' => fn() => $factory->createForVersion(PhpVersion::fromString('5.6'))];
     $result = null;
     foreach ($attempts as $label => $make) {
-        $parser = $make();
         $errors = new Collecting();
-        $ast = $parser->parse($code, $errors);
-        $result = ['syntax' => $label, 'ast' => $ast, 'tokens' => $parser->getTokens(),
+        $ast = $make()->parse($code, $errors);
+        $result = ['syntax' => $label, 'ast' => $ast,
                    'errors' => array_map(fn($e) => $e->getRawMessage() . ' on line ' . $e->getStartLine(),
                                          $errors->getErrors())];
         if (!$result['errors'] && $ast !== null) {
@@ -173,21 +165,24 @@ function parse_file(string $code): array
 }
 
 $manifest = json_decode(file_get_contents($argv[1]), true);
-$version = \Composer\InstalledVersions::getPrettyVersion(PARSER_PACKAGE);
-foreach ($manifest as $entry) {
+$meta = ['parser' => PARSER_PACKAGE . ' ' . \Composer\InstalledVersions::getPrettyVersion(PARSER_PACKAGE),
+         'php' => PHP_VERSION, 'syntax' => []];
+$flags = JSON_INVALID_UTF8_SUBSTITUTE | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
+foreach ($manifest['files'] as $entry) {
     $code = file_get_contents($entry['source']);
     $parsed = parse_file($code);
-    $ast = $parsed['ast'] ?? [];
-    if ($ast) {
-        $traverser = new NodeTraverser(new Positions($parsed['tokens']));
-        $ast = $traverser->traverse($ast);
-    }
-    $out = ['parser' => PARSER_PACKAGE . ' ' . $version, 'php' => PHP_VERSION, 'syntax' => $parsed['syntax'],
-            'errors' => $parsed['errors'], 'ast' => $ast];
-    $json = json_encode($out, JSON_INVALID_UTF8_SUBSTITUTE | JSON_PARTIAL_OUTPUT_ON_ERROR, 100000);
+    $writer = new AstWriter($entry['fileId'], $code);
+    $writer->file($parsed['ast'] ?? []);
+    $meta['syntax'][$entry['fileId']] = $parsed['syntax'];
+    $out = ['schemaVersion' => SCHEMA_VERSION, 'fileId' => $entry['fileId'], 'path' => $entry['path'],
+            'sha256' => hash('sha256', $code), 'bytes' => strlen($code),
+            'parseOk' => !$parsed['errors'] && $parsed['ast'] !== null, 'parseErrors' => $parsed['errors'],
+            'rootId' => $writer->nodes[0]['id'], 'nodeCount' => count($writer->nodes), 'nodes' => $writer->nodes];
+    $json = json_encode(sorted_keys($out), $flags, 100000);
     if ($json === false) {
-        $json = json_encode(['parser' => $out['parser'], 'php' => PHP_VERSION, 'syntax' => $parsed['syntax'],
-                             'errors' => ['json: ' . json_last_error_msg()], 'ast' => []]);
+        fwrite(STDERR, $entry['path'] . ': json: ' . json_last_error_msg() . "\n");
+        exit(1);
     }
-    file_put_contents($entry['out'], $json);
+    file_put_contents($entry['out'], $json . "\n");
 }
+file_put_contents($manifest['meta'], json_encode($meta, $flags) . "\n");

@@ -3,108 +3,164 @@
   "schemaVersion": "1.0",
   "sequence": [
     {
-      "id": "f009#00275",
+      "id": "f009#00102",
       "kind": "Stmt_InlineHTML",
       "raw": "<div class=\"column prepend-1 span-21 first last\" style=\"margin-bottom: 2em;\">\n      ",
       "enclosedBy": [],
       "loc": {
         "startLine": 93,
         "endLine": 94,
-        "startCol": 1,
-        "endCol": 6
+        "startCol": 0,
+        "endCol": 6,
+        "startByte": 3140,
+        "endByte": 3224
       }
     },
     {
-      "id": "f009#00286",
+      "id": "f009#00105",
       "kind": "Stmt_InlineHTML",
       "raw": "<ul class=\"thumbnail-pic-list\">\n",
       "enclosedBy": [
         {
-          "nodeId": "f009#00277",
+          "nodeId": "f009#00103",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00280",
-          "condExpr": "$pictures"
+          "condNodeId": "f009#00104",
+          "condExpr": "$pictures",
+          "loc": {
+            "startLine": 94,
+            "endLine": 136,
+            "startCol": 12,
+            "endCol": 7,
+            "startByte": 3230,
+            "endByte": 4105
+          }
         }
       ],
       "loc": {
         "startLine": 95,
-        "endLine": 95,
-        "startCol": 1,
-        "endCol": 32
+        "endLine": 96,
+        "startCol": 0,
+        "endCol": 0,
+        "startByte": 3250,
+        "endByte": 3282
       }
     },
     {
-      "id": "f009#00404",
+      "id": "f009#00158",
       "kind": "Stmt_InlineHTML",
       "raw": "</ul>\n</div>\n<div class=\"column prepend-1 span-21 first last\" style=\"margin-bottom: 2em;\">\n<ul class=\"thumbnail-pic-list\">\n\t ",
       "enclosedBy": [
         {
-          "nodeId": "f009#00277",
+          "nodeId": "f009#00103",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00280",
-          "condExpr": "$pictures"
+          "condNodeId": "f009#00104",
+          "condExpr": "$pictures",
+          "loc": {
+            "startLine": 94,
+            "endLine": 136,
+            "startCol": 12,
+            "endCol": 7,
+            "startByte": 3230,
+            "endByte": 4105
+          }
         },
         {
-          "nodeId": "f009#00289",
+          "nodeId": "f009#00106",
           "kind": "Stmt_For",
           "role": "iteration",
           "iterExpr": "$i = 0; $i < count($pictures); $i++",
           "iterSourceKind": "unresolved",
           "valueVar": null,
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 97,
+            "endLine": 129,
+            "startCol": 3,
+            "endCol": 4,
+            "startByte": 3291,
+            "endByte": 4028
+          }
         },
         {
-          "nodeId": "f009#00375",
+          "nodeId": "f009#00148",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00378",
-          "condExpr": "$i != 0 && (($i % 4) == 0)"
+          "condNodeId": "f009#00149",
+          "condExpr": "$i != 0 && (($i % 4) == 0)",
+          "loc": {
+            "startLine": 109,
+            "endLine": 117,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 3566,
+            "endByte": 3749
+          }
         }
       ],
       "loc": {
         "startLine": 112,
         "endLine": 116,
-        "startCol": 1,
-        "endCol": 2
+        "startCol": 0,
+        "endCol": 2,
+        "startByte": 3611,
+        "endByte": 3736
       }
     },
     {
-      "id": "f009#00459",
+      "id": "f009#00184",
       "kind": "Stmt_InlineHTML",
       "raw": "<li>\n<a href=\"",
       "enclosedBy": [
         {
-          "nodeId": "f009#00277",
+          "nodeId": "f009#00103",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00280",
-          "condExpr": "$pictures"
+          "condNodeId": "f009#00104",
+          "condExpr": "$pictures",
+          "loc": {
+            "startLine": 94,
+            "endLine": 136,
+            "startCol": 12,
+            "endCol": 7,
+            "startByte": 3230,
+            "endByte": 4105
+          }
         },
         {
-          "nodeId": "f009#00289",
+          "nodeId": "f009#00106",
           "kind": "Stmt_For",
           "role": "iteration",
           "iterExpr": "$i = 0; $i < count($pictures); $i++",
           "iterSourceKind": "unresolved",
           "valueVar": null,
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 97,
+            "endLine": 129,
+            "startCol": 3,
+            "endCol": 4,
+            "startByte": 3291,
+            "endByte": 4028
+          }
         }
       ],
       "loc": {
         "startLine": 124,
         "endLine": 125,
-        "startCol": 1,
-        "endCol": 9
+        "startCol": 0,
+        "endCol": 9,
+        "startByte": 3888,
+        "endByte": 3902
       }
     },
     {
-      "id": "f009#00460",
+      "id": "f009#00185",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -128,62 +184,98 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f009#00277",
+          "nodeId": "f009#00103",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00280",
-          "condExpr": "$pictures"
+          "condNodeId": "f009#00104",
+          "condExpr": "$pictures",
+          "loc": {
+            "startLine": 94,
+            "endLine": 136,
+            "startCol": 12,
+            "endCol": 7,
+            "startByte": 3230,
+            "endByte": 4105
+          }
         },
         {
-          "nodeId": "f009#00289",
+          "nodeId": "f009#00106",
           "kind": "Stmt_For",
           "role": "iteration",
           "iterExpr": "$i = 0; $i < count($pictures); $i++",
           "iterSourceKind": "unresolved",
           "valueVar": null,
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 97,
+            "endLine": 129,
+            "startCol": 3,
+            "endCol": 4,
+            "startByte": 3291,
+            "endByte": 4028
+          }
         }
       ],
       "loc": {
         "startLine": 125,
         "endLine": 125,
-        "startCol": 10,
-        "endCol": 23
+        "startCol": 9,
+        "endCol": 26,
+        "startByte": 3902,
+        "endByte": 3919
       }
     },
     {
-      "id": "f009#00467",
+      "id": "f009#00190",
       "kind": "Stmt_InlineHTML",
       "raw": "\"><img src=\"/upload/",
       "enclosedBy": [
         {
-          "nodeId": "f009#00277",
+          "nodeId": "f009#00103",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00280",
-          "condExpr": "$pictures"
+          "condNodeId": "f009#00104",
+          "condExpr": "$pictures",
+          "loc": {
+            "startLine": 94,
+            "endLine": 136,
+            "startCol": 12,
+            "endCol": 7,
+            "startByte": 3230,
+            "endByte": 4105
+          }
         },
         {
-          "nodeId": "f009#00289",
+          "nodeId": "f009#00106",
           "kind": "Stmt_For",
           "role": "iteration",
           "iterExpr": "$i = 0; $i < count($pictures); $i++",
           "iterSourceKind": "unresolved",
           "valueVar": null,
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 97,
+            "endLine": 129,
+            "startCol": 3,
+            "endCol": 4,
+            "startByte": 3291,
+            "endByte": 4028
+          }
         }
       ],
       "loc": {
         "startLine": 125,
         "endLine": 125,
-        "startCol": 27,
-        "endCol": 46
+        "startCol": 26,
+        "endCol": 46,
+        "startByte": 3919,
+        "endByte": 3939
       }
     },
     {
-      "id": "f009#00468",
+      "id": "f009#00191",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -209,90 +301,138 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f009#00277",
+          "nodeId": "f009#00103",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00280",
-          "condExpr": "$pictures"
+          "condNodeId": "f009#00104",
+          "condExpr": "$pictures",
+          "loc": {
+            "startLine": 94,
+            "endLine": 136,
+            "startCol": 12,
+            "endCol": 7,
+            "startByte": 3230,
+            "endByte": 4105
+          }
         },
         {
-          "nodeId": "f009#00289",
+          "nodeId": "f009#00106",
           "kind": "Stmt_For",
           "role": "iteration",
           "iterExpr": "$i = 0; $i < count($pictures); $i++",
           "iterSourceKind": "unresolved",
           "valueVar": null,
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 97,
+            "endLine": 129,
+            "startCol": 3,
+            "endCol": 4,
+            "startByte": 3291,
+            "endByte": 4028
+          }
         }
       ],
       "loc": {
         "startLine": 125,
         "endLine": 125,
-        "startCol": 47,
-        "endCol": 69
+        "startCol": 46,
+        "endCol": 72,
+        "startByte": 3939,
+        "endByte": 3965
       }
     },
     {
-      "id": "f009#00479",
+      "id": "f009#00198",
       "kind": "Stmt_InlineHTML",
       "raw": ".128_128.jpg\" height=\"128\" width=\"128\" /></a>\n</li>\n",
       "enclosedBy": [
         {
-          "nodeId": "f009#00277",
+          "nodeId": "f009#00103",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00280",
-          "condExpr": "$pictures"
+          "condNodeId": "f009#00104",
+          "condExpr": "$pictures",
+          "loc": {
+            "startLine": 94,
+            "endLine": 136,
+            "startCol": 12,
+            "endCol": 7,
+            "startByte": 3230,
+            "endByte": 4105
+          }
         },
         {
-          "nodeId": "f009#00289",
+          "nodeId": "f009#00106",
           "kind": "Stmt_For",
           "role": "iteration",
           "iterExpr": "$i = 0; $i < count($pictures); $i++",
           "iterSourceKind": "unresolved",
           "valueVar": null,
-          "keyVar": null
+          "keyVar": null,
+          "loc": {
+            "startLine": 97,
+            "endLine": 129,
+            "startCol": 3,
+            "endCol": 4,
+            "startByte": 3291,
+            "endByte": 4028
+          }
         }
       ],
       "loc": {
         "startLine": 125,
-        "endLine": 126,
-        "startCol": 73,
-        "endCol": 6
+        "endLine": 127,
+        "startCol": 72,
+        "endCol": 0,
+        "startByte": 3965,
+        "endByte": 4017
       }
     },
     {
-      "id": "f009#00493",
+      "id": "f009#00200",
       "kind": "Stmt_InlineHTML",
       "raw": "<h3 class=\"error\">No pictures here...</h3>\n\n\n",
       "enclosedBy": [
         {
-          "nodeId": "f009#00277",
+          "nodeId": "f009#00103",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "else",
-          "condNodeId": "f009#00280"
+          "condNodeId": "f009#00104",
+          "loc": {
+            "startLine": 94,
+            "endLine": 136,
+            "startCol": 12,
+            "endCol": 7,
+            "startByte": 3230,
+            "endByte": 4105
+          }
         }
       ],
       "loc": {
         "startLine": 133,
-        "endLine": 135,
-        "startCol": 1,
-        "endCol": 1
+        "endLine": 136,
+        "startCol": 0,
+        "endCol": 0,
+        "startByte": 4053,
+        "endByte": 4098
       }
     },
     {
-      "id": "f009#00498",
+      "id": "f009#00201",
       "kind": "Stmt_InlineHTML",
       "raw": "</ul>\n</div>\n",
       "enclosedBy": [],
       "loc": {
         "startLine": 137,
-        "endLine": 138,
-        "startCol": 1,
-        "endCol": 7
+        "endLine": 139,
+        "startCol": 0,
+        "endCol": 0,
+        "startByte": 4109,
+        "endByte": 4122
       }
     }
   ],
@@ -316,7 +456,8 @@
       138
     ],
     "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
-    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not).",
-    "condExprExtension": "Agent extension, pending Member 01 Q2 (boundary-rules.md section 9): every then/elseif branch enclosure carries condExpr, the byte-exact PHP source of its if/elseif condition from PHP's lexer, without the outer parentheses and the whitespace just inside them. else branches have none: their meaning comes from the chain."
+    "idConvention": "Member 01's convention (answered 12 Oct 2026): node ids are the pre-order ids of the file's AST (<fileId>#00000 = root File). The AST is produced by the C2 test harness in Member 01's format (tools/harness/parse.php, nikic/php-parser v5.9.0); it is not Member 01's own output.",
+    "locConvention": "Member 01's convention (Q13-Q15, answered 12 Oct 2026): every sequence entry, loop and branch enclosure carries loc {startLine, endLine, startCol, endCol, startByte, endByte}, the loc of its AST node (for an enclosure: the node named by nodeId). Lines are 1-based; columns and bytes are 0-based; every end is exclusive. An echo closed by '?>' ends after that tag, as its AST node does.",
+    "condExprConvention": "Member 01's convention (Q2, answered 12 Oct 2026): every then/elseif branch enclosure carries condExpr, the exact source of its if/elseif `cond` node (no outer parentheses), and condNodeId is that node's id. else branches have no condExpr: their meaning comes from the chain."
   }
 }

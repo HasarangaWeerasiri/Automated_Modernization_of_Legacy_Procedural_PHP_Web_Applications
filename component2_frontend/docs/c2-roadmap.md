@@ -1,4 +1,4 @@
-# Component 2 — Roadmap to 100% (v1.0)
+# Component 2 — Roadmap to 100% (v1.2)
 
 | Item | Value |
 |---|---|
@@ -8,19 +8,21 @@
 
 ## 1. What 100% means for C2
 
-C2 is 100% when every row below is ✅. Rows 1–6 and 8 depend only on C2. Row 7 depends on Member 01 / C1;
+C2 is 100% when every row below is ✅. Rows 0–6 depend only on C2. Row 7 depends on Member 01 / C1;
 it has a fallback so C2 can still finish.
 
 | # | Phase | Exit check | Depends on | Status (12 Oct) |
 |---|---|---|---|---|
 | 0 | Stages 1–5 on mocks | 573 tests, 0 strict `tsc` errors, every gap visible | — | ✅ done |
-| 1 | **Whole-app harness** | Every page of HMS and WackoPicko runs through Stages 1–5 with no crash; each page compiles or each failure is explained; pattern log written | C2 only | ⏳ next |
-| 2 | Functions and layouts (R-F1, R-F2) | Function output becomes components at the call site; shared header/footer becomes `app/layout.tsx`; `document_shell` and the `html_functions` route clash disappear | Phase 1 evidence | ⬜ |
+| 1 | **Whole-app harness** | Every page of HMS and WackoPicko runs through Stages 1–5 with no crash; each page compiles or each failure is explained; pattern log written | C2 only | ✅ done 12 Oct (66 timelines, 0 crashes, 0 tsc errors, 9 new patterns) |
+| 1b | **Align with Member 01's real AST** | Harness reproduces the real `admin-panel1.php` AST **exactly** (all 602 nodes: id, kind, parent, children, fields, loc); harness and mocks use Member 01's ids, `loc` convention, `call` entries and `SELECT *` rule; loader reads the real AST | Real AST (arrived 12 Oct) | ⏳ next |
+| 2a | Echo-string parts, copy propagation, interpolated-SQL values, R-L3b, module fix | HMS one-echo rows generate as Lists/Items (no `no_rule` abstains for them); every generated file is a module; checker override removed | Phase 1b | ⬜ |
+| 2b | Functions and shell (R-F1, R-F2) | Function output becomes components at the call site; WackoPicko header/footer becomes root layout + shell component; `document_shell` and the `html_functions` route clash disappear for WackoPicko | Phase 2a | ⬜ |
 | 3 | Rule saturation and **freeze** | phpBlog, then attendance, run through the harness; 2 consecutive apps add no new pattern → rules doc header says **Frozen** | Phases 1–2 | ⬜ |
 | 4 | Runtime rendering check (SO4, measured) | HMS runs in Docker (PHP + MySQL, its own `myhmsdb.sql`); the generated pages run with the same data; rendered DOM compared; every difference is explained by a flag. Unexplained difference = bug | Phase 2 | ⬜ |
 | 5 | Evaluation on the 5 locked apps | Owner's **gold standard committed before** the tool runs; metrics: boundary precision/recall, **unsound decisions (target 0)**, abstain/flag rate, compile rate, render match where runnable | Phase 3 freeze | ⬜ |
 | 6 | Report chapter + appendices | C2 method, results (from `tools/results_table.py`), honest limits, Appendix E decision logs, Appendix F AI-use disclosure | Phases 1–5 | ⬜ |
-| 7 | Real integration | Member 01's timeline and C1's labels/contract replace the harness and substitutes for at least one HMS page; differences vs the harness explained | Member 01, C1 | ⬜ blocked |
+| 7 | Real integration | Member 01's timeline and C1's labels/contract replace the harness and substitutes for at least one HMS page; differences vs the harness explained | Member 01, C1 | 🟡 partly: real AST for 1 page arrived 12 Oct (used in 1b). Timeline/labels/contract do not exist yet |
 
 **Fallback for row 7:** if the real inputs have not arrived by the date the owner sets (write it here: `____`),
 row 7 is closed as "blocked — harness used", and the report says so plainly. The loader isolation (hard rule 1)
@@ -54,3 +56,5 @@ means the swap later is a loader change only.
 | Date | Change |
 |---|---|
 | 12 Oct 2026 | v1.0 — roadmap created; 3 evaluation apps added and 2 discovery apps queued by random split (rules §7) |
+| 12 Oct 2026 | v1.1 — Phase 1 done; Phase 2 split into 2a (input normalisation from the pattern log) and 2b (R-F1/R-F2) |
+| 12 Oct 2026 | v1.2 — Member 01 answers + real AST arrived; Phase 1b (alignment) inserted before 2a |

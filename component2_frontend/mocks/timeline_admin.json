@@ -3,31 +3,35 @@
   "schemaVersion": "1.0",
   "sequence": [
     {
-      "id": "f003#00000",
+      "id": "f003#00001",
       "kind": "Stmt_InlineHTML",
       "raw": "<!DOCTYPE html>\n",
       "enclosedBy": [],
       "loc": {
         "startLine": 1,
-        "endLine": 1,
-        "startCol": 1,
-        "endCol": 16
+        "endLine": 2,
+        "startCol": 0,
+        "endCol": 0,
+        "startByte": 0,
+        "endByte": 16
       }
     },
     {
-      "id": "f003#00032",
+      "id": "f003#00024",
       "kind": "Stmt_InlineHTML",
       "raw": "<html lang=\"en\">\n  <body style=\"padding-top:50px;\">\n   <div class=\"container-fluid\" style=\"margin-top:50px;\">\n    <h3 style = \"margin-left: 40%;  padding-bottom: 20px; font-family: 'IBM Plex Sans', sans-serif;\"> Welcome &nbsp",
       "enclosedBy": [],
       "loc": {
         "startLine": 7,
         "endLine": 10,
-        "startCol": 1,
-        "endCol": 115
+        "startCol": 0,
+        "endCol": 115,
+        "startByte": 132,
+        "endByte": 357
       }
     },
     {
-      "id": "f003#00034",
+      "id": "f003#00025",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -42,46 +46,60 @@
       "enclosedBy": [],
       "loc": {
         "startLine": 10,
-        "endLine": 10,
-        "startCol": 122,
-        "endCol": 135
+        "endLine": 11,
+        "startCol": 121,
+        "endCol": 0,
+        "startByte": 363,
+        "endByte": 381
       }
     },
     {
-      "id": "f003#00039",
+      "id": "f003#00027",
       "kind": "Stmt_InlineHTML",
       "raw": "   </h3>\n",
       "enclosedBy": [],
       "loc": {
         "startLine": 11,
-        "endLine": 11,
-        "startCol": 1,
-        "endCol": 9
+        "endLine": 12,
+        "startCol": 0,
+        "endCol": 0,
+        "startByte": 381,
+        "endByte": 390
       }
     },
     {
-      "id": "f003#00096",
+      "id": "f003#00059",
       "kind": "Stmt_InlineHTML",
       "raw": "    <div class=\"admin-stats\">\n      <p>Active appointments: ",
       "enclosedBy": [
         {
-          "nodeId": "f003#00041",
+          "nodeId": "f003#00028",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00044",
-          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'"
+          "condNodeId": "f003#00029",
+          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'",
+          "loc": {
+            "startLine": 12,
+            "endLine": 24,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 396,
+            "endByte": 998
+          }
         }
       ],
       "loc": {
         "startLine": 17,
         "endLine": 18,
-        "startCol": 1,
-        "endCol": 30
+        "startCol": 0,
+        "endCol": 30,
+        "startByte": 664,
+        "endByte": 724
       }
     },
     {
-      "id": "f003#00098",
+      "id": "f003#00060",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -93,8 +111,8 @@
           "sourceKind": "db_row_field",
           "confidence": "resolved",
           "source": {
-            "fetchNodeId": "f003#00089",
-            "queryNodeId": "f003#00077",
+            "fetchNodeId": "f003#00055",
+            "queryNodeId": "f003#00046",
             "table": "appointmenttb",
             "column": "total"
           }
@@ -102,44 +120,64 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f003#00041",
+          "nodeId": "f003#00028",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00044",
-          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'"
+          "condNodeId": "f003#00029",
+          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'",
+          "loc": {
+            "startLine": 12,
+            "endLine": 24,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 396,
+            "endByte": 998
+          }
         }
       ],
       "loc": {
         "startLine": 18,
         "endLine": 18,
-        "startCol": 37,
-        "endCol": 57
+        "startCol": 36,
+        "endCol": 57,
+        "startByte": 730,
+        "endByte": 751
       }
     },
     {
-      "id": "f003#00106",
+      "id": "f003#00064",
       "kind": "Stmt_InlineHTML",
       "raw": "</p>\n      <p>Fees collected: &#8377;",
       "enclosedBy": [
         {
-          "nodeId": "f003#00041",
+          "nodeId": "f003#00028",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00044",
-          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'"
+          "condNodeId": "f003#00029",
+          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'",
+          "loc": {
+            "startLine": 12,
+            "endLine": 24,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 396,
+            "endByte": 998
+          }
         }
       ],
       "loc": {
         "startLine": 18,
         "endLine": 19,
-        "startCol": 60,
-        "endCol": 32
+        "startCol": 59,
+        "endCol": 32,
+        "startByte": 753,
+        "endByte": 790
       }
     },
     {
-      "id": "f003#00108",
+      "id": "f003#00066",
       "kind": "Expr_Print",
       "reads": [
         {
@@ -151,8 +189,8 @@
           "sourceKind": "db_row_field",
           "confidence": "resolved",
           "source": {
-            "fetchNodeId": "f003#00089",
-            "queryNodeId": "f003#00077",
+            "fetchNodeId": "f003#00055",
+            "queryNodeId": "f003#00046",
             "table": "appointmenttb",
             "column": "revenue"
           }
@@ -160,44 +198,64 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f003#00041",
+          "nodeId": "f003#00028",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00044",
-          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'"
+          "condNodeId": "f003#00029",
+          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'",
+          "loc": {
+            "startLine": 12,
+            "endLine": 24,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 396,
+            "endByte": 998
+          }
         }
       ],
       "loc": {
         "startLine": 19,
         "endLine": 19,
-        "startCol": 39,
-        "endCol": 61
+        "startCol": 38,
+        "endCol": 61,
+        "startByte": 796,
+        "endByte": 819
       }
     },
     {
-      "id": "f003#00116",
+      "id": "f003#00070",
       "kind": "Stmt_InlineHTML",
       "raw": "</p>\n      <p>Signed in as ",
       "enclosedBy": [
         {
-          "nodeId": "f003#00041",
+          "nodeId": "f003#00028",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00044",
-          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'"
+          "condNodeId": "f003#00029",
+          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'",
+          "loc": {
+            "startLine": 12,
+            "endLine": 24,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 396,
+            "endByte": 998
+          }
         }
       ],
       "loc": {
         "startLine": 19,
         "endLine": 20,
-        "startCol": 65,
-        "endCol": 22
+        "startCol": 64,
+        "endCol": 22,
+        "startByte": 822,
+        "endByte": 849
       }
     },
     {
-      "id": "f003#00118",
+      "id": "f003#00071",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -213,98 +271,140 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f003#00041",
+          "nodeId": "f003#00028",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00044",
-          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'"
+          "condNodeId": "f003#00029",
+          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'",
+          "loc": {
+            "startLine": 12,
+            "endLine": 24,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 396,
+            "endByte": 998
+          }
         }
       ],
       "loc": {
         "startLine": 20,
         "endLine": 20,
-        "startCol": 29,
-        "endCol": 51
+        "startCol": 28,
+        "endCol": 51,
+        "startByte": 855,
+        "endByte": 878
       }
     },
     {
-      "id": "f003#00126",
+      "id": "f003#00075",
       "kind": "Stmt_InlineHTML",
       "raw": "</p>\n    </div>\n",
       "enclosedBy": [
         {
-          "nodeId": "f003#00041",
+          "nodeId": "f003#00028",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00044",
-          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'"
+          "condNodeId": "f003#00029",
+          "condExpr": "isset($_SESSION['role']) && $_SESSION['role'] == 'admin'",
+          "loc": {
+            "startLine": 12,
+            "endLine": 24,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 396,
+            "endByte": 998
+          }
         }
       ],
       "loc": {
         "startLine": 20,
-        "endLine": 21,
-        "startCol": 54,
-        "endCol": 11
+        "endLine": 22,
+        "startCol": 53,
+        "endCol": 0,
+        "startByte": 880,
+        "endByte": 896
       }
     },
     {
-      "id": "f003#00135",
+      "id": "f003#00077",
       "kind": "Stmt_InlineHTML",
       "raw": "    <p class=\"text-muted\">Statistics are visible to administrators only.</p>\n",
       "enclosedBy": [
         {
-          "nodeId": "f003#00041",
+          "nodeId": "f003#00028",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "else",
-          "condNodeId": "f003#00044"
+          "condNodeId": "f003#00029",
+          "loc": {
+            "startLine": 12,
+            "endLine": 24,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 396,
+            "endByte": 998
+          }
         }
       ],
       "loc": {
         "startLine": 23,
-        "endLine": 23,
-        "startCol": 1,
-        "endCol": 77
+        "endLine": 24,
+        "startCol": 0,
+        "endCol": 0,
+        "startByte": 914,
+        "endByte": 991
       }
     },
     {
-      "id": "f003#00157",
+      "id": "f003#00084",
       "kind": "Stmt_InlineHTML",
       "raw": "    <a class=\"nav-link\" href=\"admin-panel1.php\">Receptionist panel</a>\n",
       "enclosedBy": [
         {
-          "nodeId": "f003#00141",
+          "nodeId": "f003#00078",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f003#00144",
-          "condExpr": "$_SESSION['role'] == 'admin'"
+          "condNodeId": "f003#00079",
+          "condExpr": "$_SESSION['role'] == 'admin'",
+          "loc": {
+            "startLine": 25,
+            "endLine": 27,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 1008,
+            "endByte": 1125
+          }
         }
       ],
       "loc": {
         "startLine": 26,
-        "endLine": 26,
-        "startCol": 1,
-        "endCol": 71
+        "endLine": 27,
+        "startCol": 0,
+        "endCol": 0,
+        "startByte": 1047,
+        "endByte": 1118
       }
     },
     {
-      "id": "f003#00162",
+      "id": "f003#00085",
       "kind": "Stmt_InlineHTML",
       "raw": "   </div>\n  </body>\n</html>\n",
       "enclosedBy": [],
       "loc": {
         "startLine": 28,
-        "endLine": 30,
-        "startCol": 1,
-        "endCol": 8
+        "endLine": 31,
+        "startCol": 0,
+        "endCol": 0,
+        "startByte": 1129,
+        "endByte": 1157
       }
     }
   ],
   "queries": {
-    "f003#00077": {
+    "f003#00046": {
       "line": 14,
       "sql": "\"select count(*) as total, sum(docFees) as revenue from appointmenttb where userStatus=1 and doctorStatus=1;\"",
       "tables": [
@@ -327,14 +427,15 @@
       "Guard at line 12 wraps a query (authorization: must stay server-side). Guard at line 25 wraps only markup (display-only). Both test $_SESSION['role'].",
       "Session reads ($username, $_SESSION['role']) are not API fields and do not appear in the contract; reconciliation must exclude sourceKind 'session' rather than flag it.",
       "Covers Expr_Print (line 19) and an HTML entity (&#8377;) in raw.",
-      "f003#00077 columns are result-set names (aliases), since the query selects aggregates."
+      "f003#00046 columns are result-set names (aliases), since the query selects aggregates."
     ],
     "linesCovered": [
       1,
       30
     ],
     "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
-    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not).",
-    "condExprExtension": "Agent extension, pending Member 01 Q2 (boundary-rules.md section 9): every then/elseif branch enclosure carries condExpr, the byte-exact PHP source of its if/elseif condition from PHP's lexer, without the outer parentheses and the whitespace just inside them. else branches have none: their meaning comes from the chain."
+    "idConvention": "Member 01's convention (answered 12 Oct 2026): node ids are the pre-order ids of the file's AST (<fileId>#00000 = root File). The AST is produced by the C2 test harness in Member 01's format (tools/harness/parse.php, nikic/php-parser v5.9.0); it is not Member 01's own output.",
+    "locConvention": "Member 01's convention (Q13-Q15, answered 12 Oct 2026): every sequence entry, loop and branch enclosure carries loc {startLine, endLine, startCol, endCol, startByte, endByte}, the loc of its AST node (for an enclosure: the node named by nodeId). Lines are 1-based; columns and bytes are 0-based; every end is exclusive. An echo closed by '?>' ends after that tag, as its AST node does.",
+    "condExprConvention": "Member 01's convention (Q2, answered 12 Oct 2026): every then/elseif branch enclosure carries condExpr, the exact source of its if/elseif `cond` node (no outer parentheses), and condNodeId is that node's id. else branches have no condExpr: their meaning comes from the chain."
   }
 }

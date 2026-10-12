@@ -1,9 +1,9 @@
-# Component 2 — UI Boundary Rules (DRAFT v0.8)
+# Component 2 — UI Boundary Rules (DRAFT v0.10)
 
 | Item | Value |
 |---|---|
 | Status | **Draft** — not frozen. Freeze when 2 consecutive new rule-discovery apps add no new pattern (saturation) |
-| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note · v0.6, 10 Oct: Q2 note gives the exact condExpr form · v0.7, 11 Oct: R-L3 scope clarified; filter-in-loop added to the checklist as not yet seen · v0.8, 12 Oct: corpus extended — 2 discovery apps queued, 3 evaluation apps added by random split; no rule changed) |
+| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note · v0.6, 10 Oct: Q2 note gives the exact condExpr form · v0.7, 11 Oct: R-L3 scope clarified; filter-in-loop added to the checklist as not yet seen · v0.8, 12 Oct: corpus extended — 2 discovery apps queued, 3 evaluation apps added by random split · v0.9, 12 Oct: after the Phase 1 whole-app run — echo-string parts (§1), R-L3b, R-F1/R-F2 written in full, R-I5 evidence re-opened, Q16 · v0.10, 12 Oct: Member 01's answers recorded in §9; no rule changed) |
 | Owner | Jayawardhana R D L L (IT23213876) — Component 2, Frontend Migration |
 | Rule-discovery corpus | HMS (`kishan0725/Hospital-Management-System`, commit `777fda4`), WackoPicko (`adamdoupe/WackoPicko`, commit `cabc1b3`, MIT) |
 | Evaluation corpus | **Locked — do not open** (see §7) |
@@ -32,6 +32,14 @@ opening-brace line, so many are 1 line late). From v0.2, **ranges cite the keywo
 branch**; void elements (`<br>`, `<input>`, `<img>`) count; markup inside a literal `echo "<b>x</b>"`
 counts; an `echo` of a variable counts 0.
 
+**Echo strings with markup (v0.9).** HMS prints many rows as one `echo "<tr><td>$username</td>…</tr>"`
+(e.g. `admin-panel1.php` 286, 339, 399). Such an echo is treated as a **sequence of parts**, in source order:
+literal string pieces (PHP-decoded value) and expressions. Literal pieces go through the tag tracker exactly
+like inline HTML; each expression is one read. This is not a boundary rule — it only lets the existing rules
+see the markup. An expression part that falls **inside a tag name or attribute name** (e.g.
+`"<$tag>"`, `"<td $attr>"`) cannot be generated → abstain `markup_from_expression`. The parts come from the
+timeline (harness extension `parts`, Member 01 Q16); without `parts`, the echo stays one opaque node as now.
+
 **Tool limits:** the counting scripts are regex-based approximations. They mis-handle (a) whole pages
 inside `echo '...'` strings and (b) a `?` inside a `<?= ... ?>` string. Every reported anomaly was
 checked against the source by hand. The real Stage 2 runs on Component 1/core output (PHP lexer,
@@ -47,6 +55,7 @@ byte-exact `raw`), which does not have these limits.
 | **R-L2a** | List container = nearest HTML tag still open at loop start, **walking past** `tbody`, `thead`, `tr` | Tight cut: HMS 10/10, WackoPicko 6/9 |
 | **R-L2b** | If the loop item has **multiple root elements and no wrapper tag**, the List component has **no wrapper** (renders a Fragment); do not take the enclosing section | The 2 WackoPicko loops where R-L2a cut too broad (`guestbook.php` 35–41, `pictures/view.php` 51–59) |
 | **R-L3** | Loop body that emits **one element with no child elements** (e.g. `<option>`) → keep `.map()` inline, no Item component. Otherwise → Item component. **Scope (v0.7):** an `if` inside that one element is classified by §3 and §4a exactly like any other `if` (incl. abstain `cuts_across_business_logic`); R-L3 changes only whether an Item component is created, never how its `if`s are judged. An `if` that wraps the whole element is **not** R-L3 (see §8, filter-in-loop) | HMS `<option>` loops in `newfunc.php`, `func1.php`, `func3.php` (none has an `if`; all are in functions, so no mock has R-L3 until Member 01 Q4) |
+| **R-L3b** Text-only loop (v0.9) | Loop body that emits **text and expressions but no element** → inline `.map()` returning a keyed Fragment, no Item component | HMS `include/header.php` 38 (Phase 1 pattern log) |
 | **R-L4** | Nested loops → resolve innermost first; the inner List becomes one node of the outer Item | **Design only — not observed** in any in-scope app (seen only in out-of-scope osCommerce / vBulletin) |
 | **R-L5** | Loop with no output → not a UI boundary; ignore | HMS 3/3 (incl. one inside an HTML comment) |
 | **R-L6** | Tag tracker **ignores unmatched closing tags** and flags them for Stage 5 (JSX will not compile them). Tag balance is checked **per branch**, not only on the linear sequence | HMS `doctor-panel.php` 246 (`</tr></a>`); WackoPicko `<form>` inside `<table>`, `<p>` inside `<ul>` |
@@ -64,12 +73,12 @@ Loop kinds observed: `while`, `foreach`, C-style `for`. Item shapes observed: ta
 | **R-I2** List guard | An `if` whose body contains an output loop **and whose own concern is not `business_logic`** → the List component's **empty-state condition**. Any heading inside the guard belongs to the List. The non-loop branch → Empty component. A `business_logic` guard around a loop is an authorization check, not an empty-state check → **abstain** (`cuts_across_business_logic`, §5) | WackoPicko 8/8 (all `if ($list)` emptiness checks) |
 | **R-I3** Attribute conditional | An `if` inside an HTML attribute value → JSX attribute expression. **Never** a boundary | WackoPicko 5/5 (menu `class="current"`) |
 | **R-I4** Small content `if` | Content `if` with **≤ 3 elements** (with or without `else`) → inline conditional / ternary | WackoPicko 11/11, HMS 12/12 |
-| **R-I5** Fallback | Content `if` with **≥ N = 4 elements** (i.e. above the R-I4 limit — no gap) that matches none of R-I1–R-I3 → own Conditional component | **Never triggered** in the rule-discovery corpus. Design default only |
+| **R-I5** Fallback | Content `if` with **≥ N = 4 elements** (i.e. above the R-I4 limit — no gap) that matches none of R-I1–R-I3 → own Conditional component | v0.8: "never triggered" (regex scan of `if`s). **v0.9: re-opened** — the Phase 1 whole-app run hit it 10 times. Many may be guards that R-I1/R-I2 could not confirm because whole-app runs have **no labels**. Each of the 10 to be classified by hand (file:line) before the report statement below is kept or changed |
 | **R-I6** Sibling chain | Consecutive sibling `if`s that output into the same parent element with mutually exclusive conditions → **one** conditional value. Exclusivity cannot be checked without condition text, so status is **`review`**, reason `exclusivity_not_verified`, until Member 01 Q2 is answered | HMS: 3 chains × 3 `if`s (status cell in `admin-panel.php`, `admin-panel1.php`, `doctor-panel.php`) |
 
-**Statement for the report:** *Boundary decisions are structural (page guard, list guard, attribute,
-inline). A size threshold N = 4 exists only as a fallback; it was never triggered in the
-rule-discovery corpus, where the largest plain content conditional had 3 elements.*
+**Statement for the report (on hold since v0.9 — see R-I5):** *Boundary decisions are structural (page
+guard, list guard, attribute, inline). A size threshold N = 4 exists only as a fallback; it was never
+triggered in the rule-discovery corpus, where the largest plain content conditional had 3 elements.*
 
 ---
 
@@ -77,8 +86,21 @@ rule-discovery corpus, where the largest plain content conditional had 3 element
 
 | Rule | Text | Evidence |
 |---|---|---|
-| **R-F1** | A user-defined function whose body produces output → component; its parameters → props | WackoPicko `thumbnail_pic_list($pictures, $high_quality)` — 4 callers |
-| **R-F2** | Layout produced by **functions** (`our_header()`, `our_footer()`) **or** by `include header.php/footer.php` → Shared Layout component | WackoPicko: `our_header()` 25 callers, `our_footer()` 24. `include` form: **not yet observed** |
+Inputs: the function's own timeline, and the call sites / includes recorded in the timeline (harness
+extensions `calls`, `includes`, pending Member 01 Q4). Without them, R-F1/R-F2 do not fire.
+
+| Rule | Text | Evidence |
+|---|---|---|
+| **R-F1** Function component | A user function with output, called from ≥ 1 page, whose markup is **tag-balanced on its own** → one component (`PascalCase(function)`) in `components/`, placed at **each call site** at the call's position (inside whatever element is open there, e.g. `<select>`). Parameters → props: a parameter whose argument is a **literal at every call site** (or the default value) becomes a typed prop (`string` / `number` from the literal); any other parameter is not a prop, and reads of it → `unresolved`. Recursive calls → abstain `recursive_function` | WackoPicko `thumbnail_pic_list` (4 callers); HMS `display_docs()` / `display_specs()` into `<select>` (`admin-panel.php` 359, 331) |
+| **R-F2** Shell pair | A header unit H and a footer unit F (functions, or included files) such that: (1) H leaves open-tag stack S; (2) F's unmatched closing tags close exactly S, in reverse; (3) on every page that calls H, F is called later, both at **top level** (not inside a loop/branch), with all other page output between them. Then: `<html>`, `<head>`, `<body>` from H/F → root `app/layout.tsx` (literal parts only; anything dynamic there → flag `document_shell`); the rest → a **shell component** `components/<H>Shell.tsx` with `{children}` at the gap and H's/F's literal-argument parameters as props; each page wraps its content in `<…Shell …props>`. Page output before H or after F → abstain `output_outside_shell`. A page that calls H without F, or tags that cross a function boundary without forming such a pair → abstain `tag_crosses_function` | WackoPicko `our_header()` (26 files) / `our_footer()` (25 files): H opens `<html><body><div class="container">`, F closes `</div></body></html>` |
+
+**Why a shell component and not `layout.tsx` for the menu part:** Next.js layouts receive no per-page props,
+but `our_header("guestbook")` passes the page name that sets the menu's `class="current"`. A shell component
+keeps that argument; `layout.tsx` keeps only what every page shares.
+
+**HMS has no shell pair:** each HMS page carries its own full `<html>…</html>`; `header.php` (included once,
+by `index1.php`) is a complete mini-document. HMS pages keep the `document_shell` flag. Extracting a common
+layout from repeated per-page markup would be a similarity guess → not done.
 
 ---
 
@@ -186,17 +208,30 @@ No-output loops (R-L5): admin-panel.php 146, 315 (inside `<!-- -->`). String-bui
 | C-style `for` loop | WackoPicko |
 | Loop → cards / list items | WackoPicko |
 | Small status `if`, sibling chain | HMS |
+| Rows printed by one echo string (`echo "<tr>…$x…</tr>"`), concatenated / multi-argument echo with markup | HMS (Phase 1: 3 + 7 + 5 + 6) |
+| Text-only loop | HMS `include/header.php` 38 |
+| Page output inside a List's container outside the loop (`if(!$result) echo mysqli_error(...)`) | HMS `admin-panel.php`, `doctor-panel.php` — likely excluded once C1 labels exist (data_access); until then List-level fallback |
+| Element with no React type (`<frameset>`) | WackoPicko `test.php` → fallback |
+| `die()` / `exit()` with a message | WackoPicko `guestbook.php` 17 — abstain (1 case) |
+| Layout via `include header.php` | HMS `index1.php` 2 — but `header.php` is a complete mini-document, not a shell |
 | Page guard, list guard, attribute conditional | WackoPicko |
 | Function = component (`thumbnail_pic_list`) | WackoPicko |
 | Layout via functions | WackoPicko |
 | Malformed HTML | HMS, WackoPicko |
 | Cross-file output (function echoes `<option>` into a page's `<select>`) | HMS |
 | Escape wrapper on output (`h()` — 89 of 116 `<?= ?>` tags) | WackoPicko |
-| **Not yet seen:** layout via `include header.php`; nested loops; plain content `if` > 3 elements; **filter-in-loop** (`if` wrapping the whole loop body, e.g. `while(...) { if ($row['n'] > 0) { echo '<option>…'; } }` — synthetic test only; until seen in a real app it abstains via the narrowed fallback) | — |
+| **Not yet seen:** nested loops; switch; try; **filter-in-loop** (`if` wrapping the whole loop body, e.g. `while(...) { if ($row['n'] > 0) { echo '<option>…'; } }` — synthetic test only; until seen in a real app it abstains via the narrowed fallback) | — |
 
 ---
 
 ## 9. Open questions
+
+**Member 01's answers (12 Oct 2026)** — full table in CONTEXT.md §3:
+Q2 **answered** (condExpr = cond node source, trimmed, none on `else`). Q13–Q15 **answered** (1-based lines,
+0-based byte columns, exclusive end, plus start/end byte; loops carry loc). Q4 **proposed**: `call` entry at
+the call site (`callee`, `outputsInside`), no inlining — R-F1/R-F2 will read call entries. Q1 **proposed**:
+`SELECT *` ambiguous unless schema in repo + one table + no JOIN (`basis: schema-expanded`). Q11
+**proposed**, not built. Q3, Q5–Q10, Q12, Q16, Q17 open. Timeline, labels, contract: not built yet.
 
 **For Member 01 (core / timeline)**
 1. `SELECT *`: always `ambiguous`, even for a single table?
@@ -214,6 +249,8 @@ No-output loops (R-L5): admin-panel.php 146, 315 (inside `<!-- -->`). String-bui
 13. Can timeline sequence entries carry `loc` (same shape as the AST node envelope: `startLine`, `endLine`, `startCol`, `endCol`)? Flag reports need file and line (NFR4).
 14. `loc` conventions: are lines and columns 0- or 1-based, counted in bytes or characters, and is the end inclusive or exclusive? (nikic's own node attributes are `startLine`/`endLine` (1-based) and `startFilePos`/`endFilePos` (0-based byte offsets); columns would be derived from those. The C2 mocks currently use 1-based, bytes, inclusive end.)
 15. Can loop enclosures (and branch enclosures) also carry `loc`? A List's collection need has no line today.
+16. Can an echo entry carry its **parts** in order — literal pieces (PHP-decoded) and expressions (each linked to its read)? HMS prints whole table rows as one interpolated `echo "<tr>…$x…</tr>"`; without parts that markup is invisible to C2. The harness emits `parts` as an extension.
+17. Copy propagation: will a read of `$username` after `$username = $row['username'];` (same block, no reassignment) resolve to `$row['username']`? And for interpolated SQL (`… where fname='$fname'`) — is the table/column resolved when interpolation appears only in value positions? (40 row reads in HMS + WackoPicko depend on these.)
 
 **For Component 1:** HMS never includes `include/checklogin.php`, so it has no working login gate.
 **For Component 4:** WackoPicko has intentionally unescaped output (`<?= $comment['text'] ?>`, `<?= $guest["comment"] ?>`). React escapes by default, so this output will differ — an expected, intended difference. WackoPicko uses `mysql_*` → needs PHP 5.x to run for runtime capture.

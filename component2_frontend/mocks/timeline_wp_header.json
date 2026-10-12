@@ -3,19 +3,21 @@
   "schemaVersion": "1.0",
   "sequence": [
     {
-      "id": "f009#00040",
+      "id": "f009#00018",
       "kind": "Stmt_InlineHTML",
       "raw": "<html>\n  <head>\n    <link rel=\"stylesheet\" href=\"/css/blueprint/screen.css\" type=\"text/css\" media=\"screen, projection\">\n    <link rel=\"stylesheet\" href=\"/css/blueprint/print.css\" type=\"text/css\" media=\"print\">\n    <!--[if IE]><link rel=\"stylesheet\" href=\"/css/blueprint/ie.css\" type=\"text/css\" media=\"screen, projection\"><![endif]-->\n    <link rel=\"stylesheet\" href=\"/css/stylings.css\" type=\"text/css\" media=\"screen\">\n    <title>WackoPicko.com</title>\n  </head>\n  <body>\n    <div class=\"container \" style=\"border: 2px solid #5c95cf;\">\n      <div class=\"column span-24 first last\">\n\t<h1 id=\"title\"><a href=\"/\">WackoPicko.com</a></h1>\n      </div>\n      <div id=\"menu\">\n\t<div class=\"column prepend-1 span-14 first\">\n\t  <ul class=\"menu\">\n\t    <li class=\"",
       "enclosedBy": [],
       "loc": {
         "startLine": 11,
         "endLine": 27,
-        "startCol": 1,
-        "endCol": 16
+        "startCol": 0,
+        "endCol": 16,
+        "startByte": 148,
+        "endByte": 899
       }
     },
     {
-      "id": "f009#00052",
+      "id": "f009#00023",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -29,35 +31,47 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f009#00042",
+          "nodeId": "f009#00019",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00044",
-          "condExpr": "$selected == \"home\""
+          "condNodeId": "f009#00020",
+          "condExpr": "$selected == \"home\"",
+          "loc": {
+            "startLine": 27,
+            "endLine": 27,
+            "startCol": 22,
+            "endCol": 64,
+            "startByte": 905,
+            "endByte": 947
+          }
         }
       ],
       "loc": {
         "startLine": 27,
         "endLine": 27,
-        "startCol": 48,
-        "endCol": 62
+        "startCol": 47,
+        "endCol": 62,
+        "startByte": 930,
+        "endByte": 945
       }
     },
     {
-      "id": "f009#00060",
+      "id": "f009#00025",
       "kind": "Stmt_InlineHTML",
       "raw": "\"><a href=\"/users/home.php\"><span>Home</span></a></li>\n\t    <li class=\"",
       "enclosedBy": [],
       "loc": {
         "startLine": 27,
         "endLine": 28,
-        "startCol": 68,
-        "endCol": 16
+        "startCol": 67,
+        "endCol": 16,
+        "startByte": 950,
+        "endByte": 1021
       }
     },
     {
-      "id": "f009#00072",
+      "id": "f009#00030",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -71,35 +85,47 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f009#00062",
+          "nodeId": "f009#00026",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00064",
-          "condExpr": "$selected == \"upload\""
+          "condNodeId": "f009#00027",
+          "condExpr": "$selected == \"upload\"",
+          "loc": {
+            "startLine": 28,
+            "endLine": 28,
+            "startCol": 22,
+            "endCol": 66,
+            "startByte": 1027,
+            "endByte": 1071
+          }
         }
       ],
       "loc": {
         "startLine": 28,
         "endLine": 28,
-        "startCol": 50,
-        "endCol": 64
+        "startCol": 49,
+        "endCol": 64,
+        "startByte": 1054,
+        "endByte": 1069
       }
     },
     {
-      "id": "f009#00080",
+      "id": "f009#00032",
       "kind": "Stmt_InlineHTML",
       "raw": "\"><a href=\"/pictures/upload.php\"><span>Upload</span></a></li>\n\t    <li class=\"",
       "enclosedBy": [],
       "loc": {
         "startLine": 28,
         "endLine": 29,
-        "startCol": 70,
-        "endCol": 16
+        "startCol": 69,
+        "endCol": 16,
+        "startByte": 1074,
+        "endByte": 1152
       }
     },
     {
-      "id": "f009#00092",
+      "id": "f009#00037",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -113,35 +139,47 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f009#00082",
+          "nodeId": "f009#00033",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00084",
-          "condExpr": "$selected == \"recent\""
+          "condNodeId": "f009#00034",
+          "condExpr": "$selected == \"recent\"",
+          "loc": {
+            "startLine": 29,
+            "endLine": 29,
+            "startCol": 22,
+            "endCol": 66,
+            "startByte": 1158,
+            "endByte": 1202
+          }
         }
       ],
       "loc": {
         "startLine": 29,
         "endLine": 29,
-        "startCol": 50,
-        "endCol": 64
+        "startCol": 49,
+        "endCol": 64,
+        "startByte": 1185,
+        "endByte": 1200
       }
     },
     {
-      "id": "f009#00100",
+      "id": "f009#00039",
       "kind": "Stmt_InlineHTML",
       "raw": "\"><a href=\"/pictures/recent.php\"><span>Recent</span></a></li>\n            <li class=\"",
       "enclosedBy": [],
       "loc": {
         "startLine": 29,
         "endLine": 30,
-        "startCol": 70,
-        "endCol": 23
+        "startCol": 69,
+        "endCol": 23,
+        "startByte": 1205,
+        "endByte": 1290
       }
     },
     {
-      "id": "f009#00112",
+      "id": "f009#00044",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -155,56 +193,78 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f009#00102",
+          "nodeId": "f009#00040",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00104",
-          "condExpr": "$selected == \"guestbook\""
+          "condNodeId": "f009#00041",
+          "condExpr": "$selected == \"guestbook\"",
+          "loc": {
+            "startLine": 30,
+            "endLine": 30,
+            "startCol": 29,
+            "endCol": 76,
+            "startByte": 1296,
+            "endByte": 1343
+          }
         }
       ],
       "loc": {
         "startLine": 30,
         "endLine": 30,
-        "startCol": 60,
-        "endCol": 74
+        "startCol": 59,
+        "endCol": 74,
+        "startByte": 1326,
+        "endByte": 1341
       }
     },
     {
-      "id": "f009#00120",
+      "id": "f009#00046",
       "kind": "Stmt_InlineHTML",
       "raw": "\"><a href=\"/guestbook.php\"><span>Guestbook</span></a></li>\n\n      ",
       "enclosedBy": [],
       "loc": {
         "startLine": 30,
         "endLine": 32,
-        "startCol": 80,
-        "endCol": 6
+        "startCol": 79,
+        "endCol": 6,
+        "startByte": 1346,
+        "endByte": 1412
       }
     },
     {
-      "id": "f009#00135",
+      "id": "f009#00051",
       "kind": "Stmt_InlineHTML",
       "raw": "<li class=\"",
       "enclosedBy": [
         {
-          "nodeId": "f009#00122",
+          "nodeId": "f009#00047",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00125",
-          "condExpr": "Users::is_logged_in()"
+          "condNodeId": "f009#00048",
+          "condExpr": "Users::is_logged_in()",
+          "loc": {
+            "startLine": 32,
+            "endLine": 32,
+            "startCol": 12,
+            "endCol": 168,
+            "startByte": 1418,
+            "endByte": 1574
+          }
         }
       ],
       "loc": {
         "startLine": 32,
         "endLine": 32,
-        "startCol": 44,
-        "endCol": 54
+        "startCol": 43,
+        "endCol": 54,
+        "startByte": 1449,
+        "endByte": 1460
       }
     },
     {
-      "id": "f009#00147",
+      "id": "f009#00056",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -218,117 +278,169 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f009#00122",
+          "nodeId": "f009#00047",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00125",
-          "condExpr": "Users::is_logged_in()"
+          "condNodeId": "f009#00048",
+          "condExpr": "Users::is_logged_in()",
+          "loc": {
+            "startLine": 32,
+            "endLine": 32,
+            "startCol": 12,
+            "endCol": 168,
+            "startByte": 1418,
+            "endByte": 1574
+          }
         },
         {
-          "nodeId": "f009#00137",
+          "nodeId": "f009#00052",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00139",
-          "condExpr": "$selected == \"cart\""
+          "condNodeId": "f009#00053",
+          "condExpr": "$selected == \"cart\"",
+          "loc": {
+            "startLine": 32,
+            "endLine": 32,
+            "startCol": 60,
+            "endCol": 102,
+            "startByte": 1466,
+            "endByte": 1508
+          }
         }
       ],
       "loc": {
         "startLine": 32,
         "endLine": 32,
-        "startCol": 86,
-        "endCol": 100
+        "startCol": 85,
+        "endCol": 100,
+        "startByte": 1491,
+        "endByte": 1506
       }
     },
     {
-      "id": "f009#00155",
+      "id": "f009#00058",
       "kind": "Stmt_InlineHTML",
       "raw": "\"><a href=\"/cart/review.php\"><span>Cart</span></a></li> ",
       "enclosedBy": [
         {
-          "nodeId": "f009#00122",
+          "nodeId": "f009#00047",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00125",
-          "condExpr": "Users::is_logged_in()"
+          "condNodeId": "f009#00048",
+          "condExpr": "Users::is_logged_in()",
+          "loc": {
+            "startLine": 32,
+            "endLine": 32,
+            "startCol": 12,
+            "endCol": 168,
+            "startByte": 1418,
+            "endByte": 1574
+          }
         }
       ],
       "loc": {
         "startLine": 32,
         "endLine": 32,
-        "startCol": 106,
-        "endCol": 161
+        "startCol": 105,
+        "endCol": 161,
+        "startByte": 1511,
+        "endByte": 1567
       }
     },
     {
-      "id": "f009#00160",
+      "id": "f009#00059",
       "kind": "Stmt_InlineHTML",
       "raw": "\t  </ul>\n\t</div>\n\t<div class=\"column prepend-1 span-7 first last\">\n\t  <ul class=\"menu top_login\" >\n      ",
       "enclosedBy": [],
       "loc": {
         "startLine": 33,
         "endLine": 37,
-        "startCol": 1,
-        "endCol": 6
+        "startCol": 0,
+        "endCol": 6,
+        "startByte": 1578,
+        "endByte": 1683
       }
     },
     {
-      "id": "f009#00174",
+      "id": "f009#00064",
       "kind": "Stmt_InlineHTML",
       "raw": "\t    <li><a href=\"/users/logout.php\"><Span>Logout</span></a></li>\n      ",
       "enclosedBy": [
         {
-          "nodeId": "f009#00162",
+          "nodeId": "f009#00060",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f009#00165",
-          "condExpr": "Users::is_logged_in()"
+          "condNodeId": "f009#00061",
+          "condExpr": "Users::is_logged_in()",
+          "loc": {
+            "startLine": 37,
+            "endLine": 41,
+            "startCol": 12,
+            "endCol": 13,
+            "startByte": 1689,
+            "endByte": 1887
+          }
         }
       ],
       "loc": {
         "startLine": 38,
         "endLine": 39,
-        "startCol": 1,
-        "endCol": 6
+        "startCol": 0,
+        "endCol": 6,
+        "startByte": 1720,
+        "endByte": 1792
       }
     },
     {
-      "id": "f009#00183",
+      "id": "f009#00066",
       "kind": "Stmt_InlineHTML",
       "raw": "\t    <li><a href=\"/users/login.php\"><Span>Login</span></a></li>\n      ",
       "enclosedBy": [
         {
-          "nodeId": "f009#00162",
+          "nodeId": "f009#00060",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "else",
-          "condNodeId": "f009#00165"
+          "condNodeId": "f009#00061",
+          "loc": {
+            "startLine": 37,
+            "endLine": 41,
+            "startCol": 12,
+            "endCol": 13,
+            "startByte": 1689,
+            "endByte": 1887
+          }
         }
       ],
       "loc": {
         "startLine": 40,
         "endLine": 41,
-        "startCol": 1,
-        "endCol": 6
+        "startCol": 0,
+        "endCol": 6,
+        "startByte": 1810,
+        "endByte": 1880
       }
     },
     {
-      "id": "f009#00188",
+      "id": "f009#00067",
       "kind": "Stmt_InlineHTML",
       "raw": "\t  </ul>\n\t</div>\n      </div>\n\n\n\n      <div class=\"column span-24 first last\" id=\"search_bar_blue\">\n\t<div class=\"column prepend-17 span-7 first last\" id=\"search_box\">\n\t  <form action=\"/pictures/search.php\" method=\"get\" style=\"display:inline;\">\n\t    <input id=\"query2\" name=\"query\" size=\"15\" style=\"padding: 2px; font-size: 16px; text-decoration:none;border:none;vertical-align:middle;\" type=\"text\" value=\"",
       "enclosedBy": [],
       "loc": {
         "startLine": 42,
         "endLine": 51,
-        "startCol": 1,
-        "endCol": 161
+        "startCol": 0,
+        "endCol": 161,
+        "startByte": 1891,
+        "endByte": 2296
       }
     },
     {
-      "id": "f009#00189",
+      "id": "f009#00068",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -354,20 +466,24 @@
       "loc": {
         "startLine": 51,
         "endLine": 51,
-        "startCol": 162,
-        "endCol": 180
+        "startCol": 161,
+        "endCol": 183,
+        "startByte": 2296,
+        "endByte": 2318
       }
     },
     {
-      "id": "f009#00196",
+      "id": "f009#00073",
       "kind": "Stmt_InlineHTML",
       "raw": "\"/>\n\t    <input src=\"/images/search_button_white.gif\" type=\"image\" style=\"border: 0pt none ; position: relative; top: 0px;vertical-align:middle;margin-left: 1em;\" />\n\t  </form>\n\t</div>\n      </div>\n   ",
       "enclosedBy": [],
       "loc": {
         "startLine": 51,
         "endLine": 56,
-        "startCol": 184,
-        "endCol": 3
+        "startCol": 183,
+        "endCol": 3,
+        "startByte": 2318,
+        "endByte": 2519
       }
     }
   ],
@@ -390,7 +506,8 @@
       56
     ],
     "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
-    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not).",
-    "condExprExtension": "Agent extension, pending Member 01 Q2 (boundary-rules.md section 9): every then/elseif branch enclosure carries condExpr, the byte-exact PHP source of its if/elseif condition from PHP's lexer, without the outer parentheses and the whitespace just inside them. else branches have none: their meaning comes from the chain."
+    "idConvention": "Member 01's convention (answered 12 Oct 2026): node ids are the pre-order ids of the file's AST (<fileId>#00000 = root File). The AST is produced by the C2 test harness in Member 01's format (tools/harness/parse.php, nikic/php-parser v5.9.0); it is not Member 01's own output.",
+    "locConvention": "Member 01's convention (Q13-Q15, answered 12 Oct 2026): every sequence entry, loop and branch enclosure carries loc {startLine, endLine, startCol, endCol, startByte, endByte}, the loc of its AST node (for an enclosure: the node named by nodeId). Lines are 1-based; columns and bytes are 0-based; every end is exclusive. An echo closed by '?>' ends after that tag, as its AST node does.",
+    "condExprConvention": "Member 01's convention (Q2, answered 12 Oct 2026): every then/elseif branch enclosure carries condExpr, the exact source of its if/elseif `cond` node (no outer parentheses), and condNodeId is that node's id. else branches have no condExpr: their meaning comes from the chain."
   }
 }

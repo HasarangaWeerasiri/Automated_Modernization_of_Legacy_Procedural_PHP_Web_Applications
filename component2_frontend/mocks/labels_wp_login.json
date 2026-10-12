@@ -1,31 +1,31 @@
 {
   "schemaVersion": "1.0",
   "labels": {
-    "f008#00178": {
+    "f008#00090": {
       "concern": "undecided",
       "basis": "abstained",
       "ruleId": "R10",
       "reason": "logic_or_display"
     },
-    "f008#00192": {
+    "f008#00095": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R01",
       "reason": "output_statement"
     },
-    "f008#00200": {
+    "f008#00099": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R01",
       "reason": "output_statement"
     },
-    "f008#00201": {
+    "f008#00100": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R01",
       "reason": "output_statement"
     },
-    "f008#00212": {
+    "f008#00107": {
       "concern": "presentation",
       "basis": "rule",
       "ruleId": "R01",

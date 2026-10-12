@@ -1351,6 +1351,7 @@ class Generator:
                     kind=e.kind, flag=e.flag, reason=e.reason, status=e.status, file=path, line=line,
                     node_id=e.node_id, detail=e.detail, function=e.function, in_abstained=e.in_abstained,
                     source_line=node.loc.start_line if node is not None and node.loc is not None else None,
+                    source_col=node.loc.column if node is not None and node.loc is not None else None,
                     severity=severity, severity_if_rendered=if_rendered)
                 (flags if e.kind == "flag" else todos).append(entry)
         for path, text in sorted(self.lib_files().items()):
@@ -1457,7 +1458,7 @@ def _entry_dict(e: GenerationEntry) -> dict:
         out["flag"] = e.flag
     out |= {"reason": e.reason, "severity": e.severity, "severityIfRendered": e.severity_if_rendered,
             "status": e.status, "file": e.file, "line": e.line,
-            "nodeId": e.node_id, "function": e.function, "inAbstained": e.in_abstained, "sourceLine": e.source_line,
+            "nodeId": e.node_id, "function": e.function, "inAbstained": e.in_abstained, "sourceLine": e.source_line, "sourceCol": e.source_col,
             "detail": e.detail}
     return out
 

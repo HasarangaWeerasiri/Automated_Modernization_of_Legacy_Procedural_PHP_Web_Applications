@@ -76,8 +76,9 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True) ->
         with (page_folder / "timeline.json").open("w", encoding="utf-8", newline="\n") as f:
             f.write(dump_timeline(page.timeline))
         entry = {"key": page.key, "path": page.path, "function": page.function,
-                 "entrypoint": page.timeline["entrypoint"], "nodes": len(page.timeline["sequence"]), "crash": None,
-                 "tsc": None}
+                 "entrypoint": page.timeline["entrypoint"],
+                 "nodes": sum(e["kind"] != "call" for e in page.timeline["sequence"]),  # output statements
+                 "calls": sum(e["kind"] == "call" for e in page.timeline["sequence"]), "crash": None, "tsc": None}
         try:
             run_page(page_folder / "timeline.json", page_folder, config, generation_config, contract)
             generated[page.key] = page_folder / "generated"
@@ -97,6 +98,7 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True) ->
     index = {
         "app": timelines.app, "sourceCommit": APPS[timelines.app]["commit"], "files": timelines.files,
         "pages": pages, "silentFiles": list(timelines.silent), "parseErrors": timelines.parse_errors,
+        "schemaFiles": list(timelines.schema_files), "functions": timelines.functions or {},
         "tscRan": tsc_output is not None, "tscOutput": tsc_output or "",
     }
     with (folder / "index.json").open("w", encoding="utf-8", newline="\n") as f:

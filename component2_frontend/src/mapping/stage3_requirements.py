@@ -21,7 +21,7 @@ loop reads, found from the reads of the loop's value variable.
 
 Needs are de-duplicated per component and kept in first-appearance order.
 Every reference carries the file (the timeline's entrypoint) and the line
-from the output node's loc.startLine; a node without loc gets line None,
+from the output node's loc (startLine, and startCol + 1 as the 1-based col); a node without loc gets None,
 never a guess. A collection's reference is its loop, which has no loc, so
 its line is None.
 
@@ -133,7 +133,8 @@ def recover_requirements(component_tree: ComponentTree, timeline: Timeline) -> R
                         key, fields = classified
                         reference = NeedReference(
                             node_id=node_id, line=loc.start_line if loc else None, expr=base.expr,
-                            wrappers=wrappers, file=timeline.entrypoint, from_abstained=abstained)
+                            wrappers=wrappers, file=timeline.entrypoint, from_abstained=abstained,
+                            col=loc.column if loc else None)
                         owner.add(key, fields, reference, row_of)
                         collection = collections.get(row_of)
                         if (collection and collection["loop"] and base.var == collection["loop"].value_var
@@ -191,7 +192,7 @@ def need_dict(need: Need) -> dict:
         "flag": need.flag,
         "itemComponent": need.item_component,
         "fromAbstained": need.from_abstained,
-        "references": [{"nodeId": r.node_id, "file": r.file, "line": r.line, "expr": r.expr,
+        "references": [{"nodeId": r.node_id, "file": r.file, "line": r.line, "col": r.col, "expr": r.expr,
                         "wrappers": list(r.wrappers), "fromAbstained": r.from_abstained}
                        for r in need.references],
     }

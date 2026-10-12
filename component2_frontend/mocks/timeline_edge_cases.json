@@ -3,31 +3,35 @@
   "schemaVersion": "1.0",
   "sequence": [
     {
-      "id": "f005#00000",
+      "id": "f005#00001",
       "kind": "Stmt_InlineHTML",
       "raw": "<!DOCTYPE html>\n",
       "enclosedBy": [],
       "loc": {
         "startLine": 1,
-        "endLine": 1,
-        "startCol": 1,
-        "endCol": 16
+        "endLine": 2,
+        "startCol": 0,
+        "endCol": 0,
+        "startByte": 0,
+        "endByte": 16
       }
     },
     {
-      "id": "f005#00042",
+      "id": "f005#00031",
       "kind": "Stmt_InlineHTML",
       "raw": "<html lang=\"en\">\n  <body style=\"padding-top:50px;\">\n    <h4>Bills for patient ",
       "enclosedBy": [],
       "loc": {
         "startLine": 8,
         "endLine": 10,
-        "startCol": 1,
-        "endCol": 26
+        "startCol": 0,
+        "endCol": 26,
+        "startByte": 166,
+        "endByte": 244
       }
     },
     {
-      "id": "f005#00044",
+      "id": "f005#00032",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -43,45 +47,59 @@
       "loc": {
         "startLine": 10,
         "endLine": 10,
-        "startCol": 33,
-        "endCol": 41
+        "startCol": 32,
+        "endCol": 44,
+        "startByte": 250,
+        "endByte": 262
       }
     },
     {
-      "id": "f005#00049",
+      "id": "f005#00034",
       "kind": "Stmt_InlineHTML",
       "raw": "</h4>\n",
       "enclosedBy": [],
       "loc": {
         "startLine": 10,
-        "endLine": 10,
-        "startCol": 45,
-        "endCol": 50
+        "endLine": 11,
+        "startCol": 44,
+        "endCol": 0,
+        "startByte": 262,
+        "endByte": 268
       }
     },
     {
-      "id": "f005#00109",
+      "id": "f005#00072",
       "kind": "Stmt_InlineHTML",
       "raw": "    <h5>Appointment ",
       "enclosedBy": [
         {
-          "nodeId": "f005#00051",
+          "nodeId": "f005#00035",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f005#00054",
-          "condExpr": "isset($_GET['ID'])"
+          "condNodeId": "f005#00036",
+          "condExpr": "isset($_GET['ID'])",
+          "loc": {
+            "startLine": 11,
+            "endLine": 26,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 274,
+            "endByte": 863
+          }
         }
       ],
       "loc": {
         "startLine": 16,
         "endLine": 16,
-        "startCol": 1,
-        "endCol": 20
+        "startCol": 0,
+        "endCol": 20,
+        "startByte": 516,
+        "endByte": 536
       }
     },
     {
-      "id": "f005#00111",
+      "id": "f005#00073",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -97,74 +115,112 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f005#00051",
+          "nodeId": "f005#00035",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f005#00054",
-          "condExpr": "isset($_GET['ID'])"
+          "condNodeId": "f005#00036",
+          "condExpr": "isset($_GET['ID'])",
+          "loc": {
+            "startLine": 11,
+            "endLine": 26,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 274,
+            "endByte": 863
+          }
         }
       ],
       "loc": {
         "startLine": 16,
         "endLine": 16,
-        "startCol": 27,
-        "endCol": 42
+        "startCol": 26,
+        "endCol": 45,
+        "startByte": 542,
+        "endByte": 561
       }
     },
     {
-      "id": "f005#00119",
+      "id": "f005#00077",
       "kind": "Stmt_InlineHTML",
       "raw": "</h5>\n    <table class=\"table table-hover\">\n",
       "enclosedBy": [
         {
-          "nodeId": "f005#00051",
+          "nodeId": "f005#00035",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f005#00054",
-          "condExpr": "isset($_GET['ID'])"
+          "condNodeId": "f005#00036",
+          "condExpr": "isset($_GET['ID'])",
+          "loc": {
+            "startLine": 11,
+            "endLine": 26,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 274,
+            "endByte": 863
+          }
         }
       ],
       "loc": {
         "startLine": 16,
-        "endLine": 17,
-        "startCol": 46,
-        "endCol": 38
+        "endLine": 18,
+        "startCol": 45,
+        "endCol": 0,
+        "startByte": 561,
+        "endByte": 605
       }
     },
     {
-      "id": "f005#00138",
+      "id": "f005#00082",
       "kind": "Stmt_InlineHTML",
       "raw": "      <tr>\n        <td>",
       "enclosedBy": [
         {
-          "nodeId": "f005#00051",
+          "nodeId": "f005#00035",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f005#00054",
-          "condExpr": "isset($_GET['ID'])"
+          "condNodeId": "f005#00036",
+          "condExpr": "isset($_GET['ID'])",
+          "loc": {
+            "startLine": 11,
+            "endLine": 26,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 274,
+            "endByte": 863
+          }
         },
         {
-          "nodeId": "f005#00121",
+          "nodeId": "f005#00078",
           "kind": "Stmt_Foreach",
           "role": "iteration",
           "iterExpr": "$rows",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": "$i"
+          "keyVar": "$i",
+          "loc": {
+            "startLine": 18,
+            "endLine": 24,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 611,
+            "endByte": 839
+          }
         }
       ],
       "loc": {
         "startLine": 19,
         "endLine": 20,
-        "startCol": 1,
-        "endCol": 12
+        "startCol": 0,
+        "endCol": 12,
+        "startByte": 646,
+        "endByte": 669
       }
     },
     {
-      "id": "f005#00140",
+      "id": "f005#00083",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -176,8 +232,8 @@
           "sourceKind": "db_row_field",
           "confidence": "ambiguous",
           "source": {
-            "fetchNodeId": "f005#00099",
-            "queryNodeId": "f005#00087",
+            "fetchNodeId": "f005#00065",
+            "queryNodeId": "f005#00056",
             "table": null,
             "column": null
           }
@@ -185,62 +241,98 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f005#00051",
+          "nodeId": "f005#00035",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f005#00054",
-          "condExpr": "isset($_GET['ID'])"
+          "condNodeId": "f005#00036",
+          "condExpr": "isset($_GET['ID'])",
+          "loc": {
+            "startLine": 11,
+            "endLine": 26,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 274,
+            "endByte": 863
+          }
         },
         {
-          "nodeId": "f005#00121",
+          "nodeId": "f005#00078",
           "kind": "Stmt_Foreach",
           "role": "iteration",
           "iterExpr": "$rows",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": "$i"
+          "keyVar": "$i",
+          "loc": {
+            "startLine": 18,
+            "endLine": 24,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 611,
+            "endByte": 839
+          }
         }
       ],
       "loc": {
         "startLine": 20,
         "endLine": 20,
-        "startCol": 19,
-        "endCol": 38
+        "startCol": 18,
+        "endCol": 38,
+        "startByte": 675,
+        "endByte": 695
       }
     },
     {
-      "id": "f005#00148",
+      "id": "f005#00087",
       "kind": "Stmt_InlineHTML",
       "raw": "</td>\n        <td>",
       "enclosedBy": [
         {
-          "nodeId": "f005#00051",
+          "nodeId": "f005#00035",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f005#00054",
-          "condExpr": "isset($_GET['ID'])"
+          "condNodeId": "f005#00036",
+          "condExpr": "isset($_GET['ID'])",
+          "loc": {
+            "startLine": 11,
+            "endLine": 26,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 274,
+            "endByte": 863
+          }
         },
         {
-          "nodeId": "f005#00121",
+          "nodeId": "f005#00078",
           "kind": "Stmt_Foreach",
           "role": "iteration",
           "iterExpr": "$rows",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": "$i"
+          "keyVar": "$i",
+          "loc": {
+            "startLine": 18,
+            "endLine": 24,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 611,
+            "endByte": 839
+          }
         }
       ],
       "loc": {
         "startLine": 20,
         "endLine": 21,
-        "startCol": 41,
-        "endCol": 12
+        "startCol": 40,
+        "endCol": 12,
+        "startByte": 697,
+        "endByte": 715
       }
     },
     {
-      "id": "f005#00150",
+      "id": "f005#00088",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -252,8 +344,8 @@
           "sourceKind": "db_row_field",
           "confidence": "ambiguous",
           "source": {
-            "fetchNodeId": "f005#00099",
-            "queryNodeId": "f005#00087",
+            "fetchNodeId": "f005#00065",
+            "queryNodeId": "f005#00056",
             "table": null,
             "column": null
           }
@@ -261,62 +353,98 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f005#00051",
+          "nodeId": "f005#00035",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f005#00054",
-          "condExpr": "isset($_GET['ID'])"
+          "condNodeId": "f005#00036",
+          "condExpr": "isset($_GET['ID'])",
+          "loc": {
+            "startLine": 11,
+            "endLine": 26,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 274,
+            "endByte": 863
+          }
         },
         {
-          "nodeId": "f005#00121",
+          "nodeId": "f005#00078",
           "kind": "Stmt_Foreach",
           "role": "iteration",
           "iterExpr": "$rows",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": "$i"
+          "keyVar": "$i",
+          "loc": {
+            "startLine": 18,
+            "endLine": 24,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 611,
+            "endByte": 839
+          }
         }
       ],
       "loc": {
         "startLine": 21,
         "endLine": 21,
-        "startCol": 19,
-        "endCol": 44
+        "startCol": 18,
+        "endCol": 44,
+        "startByte": 721,
+        "endByte": 747
       }
     },
     {
-      "id": "f005#00158",
+      "id": "f005#00092",
       "kind": "Stmt_InlineHTML",
       "raw": "</td>\n        <td>",
       "enclosedBy": [
         {
-          "nodeId": "f005#00051",
+          "nodeId": "f005#00035",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f005#00054",
-          "condExpr": "isset($_GET['ID'])"
+          "condNodeId": "f005#00036",
+          "condExpr": "isset($_GET['ID'])",
+          "loc": {
+            "startLine": 11,
+            "endLine": 26,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 274,
+            "endByte": 863
+          }
         },
         {
-          "nodeId": "f005#00121",
+          "nodeId": "f005#00078",
           "kind": "Stmt_Foreach",
           "role": "iteration",
           "iterExpr": "$rows",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": "$i"
+          "keyVar": "$i",
+          "loc": {
+            "startLine": 18,
+            "endLine": 24,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 611,
+            "endByte": 839
+          }
         }
       ],
       "loc": {
         "startLine": 21,
         "endLine": 22,
-        "startCol": 47,
-        "endCol": 12
+        "startCol": 46,
+        "endCol": 12,
+        "startByte": 749,
+        "endByte": 767
       }
     },
     {
-      "id": "f005#00160",
+      "id": "f005#00093",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -336,8 +464,8 @@
               "sourceKind": "db_row_field",
               "confidence": "ambiguous",
               "source": {
-                "fetchNodeId": "f005#00099",
-                "queryNodeId": "f005#00087",
+                "fetchNodeId": "f005#00065",
+                "queryNodeId": "f005#00056",
                 "table": null,
                 "column": null
               }
@@ -347,95 +475,143 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f005#00051",
+          "nodeId": "f005#00035",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f005#00054",
-          "condExpr": "isset($_GET['ID'])"
+          "condNodeId": "f005#00036",
+          "condExpr": "isset($_GET['ID'])",
+          "loc": {
+            "startLine": 11,
+            "endLine": 26,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 274,
+            "endByte": 863
+          }
         },
         {
-          "nodeId": "f005#00121",
+          "nodeId": "f005#00078",
           "kind": "Stmt_Foreach",
           "role": "iteration",
           "iterExpr": "$rows",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": "$i"
+          "keyVar": "$i",
+          "loc": {
+            "startLine": 18,
+            "endLine": 24,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 611,
+            "endByte": 839
+          }
         }
       ],
       "loc": {
         "startLine": 22,
         "endLine": 22,
-        "startCol": 19,
-        "endCol": 57
+        "startCol": 18,
+        "endCol": 57,
+        "startByte": 773,
+        "endByte": 812
       }
     },
     {
-      "id": "f005#00174",
+      "id": "f005#00102",
       "kind": "Stmt_InlineHTML",
       "raw": "</td>\n      </tr>\n",
       "enclosedBy": [
         {
-          "nodeId": "f005#00051",
+          "nodeId": "f005#00035",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f005#00054",
-          "condExpr": "isset($_GET['ID'])"
+          "condNodeId": "f005#00036",
+          "condExpr": "isset($_GET['ID'])",
+          "loc": {
+            "startLine": 11,
+            "endLine": 26,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 274,
+            "endByte": 863
+          }
         },
         {
-          "nodeId": "f005#00121",
+          "nodeId": "f005#00078",
           "kind": "Stmt_Foreach",
           "role": "iteration",
           "iterExpr": "$rows",
           "iterSourceKind": "db_row_field",
           "valueVar": "$row",
-          "keyVar": "$i"
+          "keyVar": "$i",
+          "loc": {
+            "startLine": 18,
+            "endLine": 24,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 611,
+            "endByte": 839
+          }
         }
       ],
       "loc": {
         "startLine": 22,
-        "endLine": 23,
-        "startCol": 60,
-        "endCol": 12
+        "endLine": 24,
+        "startCol": 59,
+        "endCol": 0,
+        "startByte": 814,
+        "endByte": 832
       }
     },
     {
-      "id": "f005#00179",
+      "id": "f005#00103",
       "kind": "Stmt_InlineHTML",
       "raw": "    </table>\n",
       "enclosedBy": [
         {
-          "nodeId": "f005#00051",
+          "nodeId": "f005#00035",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f005#00054",
-          "condExpr": "isset($_GET['ID'])"
+          "condNodeId": "f005#00036",
+          "condExpr": "isset($_GET['ID'])",
+          "loc": {
+            "startLine": 11,
+            "endLine": 26,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 274,
+            "endByte": 863
+          }
         }
       ],
       "loc": {
         "startLine": 25,
-        "endLine": 25,
-        "startCol": 1,
-        "endCol": 13
+        "endLine": 26,
+        "startCol": 0,
+        "endCol": 0,
+        "startByte": 843,
+        "endByte": 856
       }
     },
     {
-      "id": "f005#00184",
+      "id": "f005#00104",
       "kind": "Stmt_InlineHTML",
       "raw": "    <p class=\"footer\">",
       "enclosedBy": [],
       "loc": {
         "startLine": 27,
         "endLine": 27,
-        "startCol": 1,
-        "endCol": 22
+        "startCol": 0,
+        "endCol": 22,
+        "startByte": 867,
+        "endByte": 889
       }
     },
     {
-      "id": "f005#00186",
+      "id": "f005#00105",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -453,45 +629,59 @@
       "loc": {
         "startLine": 27,
         "endLine": 27,
-        "startCol": 29,
-        "endCol": 59
+        "startCol": 28,
+        "endCol": 62,
+        "startByte": 895,
+        "endByte": 929
       }
     },
     {
-      "id": "f005#00194",
+      "id": "f005#00109",
       "kind": "Stmt_InlineHTML",
       "raw": "</p>\n",
       "enclosedBy": [],
       "loc": {
         "startLine": 27,
-        "endLine": 27,
-        "startCol": 63,
-        "endCol": 67
+        "endLine": 28,
+        "startCol": 62,
+        "endCol": 0,
+        "startByte": 929,
+        "endByte": 934
       }
     },
     {
-      "id": "f005#00219",
+      "id": "f005#00121",
       "kind": "Stmt_InlineHTML",
       "raw": "    <p class=\"text-muted\">Signed in as administrator ",
       "enclosedBy": [
         {
-          "nodeId": "f005#00196",
+          "nodeId": "f005#00110",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f005#00199",
-          "condExpr": "$_SESSION['role'] == 'admin'"
+          "condNodeId": "f005#00111",
+          "condExpr": "$_SESSION['role'] == 'admin'",
+          "loc": {
+            "startLine": 28,
+            "endLine": 32,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 940,
+            "endByte": 1107
+          }
         }
       ],
       "loc": {
         "startLine": 31,
         "endLine": 31,
-        "startCol": 1,
-        "endCol": 53
+        "startCol": 0,
+        "endCol": 53,
+        "startByte": 1007,
+        "endByte": 1060
       }
     },
     {
-      "id": "f005#00221",
+      "id": "f005#00122",
       "kind": "Stmt_Echo",
       "reads": [
         {
@@ -507,57 +697,79 @@
       ],
       "enclosedBy": [
         {
-          "nodeId": "f005#00196",
+          "nodeId": "f005#00110",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f005#00199",
-          "condExpr": "$_SESSION['role'] == 'admin'"
+          "condNodeId": "f005#00111",
+          "condExpr": "$_SESSION['role'] == 'admin'",
+          "loc": {
+            "startLine": 28,
+            "endLine": 32,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 940,
+            "endByte": 1107
+          }
         }
       ],
       "loc": {
         "startLine": 31,
         "endLine": 31,
-        "startCol": 60,
-        "endCol": 86
+        "startCol": 59,
+        "endCol": 86,
+        "startByte": 1066,
+        "endByte": 1093
       }
     },
     {
-      "id": "f005#00229",
+      "id": "f005#00126",
       "kind": "Stmt_InlineHTML",
       "raw": "</p>\n",
       "enclosedBy": [
         {
-          "nodeId": "f005#00196",
+          "nodeId": "f005#00110",
           "kind": "Stmt_If",
           "role": "branch",
           "branch": "then",
-          "condNodeId": "f005#00199",
-          "condExpr": "$_SESSION['role'] == 'admin'"
+          "condNodeId": "f005#00111",
+          "condExpr": "$_SESSION['role'] == 'admin'",
+          "loc": {
+            "startLine": 28,
+            "endLine": 32,
+            "startCol": 6,
+            "endCol": 7,
+            "startByte": 940,
+            "endByte": 1107
+          }
         }
       ],
       "loc": {
         "startLine": 31,
-        "endLine": 31,
-        "startCol": 89,
-        "endCol": 93
+        "endLine": 32,
+        "startCol": 88,
+        "endCol": 0,
+        "startByte": 1095,
+        "endByte": 1100
       }
     },
     {
-      "id": "f005#00234",
+      "id": "f005#00127",
       "kind": "Stmt_InlineHTML",
       "raw": "  </body>\n</html>\n",
       "enclosedBy": [],
       "loc": {
         "startLine": 33,
-        "endLine": 34,
-        "startCol": 1,
-        "endCol": 8
+        "endLine": 35,
+        "startCol": 0,
+        "endCol": 0,
+        "startByte": 1111,
+        "endByte": 1129
       }
     }
   ],
   "queries": {
-    "f005#00087": {
+    "f005#00056": {
       "line": 13,
       "sql": "\"select * from prestb p inner join appointmenttb a on p.ID=a.ID where p.pid='$pid' and p.ID='\".$_GET['ID'].\"'\"",
       "tables": [
@@ -575,7 +787,7 @@
     "handWrittenSource": "<!DOCTYPE html>\n<?php\nsession_start();\n$con=mysqli_connect(\"mysql\",\"root\",\"root\",\"legacydb\");\n$pid = $_SESSION['pid'];\n$settings = parse_ini_file('settings.ini');\n?>\n<html lang=\"en\">\n  <body style=\"padding-top:50px;\">\n    <h4>Bills for patient <?php echo $pid ?></h4>\n<?php if (isset($_GET['ID'])) {\n  $query = \"select * from prestb p inner join appointmenttb a on p.ID=a.ID where p.pid='$pid' and p.ID='\".$_GET['ID'].\"'\";\n  $result = mysqli_query($con,$query);\n  $rows = mysqli_fetch_all($result, MYSQLI_ASSOC);\n?>\n    <h5>Appointment <?php echo $_GET['ID'] ?></h5>\n    <table class=\"table table-hover\">\n<?php foreach ($rows as $i => $row) { ?>\n      <tr>\n        <td><?php echo $row['doctor'];?></td>\n        <td><?php echo $row['prescription'];?></td>\n        <td><?php echo number_format($row['docFees'], 2);?></td>\n      </tr>\n<?php } ?>\n    </table>\n<?php } ?>\n    <p class=\"footer\"><?php echo $settings['hospital_name'] ?></p>\n<?php if ($_SESSION['role'] == 'admin') {\n  $show_admin_tools = true;\n?>\n    <p class=\"text-muted\">Signed in as administrator <?php echo $_SESSION['username'];?></p>\n<?php } ?>\n  </body>\n</html>\n",
     "notes": [
       "Hand-written: none of the other mocks can hold these cases without changing their raw values.",
-      "f005#00087 is SELECT * over prestb JOIN appointmenttb. Both tables have ID, pid, fname, lname, doctor, appdate and apptime, and mysqli_fetch_all(MYSQLI_ASSOC) keeps only the last duplicate, so every $row read is confidence 'ambiguous' with table/column null.",
+      "f005#00056 is SELECT * over prestb JOIN appointmenttb. Both tables have ID, pid, fname, lname, doctor, appdate and apptime, and mysqli_fetch_all(MYSQLI_ASSOC) keeps only the last duplicate, so every $row read is confidence 'ambiguous' with table/column null.",
       "$settings comes from parse_ini_file('settings.ini'): its values are only known at runtime, so $settings['hospital_name'] is sourceKind 'unresolved'.",
       "The foreach (line 18) is nested inside the if (line 11) and uses a key variable ($i).",
       "number_format($row['docFees'], 2) is sourceKind 'computed' with derivedFrom.",
@@ -588,7 +800,8 @@
       34
     ],
     "lexer": "PHP 8.2.12 token_get_all(); raw = T_INLINE_HTML token text, byte-exact",
-    "locExtension": "Agent extension, pending Member 01 Q13 (boundary-rules.md section 9): every sequence entry carries loc {startLine, endLine, startCol, endCol} in the shape of Member 01's AST node envelope, computed from PHP's lexer. Lines and columns are 1-based, columns count bytes, and the end is the statement's last byte (an echo's ';' is included; a print's is not).",
-    "condExprExtension": "Agent extension, pending Member 01 Q2 (boundary-rules.md section 9): every then/elseif branch enclosure carries condExpr, the byte-exact PHP source of its if/elseif condition from PHP's lexer, without the outer parentheses and the whitespace just inside them. else branches have none: their meaning comes from the chain."
+    "idConvention": "Member 01's convention (answered 12 Oct 2026): node ids are the pre-order ids of the file's AST (<fileId>#00000 = root File). The AST is produced by the C2 test harness in Member 01's format (tools/harness/parse.php, nikic/php-parser v5.9.0); it is not Member 01's own output.",
+    "locConvention": "Member 01's convention (Q13-Q15, answered 12 Oct 2026): every sequence entry, loop and branch enclosure carries loc {startLine, endLine, startCol, endCol, startByte, endByte}, the loc of its AST node (for an enclosure: the node named by nodeId). Lines are 1-based; columns and bytes are 0-based; every end is exclusive. An echo closed by '?>' ends after that tag, as its AST node does.",
+    "condExprConvention": "Member 01's convention (Q2, answered 12 Oct 2026): every then/elseif branch enclosure carries condExpr, the exact source of its if/elseif `cond` node (no outer parentheses), and condNodeId is that node's id. else branches have no condExpr: their meaning comes from the chain."
   }
 }

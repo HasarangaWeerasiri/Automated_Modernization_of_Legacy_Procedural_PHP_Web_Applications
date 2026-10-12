@@ -180,7 +180,7 @@ def test_compile_check_reports_a_planted_type_error(runs, tmp_path):
     stage5.write_files(runs["list_while"][2], tmp_path)
     item = tmp_path / "components" / "AppointmentsItem.tsx"
     item.write_text(item.read_text(encoding="utf-8").replace(
-        '<C2Todo id="f001#00763" reason="missing_in_contract" />', "{row.contact}"), encoding="utf-8")
+        '<C2Todo id="f001#00475" reason="missing_in_contract" />', "{row.contact}"), encoding="utf-8")
     result = compile_check.check("planted_error", tmp_path)
     assert result.errors == 1 and "Property 'contact' does not exist on type 'Appointment'" in result.output
 
@@ -196,7 +196,7 @@ def test_list_while_item_and_status_chain(runs):
     assert '<table className="table table-hover">' in listing and "<thead>" in listing
     assert "<AppointmentsItem key={i} row={row} />" in listing
     assert item.count("<td>") == 12 and item.strip().endswith("}") and "<tr>" in item
-    assert '<td><C2Todo id="f001#00763" reason="missing_in_contract" /></td>' in item
+    assert '<td><C2Todo id="f001#00475" reason="missing_in_contract" /></td>' in item
     assert "row.contact" not in item
     # R-I6: three separate conditionals in source order, translated from condExpr; no ternary chain.
     chain = [line.strip() for line in item.splitlines() if "&&" in line]
@@ -212,12 +212,12 @@ def test_list_while_item_and_status_chain(runs):
 def test_admin_guard_is_a_c2todo_with_an_unused_abstained_function(runs):
     _, _, result = runs["admin"]
     page = text(result, "app/admin_dashboard/page.tsx")
-    assert '<C2Todo id="f003#00041" reason="cuts_across_business_logic" />' in page
-    assert page.count("Abstained_f003_00041") == 1  # defined, never called
-    assert "function Abstained_f003_00041({ data }: { data: AppointmentStats })" in page
+    assert '<C2Todo id="f003#00028" reason="cuts_across_business_logic" />' in page
+    assert page.count("Abstained_f003_00028") == 1  # defined, never called
+    assert "function Abstained_f003_00028({ data }: { data: AppointmentStats })" in page
     assert "{data.total}" in page and "{data.revenue}" in page
     session = [t.node_id for t in todos(result, "needs_auth_context") if t.kind == "C2Todo"]
-    assert session == ["f003#00034", "f003#00118"]
+    assert session == ["f003#00025", "f003#00071"]
     assert "export default function Page()" in page  # nothing rendered needs data: no fetch
 
 
@@ -231,10 +231,10 @@ def test_detail_has_no_missing_field(runs):
 
 def test_edge_cases_gaps(runs):
     _, _, result = runs["edge_cases"]
-    assert [t.node_id for t in todos(result, "ambiguous_needs_schema")] == ["f005#00140", "f005#00150", "f005#00160"]
-    assert [t.node_id for t in todos(result, "unresolved_read")] == ["f005#00186"]
+    assert [t.node_id for t in todos(result, "ambiguous_needs_schema")] == ["f005#00083", "f005#00088", "f005#00093"]
+    assert [t.node_id for t in todos(result, "unresolved_read")] == ["f005#00105"]
     (abstain,) = todos(result, "cuts_across_business_logic")
-    assert abstain.node_id == "f005#00051"  # the if holding the nested foreach
+    assert abstain.node_id == "f005#00035"  # the if holding the nested foreach
     assert all(t.in_abstained for t in todos(result, "ambiguous_needs_schema"))
 
 
@@ -250,11 +250,11 @@ def test_wackopicko_data_is_never_rendered(name, runs):
 def test_wp_thumbnails_chunked_loop_is_a_c2todo(runs):
     _, _, result = runs["wp_thumbnails"]
     (chunked,) = todos(result, "chunked_container")
-    assert chunked.node_id == "f009#00289" and chunked.in_abstained  # inside the abstained if's function
+    assert chunked.node_id == "f009#00106" and chunked.in_abstained  # inside the abstained if's function
     assert todos(result, "tag_crosses_branch")[0].in_abstained is False
 
 
-@pytest.mark.parametrize("name, node_id", [("wp_view", "f007#00254"), ("wp_guestbook", "f006#00181")])
+@pytest.mark.parametrize("name, node_id", [("wp_view", "f007#00131"), ("wp_guestbook", "f006#00083")])
 def test_unescaped_comments_are_flagged_escaping_changed(name, node_id, runs):
     _, _, result = runs[name]
     assert [f.status for f in flags(result, "escaping_changed") if f.node_id == node_id] == ["info"]
@@ -262,7 +262,7 @@ def test_unescaped_comments_are_flagged_escaping_changed(name, node_id, runs):
 
 def test_escaped_output_is_not_flagged(runs):
     _, _, result = runs["wp_view"]
-    assert not [f for f in flags(result, "escaping_changed") if f.node_id == "f007#00207"]  # h( $pic['title'] )
+    assert not [f for f in flags(result, "escaping_changed") if f.node_id == "f007#00109"]  # h( $pic['title'] )
 
 
 def test_wp_header(runs):
@@ -273,11 +273,11 @@ def test_wp_header(runs):
     assert len(flags(result, "document_shell")) == 3 and len(flags(result, "html_comment_dropped")) == 1
     omitted = flags(result, "attribute_omitted:condition_not_translatable")
     assert [(f.node_id, f.detail) for f in omitted] == [(i, "class on <li>") for i in (
-        "f009#00042", "f009#00062", "f009#00082", "f009#00102", "f009#00137")]
+        "f009#00019", "f009#00026", "f009#00033", "f009#00040", "f009#00052")]
     search = next(line for line in page.split("\n") if 'id="query2"' in line)
     assert "size={15}" in search and "value" not in search.lower().replace("verticalalign", "")
     (value,) = flags(result, "attribute_omitted:unresolved_read")
-    assert (value.node_id, value.detail) == ("f009#00189", "value on <input>")
+    assert (value.node_id, value.detail) == ("f009#00068", "value on <input>")
 
 
 # ---------------------------------------------------------------- unit: tiny pages
@@ -729,7 +729,7 @@ def test_info_flags_are_outside_the_flag_rate(flag, runs):
 
 def test_escaping_changed_is_never_raised_on_literal_output(runs):
     _, _, result = runs["list_while"]
-    literal = {"f001#00838", "f001#00870", "f001#00902"}  # echo "Active" etc.
+    literal = {"f001#00512", "f001#00526", "f001#00540"}  # echo "Active" etc.
     assert not literal & {f.node_id for f in flags(result, "escaping_changed")}
 
 

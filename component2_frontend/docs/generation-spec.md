@@ -1,8 +1,8 @@
-# Component 2 — Stage 5 Generation Specification (v0.4)
+# Component 2 — Stage 5 Generation Specification (v0.5)
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. Evaluation apps stay locked |
+| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. v0.5 adds what the Phase 1 whole-app run needed (§5a, §8, §8a). Evaluation apps stay locked |
 | Date | 10 October 2026 |
 | Owner | Jayawardhana R D L L (IT23213876) |
 | Input | Stage 2 tree, Stage 3 needs, Stage 4 report, contract, endpoint map, timeline |
@@ -95,6 +95,17 @@ output/generated/<name>/
 | Event attributes (`onclick`, `onsubmit`, …), `<script>` | **Dropped** (inline JS is out of scope; Server Components cannot have handlers). Flag `inline_js_dropped`, status `review` |
 | Links / form actions to `.php` pages | Kept as literal strings. Flag `legacy_link` (info; routing is not C2's job) |
 
+## 5a. Echo strings with parts (v0.5; boundary-rules §1)
+
+| Part | JSX |
+|---|---|
+| Literal piece | Parsed as HTML with the rest of the markup (same rules as §5) |
+| Expression in text position | `{row.x}` / C2Todo, exactly as a read in §4 |
+| Expression inside an attribute value | Template-literal attribute (§5 "attribute value mixing text and PHP") |
+| Expression in a tag-name or attribute-name position | Not generated; Stage 2 already abstained (`markup_from_expression`) |
+
+R-L3b text-only loop → `{items.map((row, i) => <Fragment key={i}>…</Fragment>)}` (import `Fragment` from `react`).
+
 ## 6. Conditions (InlineConditional, ConditionalComponent, AttributeExpression, Empty)
 
 The condition text is not in schema 1.0 (Member 01 Q2). Until it is, generated mocks may carry
@@ -147,6 +158,18 @@ has the code — but it is not rendered.
 - `lib/api.ts`: `export async function get<Name>(): Promise<Type>` using
   `fetch(\`${process.env.API_BASE_URL}<path>\`, { cache: "no-store", headers: authHeaders() })`.
   `authHeaders()` is a stub returning `{}` with a TODO: token forwarding is C1's design.
+- **v0.5:** every generated `.ts` / `.tsx` file is an ES module (has at least one `export`). A page with no
+  endpoint gets **no** `lib/api.ts` (nothing to fetch); `authHeaders` is exported. A non-module file is a
+  global script: in a real Next.js app (`isolatedModules`) it fails, and two of them collide. The compile check
+  must use the test app's own `tsconfig.json` unchanged (no `moduleDetection` override).
+
+## 8a. Functions and shell (v0.5; boundary-rules R-F1, R-F2 — Phase 2b)
+
+| Unit | Generated |
+|---|---|
+| R-F1 function | `components/<Name>.tsx`, `export function <Name>(props)`; props typed from literal arguments; `<Name … />` at each call site |
+| R-F2 shell | Root `app/layout.tsx` (literal `<html>/<head>/<body>`, `{children}`); `components/<H>Shell.tsx` with `{children}`; each page's content wrapped in `<…Shell>`; `document_shell` flag removed for those pages |
+| R-F1/R-F2 parameter compared to a literal (`$selected == "home"`) | Translatable (whitelist row added): `selected == "home"` when the parameter is a typed prop |
 
 ## 9. Formatting and determinism
 
@@ -208,6 +231,9 @@ Every flag in `stage5_<name>.json` carries `severity`: `todo` (a C2Todo, an `unr
 | 10 Oct 2026 | v0.2: HTML nesting check added | Invalid nesting compiles but renders differently from the browser's re-parented legacy page |
 | 10 Oct 2026 | v0.3: review flags inside abstained code are `info` | Never rendered; the Abstain is already counted as `todo` |
 | 11 Oct 2026 | v0.4: **todo** flags inside abstained code are `info` too (owner's v0.3 expected totals were wrong) | v0.3 only removed the double count for review flags; a C2Todo inside an abstained region is the same double count. Rule now: one abstained region = one todo |
+| 12 Oct 2026 | v0.5: echo strings decomposed into parts | HMS prints whole rows as one interpolated echo; without parts these rows abstain (`no_rule`) |
+| 12 Oct 2026 | v0.5: every generated file is a module; no `lib/api.ts` without an endpoint | A global script fails under Next.js `isolatedModules`; Phase 1 hid this with a checker override, which is removed |
+| 12 Oct 2026 | v0.5: shell component for per-page header arguments | Next.js layouts get no page props; `our_header("guestbook")` needs one |
 | 11 Oct 2026 | v0.4: last-resort fallback replaces the smallest enclosing component | A synthetic R-L3 case replaced a whole page for one small structure |
 | 10 Oct 2026 | v0.3: `unresolvedCondition` is severity `todo` | The guarded content never renders — the same as a C2Todo |
 | 10 Oct 2026 | v0.2: route clash for function files recorded, not fixed | `wp_header` and `wp_thumbnails` are functions in `html_functions.php`; they are components, not pages. Waits on R-F1/R-F2 (Member 01 Q4) |
