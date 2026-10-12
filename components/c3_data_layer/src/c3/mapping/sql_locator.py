@@ -105,6 +105,10 @@ def _run_ast_extractor(
         "includes",
         [],
     )
+    unsupported_operations = ast_data.get(
+        "unsupported_operations",
+        [],
+    )
     if not isinstance(sql_calls, list):
         raise SQLLocatorError(
             "Expected 'sql_calls' to be a JSON array."
@@ -125,11 +129,17 @@ def _run_ast_extractor(
             "Expected 'includes' to be a JSON array."
         )
 
+    if not isinstance(unsupported_operations, list):
+        raise SQLLocatorError(
+            "Expected 'unsupported_operations' to be a JSON array."
+        )
+
     return {
         "sql_calls": sql_calls,
         "assignments": assignments,
         "functions": functions,
         "includes": includes,
+        "unsupported_operations": unsupported_operations,
     }
 
 

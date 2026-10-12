@@ -1,0 +1,20 @@
+{
+    "query_id": "Q014",
+    "source_file": "..\\..\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\14_branch_query.php",
+    "operation": "SELECT",
+    "query_shape": "CONDITIONAL_SELECT",
+    "condition": {
+        "condition_variable": "activeOnly",
+        "kind": "ISSET",
+        "input_source": "_GET",
+        "input_key": "active",
+        "true_when": "present_and_not_null"
+    },
+    "branches": {
+        "IF": "SELECT id, full_name FROM doctors WHERE active = 1",
+        "ELSE": "SELECT id, full_name FROM doctors"
+    },
+    "status": "DIAGNOSTIC_ONLY",
+    "safe_for_conversion": false,
+    "unsupported_operations_checked": true
+}

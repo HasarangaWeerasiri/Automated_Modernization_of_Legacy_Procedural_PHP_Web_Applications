@@ -183,6 +183,11 @@ def _expression_to_template(
         WHERE id = {{id}}
     """
 
+    # Unsupported AST mutations may not have an expression.
+    # Abstain from SQL recovery rather than raising TypeError.
+    if not isinstance(expression, str):
+        return "", [], False
+
     concat_parts = _split_concat_expression(
         expression
     )
@@ -903,6 +908,80 @@ def _validated_cross_file_candidate(
     }
 
 
+
+
+def _resolve_isset_branch_condition(
+    condition: str,
+    source_file: str,
+    branch_line: int,
+    assignments: list[dict],
+) -> dict | None:
+    """Resolve a simple PHP variable assigned from isset($_GET[...])."""
+
+    if not isinstance(condition, str):
+        return None
+
+    if not isinstance(source_file, str):
+        return None
+
+    if not isinstance(branch_line, int):
+        return None
+
+    variable_match = re.fullmatch(
+        r"\$([A-Za-z_][A-Za-z0-9_]*)",
+        condition.strip(),
+    )
+
+    if variable_match is None:
+        return None
+
+    variable = "$" + variable_match.group(1)
+
+    # Reject competing definitions, including assignments inside branches.
+    # The supported pattern has exactly one definition before the IF.
+    matches = [
+        assignment
+        for assignment in assignments
+        if isinstance(assignment, dict)
+        and assignment.get("source_file") == source_file
+        and assignment.get("variable") == variable
+    ]
+
+    if len(matches) != 1:
+        return None
+
+    definition = matches[0]
+
+    if (
+        definition.get("assignment_type") != "ASSIGN"
+        or definition.get("control_flow") != []
+        or not isinstance(definition.get("source_line"), int)
+        or definition["source_line"] >= branch_line
+    ):
+        return None
+
+    expression = matches[0].get("expression")
+
+    if not isinstance(expression, str):
+        return None
+
+    isset_match = re.fullmatch(
+        r"""isset\(\s*\$_GET\s*\[\s*(['"])([A-Za-z_][A-Za-z0-9_]*)\1\s*\]\s*\)""",
+        expression.strip(),
+    )
+
+    if isset_match is None:
+        return None
+
+    return {
+        "condition_variable": variable_match.group(1),
+        "kind": "ISSET",
+        "input_source": "_GET",
+        "input_key": isset_match.group(2),
+        "true_when": "present_and_not_null",
+    }
+
+
 def recover_queries_from_ast(
     ast_data: dict,
 ) -> list[dict]:
@@ -1025,6 +1104,10 @@ def recover_queries_from_ast(
         fully_supported = True
 
         for assignment in assignment_chain:
+
+            if assignment.get("assignment_type") == "UNSUPPORTED_MUTATION":
+                fully_supported = False
+                continue
 
             expression = assignment.get(
                 "expression",

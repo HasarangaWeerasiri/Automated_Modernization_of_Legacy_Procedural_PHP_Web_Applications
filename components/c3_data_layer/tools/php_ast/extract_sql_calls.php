@@ -184,10 +184,87 @@ function getControlFlowContext(
     );
 }
 
+
+/**
+ * Collect conditions controlling an AST node.
+ *
+ * Preserve the containing branch type and its condition.
+ * ELSE uses the condition of its parent IF statement.
+ */
+/**
+ * Return controlling PHP branch metadata.
+ *
+ * For ELSE branches, resolve the enclosing IF statement.
+ * Suppress the duplicate IF entry associated with that ELSE.
+ */
+function getBranchConditions(
+    Node $node,
+    $prettyPrinter
+): array {
+    $conditions = [];
+    $parent = $node->getAttribute('parent');
+
+    while ($parent instanceof Node) {
+        if ($parent instanceof Node\Stmt\ElseIf_) {
+            $ifNode = $parent->getAttribute('parent');
+
+            $conditions[] = [
+                'branch' => 'ELSEIF',
+                'condition' => expressionToString(
+                    $parent->cond,
+                    $prettyPrinter
+                ),
+                'branch_group_line' => (
+                    $ifNode instanceof Node\Stmt\If_
+                        ? $ifNode->getStartLine()
+                        : null
+                ),
+            ];
+
+            $parent = $ifNode;
+            continue;
+        }
+
+        if ($parent instanceof Node\Stmt\Else_) {
+            $ifNode = $parent->getAttribute('parent');
+
+            if ($ifNode instanceof Node\Stmt\If_) {
+                $conditions[] = [
+                    'branch' => 'ELSE',
+                    'condition' => expressionToString(
+                        $ifNode->cond,
+                        $prettyPrinter
+                    ),
+                    'branch_group_line' => $ifNode->getStartLine(),
+                ];
+
+                $parent = $ifNode->getAttribute('parent');
+                continue;
+            }
+        }
+
+        if ($parent instanceof Node\Stmt\If_) {
+            $conditions[] = [
+                'branch' => 'IF',
+                'condition' => expressionToString(
+                    $parent->cond,
+                    $prettyPrinter
+                ),
+                'branch_group_line' => $parent->getStartLine(),
+            ];
+        }
+
+        $parent = $parent->getAttribute('parent');
+    }
+
+    return $conditions;
+}
+
 $results = [];
 $assignments = [];
 $functions = [];
 $includes = [];
+$unsupportedOperations = [];
 $phpFiles = collectPhpFiles($inputPath);
 
 
@@ -343,6 +420,59 @@ foreach ($phpFiles as $phpFile) {
     }
 
     /*
+     * Collect unsupported variable operations.
+     *
+     * Metadata only. The extractor does not execute PHP.
+     */
+    $unsupportedNodes = $nodeFinder->find(
+        $ast,
+        function (Node $node): bool {
+            return (
+                $node instanceof Node\Stmt\Unset_
+                ||
+                $node instanceof Node\Expr\AssignRef
+            );
+        }
+    );
+
+    foreach ($unsupportedNodes as $unsupportedNode) {
+        $variables = [];
+        $operationType = 'UNKNOWN';
+
+        if ($unsupportedNode instanceof Node\Stmt\Unset_) {
+            $operationType = 'UNSET';
+
+            foreach ($unsupportedNode->vars as $variableNode) {
+                if (
+                    $variableNode instanceof Node\Expr\Variable
+                    && is_string($variableNode->name)
+                ) {
+                    $variables[] = '$' . $variableNode->name;
+                }
+            }
+        } elseif ($unsupportedNode instanceof Node\Expr\AssignRef) {
+            $operationType = 'REFERENCE_ASSIGN';
+
+            foreach ([$unsupportedNode->var, $unsupportedNode->expr] as $variableNode) {
+                if (
+                    $variableNode instanceof Node\Expr\Variable
+                    && is_string($variableNode->name)
+                ) {
+                    $variables[] = '$' . $variableNode->name;
+                }
+            }
+        }
+
+        $unsupportedOperations[] = [
+            'source_file' => $phpFile,
+            'source_line' => $unsupportedNode->getStartLine(),
+            'operation_type' => $operationType,
+            'variables' => array_values(array_unique($variables)),
+            'control_flow' => getControlFlowContext($unsupportedNode),
+        ];
+    }
+
+    /*
      * Collect variable assignments.
      *
      * Examples:
@@ -359,7 +489,15 @@ foreach ($phpFiles as $phpFile) {
             return (
                 $node instanceof Node\Expr\Assign
                 ||
-                $node instanceof Node\Expr\AssignOp\Concat
+                $node instanceof Node\Expr\AssignOp
+                ||
+                $node instanceof Node\Expr\PreInc
+                ||
+                $node instanceof Node\Expr\PostInc
+                ||
+                $node instanceof Node\Expr\PreDec
+                ||
+                $node instanceof Node\Expr\PostDec
             );
         }
     );
@@ -376,13 +514,21 @@ foreach ($phpFiles as $phpFile) {
 
         $variableName = '$' . $assignment->var->name;
 
-        $assignmentType =
+        $assignmentType = 'UNSUPPORTED_MUTATION';
+
+        if ($assignment instanceof Node\Expr\Assign) {
+            $assignmentType = 'ASSIGN';
+        } elseif (
             $assignment instanceof Node\Expr\AssignOp\Concat
-                ? 'CONCAT_ASSIGN'
-                : 'ASSIGN';
+        ) {
+            $assignmentType = 'CONCAT_ASSIGN';
+        }
 
         $functionCallMetadata = null;
-        $expressionNode = $assignment->expr;
+
+        $expressionNode = property_exists($assignment, 'expr')
+            ? $assignment->expr
+            : null;
 
         if (
             $expressionNode instanceof Node\Expr\FuncCall
@@ -438,12 +584,18 @@ foreach ($phpFiles as $phpFile) {
             'source_line' => $assignment->getStartLine(),
             'variable' => $variableName,
             'assignment_type' => $assignmentType,
-            'expression' => expressionToString(
-                $assignment->expr,
-                $prettyPrinter
-            ),
+            'expression' => $expressionNode instanceof Node
+                ? expressionToString(
+                    $expressionNode,
+                    $prettyPrinter
+                )
+                : null,
             'control_flow' => getControlFlowContext(
                 $assignment
+            ),
+            'branch_conditions' => getBranchConditions(
+                $assignment,
+                $prettyPrinter
             ),
             'function_call' => $functionCallMetadata,
         ];
@@ -610,6 +762,7 @@ $output = [
     'assignments' => $assignments,
     'functions' => $functions,
     'includes' => $includes,
+    'unsupported_operations' => $unsupportedOperations,
 ];
 
 echo json_encode(
