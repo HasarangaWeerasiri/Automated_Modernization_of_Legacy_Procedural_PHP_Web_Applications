@@ -410,6 +410,53 @@ def _build_conditional_concat_function(query: dict) -> str:
     ])
 
 
+def _build_join_update_function(query: dict) -> str:
+    """Generate Q020 only from verified conversion metadata."""
+
+    from c3.conversion.join_update_converter import (
+        PARAMETERIZED_SQL,
+    )
+    from c3.conversion.join_update_source_gate import (
+        validate_q020_source_shape,
+    )
+
+    expected = {
+        "query_id": "Q020",
+        "status": "CONVERTED",
+        "query_shape": "MYSQL_JOIN_UPDATE",
+        "operation": "UPDATE",
+        "table": "appointments",
+        "sql": PARAMETERIZED_SQL,
+        "parameters": ["id"],
+        "input_source": "_POST",
+        "default_id": "1",
+        "reason": None,
+    }
+
+    if not isinstance(query, dict):
+        raise ValueError("Invalid Q020 converted representation.")
+
+    if any(query.get(key) != value for key, value in expected.items()):
+        raise ValueError("Unexpected Q020 converted representation.")
+
+    source_file = query.get("source_file")
+
+    if (
+        not isinstance(source_file, str)
+        or not validate_q020_source_shape(source_file)
+    ):
+        raise ValueError("Q020 original source validation failed.")
+
+    return "\n".join([
+        "def update_appointment_q020(session, inputs):",
+        '    """Update an appointment fee; caller manages the transaction."""',
+        "    appointment_id = resolve_q020_id(inputs)",
+        f"    statement = text({PARAMETERIZED_SQL!r})",
+        '    result = session.execute(statement, {"id": appointment_id})',
+        "    return result.rowcount",
+    ])
+
+
 def generate_data_access_source(
     converted_queries: list[dict],
 ) -> str:
@@ -443,6 +490,7 @@ def generate_data_access_source(
     has_order_by = False
     has_table_identifier = False
     has_conditional_concat = False
+    has_join_update = False
 
     for query in converted_queries:
         if query.get("status") == "CONVERTED":
@@ -460,6 +508,9 @@ def generate_data_access_source(
             elif shape == "TABLE_IDENTIFIER_SELECT":
                 functions.append(_build_table_identifier_function(query))
                 has_table_identifier = True
+            elif shape == "MYSQL_JOIN_UPDATE":
+                functions.append(_build_join_update_function(query))
+                has_join_update = True
             elif shape == "CONDITIONAL_CONCAT_SELECT":
                 functions.append(_build_conditional_concat_function(query))
                 has_conditional_concat = True
@@ -503,6 +554,12 @@ def generate_data_access_source(
         lines.insert(
             lines.index("from sqlalchemy import text") + 1,
             "from c3.conversion.conditional_concat_binding import resolve_q016_department",
+        )
+
+    if has_join_update:
+        lines.insert(
+            lines.index("from sqlalchemy import text") + 1,
+            "from c3.conversion.join_update_binding import resolve_q020_id",
         )
 
     lines.append("\n\n\n".join(functions))

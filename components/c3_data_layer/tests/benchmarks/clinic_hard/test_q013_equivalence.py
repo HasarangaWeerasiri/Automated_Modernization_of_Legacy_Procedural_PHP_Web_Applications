@@ -37,7 +37,7 @@ def generated_q013():
     converted = convert_queries(recovered)
 
     assert len(converted) == 21
-    assert sum(q["status"] == "CONVERTED" for q in converted) == 20
+    assert sum(q["status"] == "CONVERTED" for q in converted) == 21
 
     q013 = next(q for q in converted if q["query_id"] == "Q013")
 

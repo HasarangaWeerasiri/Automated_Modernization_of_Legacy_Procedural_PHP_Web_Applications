@@ -227,6 +227,20 @@ def convert_query(query: dict) -> dict:
         if result is not None:
             return result
 
+    # Guarded MySQL UPDATE JOIN conversion for Q020.
+    if (
+        query.get("query_id") == "Q020"
+        and query.get("status") == "RECOVERED"
+    ):
+        from c3.conversion.join_update_converter import (
+            convert_q020_join_update,
+        )
+
+        result = convert_q020_join_update(query)
+
+        if result is not None:
+            return result
+
     if query.get("status") != "RECOVERED":
         return {
             **base_result,
