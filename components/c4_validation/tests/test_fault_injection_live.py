@@ -22,6 +22,7 @@ from c4.verdict import evaluate
 pytestmark = pytest.mark.environment
 
 LIST, SEARCH = "patient_list_typical_01", "patient_search_typical_01"
+CONTACT = "contact_create_typical_01"
 
 
 def _http():
@@ -173,6 +174,50 @@ def test_one_failing_scenario_fails_its_endpoint(stub, at_baseline, baselines):
 
     assert endpoint["verdict"] == FAIL
     assert {s["scenario_id"]: s["verdict"] for s in endpoint["scenarios"]} == {LIST: PASS, SEARCH: FAIL}
+
+
+# ---------------------------------------------------- planted faults in a write
+
+
+def test_a_write_passes_although_status_and_message_wording_differ(stub, judge):
+    # The legacy page answers 200 with a pop-up; the stub answers 201 with other words.
+    assert judge(CONTACT).verdict == PASS
+
+
+def test_a_suppressed_database_row_fails_although_the_response_reports_success(stub, judge):
+    stub("suppresses_contact_insert")
+
+    result = judge(CONTACT)
+
+    assert result.verdict == FAIL
+    assert [d["where"] for d in result.differences] == ["database"]
+    assert "root['contact']" in str(result.differences[0]["detail"])
+
+
+def test_a_wrong_stored_value_fails_and_the_column_is_named(stub, judge):
+    stub("stores_wrong_message")
+
+    (difference,) = judge(CONTACT).differences
+
+    assert difference["where"] == "database"
+    assert "['contact']['inserted'][0]['message']" in str(difference["detail"])
+
+
+def test_a_row_written_twice_fails(stub, judge):
+    stub("inserts_contact_twice")
+
+    result = judge(CONTACT)
+
+    assert result.verdict == FAIL
+    assert "repetition_change" in result.differences[0]["detail"]
+
+
+def test_a_faulty_write_does_not_spoil_the_scenario_after_it(stub, judge):
+    stub("inserts_contact_twice")
+    assert judge(CONTACT).verdict == FAIL
+
+    # The read scenario starts from the baseline again, not from the two extra rows.
+    assert judge(LIST).verdict == PASS
 
 
 # ---------------------------------------------------------------------- known gap

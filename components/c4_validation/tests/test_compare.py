@@ -267,6 +267,31 @@ def test_a_write_to_another_table_fails():
     assert compare(oracle(delta=legacy), migrated(delta=replayed)).verdict == FAIL
 
 
+def test_a_row_written_twice_fails():
+    once = inserted("contact", {"name": "Anu", "message": "hello"})
+    twice = inserted("contact", {"name": "Anu", "message": "hello"}, {"name": "Anu", "message": "hello"})
+
+    assert compare(oracle(delta=once), migrated(delta=twice)).verdict == FAIL
+    assert compare(oracle(delta=twice), migrated(delta=once)).verdict == FAIL
+    assert compare(oracle(delta=twice), migrated(delta=twice)).verdict == PASS
+
+
+def test_identical_rows_among_others_are_counted():
+    legacy = inserted("contact", {"name": "Anu"}, {"name": "Ben"}, {"name": "Ben"})
+    fewer = inserted("contact", {"name": "Ben"}, {"name": "Anu"})
+    same = inserted("contact", {"name": "Ben"}, {"name": "Anu"}, {"name": "Ben"})
+
+    assert compare(oracle(delta=legacy), migrated(delta=fewer)).verdict == FAIL
+    assert compare(oracle(delta=legacy), migrated(delta=same)).verdict == PASS
+
+
+def test_the_wording_of_a_legacy_pop_up_message_is_not_compared():
+    record = oracle(delta=inserted("contact", {"name": "Anu"}))
+    record["legacy_response"]["messages"] = ["Message sent successfully!"]
+
+    assert compare(record, migrated(status=201, delta=inserted("contact", {"name": "Anu"}))).verdict == PASS
+
+
 def test_the_order_of_written_rows_is_ignored():
     legacy = inserted("contact", {"name": "Anu"}, {"name": "Ben"})
     replayed = inserted("contact", {"name": "Ben"}, {"name": "Anu"})

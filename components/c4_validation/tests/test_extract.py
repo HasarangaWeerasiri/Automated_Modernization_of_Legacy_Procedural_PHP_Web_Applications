@@ -1,6 +1,6 @@
 """Value extraction, checked on small pieces of HTML written for the purpose."""
 
-from c4.extract import extract_tables
+from c4.extract import extract_messages, extract_tables
 
 
 def records(html):
@@ -31,6 +31,13 @@ def test_markup_inside_a_cell_is_discarded():
     html = "<table><tr><th>Name</th></tr><tr><td><b>Ga</b>nesh <a href='x'>(edit)</a></td></tr></table>"
 
     assert records(html) == [{"Name": "Ganesh (edit)"}]
+
+
+def test_code_and_styling_inside_a_cell_are_not_part_of_its_value():
+    html = """<table><tr><th>Name</th></tr>
+              <tr><td>Ram<script>alert("hi")</script><style>.x{color:red}</style></td></tr></table>"""
+
+    assert records(html) == [{"Name": "Ram"}]
 
 
 def test_layout_whitespace_collapses_to_single_spaces():
@@ -131,3 +138,43 @@ def test_bytes_are_decoded_with_the_encoding_the_page_declares():
     page = "<html><head><meta charset='iso-8859-1'></head><table><tr><th>Name</th></tr><tr><td>Renée</td></tr></table>"
 
     assert records(page.encode("iso-8859-1")) == [{"Name": "Renée"}]
+
+
+# ----------------------------------------------------------------------- messages
+
+
+def test_a_pop_up_message_is_read_from_the_script_that_shows_it():
+    page = """<script type="text/javascript">alert("Message sent successfully!");window.location.href = "contact.html";</script>"""
+
+    assert extract_messages(page) == ["Message sent successfully!"]
+
+
+def test_single_quotes_and_line_breaks_inside_the_call_are_read():
+    page = "<script> alert('No entries found! Please enter valid details'); \n window.location.href = 'x.php';</script>"
+
+    assert extract_messages(page) == ["No entries found! Please enter valid details"]
+
+
+def test_every_message_of_a_page_is_returned_in_order():
+    page = "<script>alert('first');</script><p>text</p><script>alert(\"second\"); alert('third');</script>"
+
+    assert extract_messages(page) == ["first", "second", "third"]
+
+
+def test_a_quote_of_the_other_kind_or_an_escaped_one_stays_in_the_message():
+    page = r"""<script>alert("Patient's record saved"); alert('It\'s done');</script>"""
+
+    assert extract_messages(page) == ["Patient's record saved", "It's done"]
+
+
+def test_text_that_only_mentions_alert_outside_a_script_is_not_a_message():
+    assert extract_messages("<p>Call alert('x') to show a box.</p>") == []
+
+
+def test_a_message_built_at_run_time_is_not_read():
+    assert extract_messages("<script>alert(message); alert('Saved ' + name);</script>") == []
+
+
+def test_a_page_without_pop_ups_has_no_messages():
+    assert extract_messages("<table><tr><td>Ram</td></tr></table>") == []
+    assert extract_messages("") == []

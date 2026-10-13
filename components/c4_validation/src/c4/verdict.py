@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any, Iterable
@@ -77,8 +78,37 @@ def write_report(config: Config, report: dict[str, Any]) -> Path:
     return path
 
 
+_DELTA_CHANGES = {
+    "values_changed": "value differs",
+    "repetition_change": "written a different number of times",
+    "iterable_item_removed": "missing on the migrated side",
+    "dictionary_item_removed": "missing on the migrated side",
+    "iterable_item_added": "only on the migrated side",
+    "dictionary_item_added": "only on the migrated side",
+}
+
+
+def _describe_delta(detail: dict[str, Any]) -> str:
+    """Say in words where two database deltas differ, e.g. contact.inserted[0].message."""
+    lines = []
+    for change, places in detail.items():
+        for path in places:
+            place = re.sub(r"\['([^']*)'\]", r".\1", path.removeprefix("root")).lstrip(".")
+            line = f"{place}: {_DELTA_CHANGES.get(change, change.replace('_', ' '))}"
+            info = places[path] if isinstance(places, dict) else None
+            if change == "values_changed":
+                line += f" (legacy {info['old_value']!r}, migrated {info['new_value']!r})"
+            elif change == "repetition_change":
+                line += f" (legacy {info['old_repeat']}, migrated {info['new_repeat']})"
+            lines.append(line)
+    return "; ".join(lines)
+
+
 def _describe(finding: dict[str, Any]) -> str:
     kind = finding["kind"]
+    if kind in ("delta_differs", "excluded_field_differs") and "detail" in finding:
+        prefix = "excluded field differs: " if kind == "excluded_field_differs" else ""
+        return prefix + _describe_delta(finding["detail"])
     if kind == "record_not_reproduced":
         return f"values not reproduced: {json.dumps(finding['values_not_found'], ensure_ascii=False)}"
     if kind == "unexpected_record":

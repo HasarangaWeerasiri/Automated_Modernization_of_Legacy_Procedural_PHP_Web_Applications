@@ -20,6 +20,7 @@ import os
 from typing import Any, Callable
 
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 
 app = FastAPI(title="C4 stub API")
@@ -51,7 +52,14 @@ FAULTS: dict[str, Callable[[Patients], Patients]] = {
     ],
 }
 # Faults that are not a change to the returned records.
-OTHER_FAULTS = ("ignores_contact_filter", "fails_with_server_error")
+OTHER_FAULTS = (
+    "ignores_contact_filter",
+    "fails_with_server_error",
+    # The contact endpoint reports success in every one of these.
+    "suppresses_contact_insert",
+    "stores_wrong_message",
+    "inserts_contact_twice",
+)
 
 active_fault: str | None = None
 
@@ -101,3 +109,32 @@ def patients(contact: str | None = None) -> dict[str, Patients]:
     if active_fault in FAULTS:
         found = FAULTS[active_fault](found)
     return {"patients": found}
+
+
+class ContactMessage(BaseModel):
+    name: str
+    email: str
+    contact: str
+    message: str
+
+
+@app.post("/api/contact", status_code=201)
+def create_contact(body: ContactMessage) -> dict[str, str]:
+    """Store a message sent through the contact form.
+
+    Stands in for the legacy contact page, which inserts one row and tells the user
+    the message was sent.
+    """
+    row = body.model_dump()
+    if active_fault == "stores_wrong_message":
+        row["message"] = f"{row['message']}x"
+    copies = {"suppresses_contact_insert": 0, "inserts_contact_twice": 2}.get(active_fault, 1)
+
+    insert = text(
+        "INSERT INTO contact (name, email, contact, message) "
+        "VALUES (:name, :email, :contact, :message)"
+    )
+    with engine.begin() as connection:
+        for _ in range(copies):
+            connection.execute(insert, row)
+    return {"message": "Contact saved"}

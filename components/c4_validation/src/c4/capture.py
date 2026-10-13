@@ -13,9 +13,11 @@ excluded instead of being compared.
 
     python -m c4.capture [scenario_id ...]
 
-This is the walking-skeleton version. A scenario is read from a hand-written file
-that stands in for the endpoint map and the scenario generator, and only pages whose
-data is in one HTML table are supported.
+A scenario is still read from a hand-written file that stands in for the endpoint
+map and the scenario generator. Its `legacy_table` says where the endpoint's records
+are on the page: left out, the page must hold exactly one table; a number picks one
+table of several; "none" means the endpoint shows no records, as a form submission
+that only writes to the database does.
 """
 
 from __future__ import annotations
@@ -32,7 +34,7 @@ import requests
 
 from c4 import containers, dbstate
 from c4.config import Config, ConfigError, load_config
-from c4.extract import extract_tables
+from c4.extract import extract_messages, extract_tables
 
 CAPTURE_RUNS = 2
 
@@ -50,6 +52,7 @@ class Observation:
     status_code: int
     records: tuple[dict[str, str], ...]
     delta: dict[str, dict[str, list]]
+    messages: tuple[str, ...] = ()
 
 
 def load_scenario(path: Path) -> dict[str, Any]:
@@ -86,17 +89,32 @@ def _observe(
     after = dbstate.snapshot(config.legacy)
 
     tables = extract_tables(response.content)
-    chosen = scenario.get("legacy_table")
-    if chosen is None and len(tables) != 1:
-        # Sound-or-abstain: with no table, or several and no pointer to the right
-        # one, any choice made here would be a guess.
+    chosen = scenario.get("legacy_table", "only")
+    if chosen == "none":
+        records: tuple[dict[str, str], ...] = ()
+    elif chosen == "only":
+        if len(tables) != 1:
+            # Sound-or-abstain: with no table, or several and no pointer to the
+            # right one, any choice made here would be a guess.
+            raise CaptureError(
+                f"{scenario['scenario_id']}: the page shows {len(tables)} tables and the "
+                "scenario does not say which one holds this endpoint's data."
+            )
+        records = tables[0].records
+    elif chosen in range(len(tables)):
+        records = tables[chosen].records
+    else:
         raise CaptureError(
-            f"{scenario['scenario_id']}: the page shows {len(tables)} tables and the "
-            "scenario does not say which one holds this endpoint's data."
+            f"{scenario['scenario_id']}: the scenario points at table {chosen!r}, "
+            f"but the page shows {len(tables)} tables."
         )
-    table = tables[chosen or 0]
 
-    return Observation(response.status_code, table.records, dbstate.delta(before, after))
+    return Observation(
+        status_code=response.status_code,
+        records=records,
+        delta=dbstate.delta(before, after),
+        messages=tuple(extract_messages(response.content)),
+    )
 
 
 def _volatile_labels(scenario_id: str, observations: list[Observation]) -> list[str]:
@@ -107,7 +125,12 @@ def _volatile_labels(scenario_id: str, observations: list[Observation]) -> list[
         same_shape = len(other.records) == len(first.records) and all(
             a.keys() == b.keys() for a, b in zip(first.records, other.records)
         )
-        if other.status_code != first.status_code or not same_shape or other.delta != first.delta:
+        if (
+            other.status_code != first.status_code
+            or not same_shape
+            or other.delta != first.delta
+            or other.messages != first.messages
+        ):
             # More than single values differ, so there is no stable behaviour to record.
             raise CaptureError(
                 f"{scenario_id}: the legacy system did not behave the same way in "
@@ -152,6 +175,9 @@ def capture(
             "status_code": observed.status_code,
             "outcome": outcome_of(observed.status_code),
             "records": list(observed.records),
+            # What the page told the user in a pop-up. Kept for the reader; its
+            # wording is presentation and is not compared.
+            "messages": list(observed.messages),
         },
         "db_state": {
             # The content fingerprint, so replay can confirm that the migrated

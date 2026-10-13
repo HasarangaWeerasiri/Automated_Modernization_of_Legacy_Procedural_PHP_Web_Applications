@@ -58,7 +58,9 @@ def test_record_holds_what_the_legacy_system_was_observed_to_do(config, monkeypa
     assert record["scenario_id"] == "search_typical_01"
     assert record["scenario_type"] == "typical"
     assert record["input"] == {"method": "POST", "params": {}, "body": {"q": "abc"}}
-    assert record["legacy_response"] == {"status_code": 200, "outcome": "success", "records": [row]}
+    assert record["legacy_response"] == {
+        "status_code": 200, "outcome": "success", "records": [row], "messages": [],
+    }
     assert record["db_state"] == {"baseline_fingerprint": "sha256:baseline", "delta": {}}
     assert record["excluded_fields"] == []
     assert record["capture_runs"] == 2
@@ -128,6 +130,17 @@ def test_a_different_number_of_records_is_not_a_stable_observation(config, monke
 
 def test_a_different_status_is_not_a_stable_observation(config, monkeypatch):
     replay_observations(monkeypatch, observed(status=200), observed(status=500))
+
+    with pytest.raises(CaptureError, match="did not behave the same way"):
+        capture(config, SCENARIO, BASELINES)
+
+
+def test_a_different_pop_up_message_is_not_a_stable_observation(config, monkeypatch):
+    replay_observations(
+        monkeypatch,
+        Observation(200, (), {}, ("Message sent successfully!",)),
+        Observation(200, (), {}, ("Something went wrong",)),
+    )
 
     with pytest.raises(CaptureError, match="did not behave the same way"):
         capture(config, SCENARIO, BASELINES)
@@ -213,6 +226,41 @@ def test_a_scenario_can_point_at_one_table_of_several(config, page):
     record = capture(config, {**SCENARIO, "legacy_table": 1}, BASELINES)
 
     assert record["legacy_response"]["records"] == [{"Doctor": "Ganesh"}]
+
+
+def test_pointing_at_a_table_the_page_does_not_have_is_refused(config, page):
+    page(TWO_TABLES)
+
+    with pytest.raises(CaptureError, match="points at table 2"):
+        capture(config, {**SCENARIO, "legacy_table": 2}, BASELINES)
+
+
+POP_UP = """<script type="text/javascript">alert("Message sent successfully!");window.location.href = "contact.html";</script>"""
+
+
+def test_an_endpoint_that_shows_no_records_is_captured_with_its_pop_up_message(config, page):
+    page(POP_UP)
+
+    response = capture(config, {**SCENARIO, "legacy_table": "none"}, BASELINES)["legacy_response"]
+
+    assert response["records"] == []
+    assert response["messages"] == ["Message sent successfully!"]
+
+
+def test_a_page_that_answers_with_nothing_at_all_is_recorded_as_such(config, page):
+    # What a legacy page does when its write fails silently: no table, no message.
+    page("")
+
+    response = capture(config, {**SCENARIO, "legacy_table": "none"}, BASELINES)["legacy_response"]
+
+    assert response == {"status_code": 200, "outcome": "success", "records": [], "messages": []}
+
+
+def test_a_pop_up_alone_does_not_stand_in_for_a_table_the_scenario_expects(config, page):
+    page(POP_UP)
+
+    with pytest.raises(CaptureError, match="0 tables"):
+        capture(config, SCENARIO, BASELINES)
 
 
 # -------------------------------------------------------------------------- files

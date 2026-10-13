@@ -86,7 +86,12 @@ def replay(
         session.close()
 
     after = dbstate.snapshot(config.migrated)
-    records, problem = _records(response, request.get("records_at", ""))
+    records_at = request.get("records_at", "")
+    if records_at is None:
+        # The endpoint returns no records, as a write that only reports success does.
+        records, problem = (), None
+    else:
+        records, problem = _records(response, records_at)
     return Replay(
         status_code=response.status_code,
         outcome=outcome_of(response.status_code),

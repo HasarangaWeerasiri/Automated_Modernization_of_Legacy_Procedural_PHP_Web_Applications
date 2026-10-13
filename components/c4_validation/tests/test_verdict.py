@@ -8,7 +8,7 @@ import pytest
 from c4 import verdict as verdict_module
 from c4.compare import FAIL, INCONCLUSIVE, PASS, Comparison
 from c4.config import load_config
-from c4.verdict import endpoint_verdict, evaluate, write_report
+from c4.verdict import _describe, endpoint_verdict, evaluate, write_report
 
 
 @pytest.mark.parametrize(
@@ -107,3 +107,33 @@ def test_report_file_is_stable_json_without_a_timestamp(config, outcomes):
     assert path.read_bytes() == first  # identical runs give an identical file
     assert first.endswith(b"\n") and b"\r" not in first
     assert json.loads(first) == report
+
+
+# ------------------------------------------------------------------- descriptions
+
+
+@pytest.mark.parametrize(
+    ("detail", "expected"),
+    [
+        (
+            {"dictionary_item_removed": ["root['contact']"]},
+            "contact: missing on the migrated side",
+        ),
+        (
+            {"values_changed": {"root['contact']['inserted'][0]['message']": {"old_value": "hello", "new_value": "hellox"}}},
+            "contact.inserted[0].message: value differs (legacy 'hello', migrated 'hellox')",
+        ),
+        (
+            {"repetition_change": {"root['contact']['inserted'][0]": {"old_repeat": 1, "new_repeat": 2}}},
+            "contact.inserted[0]: written a different number of times (legacy 1, migrated 2)",
+        ),
+        (
+            {"dictionary_item_added": ["root['audit']"]},
+            "audit: only on the migrated side",
+        ),
+    ],
+)
+def test_a_database_difference_is_described_by_table_row_and_column(detail, expected):
+    finding = {"where": "database", "kind": "delta_differs", "detail": detail}
+
+    assert _describe(finding) == expected

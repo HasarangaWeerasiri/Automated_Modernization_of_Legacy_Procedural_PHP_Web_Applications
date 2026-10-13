@@ -143,6 +143,14 @@ def test_a_response_without_readable_records_is_reported_not_guessed(config, api
     assert result.outcome == "error"
 
 
+def test_an_endpoint_said_to_return_no_records_has_none_whatever_its_body(config, api):
+    api({"message": "Contact saved"}, status=201)
+
+    result = replay(config, scenario(None, method="POST"), RECORD, BASELINES)
+
+    assert result.records == () and result.problem is None
+
+
 def test_the_database_change_made_by_the_request_is_returned(config, api):
     delta = {"contact": {"inserted": [{"name": "Anu"}], "updated": [], "deleted": []}}
     api({"things": []}, status=201, delta=delta)

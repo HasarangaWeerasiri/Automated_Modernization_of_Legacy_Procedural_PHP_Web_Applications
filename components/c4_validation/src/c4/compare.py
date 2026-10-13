@@ -226,14 +226,19 @@ def _compare_database(record: dict[str, Any], replayed: Replay) -> tuple[list, l
     }
     legacy, migrated = record["db_state"]["delta"], replayed.delta
 
+    def diff(expected: dict[str, Any], actual: dict[str, Any]) -> DeepDiff:
+        # Row order carries no meaning, but how many times a row was written does:
+        # without report_repetition a row written twice would equal one written once.
+        return DeepDiff(expected, actual, ignore_order=True, report_repetition=True)
+
     kept = _plain_delta(legacy, excluded)
-    compared = DeepDiff(kept, _plain_delta(migrated, excluded), ignore_order=True)
+    compared = diff(kept, _plain_delta(migrated, excluded))
     if compared:
         return [{"where": "database", "kind": "delta_differs", "detail": json.loads(compared.to_json())}], []
     rows = [row for changes in kept.values() for row in (*changes["inserted"], *changes["deleted"])]
     if rows and not any(rows) and not any(changes["updated"] for changes in kept.values()):
         return [], [{"where": "database", "kind": "nothing_to_compare"}]
-    everything = DeepDiff(_plain_delta(legacy, set()), _plain_delta(migrated, set()), ignore_order=True)
+    everything = diff(_plain_delta(legacy, set()), _plain_delta(migrated, set()))
     if everything:
         return [], [{
             "where": "database", "kind": "excluded_field_differs",

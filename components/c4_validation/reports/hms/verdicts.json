@@ -21,6 +21,19 @@
           "abstentions": []
         }
       ]
+    },
+    "POST /api/contact": {
+      "verdict": "PASS",
+      "scenarios": [
+        {
+          "scenario_id": "contact_create_typical_01",
+          "scenario_type": "typical",
+          "verdict": "PASS",
+          "oracle_record": "oracles/hms/contact_create_typical_01.json",
+          "differences": [],
+          "abstentions": []
+        }
+      ]
     }
   }
 }
