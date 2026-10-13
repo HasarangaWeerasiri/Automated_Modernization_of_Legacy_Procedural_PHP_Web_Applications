@@ -14,9 +14,9 @@ import json
 import pytest
 import requests
 
-from c4.capture import load_scenario
 from c4.compare import FAIL, INCONCLUSIVE, PASS, compare
 from c4.replay import replay
+from c4.scenarios import load_all
 from c4.verdict import evaluate
 
 pytestmark = pytest.mark.environment
@@ -55,8 +55,10 @@ def stub(at_baseline):
 @pytest.fixture
 def judge(at_baseline, baselines):
     """Replay one stored scenario and compare it, optionally excluding a response field."""
+    resolved = {scenario["scenario_id"]: scenario for scenario in load_all(at_baseline)}
+
     def run(scenario_id, exclude=None):
-        scenario = load_scenario(at_baseline.scenario_dir / f"{scenario_id}.json")
+        scenario = resolved[scenario_id]
         stored = at_baseline.oracle_dir / f"{scenario_id}.json"
         record = copy.deepcopy(json.loads(stored.read_text(encoding="utf-8")))
         if exclude:

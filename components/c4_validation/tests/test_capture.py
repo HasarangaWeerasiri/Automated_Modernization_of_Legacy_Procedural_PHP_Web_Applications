@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import pytest
 
 from c4 import capture as capture_module
-from c4.capture import CaptureError, Observation, capture, load_scenario, write_record
+from c4.capture import CaptureError, Observation, capture, write_record
 from c4.config import load_config
 
 SCENARIO = {
@@ -296,11 +296,3 @@ def test_capturing_different_behaviour_replaces_the_stored_record(config):
     write_record(config, changed)
 
     assert json.loads(path.read_text(encoding="utf-8")) == changed
-
-
-def test_a_scenario_file_missing_a_required_part_is_refused(tmp_path):
-    file = tmp_path / "broken.json"
-    file.write_text(json.dumps({"scenario_id": "x", "scenario_type": "typical"}))
-
-    with pytest.raises(CaptureError, match="endpoint_id, legacy_request"):
-        load_scenario(file)

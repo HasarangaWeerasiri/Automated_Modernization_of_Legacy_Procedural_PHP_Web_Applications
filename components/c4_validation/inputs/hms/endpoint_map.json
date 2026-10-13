@@ -1,0 +1,63 @@
+{
+  "format": "c4-stand-in/1",
+  "endpoints": [
+    {
+      "endpoint_id": "GET /api/patients",
+      "method": "GET",
+      "path": "/api/patients",
+      "records_at": "patients",
+      "sources": [
+        {
+          "source_id": "patient_search",
+          "legacy": {
+            "method": "POST",
+            "path": "/patientsearch.php",
+            "fixed": { "patient_search_submit": "1" },
+            "records": "only"
+          },
+          "parameters": [
+            {
+              "name": "contact",
+              "in": "query",
+              "legacy_name": "patient_contact",
+              "legacy_in": "body",
+              "column": "patreg.contact"
+            }
+          ]
+        },
+        {
+          "source_id": "patient_list",
+          "legacy": {
+            "method": "GET",
+            "path": "/admin-panel1.php",
+            "records": { "table": 1 }
+          },
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "endpoint_id": "POST /api/contact",
+      "method": "POST",
+      "path": "/api/contact",
+      "records_at": null,
+      "sources": [
+        {
+          "source_id": "contact_form",
+          "legacy": {
+            "method": "POST",
+            "path": "/contact.php",
+            "fixed": { "btnSubmit": "1" },
+            "records": "none"
+          },
+          "parameters": [
+            { "name": "name", "in": "body", "legacy_name": "txtName", "legacy_in": "body", "column": "contact.name" },
+            { "name": "email", "in": "body", "legacy_name": "txtEmail", "legacy_in": "body", "column": "contact.email" },
+            { "name": "contact", "in": "body", "legacy_name": "txtPhone", "legacy_in": "body", "column": "contact.contact" },
+            { "name": "message", "in": "body", "legacy_name": "txtMsg", "legacy_in": "body", "column": "contact.message" }
+          ]
+        }
+      ]
+    }
+  ]
+}

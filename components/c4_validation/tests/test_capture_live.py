@@ -5,17 +5,18 @@ import json
 import pytest
 
 from c4 import dbstate
-from c4.capture import capture, load_scenario
+from c4.capture import capture
+from c4.scenarios import load_all
 
 pytestmark = pytest.mark.environment
 
 
 @pytest.fixture
 def scenarios(at_baseline):
-    files = sorted(at_baseline.scenario_dir.glob("*.json"))
-    if not files:
+    found = load_all(at_baseline)
+    if not found:
         pytest.skip("the active benchmark has no scenarios yet")
-    return [load_scenario(file) for file in files]
+    return found
 
 
 def _without_timestamp(record):

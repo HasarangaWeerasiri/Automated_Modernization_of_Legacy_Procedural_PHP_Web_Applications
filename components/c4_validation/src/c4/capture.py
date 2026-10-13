@@ -13,11 +13,11 @@ excluded instead of being compared.
 
     python -m c4.capture [scenario_id ...]
 
-A scenario is still read from a hand-written file that stands in for the endpoint
-map and the scenario generator. Its `legacy_table` says where the endpoint's records
-are on the page: left out, the page must hold exactly one table; a number picks one
-table of several; "none" means the endpoint shows no records, as a form submission
-that only writes to the database does.
+A scenario arrives already resolved against the endpoint map (see scenarios.py), so
+it carries the legacy request to send. Its `legacy_table` says where the endpoint's
+records are on the page: left out, the page must hold exactly one table; a number
+picks one table of several; "none" means the endpoint shows no records, as a form
+submission that only writes to the database does.
 """
 
 from __future__ import annotations
@@ -32,13 +32,11 @@ from typing import Any
 
 import requests
 
-from c4 import containers, dbstate
+from c4 import containers, dbstate, scenarios
 from c4.config import Config, ConfigError, load_config
 from c4.extract import extract_messages, extract_tables
 
 CAPTURE_RUNS = 2
-
-_REQUIRED = ("scenario_id", "scenario_type", "endpoint_id", "legacy_request")
 
 
 class CaptureError(RuntimeError):
@@ -53,14 +51,6 @@ class Observation:
     records: tuple[dict[str, str], ...]
     delta: dict[str, dict[str, list]]
     messages: tuple[str, ...] = ()
-
-
-def load_scenario(path: Path) -> dict[str, Any]:
-    scenario = json.loads(path.read_text(encoding="utf-8"))
-    missing = [key for key in _REQUIRED if key not in scenario]
-    if missing:
-        raise CaptureError(f"{path.name} does not set: {', '.join(missing)}.")
-    return scenario
 
 
 def _observe(
@@ -219,17 +209,18 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         config = load_config(args.benchmark)
-        files = sorted(config.scenario_dir.glob("*.json"))
-        if args.scenario_id:
-            files = [path for path in files if path.stem in args.scenario_id]
-        if not files:
+        selected = [
+            scenario for scenario in scenarios.load_all(config)
+            if not args.scenario_id or scenario["scenario_id"] in args.scenario_id
+        ]
+        if not selected:
             raise CaptureError(f"No matching scenario in {config.scenario_dir}.")
         containers.wait_until_ready(config, timeout=0)
         baselines = {system.name: dbstate.reset(system) for system in config.systems}
 
         print(f"benchmark: {config.benchmark}")
-        for file in files:
-            record = capture(config, load_scenario(file), baselines)
+        for scenario in selected:
+            record = capture(config, scenario, baselines)
             path = write_record(config, record)
             changed = ", ".join(record["db_state"]["delta"]) or "none"
             print(
@@ -237,7 +228,8 @@ def main(argv: list[str] | None = None) -> int:
                 f"database change: {changed} -> {path.relative_to(config.root).as_posix()}"
             )
     except (
-        CaptureError, ConfigError, containers.DockerUnavailableError, containers.NotReadyError,
+        CaptureError, ConfigError, scenarios.EndpointMapError, scenarios.ScenarioError,
+        containers.DockerUnavailableError, containers.NotReadyError,
         dbstate.BaselineError, dbstate.ResetError, dbstate.StructureChangedError,
         requests.RequestException,
     ) as error:

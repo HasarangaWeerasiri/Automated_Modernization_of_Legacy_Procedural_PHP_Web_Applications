@@ -2,18 +2,6 @@
   "scenario_id": "patient_list_typical_01",
   "scenario_type": "typical",
   "endpoint_id": "GET /api/patients",
-  "legacy_request": {
-    "method": "GET",
-    "path": "/admin-panel1.php",
-    "params": {},
-    "body": null
-  },
-  "legacy_table": 1,
-  "migrated_request": {
-    "method": "GET",
-    "path": "/api/patients",
-    "params": {},
-    "body": null,
-    "records_at": "patients"
-  }
+  "source_id": "patient_list",
+  "values": {}
 }

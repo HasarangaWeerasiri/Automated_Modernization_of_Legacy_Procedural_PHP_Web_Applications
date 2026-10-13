@@ -39,8 +39,22 @@ def _add(config, scenario_id, endpoint, *, captured=True):
     config.oracle_dir.mkdir(parents=True, exist_ok=True)
     (config.scenario_dir / f"{scenario_id}.json").write_text(json.dumps({
         "scenario_id": scenario_id, "scenario_type": "typical",
-        "endpoint_id": endpoint, "legacy_request": {}, "migrated_request": {},
+        "endpoint_id": endpoint, "source_id": "page", "values": {},
     }))
+    # The endpoint map grows with each endpoint a test adds.
+    method, path = endpoint.split(" ")
+    known = json.loads(config.endpoint_map_file.read_text()) if config.endpoint_map_file.is_file() else {
+        "format": "c4-stand-in/1", "endpoints": [],
+    }
+    if endpoint not in [entry["endpoint_id"] for entry in known["endpoints"]]:
+        known["endpoints"].append({
+            "endpoint_id": endpoint, "method": method, "path": path, "records_at": "things",
+            "sources": [{
+                "source_id": "page", "parameters": [],
+                "legacy": {"method": "GET", "path": "/page.php", "records": "only"},
+            }],
+        })
+    config.endpoint_map_file.write_text(json.dumps(known))
     if captured:
         (config.oracle_dir / f"{scenario_id}.json").write_text(json.dumps({
             "scenario_id": scenario_id, "scenario_type": "typical", "endpoint_id": endpoint,

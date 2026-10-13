@@ -24,8 +24,8 @@ from typing import Any, Iterable
 
 import requests
 
-from c4 import containers, dbstate
-from c4.capture import CaptureError, load_scenario
+from c4 import containers, dbstate, scenarios
+from c4.capture import CaptureError
 from c4.compare import FAIL, INCONCLUSIVE, PASS, compare
 from c4.config import Config, ConfigError, load_config
 from c4.replay import ReplayError, replay
@@ -43,8 +43,7 @@ def endpoint_verdict(scenario_verdicts: Iterable[str]) -> str:
 def evaluate(config: Config, baselines: dict[str, dbstate.Snapshot]) -> dict[str, Any]:
     """Replay and compare every captured scenario of the benchmark."""
     endpoints: dict[str, dict[str, Any]] = {}
-    for file in sorted(config.scenario_dir.glob("*.json")):
-        scenario = load_scenario(file)
+    for scenario in scenarios.load_all(config):
         stored = config.oracle_dir / f"{scenario['scenario_id']}.json"
         if not stored.is_file():
             continue  # not captured yet: there is no expectation to hold it to
@@ -135,6 +134,7 @@ def main(argv: list[str] | None = None) -> int:
         path = write_report(config, report)
     except (
         CaptureError, ConfigError, ReplayError,
+        scenarios.EndpointMapError, scenarios.ScenarioError,
         containers.DockerUnavailableError, containers.NotReadyError,
         dbstate.BaselineError, dbstate.ResetError, dbstate.StructureChangedError,
         requests.RequestException,

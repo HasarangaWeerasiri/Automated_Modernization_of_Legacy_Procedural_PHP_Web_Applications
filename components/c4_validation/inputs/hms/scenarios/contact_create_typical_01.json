@@ -2,29 +2,11 @@
   "scenario_id": "contact_create_typical_01",
   "scenario_type": "typical",
   "endpoint_id": "POST /api/contact",
-  "legacy_request": {
-    "method": "POST",
-    "path": "/contact.php",
-    "params": {},
-    "body": {
-      "txtName": "Nimal Perera",
-      "txtEmail": "nimal@example.test",
-      "txtPhone": "0771234567",
-      "txtMsg": "Please call me back",
-      "btnSubmit": "1"
-    }
-  },
-  "legacy_table": "none",
-  "migrated_request": {
-    "method": "POST",
-    "path": "/api/contact",
-    "params": {},
-    "body": {
-      "name": "Nimal Perera",
-      "email": "nimal@example.test",
-      "contact": "0771234567",
-      "message": "Please call me back"
-    },
-    "records_at": null
+  "source_id": "contact_form",
+  "values": {
+    "name": "Nimal Perera",
+    "email": "nimal@example.test",
+    "contact": "0771234567",
+    "message": "Please call me back"
   }
 }

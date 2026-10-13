@@ -84,6 +84,7 @@ class Config:
     legacy: System
     migrated: System
     gateway_container: str
+    endpoint_map_file: Path
     scenario_dir: Path
     oracle_dir: Path
     report_dir: Path
@@ -194,6 +195,7 @@ def load_config(
         legacy=legacy,
         migrated=migrated,
         gateway_container=GATEWAY_CONTAINER,
+        endpoint_map_file=root / "inputs" / benchmark / "endpoint_map.json",
         scenario_dir=root / "inputs" / benchmark / "scenarios",
         oracle_dir=output / "oracles" / benchmark,
         report_dir=output / "reports" / benchmark,
