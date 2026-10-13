@@ -31,8 +31,9 @@ from src.mapping.loader import load_ast, load_timeline  # noqa: E402
 
 pytestmark = pytest.mark.skipif(harness_app.unavailable() is not None,
                                 reason=f"harness skipped: {harness_app.unavailable()}")
-clones = all((config["root"] / ".git").exists() for config in harness_app.APPS.values())
+clones = all((harness_app.APPS[app]["root"] / ".git").exists() for app in ("hms", "wackopicko"))
 needs_clones = pytest.mark.skipif(not clones, reason="HMS or WackoPicko clone not present")
+phpblog_clone = (harness_app.APPS["phpblog"]["root"] / ".git").exists()
 
 
 def app_of(tmp_path, files: dict, schema: dict | None = None) -> dict:
@@ -58,7 +59,7 @@ def page(tmp_path, php: str, schema: dict | None = None) -> dict:
 
 
 def outputs(timeline: dict) -> list[dict]:
-    return [entry for entry in timeline["sequence"] if entry["kind"] != "call"]
+    return [entry for entry in timeline["sequence"] if entry["kind"] not in ("call", "include")]
 
 
 def calls(timeline: dict) -> list[dict]:
@@ -524,7 +525,8 @@ def test_each_printing_function_gets_its_own_timeline(tmp_path):
 def test_a_call_site_is_a_sequence_entry_in_source_order(tmp_path):
     found = timelines(tmp_path, FUNCTIONS)
     timeline = found[None]
-    assert [e["kind"] for e in timeline["sequence"]] == ["Stmt_InlineHTML", "call", "call", "call", "Stmt_InlineHTML"]
+    assert [e["kind"] for e in timeline["sequence"]] == [
+        "include", "include", "Stmt_InlineHTML", "call", "call", "call", "Stmt_InlineHTML"]
     names = timeline["callNames"]
     assert [(names[c["id"]], c["outputsInside"], c["loc"]["startLine"]) for c in calls(timeline)] == [
         ("table", True, 9), ("helper", False, 9), ("view::title", True, 9)]  # table prints through row()
@@ -572,8 +574,9 @@ def test_the_loader_keeps_call_entries_apart_from_the_output_nodes(tmp_path):
     path.write_text(harness_app.dump_timeline(page(tmp_path, FUNCTIONS)), encoding="utf-8")
     timeline = load_timeline(path)
     assert [n.kind for n in timeline.sequence] == ["Stmt_InlineHTML", "Stmt_InlineHTML"]
-    assert [(c.outputs_inside, c.callee is not None, c.loc.start_line) for c in timeline.calls] == [
-        (True, True, 9), (False, True, 9), (True, True, 9)]
+    assert [(c.kind, c.outputs_inside, c.callee is not None, c.loc.start_line) for c in timeline.calls] == [
+        ("include", "unknown", False, 2), ("include", "unknown", False, 3),  # no such file; not a literal path
+        ("call", True, True, 9), ("call", False, True, 9), ("call", True, True, 9)]
 
 
 @pytest.mark.parametrize("change, message", [
@@ -666,7 +669,7 @@ def apps_output(tmp_path_factory):
     output = tmp_path_factory.mktemp("apps")
     tsc = compile_check.unavailable() is None
     return output, {app: run_apps.run_app(harness_app.app_timelines(app), output, tsc=tsc)
-                    for app in harness_app.APPS}
+                    for app in harness_app.APPS if app != "phpblog" or phpblog_clone}
 
 
 def test_every_page_of_both_apps_runs_without_a_crash(apps_output):
@@ -677,8 +680,12 @@ def test_every_page_of_both_apps_runs_without_a_crash(apps_output):
 
     # units: pages, function components (R-F1), shells (R-F2), functions not in the app; and the two functions
     # that are one shell (they have no unit of their own)
+    # Phase 3: WackoPicko users/sample.php (only `include("view.php")`) is a page now; phpBlog has two shells
+    # (head() / footer() of core.php and of install/core.php)
+    expected = {"hms": (29, (26, 2, 0, 5, 0)), "wackopicko": (49, (30, 2, 1, 0, 2)),
+                "phpblog": (50, (49, 1, 2, 0, 4))}
     assert {app: (index["files"], roles(index)) for app, index in indexes.items()} == {
-        "hms": (29, (26, 2, 0, 5, 0)), "wackopicko": (49, (29, 2, 1, 0, 2))}
+        app: expected[app] for app in indexes}
     for index in indexes.values():
         assert [p["key"] for p in index["pages"] if p["crash"]] == []
         assert index["parseErrors"] == {} and index["collisions"] == []
@@ -696,15 +703,19 @@ def test_every_page_of_both_apps_compiles(apps_output):
 
 def test_libraries_are_excluded_and_only_discovery_apps_are_configured(apps_output):
     _, indexes = apps_output
-    assert sorted(harness_app.APPS) == ["hms", "wackopicko"]
+    assert sorted(harness_app.APPS) == ["hms", "phpblog", "wackopicko"]  # CONTEXT v17 section 5: the active corpus
+    assert {app: config["docroot"] for app, config in harness_app.APPS.items()} == {
+        "hms": "", "wackopicko": "website", "phpblog": ""}  # legacy-apps/PINS.md
     assert not any(p["path"].startswith(("TCPDF/", "vendor/")) for p in indexes["hms"]["pages"])
 
 
 def test_whole_app_totals(apps_output):
     """Nodes, S2 components / abstain / review, S5 todo / review / info. Phase 1 and 1b: hms (269, 59, 8, 180,
     133, 397, 230). Phase 2a: hms (269, 66, 4, 188, 179, 405, 295), wackopicko (383, 58, 4, 278, 164, 276, 113).
-    Phase 2b: function components and the shell; in HMS the 4 caller-opened loops are Lists (R-F1b) and the 15
-    TCPDF method calls are unresolved_call; in WackoPicko header and footer are one shell unit."""
+    Phase 2b: hms (269, 68, 15, 174, 202, 391, 285), wackopicko (383, 57, 5, 307, 156, 299, 120).
+    Phase 3 step 1: an include is a timeline entry. HMS: the 15 TCPDF calls and the TCPDF require are one gap
+    (15 abstains -> 1), and 4 includes of files that print abstain (cross_file_output). WackoPicko: one more
+    page (users/sample.php), which is one such include."""
     output, indexes = apps_output
     totals = {}
     for app, index in indexes.items():
@@ -712,7 +723,9 @@ def test_whole_app_totals(apps_output):
                 if entry["role"] != "shell_part"]
         totals[app] = tuple(sum(r[key] for r in rows) for key in ("nodes", "components", "abstain", "review", "todo",
                                                                     "s5review", "info"))
-    assert totals == {"hms": (269, 68, 15, 174, 202, 391, 285), "wackopicko": (383, 57, 5, 307, 156, 299, 120)}
+    expected = {"hms": (269, 68, 5, 174, 192, 391, 285), "wackopicko": (383, 58, 6, 307, 158, 299, 120),
+                "phpblog": (800, 193, 101, 861, 468, 869, 279)}
+    assert totals == {app: expected[app] for app in totals}
     hms = [apps_results_table.page_row(output / "hms", entry) for entry in indexes["hms"]["pages"]]
     assert (sum(r["review_unlabelled"] for r in hms), sum(r["review_other"] for r in hms)) == (171, 3)
     assert (sum(r["s5review_unlabelled"] for r in hms), sum(r["s5review_other"] for r in hms)) == (171, 220)
@@ -720,7 +733,10 @@ def test_whole_app_totals(apps_output):
     for r in hms:
         for reason, n in r["abstains"].items():
             reasons[reason] = reasons.get(reason, 0) + n
-    assert reasons == {"unresolved_call": 15}  # the TCPDF method calls; no container_undetermined, no no_rule
+    assert reasons == {"unresolved_call": 1, "cross_file_output": 4}  # one gap for TCPDF; no container_undetermined
+    (gap,) = [t for t in json.loads((output / "hms" / "admin-panel.php" / "stage5.json").read_text(
+        encoding="utf-8"))["c2todos"] if t["reason"] == "unresolved_call"]
+    assert len(gap["nodeId"].split(",")) == 16 and gap["sourceLine"] == 109  # the require and 15 method calls
 
 
 def test_hms_select_star_reads_are_expanded_from_its_own_schema(apps_output):
@@ -762,6 +778,7 @@ def test_reports_are_deterministic_and_only_read_the_outputs(apps_output, tmp_pa
         assert first == module.render(output, tmp_path / "b.md")
     table = apps_results_table.render(output, tmp_path / "a.md")
     assert "| **hms total** |" in table and "| **wackopicko total** |" in table and "not from Member 01" in table
+    assert "`next build`: not run for this output" in table  # no build was recorded for this output folder
     log = pattern_log.render(output, tmp_path / "a.md")
     assert "Page output inside the list's container, outside the loop" in log and "§8 mapping" in log
     assert "`hms/admin-panel1.php:286:23`" in log  # file:line:col, the column 1-based

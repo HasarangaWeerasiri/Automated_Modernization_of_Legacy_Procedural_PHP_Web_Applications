@@ -1,9 +1,9 @@
-# Component 2 — UI Boundary Rules (DRAFT v0.11)
+# Component 2 — UI Boundary Rules (DRAFT v0.12)
 
 | Item | Value |
 |---|---|
 | Status | **Draft** — not frozen. Freeze when 2 consecutive new rule-discovery apps add no new pattern (saturation) |
-| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note · v0.6, 10 Oct: Q2 note gives the exact condExpr form · v0.7, 11 Oct: R-L3 scope clarified; filter-in-loop added to the checklist as not yet seen · v0.8, 12 Oct: corpus extended — 2 discovery apps queued, 3 evaluation apps added by random split · v0.9, 12 Oct: after the Phase 1 whole-app run — echo-string parts (§1), R-L3b, R-F1/R-F2 written in full, R-I5 evidence re-opened, Q16 · v0.10, 12 Oct: Member 01's answers recorded in §9 · v0.11, 13 Oct: R-I5 hits classified, R-I7 added, R-F1/R-F2 completed for Phase 2b, record-guard candidate, Q18) |
+| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note · v0.6, 10 Oct: Q2 note gives the exact condExpr form · v0.7, 11 Oct: R-L3 scope clarified; filter-in-loop added to the checklist as not yet seen · v0.8, 12 Oct: corpus extended — 2 discovery apps queued, 3 evaluation apps added by random split · v0.9, 12 Oct: after the Phase 1 whole-app run — echo-string parts (§1), R-L3b, R-F1/R-F2 written in full, R-I5 evidence re-opened, Q16 · v0.10, 12 Oct: Member 01's answers recorded in §9 · v0.11, 13 Oct: R-I5 hits classified, R-I7 added, R-F1/R-F2 completed for Phase 2b, record-guard candidate, Q18 · v0.12, 13 Oct: Phase 2b accepted; §8 defines "new pattern" for saturation; Q19; phpBlog opened for Phase 3) |
 | Owner | Jayawardhana R D L L (IT23213876) — Component 2, Frontend Migration |
 | Rule-discovery corpus | HMS (`kishan0725/Hospital-Management-System`, commit `777fda4`), WackoPicko (`adamdoupe/WackoPicko`, commit `cabc1b3`, MIT) |
 | Evaluation corpus | **Locked — do not open** (see §7) |
@@ -222,6 +222,14 @@ No-output loops (R-L5): admin-panel.php 146, 315 (inside `<!-- -->`). String-bui
 
 ## 8. Pattern checklist (for saturation)
 
+**What counts as a new pattern (v0.12, fixed before Phase 3 opens a new app).** A *pattern* is one row of
+this table: a class of structural situation. An app **adds a new pattern** if, after the whole-app run, any
+construct (a) needs a rule or abstain reason that §2–§5 do not have, or (b) is handled by an existing rule
+**wrongly** (a generated result that does not match the legacy page). More instances of an existing row,
+more abstains for an existing reason, an implementation gap for a rule that is already written (e.g. R-F2 for
+included files), and unresolved reads (the DFG's job) are **not** new patterns. Saturation: two consecutive
+discovery apps add no new pattern → the rules are frozen.
+
 | Pattern | Seen in |
 |---|---|
 | Loop → table rows | HMS, WackoPicko |
@@ -275,6 +283,7 @@ the call site (`callee`, `outputsInside`), no inlining — R-F1/R-F2 will read c
 16. Can an echo entry carry its **parts** in order — literal pieces (PHP-decoded) and expressions (each linked to its read)? HMS prints whole table rows as one interpolated `echo "<tr>…$x…</tr>"`; without parts that markup is invisible to C2. The harness emits `parts` as an extension.
 17. Copy propagation: will a read of `$username` after `$username = $row['username'];` (same block, no reassignment) resolve to `$row['username']`? And for interpolated SQL (`… where fname='$fname'`) — is the table/column resolved when interpolation appears only in value positions? (40 row reads in HMS + WackoPicko depend on these.)
 18. How are `fileId`s assigned in a whole-app run (manifest order? alphabetical? excluded folders)? Your AST has `admin-panel1.php` = `f001`; the harness numbers HMS files differently (`f002`). The id is the join key, so the file numbering must match too.
+19. Calls and parameters: will a `call` entry carry the call node's AST id (so arguments come from the AST), and will the DFG mark a function parameter that is never reassigned in the body? R-F1 props need both; the harness emits `args` and `params[].readOnly` as extensions.
 
 **For Component 1:** HMS never includes `include/checklogin.php`, so it has no working login gate.
 **For Component 4:** WackoPicko has intentionally unescaped output (`<?= $comment['text'] ?>`, `<?= $guest["comment"] ?>`). React escapes by default, so this output will differ — an expected, intended difference. WackoPicko uses `mysql_*` → needs PHP 5.x to run for runtime capture.

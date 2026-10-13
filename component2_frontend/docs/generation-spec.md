@@ -1,8 +1,8 @@
-# Component 2 — Stage 5 Generation Specification (v0.6)
+# Component 2 — Stage 5 Generation Specification (v0.7)
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. v0.5 adds what the Phase 1 whole-app run needed (§5a, §8, §8a). v0.6: browser-equivalent markup (§5b), per-part ids, route groups. Evaluation apps stay locked |
+| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. v0.5 adds what the Phase 1 whole-app run needed (§5a, §8, §8a). v0.6: browser-equivalent markup (§5b), per-part ids, route groups. v0.7: corrections after Phase 2b (§5 form state, §5b stray end tags and loop rows, §8a routes and calls). Evaluation apps stay locked |
 | Date | 10 October 2026 |
 | Owner | Jayawardhana R D L L (IT23213876) |
 | Input | Stage 2 tree, Stage 3 needs, Stage 4 report, contract, endpoint map, timeline |
@@ -81,7 +81,7 @@ output/generated/<name>/
 | Other attributes | Kept; names follow React's attribute names |
 | Void elements | Self-closed (`<br />`) |
 | Numeric-only React props (`size`, `colSpan`, `rowSpan`, `tabIndex`, `maxLength`, `minLength`, `cols`, `rows`, `span`, `start`) | Integer value → `{15}`; non-integer → attribute omitted, flag `attribute_dropped` |
-| Form state: `value` on `<input>`, `checked`, `<textarea>` content | `defaultValue` / `defaultChecked` (no `onChange` in a Server Component). `selected` on `<option>` → omitted, flag `review` `option_selected_not_converted` |
+| Form state: `value` on an **editable** `<input>` (text, password, email, number, search, tel, url, date…, or no `type`), `checked`, `<textarea>` content | `defaultValue` / `defaultChecked` (no `onChange` in a Server Component). **v0.7:** `value` on `type` = `submit`, `button`, `reset`, `image`, `hidden`, `checkbox`, `radio` stays **`value`** — it is a label / fixed value, not form state, and React accepts it without `onChange`. `selected` on `<option>` → omitted, flag `review` `option_selected_not_converted` |
 | Attribute value mixing text and PHP (`href="view.php?id=<?= $row['id'] ?>"`) | Template literal if every PHP part is a `matched` field or a dropped escape wrapper. Any other part → **attribute omitted**, flag with that part's reason (never an empty or guessed value) |
 | `<html>`, `<body>` | Tags dropped, children kept. `<head>` and everything in it dropped. Flag `document_shell` (`review`): it belongs in `app/layout.tsx`, which waits on R-F2 / Member 01 Q4 |
 | HTML comments (incl. `<!--[if IE]>…<![endif]-->`) | Dropped (they render nothing). Flag `html_comment_dropped` (info) |
@@ -117,7 +117,8 @@ component's static markup, Stage 5 applies the two repairs that are fully determ
 
 | Repair | Rule | Flag |
 |---|---|---|
-| Implicit `<tbody>` | `<tr>` directly inside `<table>` → wrapped in `<tbody>` (what every browser builds) | `implicit_tbody` (info) |
+| Implicit `<tbody>` | `<tr>` directly inside `<table>` → wrapped in `<tbody>` (what every browser builds). **v0.7:** also when the table's row children are a List whose Item root is statically `<tr>` (the `.map()` goes inside the `<tbody>`), with or without static rows | `implicit_tbody` (info) |
+| Stray `</p>` / `</br>` (v0.7) | An end tag `</p>` with no open `<p>` → an **empty `<p></p>`**; `</br>` → `<br />` (HTML5 parser rules — every browser does this; an empty `<p>` has visible margins). All other unmatched end tags are ignored by browsers, which is what R-L6 already does | `stray_end_tag_repaired` (info) |
 | Implicit `</p>` | An open `<p>` is closed before a block start tag (`address, article, aside, blockquote, details, div, dl, fieldset, figcaption, figure, footer, form, h1–h6, header, hgroup, hr, main, menu, nav, ol, p, pre, section, table, ul`) — HTML5 "close a p element" | `implicit_p_close` (info) |
 | Duplicate attribute | Keep the **first** occurrence (browsers ignore later ones); JSX cannot have duplicate props | `duplicate_attribute` (info) |
 
@@ -189,7 +190,8 @@ has the code — but it is not rendered.
 |---|---|
 | R-F1 function | `components/<Name>.tsx`, `export function <Name>(props)`; props typed from literal arguments; `<Name … />` at each call site |
 | R-F2 shell | `app/(<h>)/layout.tsx` — a root layout per shell (literal `<html>/<head>/<body>`, `{children}`); `components/<H>Shell.tsx` with `{children}`; each page using it is generated under `app/(<h>)/<route>/page.tsx`, its content wrapped in `<…Shell>`; `document_shell` removed for those pages. Every other page → `app/(plain)/<route>/page.tsx` with a minimal root layout (boundary-rules R-F2 "Route groups") |
-| Unresolved call / unknown output at a call site | `<C2Todo reason="unresolved_call" />` (todo) |
+| Unresolved call / unknown output at a call site | `<C2Todo reason="unresolved_call" />` (todo). **v0.7:** consecutive unresolved calls in one straight-line block with no output between them → **one** C2Todo listing all their ids (one gap, counted once) |
+| Routes (v0.7) | Path **relative to the app's document root** (WackoPicko `website/`, HMS repo root — recorded per app in `legacy-apps/PINS.md`), `.php` removed, `index.php` → its directory. E.g. `website/users/login.php` → `app/(our_header)/users/login/page.tsx` |
 | R-F1/R-F2 parameter compared to a literal (`$selected == "home"`) | Translatable (whitelist row added): `selected == "home"` when the parameter is a typed prop |
 
 ## 9. Formatting and determinism
@@ -254,6 +256,9 @@ Every flag in `stage5_<name>.json` carries `severity`: `todo` (a C2Todo, an `unr
 | 11 Oct 2026 | v0.4: **todo** flags inside abstained code are `info` too (owner's v0.3 expected totals were wrong) | v0.3 only removed the double count for review flags; a C2Todo inside an abstained region is the same double count. Rule now: one abstained region = one todo |
 | 12 Oct 2026 | v0.5: echo strings decomposed into parts | HMS prints whole rows as one interpolated echo; without parts these rows abstain (`no_rule`) |
 | 12 Oct 2026 | v0.5: every generated file is a module; no `lib/api.ts` without an endpoint | A global script fails under Next.js `isolatedModules`; Phase 1 hid this with a checker override, which is removed |
+| 13 Oct 2026 | v0.7: `value` kept on non-editable input types | `defaultValue` on a submit button rendered the same HTML but is the wrong prop; React needs no `onChange` for those types |
+| 13 Oct 2026 | v0.7: stray `</p>` / `</br>` repaired | Fixed HTML5 parser rules; WackoPicko `tos.php` renders an empty paragraph in every browser |
+| 13 Oct 2026 | v0.7: routes from the document root | `website/` is not part of WackoPicko's URLs; Phase 4 compares pages by URL |
 | 13 Oct 2026 | v0.6: browser-equivalent markup (implicit `tbody`, implicit `</p>`, first duplicate attribute) | These are fixed HTML5 parser rules: the legacy page was rendered this way, so generating it is faithful, not a guess. Foster parenting is not repaired |
 | 13 Oct 2026 | v0.6: one id per expression part | A shared echo id made 5 gaps in one row indistinguishable |
 | 13 Oct 2026 | v0.6: route groups with one root layout each | Next.js applies the root layout to every route; a shell's `<head>` must not leak onto other pages |

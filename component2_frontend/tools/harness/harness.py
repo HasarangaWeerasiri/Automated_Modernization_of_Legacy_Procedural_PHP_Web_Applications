@@ -8,8 +8,9 @@ and uses Member 01's conventions: node ids are the AST's pre-order ids, `loc` is
 
 One PHP file gives one page timeline (its top-level output) and one timeline per function that
 produces output ("<file>#<function>"). A function's output is never inlined: the call site is a
-sequence entry {kind: "call", callee, outputsInside} (Member 01 Q4, proposed). Includes are recorded
-in the extension list `includes`.
+sequence entry {kind: "call", callee, outputsInside} (Member 01 Q4, proposed). An include / require is
+a sequence entry too, at its position: {kind: "include", path, outputsInside} (harness extension,
+pending Member 01 Q4); every include is also listed in the extension list `includes`.
 
 Reads are conservative; nothing is guessed:
 
@@ -65,6 +66,8 @@ SUPERGLOBALS = {"$_SESSION": "session", "$_GET": "request", "$_POST": "request",
                 "$_COOKIE": "request", "$_SERVER": "server"}
 ESCAPE_WRAPPERS = ("h", "htmlspecialchars", "htmlentities")
 OUTPUT_FUNCTIONS = ("printf", "vprintf", "print_r", "var_dump", "var_export", "readfile", "fpassthru", "passthru")
+RETURNING_FUNCTIONS = ("print_r", "var_export")  # with a second argument `true` they return their text
+_MARKUP_TEXT = re.compile(r"<[A-Za-z!/]|\b[a-z-]+=\"")  # a tag, or an attribute written out
 SCOPE_BREAKERS = ("extract", "eval", "parse_str", "import_request_variables")  # may define any variable
 DYNAMIC_CALLERS = ("call_user_func", "call_user_func_array")  # call a function chosen at run time
 LOOP_NODES = ("Stmt_While", "Stmt_Do", "Stmt_For", "Stmt_Foreach")
@@ -89,6 +92,12 @@ CALLS_NOTE = ("Member 01 Q4 (proposed): a call site is a sequence entry {kind: \
               "or {kind: \"expr\", expr}), `function` on a function's timeline ({nodeId, name, params: [{name, default, readOnly}]}), `callNames` "
               "(call id -> the name as written) and `includes` (every include/require, with node id, line and "
               "enclosedBy).")
+INCLUDES_NOTE = ("Harness extension, pending Member 01 Q4: an include / require is a sequence entry at its position, "
+                 "like a call entry: {kind: \"include\", path, outputsInside}. path is the entrypoint of the included "
+                 "file, or null when the path is not a literal or names no PHP file of the app (a library, a file "
+                 "that is not in the repository). A literal path is looked up from the including file's own "
+                 "directory, then from the app's root. outputsInside is true, false or \"unknown\", as for a call: "
+                 "what the included file's top level prints, itself or through what it includes and calls.")
 RESOLUTION_NOTE = ("boundary-rules v0.11 section 4: a name defined in several files resolves only through the calling "
                    "file's own literal includes, followed transitively; exactly one reachable definition -> that "
                    "function, otherwise callee null.")
@@ -186,6 +195,7 @@ class _Scope:
     controls: list = field(default_factory=list)  # start of every if / loop / switch / try
     arguments: dict = field(default_factory=dict)  # "$name" -> positions where it is passed to a call
     includes: list = field(default_factory=list)
+    include_nodes: list = field(default_factory=list)  # (the Expr_Include node, its enclosures), as `includes`
     notes: list = field(default_factory=list)
 
 
@@ -277,8 +287,17 @@ class FileHarness:
     # ---- the walk: outputs, definitions, calls and includes, with the control path of each
 
     def _walk_list(self, nodes, scope: _Scope, chain: tuple, enclosures: list) -> None:
+        previous = None
         for node in nodes or []:
+            # `echo ...; exit;` in one block: what follows the block is not printed when it runs. The timeline
+            # cannot say so (it has no exit), so it is noted for the pattern log.
+            if _is(node, "Stmt_Expression") and _is(node.get("expr"), "Expr_Exit") and not node.get("expr").get("expr") \
+                    and _is(previous, "Stmt_Echo", "Stmt_InlineHTML", "Stmt_Expression") and (
+                        not _is(previous, "Stmt_Expression") or _is(previous.get("expr"), "Expr_Print")):
+                scope.notes.append({"kind": "exit_after_output", "line": node.line, "col": node.loc.column,
+                                    "detail": self.node_text(previous)[:80]})
             self._walk(node, scope, chain, enclosures)
+            previous = node
 
     def _walk(self, node, scope: _Scope, chain: tuple, enclosures: list) -> None:
         if isinstance(node, list):
@@ -330,6 +349,11 @@ class FileHarness:
     def _expression(self, node: _N, kind: str, scope: _Scope, chain: tuple, enclosures: list) -> None:
         """Record what a non-control node means for the scope: definitions, calls, includes, notes."""
         pos, line, col = node.start, node.line, node.loc.column
+        if kind in ("Expr_Assign", "Expr_AssignOp_Concat") and self._has_markup(node.get("expr")):
+            # `$image = '<img ...>';` / `$active = 'class="active"';`: markup that reaches the page through a
+            # variable. Where it is printed it is one value, so React escapes it. Noted for the pattern log.
+            scope.notes.append({"kind": "markup_in_assigned_string", "line": line, "col": col,
+                                "detail": self.node_text(node)[:80]})
         if kind == "Expr_Assign":
             target = node.get("var")
             if _variable(target):
@@ -351,6 +375,7 @@ class FileHarness:
                 "kind": INCLUDE_KINDS.get(node.get("type"), "include"), "expr": self.node_text(expr),
                 "literal": expr.get("value") if _is(expr, "Scalar_String") else None,
                 "enclosedBy": list(enclosures)})
+            scope.include_nodes.append((node, list(enclosures)))
         elif kind == "Expr_Eval":
             scope.breakers.append(pos)
         elif kind == "Expr_Exit" and node.get("expr") and not _is(node.get("expr"), "Scalar_Int"):
@@ -365,7 +390,9 @@ class FileHarness:
                 callee = f"{cls}::{method}".lower() if cls and method else None
             if callee in SCOPE_BREAKERS:
                 scope.breakers.append(pos)
-            if callee in OUTPUT_FUNCTIONS:
+            returns = callee in RETURNING_FUNCTIONS and len(_args(node)) > 1 and _is(
+                _args(node)[1], "Expr_ConstFetch") and (_name(_args(node)[1].get("name")) or "").lower() == "true"
+            if callee in OUTPUT_FUNCTIONS and not returns:
                 scope.notes.append({"kind": "output_function", "line": line, "col": col, "detail": callee})
             if callee == "ob_start":
                 scope.notes.append({"kind": "output_buffering", "line": line, "col": col,
@@ -378,6 +405,20 @@ class FileHarness:
                                 "plain": kind == "Expr_FuncCall" and callee is not None
                                 and callee not in DYNAMIC_CALLERS,
                                 "args": [self.argument(a) for a in _args(node)]})
+
+    def _has_markup(self, node) -> bool:
+        """Whether an expression holds a string literal with a tag or a written-out attribute in it."""
+        todo = [node]
+        while todo:
+            current = todo.pop()
+            if isinstance(current, list):
+                todo += current
+            elif isinstance(current, _N):
+                value = current.get("value") if current.kind in ("Scalar_String", "InterpolatedStringPart") else None
+                if isinstance(value, str) and _MARKUP_TEXT.search(value):
+                    return True
+                todo += list(current.kids)
+        return False
 
     def _define(self, scope: _Scope, name: str | None, node: _N, chain: tuple, kind: str, rhs=None) -> None:
         if name:
@@ -403,6 +444,7 @@ class FileHarness:
             arms.append(("elseif", elseif.get("cond"), elseif.get("stmts")))
         if node.get("else"):
             arms.append(("else", cond, node.get("else").get("stmts")))  # an else points at its if's condition
+        printed = []  # per arm: whether anything in it has a place in the timeline
         for index, (branch, branch_cond, stmts) in enumerate(arms):
             if branch == "elseif":
                 self._walk(branch_cond, scope, chain, enclosures)
@@ -411,7 +453,14 @@ class FileHarness:
             if branch != "else":
                 enclosure["condExpr"] = self.node_text(branch_cond)
             enclosure["loc"] = loc_dict(node.loc)
+            before = len(scope.outputs)
             self._walk_list(stmts, scope, chain + ((if_id, f"{branch}{index}"),), enclosures + [enclosure])
+            printed.append(len(scope.outputs) > before)
+        # An `elseif` arm that prints nothing, before an arm that prints, is invisible in the timeline (only
+        # arms with output are in it): the later arm then looks as if it followed the earlier ones directly.
+        if any(not p and arms[i][0] == "elseif" and any(printed[i + 1:]) for i, p in enumerate(printed)):
+            scope.notes.append({"kind": "silent_elseif_arm", "line": node.line, "col": node.loc.column,
+                                "detail": self.node_text(cond)[:80]})
 
     def _loop(self, node: _N, scope: _Scope, chain: tuple, enclosures: list) -> None:
         kind, loop_id = node.kind, node.id
@@ -790,22 +839,31 @@ class FileHarness:
                 enclosure["iterSourceKind"] = "db_row_field"
         return enclosure
 
-    def direct_output(self, scope: _Scope) -> bool | str:
-        """Whether a scope prints by itself: true, or "unknown" when it includes a file, else false."""
-        if scope.outputs or any(n["kind"] == "output_function" for n in scope.notes):
+    def direct_output(self, scope: _Scope) -> bool:
+        """Whether a scope prints by itself (what it includes and calls is followed by function_resolver)."""
+        return bool(scope.outputs) or any(n["kind"] == "output_function" for n in scope.notes)
+
+    def slots_print(self, scope: _Scope, resolve) -> bool:
+        """Whether a scope has a timeline: it prints itself, or it is a file's top level whose calls or includes
+        certainly print (a page made only of `include header; show(); include footer`)."""
+        if scope.outputs:
             return True
-        return "unknown" if scope.includes else False
+        if scope.name is not None:
+            return False
+        calls = [resolve(call["name"], self) for call in scope.calls if call["name"]]
+        includes = [resolve.include(include, self) for include in scope.includes]
+        return any(found is not None and found[1] is True for found in calls + includes)
 
     def timeline(self, scope: _Scope, provenance: dict, resolve=None) -> dict | None:
-        """The schema 1.0 document of one scope, or None when it prints nothing itself.
+        """The schema 1.0 document of one scope, or None when it prints nothing (see slots_print).
 
         `resolve(name)` gives (callee node id or None, outputsInside) for a function of the app and None for
         any other name; without it, only this file's own functions are known."""
-        if not scope.outputs:
-            return None
         if resolve is None:
             resolve = function_resolver({self.file_id: self})
         own_resolve, resolve = resolve, lambda name: own_resolve(name, self)
+        if not self.slots_print(scope, own_resolve):
+            return None
         queries, notes, sequence, call_names = {}, list(scope.notes), [], {}
         for node, kind, chain, enclosures in scope.outputs:
             entry = {"id": node.id, "kind": kind}
@@ -836,6 +894,12 @@ class FileHarness:
                 "loc": loc_dict(node.loc), "args": call["args"]}))
             if call["name"]:
                 call_names[node.id] = call["name"]
+        for include, (node, enclosures) in zip(scope.includes, scope.include_nodes):
+            target, outputs_inside = own_resolve.include(include, self)
+            sequence.append((node.start, {
+                "id": node.id, "kind": "include", "path": target, "outputsInside": outputs_inside,
+                "enclosedBy": [self.loop_enclosure(e) if e["role"] == "iteration" else e for e in enclosures],
+                "loc": loc_dict(node.loc)}))
         sequence.sort(key=lambda item: (item[0], item[1]["id"]))
         entrypoint = self.entrypoint if scope.name is None else f"{self.entrypoint}#{scope.name}"
         notes = [dict(items) for items in dict.fromkeys(tuple(n.items()) for n in notes)]  # a read made twice
@@ -856,7 +920,7 @@ class FileHarness:
                 "functionNodeId": scope.node_id,
                 "sourceEncoding": self.encoding,
                 "locConvention": LOC_NOTE, "condExprConvention": COND_EXPR_NOTE, "callsConvention": CALLS_NOTE,
-                "callResolution": RESOLUTION_NOTE,
+                "callResolution": RESOLUTION_NOTE, "includesExtension": INCLUDES_NOTE,
                 "selectStarConvention": SELECT_STAR_NOTE,
                 "partsExtension": PARTS_NOTE, "copyPropagationExtension": COPY_NOTE,
                 "sqlValuesExtension": SQL_VALUES_NOTE,
@@ -873,16 +937,31 @@ def function_resolver(harnesses: dict):
     calling file's own literal includes, followed transitively: exactly one reachable definition -> that
     function; otherwise there is no single callee (id None, and its output is what all definitions agree on).
 
-    A function prints if it prints itself or calls a function that prints. It is "unknown" when it, or something
-    it calls, includes a file or makes a call that cannot be followed.
+    A function, or a file's top level, prints if it prints itself, calls a function that prints or includes a
+    file whose top level prints. It is "unknown" when it, or something it calls or includes, makes a call or an
+    include that cannot be followed.
+
+    `resolve.include(include, harness)` gives (the included file's entrypoint or None, outputsInside) for one
+    entry of a scope's `includes` (see INCLUDES_NOTE).
     """
     definitions: dict[str, list] = {}  # lower-case name -> [(file key, harness, scope)]
     for key in sorted(harnesses):
         for name, scope in harnesses[key].functions.items():
             definitions.setdefault(name.lower(), []).append((key, harnesses[key], scope))
     key_of = {id(harness): key for key, harness in harnesses.items()}
-    state = {id(scope): harness.direct_output(scope) for found in definitions.values() for _, harness, scope in found}
+    scopes = [(key, harnesses[key], scope) for key in sorted(harnesses) for scope in harnesses[key].scopes()]
+    state = {id(scope): harness.direct_output(scope) for _, harness, scope in scopes}
     reach: dict[str, set] = {}
+
+    def include_target(include: dict, key: str) -> str | None:
+        """The app file a literal include written in file `key` names, or None."""
+        if include["literal"] is None:
+            return None
+        for target in (posixpath.normpath(posixpath.join(posixpath.dirname(key), include["literal"])),
+                       posixpath.normpath(include["literal"])):
+            if target in harnesses:
+                return target
+        return None
 
     def reachable(key: str) -> set:
         """The file itself and every app file its top-level literal includes lead to."""
@@ -891,14 +970,10 @@ def function_resolver(harnesses: dict):
             while todo:
                 current = todo.pop()
                 for include in harnesses[current].top.includes:
-                    if include["literal"] is None:
-                        continue
-                    for target in (posixpath.normpath(posixpath.join(posixpath.dirname(current), include["literal"])),
-                                   posixpath.normpath(include["literal"])):
-                        if target in harnesses and target not in seen:
-                            seen.add(target)
-                            todo.append(target)
-                            break
+                    target = include_target(include, current)
+                    if target is not None and target not in seen:
+                        seen.add(target)
+                        todo.append(target)
             reach[key] = seen
         return reach[key]
 
@@ -921,15 +996,19 @@ def function_resolver(harnesses: dict):
             return together(found)
         return False if call["plain"] else "unknown"
 
+    def included(include: dict, key: str) -> bool | str:
+        target = include_target(include, key)
+        return "unknown" if target is None else state[id(harnesses[target].top)]
+
     changed = True
     while changed:
         changed = False
-        for found in definitions.values():
-            for key, _, scope in found:
-                value = weakest([state[id(scope)]] + [called(call, key) for call in scope.calls])
-                if value != state[id(scope)]:
-                    state[id(scope)] = value
-                    changed = True
+        for key, _, scope in scopes:
+            value = weakest([state[id(scope)]] + [called(call, key) for call in scope.calls]
+                            + [included(include, key) for include in scope.includes])
+            if value != state[id(scope)]:
+                state[id(scope)] = value
+                changed = True
 
     def resolve(name: str, harness):
         found = targets(name, key_of[id(harness)])
@@ -937,6 +1016,12 @@ def function_resolver(harnesses: dict):
             return None
         return (found[0][2].node_id if len(found) == 1 else None), together(found)
 
+    def resolve_include(include: dict, harness):
+        key = key_of[id(harness)]
+        target = include_target(include, key)
+        return (None if target is None else harnesses[target].entrypoint), included(include, key)
+
+    resolve.include = resolve_include
     return resolve
 
 

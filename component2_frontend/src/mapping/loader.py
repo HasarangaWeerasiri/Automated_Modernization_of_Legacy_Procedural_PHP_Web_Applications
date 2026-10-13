@@ -36,6 +36,9 @@ SCHEMA_VERSION = "1.0"
 TIMELINE_KEYS = ("entrypoint", "schemaVersion", "sequence")  # "queries" is an optional extension
 OUTPUT_KINDS = ("Stmt_InlineHTML", "Stmt_Echo", "Expr_Print")
 CALL_KIND = "call"  # a call site (Member 01 Q4, proposed): {id, kind, callee, outputsInside, enclosedBy}
+# an include / require at its position (harness extension, pending Q4): {id, kind, path, outputsInside, enclosedBy}
+INCLUDE_KIND = "include"
+SLOT_KINDS = (CALL_KIND, INCLUDE_KIND)
 LOOP_KINDS = ("Stmt_While", "Stmt_Foreach", "Stmt_For", "Stmt_Do")
 BRANCHES = ("then", "elseif", "else")
 # In the schema, but their fields are not specified yet: accepted and carried through as-is.
@@ -230,8 +233,18 @@ def load_timeline_json(path: Path) -> dict:
             if not isinstance(entry["outputsInside"], bool) and entry["outputsInside"] != "unknown":
                 raise ValueError(f"{where}: outputsInside {entry['outputsInside']!r}, expected true, false or "
                                  '"unknown"')
+        elif entry.get("kind") == INCLUDE_KIND:
+            required = {"id", "kind", "enclosedBy", "path", "outputsInside"}
+            if not required <= set(entry) <= required | {"loc"}:
+                raise ValueError(f"{where}: include keys {sorted(entry)}; expected {sorted(required)} and "
+                                 "optionally loc")
+            if entry["path"] is not None and (not isinstance(entry["path"], str) or not entry["path"]):
+                raise ValueError(f"{where}: include path {entry['path']!r}, expected a file's entrypoint or null")
+            if not isinstance(entry["outputsInside"], bool) and entry["outputsInside"] != "unknown":
+                raise ValueError(f"{where}: outputsInside {entry['outputsInside']!r}, expected true, false or "
+                                 '"unknown"')
         elif entry.get("kind") not in OUTPUT_KINDS:
-            raise ValueError(f"{where}: kind {entry.get('kind')!r}, expected one of {OUTPUT_KINDS + (CALL_KIND,)}")
+            raise ValueError(f"{where}: kind {entry.get('kind')!r}, expected one of {OUTPUT_KINDS + SLOT_KINDS}")
         else:
             payload = "raw" if entry["kind"] == "Stmt_InlineHTML" else "reads"
             required = {"id", "kind", "enclosedBy", payload}
@@ -339,13 +352,14 @@ def load_timeline(path: Path) -> Timeline:
             parts=tuple(EchoPart(kind=p["kind"], node_id=p["nodeId"], value=p.get("value"), expr=p.get("expr"),
                                  read=p.get("read"), loc=_loc(p.get("loc"))) for p in e.get("parts", ())),
         )
-        for e in doc["sequence"] if e["kind"] != CALL_KIND
+        for e in doc["sequence"] if e["kind"] not in SLOT_KINDS
     )
     calls = tuple(
-        CallEntry(id=e["id"], callee=e["callee"], outputs_inside=e["outputsInside"],
+        CallEntry(id=e["id"], callee=e["callee"] if e["kind"] == CALL_KIND else e["path"],
+                  outputs_inside=e["outputsInside"],
                   enclosed_by=tuple(_enclosure(x) for x in e["enclosedBy"]), loc=_loc(e.get("loc")),
-                  args=None if "args" not in e else tuple(_argument(a) for a in e["args"]))
-        for e in doc["sequence"] if e["kind"] == CALL_KIND
+                  args=None if "args" not in e else tuple(_argument(a) for a in e["args"]), kind=e["kind"])
+        for e in doc["sequence"] if e["kind"] in SLOT_KINDS
     )
     function = doc.get("function")
     if function is not None:

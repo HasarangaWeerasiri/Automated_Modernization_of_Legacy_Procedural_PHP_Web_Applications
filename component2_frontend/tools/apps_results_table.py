@@ -13,12 +13,13 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from compile_check import read_build  # noqa: E402
 from results_table import review_split, source  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "output" / "apps"
 DEFAULT_MARKDOWN = ROOT / "docs" / "c2-apps-results.md"
-APPS = ("hms", "wackopicko")
+APPS = ("hms", "wackopicko", "phpblog")
 ROLES = {"page": "page", "component": "function component (R-F1)", "shell": "shell (R-F2)",
          "not_called": "function, not in the app"}
 
@@ -80,7 +81,8 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
         "Each app is generated as **one Next.js app** (`output/apps/<app>/next-app/`). Its units are pages, "
         "function components (boundary rule R-F1) and shells (R-F2: a header / footer pair, which replaces the "
         "two functions' own rows). A function with output that no page calls is still run, on its own, but is "
-        "not part of the app.",
+        "not part of the app. A page's route is its path from the app's document root (`legacy-apps/PINS.md`), "
+        "without `.php`; `index.php` is its directory.",
         "",
     ]
     totals = []
@@ -89,18 +91,19 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
         rows = [page_row(output / app, entry) for entry in index["pages"] if entry.get("role") != "shell_part"]
         ran = [r for r in rows if not r["crash"]]
         parts = [e for e in index["pages"] if e.get("role") == "shell_part"]
-        build = index.get("nextBuild")
+        build = read_build(output, app, output / app / "next-app")
         lines += [
             f"## {app} (commit `{index['sourceCommit'][:7]}`)",
             "",
             f"{index['files']} PHP files (libraries excluded) → {len(rows)} units: "
             + ", ".join(f"{sum(r['role'] == role for r in rows)} × {label}" for role, label in ROLES.items()
                         if any(r["role"] == role for r in rows))
-            + (". " + "; ".join(f"`{e['function']}()` is part of `{e['partOf']}`" for e in parts) if parts else "")
+            + (". " + "; ".join((f"`{e['function']}()`" if e["function"] else f"`{e['path']}`")
+                                + f" is part of `{e['partOf']}`" for e in parts) if parts else "")
             + f". {len(index['silentFiles'])} files print nothing at their top level. "
             f"{len(index['parseErrors'])} parse errors, {sum(bool(r['crash']) for r in rows)} crashes, "
             f"{len(index.get('collisions', []))} file collisions. `next build`: "
-            + ("not run" if build is None else "**ok**" if build["ok"] else "**failed**") + ".",
+            + ("not run for this output" if build is None else "**ok**" if build["ok"] else "**failed**") + ".",
             "",
             "| Unit | Role | Nodes | S2 components | S2 abstain (by reason) | S2 review unlabelled | "
             "S2 review other | S5 todo | S5 review unlabelled | S5 review other | S5 info | tsc errors | "

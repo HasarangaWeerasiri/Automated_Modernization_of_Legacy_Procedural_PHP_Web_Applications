@@ -140,7 +140,9 @@ def test_the_timeline_builder_gives_the_same_timeline_from_either_ast(real, ours
 
     from_real, from_ours = timeline(real, "real.json"), timeline(ours, "ours.json")
     assert from_real == from_ours
-    assert len(from_real["sequence"]) == 49 and from_real["sequence"][0]["id"] == f"{real['fileId']}#00001"
+    # 49 output entries, and since Phase 3 its one include (`include('newfunc.php')`) as an entry of its own
+    assert [e["kind"] for e in from_real["sequence"]].count("include") == 1
+    assert len(from_real["sequence"]) == 50 and from_real["sequence"][0]["id"] == f"{real['fileId']}#00001"
 
 
 def test_the_list_while_mock_uses_the_real_asts_ids(real):

@@ -1,8 +1,10 @@
-"""App-level facts for the function and layout rules (boundary-rules.md v0.11 section 4).
+"""App-level facts for the function and layout rules (boundary-rules.md v0.12 section 4).
 
 R-F1, R-F1b and R-F2 need more than one timeline: a function's own timeline, and the call
-entries in the timelines that call it. This module reads all the timelines of one app and
-answers, for every function that has a timeline:
+entries in the timelines that call it. An included file is a unit too (R-F2: "functions, or
+included files"): its timeline is the file's top level, and its call sites are the include
+entries that name it. This module reads all the timelines of one app and answers, for every
+function that has a timeline and every included file that has one:
 
   * is its markup tag-balanced on its own (R-F1), and if not, which elements it leaves open
     and which closing tags close nothing of its own (R-F2);
@@ -21,7 +23,7 @@ from dataclasses import dataclass, field, replace
 from src.mapping import tags as tagtrack
 from src.model import BoundaryConfig, CallEntry, OutputNode, Timeline
 
-CALL, CHILDREN = "call", "children"
+CALL, CHILDREN, INCLUDE = "call", "children", "include"
 _IDENTIFIER = re.compile(r"[A-Za-z_]\w*")
 # Names a prop may not take: JavaScript's reserved words and the props the generator uses itself.
 _RESERVED = frozenset((
@@ -33,8 +35,8 @@ _RESERVED = frozenset((
 
 @dataclass(frozen=True)
 class FunctionUnit:
-    node_id: str
-    name: str  # the PHP name, e.g. "our_header" or "View.title"
+    node_id: str  # a function's node id; an included file's entrypoint
+    name: str  # the PHP name, e.g. "our_header" or "View.title"; for a file its path without ".php"
     entrypoint: str  # its timeline
     balanced: bool  # every tag it opens it closes, and it closes nothing else
     open_tags: tuple[str, ...]  # elements still open at its end, outermost first
@@ -43,6 +45,7 @@ class FunctionUnit:
     call_sites: int  # resolved calls of it, in every timeline of the app
     props: tuple[tuple[str, str], ...]  # typed props: (name, "string" | "number")
     component: str | None = None  # R-F1: its component's name; None when it is not a component
+    kind: str = "function"  # "function" | "file" (an included file: never an R-F1 component)
 
 
 @dataclass(frozen=True)
@@ -58,13 +61,13 @@ class ShellUnit:
 
 @dataclass
 class AppUnits:
-    functions: dict[str, FunctionUnit] = field(default_factory=dict)  # by function node id
-    shells: dict[str, ShellUnit] = field(default_factory=dict)  # by header node id
-    timelines: dict[str, Timeline] = field(default_factory=dict)  # function node id -> its timeline
+    functions: dict[str, FunctionUnit] = field(default_factory=dict)  # by function node id / file entrypoint
+    shells: dict[str, ShellUnit] = field(default_factory=dict)  # by header node id / entrypoint
+    timelines: dict[str, Timeline] = field(default_factory=dict)  # the same keys -> the unit's timeline
 
     @property
     def shell_functions(self) -> frozenset:
-        """Every function that is the header or the footer of a pair."""
+        """Every function or included file that is the header or the footer of a pair."""
         return frozenset(s.header for s in self.shells.values()) | frozenset(s.footer for s in self.shells.values())
 
     def shell_of_footer(self, footer: str) -> ShellUnit | None:
@@ -91,7 +94,7 @@ def outputs_with_slots(timeline: Timeline) -> list[OutputNode]:
 
 
 def is_slot(node: OutputNode) -> bool:
-    return node.kind in (CALL, CHILDREN)
+    return node.kind in (CALL, CHILDREN, INCLUDE)
 
 
 def _tag_facts(timeline: Timeline, config: BoundaryConfig) -> tuple[bool, tuple, tuple]:
@@ -100,7 +103,9 @@ def _tag_facts(timeline: Timeline, config: BoundaryConfig) -> tuple[bool, tuple,
     tracked = tagtrack.track(timeline.sequence, config)
     run = [tracked[node.id] for node in timeline.sequence]
     open_tags = tuple(e.tag for e in run[-1].stack_after)
-    unmatched = tuple(e.tag for t in run for e in t.events if e.kind == "unmatched_close")
+    # The end tag of a void element (`</meta>`, `</br>`) can close nothing, here or in a caller: R-L6 ignores it.
+    unmatched = tuple(e.tag for t in run for e in t.events
+                      if e.kind == "unmatched_close" and e.tag not in config.void_tags)
     balanced = not open_tags and not unmatched and not run[-1].in_tag_after
     return balanced, open_tags, unmatched
 
@@ -129,6 +134,8 @@ def prop_values(unit_props, timeline: Timeline, call: CallEntry) -> list[tuple[s
     """(prop name, type, value) for one call of a function, from its literal arguments or defaults."""
     out = []
     wanted = dict(unit_props)
+    if timeline.function is None:  # an included file takes no arguments
+        return out
     for index, param in enumerate(timeline.function.params):
         name = param.name[1:] if param.name else ""
         if name in wanted:
@@ -153,16 +160,28 @@ def _recursive(graph: dict[str, set]) -> set:
     return out
 
 
-def analyse(timelines: list[Timeline], config: BoundaryConfig) -> AppUnits:
-    """The function and shell facts of one app, from all of its timelines."""
+def file_name(entrypoint: str) -> str:
+    return entrypoint.removesuffix(".php")
+
+
+def analyse(timelines: list[Timeline], config: BoundaryConfig, file_names: dict | None = None) -> AppUnits:
+    """The function and shell facts of one app, from all of its timelines.
+
+    `file_names` gives an included file's name (its path from the app's document root, without ".php") by
+    entrypoint; a file not in it is named by its entrypoint."""
     units = AppUnits()
-    functions = {t.function.node_id: t for t in timelines if t.function is not None}
+    pages = {t.entrypoint: t for t in timelines if t.function is None}
+    included = {c.callee for t in timelines for c in t.calls if c.kind == INCLUDE and c.callee in pages}
+    files = {entrypoint: pages[entrypoint] for entrypoint in sorted(included)}
+    functions = {t.function.node_id: t for t in timelines if t.function is not None} | files
     units.timelines = functions
     sites: dict[str, list] = {node_id: [] for node_id in functions}
+    callers: dict[str, set] = {node_id: set() for node_id in functions}  # the timelines each unit is called in
     for timeline in timelines:
         for call in timeline.calls:
             if call.callee in sites:
                 sites[call.callee].append(call)
+                callers[call.callee].add(timeline.entrypoint)
     graph = {node_id: {c.callee for c in t.calls if c.callee in functions} for node_id, t in functions.items()}
     recursive = _recursive(graph)
 
@@ -170,34 +189,46 @@ def analyse(timelines: list[Timeline], config: BoundaryConfig) -> AppUnits:
     for node_id in sorted(functions):
         timeline = functions[node_id]
         balanced, open_tags, unmatched = _tag_facts(timeline, config)
+        if timeline.function is None:  # an included file
+            name, props, kind = (file_names or {}).get(node_id) or file_name(node_id), (), "file"
+        else:
+            name, props, kind = timeline.function.name, _typed_props(timeline, sites[node_id]), "function"
         facts[node_id] = FunctionUnit(
-            node_id=node_id, name=timeline.function.name, entrypoint=timeline.entrypoint, balanced=balanced,
+            node_id=node_id, name=name, entrypoint=timeline.entrypoint, balanced=balanced,
             open_tags=open_tags, unmatched=unmatched, recursive=node_id in recursive,
-            call_sites=len(sites[node_id]), props=_typed_props(timeline, sites[node_id]))
+            call_sites=len(sites[node_id]), props=props, kind=kind)
 
     # R-F2, conditions 1 and 2: H leaves S open and closes nothing else; F closes exactly S, in reverse.
     headers = [u for u in facts.values() if u.open_tags and not u.unmatched and u.call_sites]
     footers = [u for u in facts.values() if u.unmatched and not u.open_tags and u.call_sites]
-    used = set()
+    used, shell_names = set(), set()
     for header in headers:
-        matching = [f for f in footers if f.unmatched == tuple(reversed(header.open_tags)) and f.node_id not in used]
+        # Condition 3 is about pages that call both: a footer that no caller of this header ever calls is not its
+        # footer, however well the tags fit (phpBlog: core.php's footer() and admin/footer.php close the same tags).
+        matching = [f for f in footers if f.unmatched == tuple(reversed(header.open_tags)) and f.node_id not in used
+                    and callers[f.node_id] & callers[header.node_id]]
         if len(matching) != 1:
             continue  # no footer, or more than one: nothing certain
         footer = matching[0]
         used.add(footer.node_id)
         props = [(n, t, header.node_id) for n, t in header.props]
         props += [(n, t, footer.node_id) for n, t in footer.props if n not in dict(header.props)]
-        units.shells[header.node_id] = ShellUnit(header.node_id, footer.node_id, pascal(header.name) + "Shell",
-                                                 "(" + re.sub(r"[^A-Za-z0-9_-]+", "-", header.name) + ")",
-                                                 tuple(props))
+        stem, slug = pascal(header.name) + "Shell", re.sub(r"[^A-Za-z0-9_-]+", "-", header.name)
+        name, group, n = stem, f"({slug})", 2
+        while name in shell_names:  # two headers of one name (head() in two files): a numeric suffix (spec 3)
+            name, group, n = f"{stem}{n}", f"({slug}-{n})", n + 1
+        shell_names.add(name)
+        units.shells[header.node_id] = ShellUnit(header.node_id, footer.node_id, name, group, tuple(props))
 
-    # R-F1: a function with output, called at least once, tag-balanced on its own, not recursive.
+    # R-F1: a function with output, called at least once, tag-balanced on its own, not recursive. (The rule
+    # is written for functions: an included file is a unit only for R-F2.)
     taken = {shell.name for shell in units.shells.values()}
     in_shell = units.shell_functions
     for node_id in sorted(facts):
         unit = facts[node_id]
         component = None
-        if unit.balanced and unit.call_sites and not unit.recursive and node_id not in in_shell:
+        if unit.kind == "function" and unit.balanced and unit.call_sites and not unit.recursive \
+                and node_id not in in_shell:
             component, n = pascal(unit.name), 2
             while component in taken:
                 component, n = f"{pascal(unit.name)}{n}", n + 1
@@ -206,13 +237,18 @@ def analyse(timelines: list[Timeline], config: BoundaryConfig) -> AppUnits:
     return units
 
 
+def unit_label(timeline: Timeline) -> str:
+    """A function's name, or an included file's base name: the short label of a unit."""
+    return timeline.function.name if timeline.function is not None else timeline.entrypoint.rsplit("/", 1)[-1]
+
+
 def shell_timeline(shell: ShellUnit, units: AppUnits) -> Timeline:
     """One timeline for a shell pair: the header's output, the place of the page, the footer's output."""
     header, footer = units.timelines[shell.header], units.timelines[shell.footer]
     children = CallEntry(id=f"{shell.header}.children", callee=None, outputs_inside=True, enclosed_by=(),
                          kind=CHILDREN)
     return Timeline(
-        entrypoint=f"{header.entrypoint}+{footer.function.name}",
+        entrypoint=f"{header.entrypoint}+{unit_label(footer)}",
         schema_version=header.schema_version,
         sequence=header.sequence + footer.sequence,
         queries={**header.queries, **footer.queries},

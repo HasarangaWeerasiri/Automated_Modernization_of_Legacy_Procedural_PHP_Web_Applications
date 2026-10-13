@@ -16,7 +16,7 @@ DEFAULT_PATH = CONFIG_DIR / "generation.json"
 REACT_DOM_PATH = CONFIG_DIR / "react_dom.json"
 
 _LISTS = ("escape_wrappers", "document_shell_tags", "preserve_whitespace_tags", "inline_tags",
-          "legacy_link_attributes")
+          "legacy_link_attributes", "fixed_value_input_types")
 _MAPS = ("context_reasons", "condition_context_reasons", "attribute_renames", "content_as_prop", "dropped_tags")
 _NESTED = ("form_state", "omitted_attributes")
 _STRINGS = ("legacy_link_pattern", "api_base_url_env")
@@ -56,6 +56,7 @@ def load_generation_config(path: Path = DEFAULT_PATH, react_dom_path: Path = REA
         condition_context_reasons=dict(doc["condition_context_reasons"]),
         attribute_renames=dict(doc["attribute_renames"]),
         form_state={tag: dict(v) for tag, v in doc["form_state"].items()},
+        fixed_value_input_types=tuple(t.lower() for t in doc["fixed_value_input_types"]),
         content_as_prop=dict(doc["content_as_prop"]),
         omitted_attributes={tag: dict(v) for tag, v in doc["omitted_attributes"].items()},
         document_shell_tags=tuple(t.lower() for t in doc["document_shell_tags"]),

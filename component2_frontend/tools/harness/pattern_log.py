@@ -7,6 +7,8 @@ docs/php-analysis/boundary-rules.md section 8 (an existing pattern, or new). It 
 decide: no rule is written here.
 
 Reads only output/apps/<app>/ (index.json and each page's timeline.json, stage2.json, stage5.json).
+One count is made by reading a timeline's markup again (attribute_ifs): Stage 5 stops at the first `if`
+that prints an attribute, so its outputs name one per unit, not all.
 Deterministic: the same outputs give byte-identical Markdown.
 
 Usage, from component2_frontend/ (after tools/harness/run_apps.py):
@@ -22,13 +24,20 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
+sys.path.insert(0, str(ROOT))
 from results_table import source  # noqa: E402
+
+from src.mapping import app_units, loader, markup  # noqa: E402
+from src.mapping.boundary_config import load_boundary_config  # noqa: E402
+from src.mapping.stage2_boundaries import _regions  # noqa: E402
 
 OUTPUT = ROOT / "output" / "apps"
 DEFAULT_MARKDOWN = ROOT / "docs" / "php-analysis" / "pattern-log.md"
-APPS = ("hms", "wackopicko")
+APPS = ("hms", "wackopicko", "phpblog")
 MAX_EXAMPLES = 6
 NEW = "**new**"
+CANDIDATE = "**candidate new** (owner decides)"  # Phase 3: judged by the definition in boundary-rules section 8
+REQUEST_IF = re.compile(r"isset\s*\(\s*\$_(POST|GET|REQUEST)\b")
 COPIED = re.compile(r"\$[A-Za-z_]\w*")  # a computed read that is a plain variable: copy propagation
 
 # kind -> (group, title, mapping to boundary-rules section 8, what it is)
@@ -43,13 +52,37 @@ CATALOGUE = {
         "A", "Loop in a function with no determinable container", "existing: Malformed HTML",
         "The loop's tags do not balance inside the function (R-F1b covers only a container the caller opens)."),
     "abstain:unresolved_call": (
-        "A", "Call whose output cannot be followed", "existing: rules v0.11 section 4 (call-entry table); Member 01 Q11",
-        "A call with no single callee (a method call on an object, a dynamic call, a name several files define) "
-        "or whose output is unknown. One C2Todo at the call site."),
+        "A", "Call or include whose output cannot be followed",
+        "existing: rules v0.11 section 4 (call-entry table); Member 01 Q11",
+        "A call with no single callee (a method call on an object, a dynamic call, a name several files define), "
+        "a call whose output is unknown, or an include of a file that is not in the app (a library, a file the "
+        "installer writes). Consecutive ones are one gap: one C2Todo listing all their ids (spec v0.7 section 8a)."),
     "abstain:tag_crosses_function": (
         "A", "Tags cross a function boundary outside a shell pair", "existing: rules v0.11 R-F2",
         "A page calls a header without its footer (or the other way round), or a function leaves tags open "
         "without being half of a pair."),
+    "abstain:tag_crosses_function@include": (
+        "A", "Included header / footer files that do not form a shell pair", "existing: rules v0.11 R-F2",
+        "R-F2 as written for included files: the header file leaves elements open and the footer file closes "
+        "tags, but the footer's closing tags are not exactly the header's open elements in reverse (condition 2), "
+        "so there is no pair and each include abstains. In phpBlog `admin/header.php` leaves `<head>` and `<main>` "
+        "open and `admin/footer.php` never closes them (a browser does, implicitly)."),
+    "abstain:cross_file_output": (
+        "A", "Include of a file that prints, outside a shell pair",
+        "existing: section 5 (cross-file output); section 8 Layout via `include header.php`",
+        "The included file's top level prints (it has a timeline of its own) and it is not half of a shell pair. "
+        "R-F1 is written for functions, so no rule places that output here: one C2Todo at the include."),
+    "abstain:list_guard_multiple_loops": (
+        "A", "An `if` that holds two or more output loops", CANDIDATE,
+        "R-I2 is written for one List per guard. Stage 2 abstains on the `if`; its content is in an unused "
+        "`Abstained_` function."),
+    "abstain:partial_attribute_output": (
+        "A", "An `if` that starts inside a tag and also prints elements", "existing: section 5 (no rule matches)",
+        "R-I3 covers an `if` that stays inside one attribute value. This one starts in a tag and goes on."),
+    "abstain:guarded_loop_abstained": (
+        "A", "List guard whose loop abstained", "existing: section 5", "No List to guard."),
+    "abstain:loop_in_attribute": (
+        "A", "Loop that prints inside a tag", "existing: section 5 (no rule matches)", "Stage 2 abstains."),
     "abstain:output_outside_shell": (
         "A", "Page output before the header or after the footer", "existing: rules v0.11 R-F2",
         "It would stand outside the shell's `<html>`."),
@@ -84,6 +117,20 @@ CATALOGUE = {
         "rest of the page is generated."),
     "fallback:markup_not_generatable": (
         "B", "Structure Stage 5 cannot generate", NEW, "Last-resort fallback for another reason (see the detail)."),
+    "fallback:if_prints_attribute": (
+        "B", "`if` that prints a whole attribute inside a tag", CANDIDATE,
+        "`<option value=\"x\" <?php if ($a == 'x') { echo 'selected'; } ?>>`, `<li <?php if (...) { echo "
+        "'class=\"nav-item\"'; } ?>>`. R-I3 covers an `if` inside an attribute *value*; this `if` stands between "
+        "attributes and prints the attribute itself. Stage 2 labels it R-I3, Stage 5 cannot write it, and the "
+        "last resort replaces the smallest enclosing component with one C2Todo: here that is the whole page or "
+        "shell (one row below per unit lost; the first such `if` of the unit is shown)."),
+    "seen:if_prints_attribute": (
+        "B", "… every such `if` (counted by re-reading the markup)", CANDIDATE,
+        "All occurrences, not only the first per unit. The detail says what the `if` prints."),
+    "fallback:expression_in_attribute_name": (
+        "B", "Expression where an attribute name is written (not caught by Stage 2)", "existing: rules v0.9 §1",
+        "A separate `echo $selected` between attributes. Section 1 abstains on this for an echo *part* "
+        "(`markup_from_expression`); as a statement of its own it reaches Stage 5's last resort."),
     "fallback:element_not_in_react_types": (
         "B", "Element React has no type for", "existing: Element with no React type (rules v0.9 §8)",
         "An obsolete or unknown element (e.g. `<frameset>`). The element becomes a C2Todo."),
@@ -106,6 +153,20 @@ CATALOGUE = {
         "`echo '<td>' . $x . '</td>'` that could not be given `parts` (see \"Echo of several pieces\")."),
     "note:heredoc_output+markup": ("C", "Markup inside a heredoc, not split", "existing: Rows printed by one echo string / concatenated echo with markup (rules v0.9 §1, §8)", "One unresolved read."),
     "note:heredoc_output": ("C", "Heredoc output, not split", "existing: Rows printed by one echo string / concatenated echo with markup (rules v0.9 §1, §8)", "One unresolved read."),
+    "note:exit_after_output": (
+        "C", "Output followed by `exit` in one block (redirect guard)", CANDIDATE,
+        "`if (...) { echo '<meta http-equiv=\"refresh\" ...>'; exit; }`. When the block runs, nothing after it is "
+        "printed. The timeline has no exit, so everything after the guard is generated as if it always rendered. "
+        "Related section 8 row: `die()` / `exit()` with a message."),
+    "note:silent_elseif_arm": (
+        "C", "`elseif` arm that prints nothing, before an arm that prints", CANDIDATE,
+        "Only arms with output are in the timeline, so the later arm looks as if it followed the earlier ones "
+        "directly: `if (a) {X} elseif (b) {} else {Y}` would be generated as `a ? X : Y`."),
+    "note:markup_in_assigned_string": (
+        "C", "Markup or an attribute kept in a variable (`$image = '<img ...>'`)", CANDIDATE,
+        "A string literal with a tag or a written-out attribute is assigned (or appended) to a variable. Where the "
+        "variable is printed it is one value: an unresolved read, which React would escape. Not every such "
+        "variable is printed (some are mailed or written to a file)."),
     "note:exit_with_output": (
         "C", "`die()` / `exit()` with a message", "existing: `die()` / `exit()` with a message (rules v0.9 §8)",
         "Prints its argument and stops. Schema 1.0 has no output kind for it, so the timeline does not contain it."),
@@ -150,6 +211,23 @@ CATALOGUE = {
     "flag:implicit_p_close": (
         "E", "`<p>` closed by a block element (spec 5b)",
         "existing: Invalid nesting the browser repairs (rules v0.11 section 8)", "Split as a browser does."),
+    "flag:stray_end_tag_repaired": (
+        "E", "Stray `</p>` / `</br>` (spec 5b, v0.7)",
+        "existing: Invalid nesting the browser repairs (rules v0.11 section 8)",
+        "An empty `<p></p>` / a `<br />`, as a browser builds it."),
+    "seen:nested_list": (
+        "E", "Nested loops (R-L4): the inner List is one node of the outer Item",
+        "existing: section 8 \"not yet seen: nested loops\" → **now seen**; R-L4 was design only",
+        "First real instances. The inner Item gets its own row only: a read of the *outer* loop's row inside "
+        "the inner loop (phpBlog `admin/dashboard.php` 180 / 182, a per-row lookup query) has no prop to come "
+        "from, and would reach Stage 5's last resort once a contract maps the data."),
+    "seen:r_i5_request": (
+        "E", "R-I5 on a request-handling `if` (`isset($_POST[...])` / `isset($_GET[...])`)",
+        "existing: Request-handling `if` (section 8)", "As in HMS: the fallback fires on form / query handlers."),
+    "seen:r_i5_other": (
+        "E", "R-I5 on any other `if` above 3 elements",
+        "existing rule (R-I5 fallback); the report statement \"no display conditional above 3 elements\" "
+        "must be re-read", "The detail is the condition: role checks, login state, settings switches."),
     "flag:duplicate_attribute": (
         "E", "Duplicate attribute: the first is kept (spec 5b)", "existing: Malformed HTML",
         "The later one is dropped, as a browser does."),
@@ -179,8 +257,40 @@ GROUPS = {
     "B": "Last-resort fallback in Stage 5",
     "C": "Not modelled by the timeline (harness notes)",
     "D": "Dropped or changed by Stage 5",
-    "E": "Handled since Phases 2a and 2b (no longer a gap)",
+    "E": "Handled by a rule or repair (no longer a gap)",
 }
+
+
+class _AttributeIfs(markup.Builder):
+    """The markup tokenizer, noting every `if` that prints inside a tag but outside an attribute value (and
+    leaving it out, so that reading goes on)."""
+
+    def __init__(self, outputs, config):
+        super().__init__(outputs, config, {}, strict=False)
+        self.found = []  # (if id, the tag it is in, what its first branch prints)
+
+    def if_(self, item):
+        if self.state != "data" and self.state not in markup._ATTR_VALUE:
+            first = markup._first_output(item)
+            text = (first.raw if first.raw is not None else markup.php_literal_text(first.reads[0].expr)
+                    if len(first.reads) == 1 else None) if first is not None else None
+            self.found.append((item.node_id, self.tag_name.lower(), " ".join((text or "an expression").split())))
+            return
+        super().if_(item)
+
+
+def attribute_ifs(timeline_path: Path, config) -> list:
+    """[(line, tag, text)] for every `if` of a timeline that prints an attribute between attributes."""
+    document = json.loads(timeline_path.read_text(encoding="utf-8"))
+    lines = {enc["nodeId"]: (enc["loc"]["startLine"], enc["loc"]["startCol"] + 1)
+             for e in document["sequence"] for enc in e["enclosedBy"] if enc["role"] == "branch" and "loc" in enc}
+    outputs = app_units.outputs_with_slots(loader.load_timeline(timeline_path))
+    builder = _AttributeIfs(outputs, config)
+    try:
+        builder.build(_regions(outputs))
+    except markup.GenerationError:
+        pass  # something else the tokenizer cannot place: what was found before it still counts
+    return [(lines.get(if_id, (None, None)), tag, text) for if_id, tag, text in builder.found]
 
 
 def _walk(node, parents=()):
@@ -208,7 +318,8 @@ def collect(output: Path) -> dict:
     includes: dict[tuple, list] = {}  # (app, target, prints) -> [where]
     conditions: dict[str, dict] = {}  # reason -> {condExpr: [where]}
     checklist = {"r_i5": [], "nested": [], "r_l3": [], "page_guard": [], "for": [], "do": []}
-    summary = {}
+    summary, todo_reasons = {}, {}
+    config = load_boundary_config()
 
     def add(kind, place, detail=""):
         found.setdefault(kind, []).append((place, detail))
@@ -218,6 +329,9 @@ def collect(output: Path) -> dict:
         printing_pages = {p["path"] for p in index["pages"] if p["function"] is None}
         summary[app] = index
         for entry in index["pages"]:
+            if entry.get("role") != "shell" and not entry["crash"]:  # a shell's two halves are read on their own
+                for (line, col), tag, text in attribute_ifs(output / app / entry["key"] / "timeline.json", config):
+                    add("seen:if_prints_attribute", where(app, entry, line, col), f"in `<{tag}>`: prints `{text}`")
             if entry.get("role") == "shell_part":  # its output is in the shell's unit
                 continue
             if entry["crash"]:
@@ -228,6 +342,12 @@ def collect(output: Path) -> dict:
             stage2 = json.loads((folder / "stage2.json").read_text(encoding="utf-8"))
             stage5 = json.loads((folder / "stage5.json").read_text(encoding="utf-8"))
             line_of = {e["id"]: e["loc"] for e in timeline["sequence"] if e.get("loc")}
+            entry_of = {e["id"]: e for e in timeline["sequence"]}
+            include_text = {i["nodeId"]: i["expr"] for i in timeline["includes"]}
+            todo_reasons.setdefault(app, {})
+            for todo in stage5["c2todos"]:
+                if todo["severity"] == "todo":
+                    todo_reasons[app][todo["reason"]] = todo_reasons[app].get(todo["reason"], 0) + 1
             cond_of = {}
             for e in timeline["sequence"]:
                 for enc in e["enclosedBy"]:
@@ -251,11 +371,31 @@ def collect(output: Path) -> dict:
                         in_string = any(loc["startLine"] <= line <= last_line(loc) for loc in locs
                                         for line in markup_lines)
                         kind += "@markup_in_string" if in_string else "@text_only"
-                    add(kind, where(app, entry, *first))
+                    detail = ""
+                    sources = [entry_of[s] for s in node["sourceIds"] if s in entry_of]
+                    if node["reason"] == "tag_crosses_function" and sources and sources[0]["kind"] == "include":
+                        kind += "@include"
+                        detail = f"include {include_text.get(sources[0]['id'], '')}"
+                    elif node["reason"] in ("unresolved_call", "cross_file_output"):
+                        causes = []
+                        for source_entry in sources:
+                            if source_entry["kind"] == "include":
+                                causes.append(f"include {include_text.get(source_entry['id'], '')}"
+                                              + (": not a file of the app" if source_entry["path"] is None else ""))
+                            else:
+                                called = timeline["callNames"].get(source_entry["id"])
+                                causes.append(f"{called}()" if called else "a method or dynamic call")
+                        counted = {c: causes.count(c) for c in dict.fromkeys(causes)}
+                        detail = "; ".join(c if n == 1 else f"{c} × {n}" for c, n in counted.items())
+                    add(kind, where(app, entry, *first), detail)
                 if node["type"] == "ConditionalComponent":
                     checklist["r_i5"].append((where(app, entry, *first), node["elements"]))
+                    text = " ".join(cond_of.get(node["sourceIds"][0], "(no condExpr)").split())[:80]
+                    add("seen:r_i5_request" if REQUEST_IF.search(text) else "seen:r_i5_other",
+                        where(app, entry, *first), f"`{text}`, {node['elements']} elements")
                 if node["type"] == "List" and any(p["type"] == "Item" for p in parents):
                     checklist["nested"].append(where(app, entry, *first))
+                    add("seen:nested_list", where(app, entry, *first))
                 if node["type"] == "FunctionCall":
                     add("handled:r_f1", where(app, entry, *first),
                         timeline["callNames"].get(node["sourceIds"][0], ""))
@@ -278,9 +418,11 @@ def collect(output: Path) -> dict:
                     text = cond_of.get(todo["nodeId"], "(no condExpr)")
                     conditions.setdefault(todo["reason"], {}).setdefault(text, []).append(place)
                 elif todo["reason"] == "markup_not_generatable":
-                    shared = "its container also holds" in todo["detail"]
-                    add("fallback:container_shared" if shared else "fallback:markup_not_generatable", place,
-                        todo["detail"])
+                    kind = ("fallback:container_shared" if "its container also holds" in todo["detail"] else
+                            "fallback:if_prints_attribute" if "inside a tag, outside a value" in todo["detail"] else
+                            "fallback:expression_in_attribute_name" if "tag name or attribute name" in todo["detail"]
+                            else "fallback:markup_not_generatable")
+                    add(kind, where(app, entry, None), f"{todo['function']}: {todo['detail']}")
                 elif todo["reason"] in ("element_not_in_react_types", "expression_not_translatable",
                                         "dynamic_raw_text"):
                     add(f"fallback:{todo['reason']}", place, todo["detail"])
@@ -323,7 +465,124 @@ def collect(output: Path) -> dict:
                 key = (app, target if target is not None else include["expr"], resolved is not None)
                 includes.setdefault(key, []).append(where(app, entry, include["line"], include["col"]))
     return {"found": found, "rules": rules, "calls": calls, "includes": includes, "conditions": conditions,
-            "checklist": checklist, "summary": summary}
+            "checklist": checklist, "summary": summary, "todos": todo_reasons}
+
+
+def per_app(places: list, app: str) -> int:
+    return sum(place.startswith(f"`{app}/") for place, _ in places)
+
+
+# Phase 3 (boundary-rules v0.12 section 8): where each kind stands against the definition of a new pattern.
+# class a = candidate new, b = existing pattern with new instances, d = data / labels / endpoint only.
+PHASE3 = {
+    "fallback:if_prints_attribute": ("a", "NEW (candidate)",
+        "R-I3 is written for an `if` inside an attribute value. No rule or abstain reason of §2–§5 names an `if` "
+        "that prints the attribute itself, and the units it is in are lost whole. 0 in HMS and WackoPicko."),
+    "seen:if_prints_attribute": ("a", "NEW (candidate), the same construct",
+        "Every occurrence: `selected` / `checked` / `autofocus` on form controls, `class=\"nav-item\"` on menu "
+        "items."),
+    "note:exit_after_output": ("a", "NEW (candidate); nearest row: `die()` / `exit()` with a message",
+        "(b) of the definition: once the guard's condition is resolved, the generated page prints the redirect "
+        "*and* the rest of the page, the legacy page stops at `exit`. Today the condition is unresolved (false), "
+        "so the rest renders, which matches the legacy page when the guard does not fire."),
+    "note:markup_in_assigned_string": ("a", "NEW (candidate); nearest row: Rows printed by one echo string",
+        "The echo-string row is about markup in the echo's own literal pieces. Here the markup is the *value* of "
+        "a variable (`$image = '<img ...>'`, `$active = 'class=\"active\"'`), set earlier, often in an `if`. It is "
+        "generated as one unresolved read: flagged, but nothing says the value is markup."),
+    "abstain:list_guard_multiple_loops": ("a", "NEW (candidate); nearest rule: R-I2",
+        "The abstain reason is not in §5's list (the code has had it since Stage 2 v0.3, never met on a whole "
+        "app)."),
+    "fallback:element_not_in_react_types": ("a", "Element with no React type; candidate: non-HTML response",
+        "By mechanism it is the existing row. But `rss.php` and `sitemap.php` print XML (`<rss>`, `<urlset>`), "
+        "not a page: no row says what a non-HTML response is."),
+    "flag:output_dropped": ("a", "PHP output inside a dropped element (recorded as new in Phase 2); here: XML",
+        "The values inside the XML elements of `rss.php` / `sitemap.php`."),
+    "abstain:tag_crosses_function@include": ("a", "Layout via `include header.php` + Malformed HTML (existing reason)",
+        "Not new by the letter of (a): R-F2 and its abstain reason exist. Listed as a candidate because of what "
+        "it shows: R-F2's condition 2 (\"close exactly S, in reverse\") does not hold when the header leaves "
+        "elements open that only the browser closes (`<head>`, `<main>`), so 24 admin pages have no shell."),
+    "abstain:cross_file_output": ("a", "§5 cross-file output (\"not detectable yet\"); Layout via `include`",
+        "§5 has the bullet; it is detectable now that an include is a timeline entry. The reason name "
+        "`cross_file_output` is new in code. Here: `core.php`, whose top level prints a redirect guard."),
+    "seen:nested_list": ("a", "§8 \"not yet seen: nested loops\" (R-L4, design only)",
+        "Not new by (a): R-L4 exists. First real instances, so R-L4 is no longer design only; one sub-case "
+        "(the inner loop's body reads the outer loop's row) has no place in the inner Item's props."),
+    "seen:r_i5_other": ("b", "R-I5 fallback (existing rule)",
+        "The rule fires as written. What changes is the report statement (rules §3): these are display "
+        "conditionals above 3 elements (role checks, login state, settings switches), not request handlers."),
+    "seen:r_i5_request": ("b", "Request-handling `if` (existing row, HMS)",
+        "Same shape as HMS: `isset($_POST['...'])` / `isset($_GET['edit-id'])` around a form or a handler."),
+    "abstain:unresolved_call": ("b", "Call whose output cannot be followed (call-entry table)",
+        "Same reason as HMS's TCPDF calls. Causes here: helper functions that include `config.php`, which is "
+        "not in the repository (the installer writes it), mysqli method calls, includes of that file."),
+    "abstain:tag_crosses_branch": ("b", "Malformed HTML (R-L6, per-branch balance)", "More instances."),
+    "abstain:markup_from_expression": ("b", "Echo strings with markup, rules §1",
+        "`echo '<option ... ' . $selected . '>'`: an expression where an attribute name is written."),
+    "abstain:partial_attribute_output": ("b", "§5 no rule matches (existing reason)", "One instance."),
+    "fallback:container_shared": ("b", "Page output inside a List's container outside the loop", "More instances."),
+    "fallback:expression_in_attribute_name": ("b", "Echo strings with markup, rules §1", "See the log entry."),
+    "note:exit_with_output": ("b", "`die()` / `exit()` with a message", "One more case."),
+    "flag:html_nesting_changed": ("b", "Invalid nesting the browser repairs", "More instances."),
+    "note:row_read_not_traced": ("d", "data (Member 01 Q1, Q3, Q17)", "Unresolved reads; the DFG's job."),
+}
+PHASE3_CLASSES = {
+    "a": "(a) Candidate new patterns",
+    "b": "(b) Existing patterns with new instances",
+    "d": "(d) Unresolved reads, missing labels, no endpoint only",
+}
+GAPS_FIXED = (
+    "An include / require is a timeline entry at its position (`{kind: \"include\", path, outputsInside}`, pending "
+    "Member 01 Q4); an included file is a unit for R-F2, as the rule says (\"functions, or included files\").",
+    "A file whose top level prints nothing itself but includes or calls something that certainly prints has a "
+    "timeline (it was silent before).",
+    "Two shell headers of one name (`head()` in `core.php` and in `install/core.php`): the second shell gets a "
+    "numeric suffix (`HeadShell2`, route group `(head-2)`).",
+    "A footer is paired with a header only if some timeline calls both: `core.php`'s `footer()` and "
+    "`admin/footer.php` close the same tags.",
+    "The end tag of a void element (`</meta>`) is not an unmatched closing tag of a function: it can close nothing.",
+    "An `if` that prints only in its `else` / `elseif` arm: the `then` arm is written with no content and the "
+    "condition `condition_unavailable` (it was a syntax error in the generated file).",
+    "`print_r($x, true)` / `var_export($x, true)` return their text: no longer counted as output.",
+    "`markup_from_expression` (rules §1) is applied inside R-L3 / R-L3b rows too.",
+    "A C2Todo for a call site has its source line.",
+)
+
+
+def phase3_section(number: int, app: str, data: dict, ordered: list) -> list:
+    """One app's constructs against the section 8 definition of a new pattern (Phase 3)."""
+    found, todos = data["found"], data["todos"].get(app, {})
+    lines = [f"## {number}. {app}: constructs against the §8 definition of a new pattern (Phase 3)", "",
+             "boundary-rules v0.12 §8: an app adds a new pattern if a construct (a) needs a rule or abstain reason "
+             "that §2–§5 do not have, or (b) is handled by an existing rule wrongly. More instances of an existing "
+             "row, an implementation gap for a written rule, and unresolved reads are not new. **This table does "
+             "not decide**: where there is doubt the construct is listed as a candidate, with the reason.", ""]
+    for letter, heading in PHASE3_CLASSES.items():
+        rows = []
+        for kind in ordered:
+            places = [(p, d) for p, d in found[kind] if p.startswith(f"`{app}/")]
+            if not places:
+                continue
+            _, title, mapping, _ = CATALOGUE.get(kind, ("B", kind, CANDIDATE, ""))
+            default = "d" if mapping.startswith("data") else "b" if mapping.startswith("existing") else "a"
+            cls, row, why = PHASE3.get(kind, (default, mapping, ""))
+            if kind.startswith(("handled:", "flag:implicit", "flag:duplicate", "flag:stray")) and kind not in PHASE3:
+                continue  # handled by a rule or repair: counted in section 1
+            if cls == letter:
+                rows.append(f"| {title} — **{len(places)}**<br>{examples(places[:3])} | {row} | {why} |")
+        lines += [f"### {heading}", ""]
+        if letter == "d":
+            lines += ["C2Todos by reason: " + ", ".join(
+                f"`{reason}` {n}" for reason, n in sorted(todos.items(), key=lambda item: (-item[1], item[0]))) + ".",
+                "", "`no_endpoint`, `unresolved_read`, `needs_request_context`, `needs_auth_context` and "
+                "`condition_not_translatable` need the contract, the DFG or labels, not a boundary rule.", ""]
+        if rows:
+            lines += ["| Construct — count, examples | §8 row it belongs to, or NEW | Why (by the §8 definition) |",
+                      "|---|---|---|", *rows, ""]
+        elif letter != "d":
+            lines += ["None.", ""]
+    lines += ["### (c) Implementation gaps fixed for this app (not new patterns)", ""]
+    lines += [f"- {text}" for text in GAPS_FIXED] + [""]
+    return lines
 
 
 def examples(places: list) -> str:
@@ -353,21 +612,30 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
         "",
         "## 1. Summary",
         "",
-        "| Group | Kind | Count | §8 mapping |",
-        "|---|---|---|---|",
+        "| Group | Kind | " + " | ".join(APPS) + " | Total | §8 mapping |",
+        "|---|---|" + "---|" * len(APPS) + "---|---|",
     ]
     ordered = [k for k in CATALOGUE if k in found] + sorted(k for k in found if k not in CATALOGUE and k != "crash")
     for kind in ordered:
-        group, title, mapping, _ = CATALOGUE.get(kind, ("B", kind, NEW, ""))
-        lines.append(f"| {group}. {GROUPS[group]} | {title} | {len(found[kind])} | {mapping} |")
-    new = [CATALOGUE.get(k, ("B", k, NEW))[1] for k in ordered if CATALOGUE.get(k, ("B", k, NEW))[2] == NEW]
+        group, title, mapping, _ = CATALOGUE.get(kind, ("B", kind, CANDIDATE, ""))
+        lines.append(f"| {group}. {GROUPS[group]} | {title} | "
+                     + " | ".join(str(per_app(found[kind], app)) for app in APPS)
+                     + f" | {len(found[kind])} | {mapping} |")
+    new = [CATALOGUE.get(k, ("B", k, CANDIDATE))[1] for k in ordered
+           if CATALOGUE.get(k, ("B", k, CANDIDATE))[2] == NEW]
+    candidates = [CATALOGUE.get(k, ("B", k, CANDIDATE))[1] for k in ordered
+                  if CATALOGUE.get(k, ("B", k, CANDIDATE))[2] == CANDIDATE]
     remaining = sum(len(found[k]) for k in ordered if CATALOGUE.get(k, ("B",))[0] != "E")
     handled = sum(len(found[k]) for k in ordered if CATALOGUE.get(k, ("B",))[0] == "E")
     lines += [
         "",
-        f"**New patterns (not in §8): {len(new)}** — " + ("; ".join(new) if new else "none") + ".",
+        f"**New patterns recorded in Phases 1–2 (not in §8): {len(new)}** — " + ("; ".join(new) if new else "none")
+        + ".",
         "",
-        f"Groups A–D are what remains ({remaining} places). Group E is what Phases 2a and 2b now handle ({handled} "
+        f"**Candidate new patterns (Phase 3, for the owner to judge by the §8 definition): {len(candidates)}** — "
+        + ("; ".join(candidates) if candidates else "none") + ".",
+        "",
+        f"Groups A–D are what remains ({remaining} places). Group E is what a rule or repair now handles ({handled} "
         "places): it is listed for the record, not as a gap.",
         "",
         f"Crashes: {len(found.get('crash', []))}. Parse errors: "
@@ -385,6 +653,9 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
             _, title, mapping, text = CATALOGUE.get(kind, ("B", kind, NEW, ""))
             lines += [f"### {title} — {len(found[kind])}", "", f"- §8 mapping: {mapping}", f"- {text}",
                       f"- Examples: {examples(found[kind])}", ""]
+
+    lines += phase3_section(number, "phpblog", data, ordered)
+    number += 1
 
     shells = [(app, s) for app in APPS for s in summary[app].get("shells", [])]
     lines += [f"## {number}. Functions and includes (R-F1 / R-F2)", "",
@@ -406,8 +677,9 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
     lines += ["", "| App | Included file | Prints at its top level | Includes | Examples | §8 mapping |",
               "|---|---|---|---|---|---|"]
     for (app, target, prints), places in sorted(data["includes"].items()):
-        mapping = ("§8 \"not yet seen\": layout via `include header.php` → **now seen**" if prints
-                   else "no pattern: the file defines functions / classes or sets up data")
+        mapping = ("the file prints at its top level: half of a shell pair (R-F2), or `cross_file_output`"
+                   if prints else "no pattern: the file defines functions / classes or sets up data, or is not "
+                   "a file of the app")
         lines.append(f"| {app} | `{target}` | {'**yes**' if prints else 'no'} | {len(places)} | "
                      f"{examples([(p, '') for p in places[:3]])} | {mapping} |")
 
@@ -444,7 +716,7 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
               "|---|" + "---|" * len(APPS)]
     for rule in all_rules:
         lines.append(f"| {rule} | " + " | ".join(str(data["rules"][app].get(rule, 0)) for app in APPS) + " |")
-    lines += ["", "Counts are Stage 2 nodes carrying the rule. R-F1 and R-F2 are not implemented (Phase 2).", ""]
+    lines += ["", "Counts are Stage 2 nodes carrying the rule.", ""]
     return "\n".join(lines)
 
 

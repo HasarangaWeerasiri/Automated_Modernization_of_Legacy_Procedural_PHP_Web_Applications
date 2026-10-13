@@ -131,12 +131,16 @@ class CallEntry:
     """A call site in the timeline (Member 01 Q4, proposed): the callee's output is not inlined."""
 
     id: str
-    callee: str | None  # the called function's node id; None when the call is not resolved to one function
+    # the called function's node id; None when the call is not resolved to one function. For an include: the
+    # included file's entrypoint, or None when it is not a file of the app
+    callee: str | None
     outputs_inside: bool | str  # True | False | "unknown"
     enclosed_by: tuple[Enclosure, ...]  # outermost first
     loc: Loc | None = None
     args: tuple["CallArg", ...] | None = None  # optional (harness extension): the arguments, in order
-    kind: str = "call"  # "children" for the place where a shell component puts its page (never from a file)
+    # "call" | "include" (harness extension, pending Member 01 Q4: an include / require at its position) |
+    # "children" for the place where a shell component puts its page (never from a file)
+    kind: str = "call"
 
 
 @dataclass(frozen=True)
@@ -368,6 +372,8 @@ class GenerationConfig:
     condition_context_reasons: dict[str, str]  # superglobal in a condition -> unresolvedCondition reason
     attribute_renames: dict[str, str]  # HTML attribute -> React prop, where lower-casing is not enough
     form_state: dict[str, dict[str, str]]  # tag -> HTML attribute -> uncontrolled React prop
+    # <input type=...> whose `value` is a label or a fixed value, not form state: it stays `value` (spec v0.7)
+    fixed_value_input_types: tuple[str, ...]
     content_as_prop: dict[str, str]  # tag whose content becomes a prop, e.g. textarea -> defaultValue
     omitted_attributes: dict[str, dict[str, str]]  # tag -> attribute -> flag raised when it is omitted
     document_shell_tags: tuple[str, ...]  # tags dropped, children kept

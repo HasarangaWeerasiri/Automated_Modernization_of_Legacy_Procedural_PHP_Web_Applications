@@ -420,7 +420,8 @@ def test_form_state_becomes_uncontrolled_props(tmp_path):
     result = tiny(tmp_path, [html('<input value="v" type="checkbox" checked><textarea name="t">\nhello</textarea>'
                                   '<select><option value="a" selected>A</option></select>')])
     lines = body(result)
-    assert '<input defaultValue="v" type="checkbox" defaultChecked />' in lines
+    # spec v0.7: `value` on a checkbox is a fixed value, not form state; `checked` is form state
+    assert '<input value="v" type="checkbox" defaultChecked />' in lines
     assert '<textarea name="t" defaultValue="hello" />' in lines  # HTML drops the newline after <textarea>
     assert '<option value="a">A</option>' in lines
     (selected,) = flags(result, "option_selected_not_converted")
@@ -759,9 +760,11 @@ def test_html_nesting_on_the_mocks(runs):
              for name, (_, _, result) in runs.items()}
     assert found.pop("wp_login") == [("Page", False, "div > table: generated children [form]; an HTML5 parser "
                                                      "builds [form, tbody]")]
-    assert found.pop("edge_cases") == [("EdgeCasesList1", True, "table: generated children [tr]; an HTML5 parser "
-                                                                "builds [tbody]")]
+    # edge_cases: its table held only the loop's rows; spec v0.7 section 5b wraps those in <tbody> too
     assert all(not v for v in found.values()), found
+    _, _, edge_cases = runs["edge_cases"]
+    (repaired,) = flags(edge_cases, "implicit_tbody")
+    assert (repaired.in_abstained, repaired.severity) == (True, "info")
 
 
 EXPECTED_FLAG_RATES = {"list_while": 12, "list_foreach": 12, "admin": 6, "detail": 5, "edge_cases": 10,
@@ -771,8 +774,7 @@ EXPECTED_FLAG_RATES = {"list_while": 12, "list_foreach": 12, "admin": 6, "detail
 def test_abstained_code_is_counted_once(runs):
     """Spec v0.4 section 12: inside abstained code every entry, review and todo alike, counts as info."""
     _, _, result = runs["edge_cases"]
-    (nested,) = flags(result, "html_nesting_changed")
-    assert (nested.in_abstained, nested.severity, nested.severity_if_rendered) == (True, "info", "review")
+    assert not flags(result, "html_nesting_changed")  # was one, in abstained code: repaired since spec v0.7
     inner = [t for t in result.todos if t.in_abstained]
     assert len(inner) == 6 and {(t.severity, t.severity_if_rendered) for t in inner} == {("info", "todo")}
     (region,) = todos(result, "cuts_across_business_logic")

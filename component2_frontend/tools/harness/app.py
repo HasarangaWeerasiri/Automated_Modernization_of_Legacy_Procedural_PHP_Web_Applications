@@ -1,6 +1,6 @@
 """Whole-app side of the Component 2 test harness: every PHP file of an app -> timelines.
 
-For each app (rule-discovery corpus only: HMS and WackoPicko) this produces an AST for every PHP
+For each app (rule-discovery corpus only: HMS, WackoPicko and phpBlog) this produces an AST for every PHP
 file that is not a library (ast_producer.py), and returns one timeline per page (a file's top-level
 output) and per function that prints (harness.py). Call sites carry the called function's node id
 and whether it prints, directly or through a function it calls.
@@ -18,13 +18,17 @@ from harness import FileHarness, function_resolver, parse_schema
 
 ROOT = Path(__file__).resolve().parents[2]
 
-# Only the rule-discovery corpus (CONTEXT.md section 5). Queued and evaluation apps are not listed on purpose.
+# Only the active rule-discovery corpus (CONTEXT.md section 5). Queued and evaluation apps are not listed on
+# purpose. `docroot` is the folder the web server serves, relative to the repository root ("" = the root
+# itself): routes are paths from it (generation-spec v0.7 section 8a). Recorded in legacy-apps/PINS.md.
 APPS = {
     "hms": {"root": ROOT / "legacy-apps" / "hms", "prefix": "legacy-apps/hms",
-            "commit": "777fda46b77a820977a5ba616283dbfbc40bf7e1",
+            "commit": "777fda46b77a820977a5ba616283dbfbc40bf7e1", "docroot": "",
             "exclude": ("TCPDF/", "vendor/")},  # libraries
     "wackopicko": {"root": ROOT / "legacy-apps" / "wackopicko", "prefix": "legacy-apps/wackopicko",
-                   "commit": "cabc1b3a06beda7df98e839fa2d84db9a4bdfee7", "exclude": ()},
+                   "commit": "cabc1b3a06beda7df98e839fa2d84db9a4bdfee7", "docroot": "website", "exclude": ()},
+    "phpblog": {"root": ROOT / "legacy-apps" / "phpblog", "prefix": "legacy-apps/phpblog",
+                "commit": "4ffe3c9641a42b99829cf4b8e4185093793a3abc", "docroot": "", "exclude": ()},
 }
 
 
@@ -45,6 +49,8 @@ class AppTimelines:
     files: int
     schema_files: tuple[str, ...] = ()  # the .sql files SELECT * was expanded from
     functions: dict = None  # function node id -> {"name", "path"}, for reports
+    docroot: str = ""  # the served folder, relative to the app root
+    prefix: str = ""  # what an entrypoint starts with before the file's path, e.g. "legacy-apps/hms"
 
 
 def head_commit(root: Path) -> str:
@@ -162,7 +168,7 @@ def app_timelines(app: str) -> AppTimelines:
 
     pages, silent = build_timelines(harnesses, provenance)
     return AppTimelines(app, tuple(pages), tuple(silent), errors, len(files), tuple(schema_files),
-                        function_table(harnesses))
+                        function_table(harnesses), config["docroot"], config["prefix"])
 
 
 def dump_timeline(timeline: dict) -> str:

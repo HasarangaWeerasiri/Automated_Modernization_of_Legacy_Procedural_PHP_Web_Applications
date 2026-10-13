@@ -24,6 +24,7 @@
   "form_state": {
     "input": {"value": "defaultValue", "checked": "defaultChecked"}
   },
+  "fixed_value_input_types": ["submit", "button", "reset", "image", "hidden", "checkbox", "radio"],
   "content_as_prop": {"textarea": "defaultValue"},
   "omitted_attributes": {
     "option": {"selected": "option_selected_not_converted"}

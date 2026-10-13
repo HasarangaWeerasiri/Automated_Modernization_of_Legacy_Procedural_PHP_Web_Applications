@@ -186,10 +186,14 @@ class Builder:
     """Builds the markup tree of a run of timeline items (see the module docstring)."""
 
     def __init__(self, outputs: list[OutputNode], config: BoundaryConfig, abstain: dict[str, ComponentNode],
-                 strict: bool = True):
+                 strict: bool = True, stray: bool = False, opaque: frozenset = frozenset()):
         self.void = frozenset(config.void_tags)
         self.abstain_by_source = abstain
         self.strict = strict
+        # Spec v0.7 section 5b: a stray </p> or </br> is repaired only while every element that may be open is
+        # known. That ends at an abstained region, at a shell's children, and at a slot named in `opaque`.
+        self.certain = strict and stray
+        self.opaque = opaque
         self.tracker = tagtrack.track(outputs, config)
         self.root: list = []
         self.stack: list = []  # MElement / _Frame
@@ -226,7 +230,7 @@ class Builder:
             if isinstance(item, OutputNode):
                 if item.id in self.abstain_by_source:  # e.g. markup_from_expression: opaque, its text is not read
                     self.abstained(item, self.abstain_by_source[item.id])
-                elif item.kind in ("call", "children"):
+                elif item.kind in ("call", "children", "include"):
                     self.slot(item)
                 else:
                     self.output(item)
@@ -266,12 +270,18 @@ class Builder:
         if self.state != "data":
             raise GenerationError("markup_not_generatable", f"abstained region {region_id(item)} inside a tag")
         self.flush_text()
+        self.certain = False
+        container = self.container()
+        if container and isinstance(container[-1], MAbstain) and container[-1].node is node:
+            return  # consecutive unresolved calls are one Stage 2 node: one gap (spec v0.7 section 8a)
         self.append(MAbstain(node, item))
 
     def slot(self, node: OutputNode) -> None:
         if self.state != "data":
             raise GenerationError("markup_not_generatable", f"call {node.id} inside a tag")
         self.flush_text()
+        if node.kind == "children" or node.id in self.opaque:
+            self.certain = False
         self.append(MCall(node))
 
     def loop(self, item: _Loop) -> None:
@@ -581,6 +591,17 @@ class Builder:
                 entry.end, entry.clean = "explicit", not open_inside
                 del self.stack[index:]
                 return
+        if self.certain and name == "br":  # HTML5 "in body": an end tag </br> is treated as a <br> start tag
+            self.append(MElement("br", [], self.tag_node))
+            self.flag("stray_end_tag_repaired", "info", self.tag_node, "</br> is a <br />, as a browser builds it",
+                      self.anchor())
+            return
+        if self.certain and name == "p" and not any(isinstance(e, MElement) and e.tag == "p" for e in self.stack):
+            # HTML5 "in body": </p> with no <p> open inserts a <p> element and closes it at once
+            self.append(MElement("p", [], self.tag_node, end="explicit"))
+            self.flag("stray_end_tag_repaired", "info", self.tag_node,
+                      "</p> with no open <p>: an empty <p></p>, as a browser builds it", self.anchor())
+            return
         self.flag("unmatched_close", "info", self.tag_node, f"</{name}> closes nothing open; dropped (R-L6)",
                   self.anchor())
 
@@ -605,9 +626,11 @@ def _first_output(item) -> OutputNode | None:
     return None
 
 
-def build_page(outputs: list[OutputNode], config: BoundaryConfig, abstain: dict[str, ComponentNode]) -> Markup:
-    """The markup tree of a whole page; abstained regions are opaque."""
-    return Builder(outputs, config, abstain, strict=True).build(_regions(outputs))
+def build_page(outputs: list[OutputNode], config: BoundaryConfig, abstain: dict[str, ComponentNode],
+               stray: bool = False, opaque: frozenset = frozenset()) -> Markup:
+    """The markup tree of a whole page; abstained regions are opaque. `stray` turns on the repair of stray
+    </p> and </br> end tags (spec v0.7 section 5b); `opaque` names the slots after which it stops."""
+    return Builder(outputs, config, abstain, strict=True, stray=stray, opaque=opaque).build(_regions(outputs))
 
 
 def build_region(region, outputs: list[OutputNode], config: BoundaryConfig,

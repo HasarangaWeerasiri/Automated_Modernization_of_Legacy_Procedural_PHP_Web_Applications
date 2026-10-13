@@ -313,6 +313,9 @@ class Generator:
         walk(self.tree.root, "0", None)
         nodes = self.order
         self.abstain = {n.source_ids[0]: n for n in nodes if n.type == "Abstain"}
+        for n in nodes:  # consecutive unresolved calls are one Abstain node: each of its slots leads to it
+            if n.type == "Abstain" and n.reason == "unresolved_call":
+                self.abstain.update(dict.fromkeys(n.source_ids, n))
         self.lists = [n for n in nodes if n.type == "List"]
         self.r_l5 = {n.source_ids[0] for n in nodes if n.rule == "R-L5"}
         self.r_i7 = {n.source_ids[0] for n in nodes if n.rule == "R-I7"}  # only inline JS: not a boundary
@@ -738,8 +741,19 @@ class Generator:
             stack += list(self.react.extends.get(name, ()))
         return None
 
-    def prop_name(self, tag: str, name: str) -> str | None:
+    def fixed_value(self, el: MElement) -> bool:
+        """Spec v0.7 section 5: `value` on a submit / button / reset / image / hidden / checkbox / radio input is
+        a label or a fixed value, not form state. A `type` that is not literal is not known to be one of them."""
+        kind = next((a for a in el.attrs if a.name == "type"), None)
+        if el.tag != "input" or kind is None or not all(isinstance(p, str) for p in kind.parts or []):
+            return False
+        return html.unescape("".join(kind.parts or [])).strip().lower() in self.config.fixed_value_input_types
+
+    def prop_name(self, el: MElement, name: str) -> str | None:
+        tag = el.tag
         renamed = self.config.form_state.get(tag, {}).get(name) or self.config.attribute_renames.get(name)
+        if renamed and name == "value" and self.fixed_value(el):
+            renamed = None  # stays `value`
         if renamed:
             return renamed
         stack, seen = [self.react.elements[tag]], set()
@@ -775,7 +789,7 @@ class Generator:
                 if attr is not None:
                     out.append(attr)
                 continue
-            prop = self.prop_name(el.tag, name)
+            prop = self.prop_name(el, name)
             kinds = self.prop_kinds(el.tag, prop) if prop is not None else None
             if prop is not None and kinds is None and "-" in prop and not prop.startswith("aria-"):
                 kinds = "s"  # TypeScript does not check hyphenated JSX attribute names it does not know
@@ -861,6 +875,10 @@ class Generator:
 
     def attribute_if(self, part, ctx: _Ctx, marks: list):
         branches, otherwise, failures = [], '""', []
+        if part.branches and part.branches[0][0].branch != "then":
+            # The `then` arm prints nothing, so the timeline does not carry its condition: when the other arms
+            # apply is not known.
+            failures.append(("condition_unavailable", part.if_id))
         for enclosure, parts in part.branches:
             value, inner = self.template(parts, ctx, marks)
             failures += inner
@@ -989,7 +1007,7 @@ class Generator:
             contents.append(self.nodes(branch.children, ctx))
         if not any(contents):
             return []  # renders nothing whatever the condition says
-        branches, otherwise = [], None
+        branches, otherwise = self.silent_then(mif, ctx, marks), None
         for branch, content in zip(mif.branches, contents):
             if branch.enclosure.branch == "else":
                 otherwise = content
@@ -1001,6 +1019,16 @@ class Generator:
             self.cond_marks[id(stage2_node)] = (ctx.file, mark, ctx.function, ctx.in_abstained)
         return [jsx.Cond(branches, otherwise, marks=tuple(marks))]
 
+    def silent_then(self, mif: MIf, ctx: _Ctx, marks: list) -> list:
+        """The `then` arm of an if whose `then` prints nothing: [(its condition, no content)], else [].
+
+        Only arms that print are in the timeline, and an `else` carries no condition text (Member 01 Q2). So an
+        if that prints only in its `elseif` / `else` arms still starts with its `then` arm here, which renders
+        nothing; its condition is not available (`condition_unavailable`)."""
+        if not mif.branches or mif.branches[0].enclosure.branch == "then":
+            return []
+        return [(self.unresolved(mif.if_id, "condition_unavailable", ctx, marks), [])]
+
     def guard(self, mif: MIf, ctx: _Ctx) -> list:
         """R-I2: the List's guard. The loop's branch renders the List; any other branch is an Empty."""
         lst, marks = ctx.list_node, []
@@ -1008,7 +1036,7 @@ class Generator:
         empties = [c for c in lst.children if c.type == "Empty"]
         iter_expr = loop.enclosure.iter_expr
         guard_var = iter_expr if iter_expr and re.fullmatch(r"\$[A-Za-z_]\w*", iter_expr) else None
-        branches, otherwise = [], None
+        branches, otherwise = self.silent_then(mif, ctx, marks), None
         for branch in mif.branches:
             self.place_markup_flags(branch, ctx, marks)
             enc = branch.enclosure
@@ -1098,7 +1126,11 @@ class Generator:
         node = item.node
         source = node.source_ids[0]
         if isinstance(item.region, OutputNode) and app_units.is_slot(item.region):
-            return [self.todo(source, node.reason, ctx, "a call whose output is not generated here")]
+            count = len(node.source_ids)  # consecutive unresolved calls are one gap, listing all their ids
+            kind = "an include" if item.region.kind == app_units.INCLUDE else "a call"
+            detail = f"{kind} whose output is not generated here" if count == 1 else \
+                f"{count} consecutive calls / includes whose output is not generated here: one gap"
+            return [self.todo(",".join(node.source_ids), node.reason, ctx, detail)]
         todo = self.todo(source, node.reason, ctx, "Stage 2 abstained; content in " + f"Abstained_{safe_id(source)}()")
         ctx.pending.append((item, ctx.row))  # the row in scope where the region stands (e.g. an R-L3 row)
         return [todo]
@@ -1314,7 +1346,7 @@ class Generator:
         page = self.file(self.root_path)
         key = page.mark()
         try:
-            markup = build_page(self.outputs, self.boundary_config, self.abstain)
+            markup = build_page(self.outputs, self.boundary_config, self.abstain, *self.stray_repair())
             repair(markup)  # spec v0.6 section 5b: what a browser builds from this markup
             ctx = _Ctx(file=page, markup=markup, boundary=self.boundaries(markup), function=self.root_name,
                        function_key=key)
@@ -1356,6 +1388,17 @@ class Generator:
                 page.entries.append(_Entry("flag", "sql_interpolated_values", "sql_interpolated_values", INFO,
                                            query.node_id, " ".join(query.sql.split())[:120], key, "Page", False))
         return self.result()
+
+    def stray_repair(self) -> tuple[bool, frozenset]:
+        """Whether a stray </p> / </br> may be repaired in this unit, and the slots after which it may not.
+
+        A function's stray end tag may close an element its caller opened, so only a file's top level is
+        repaired; and not after the call of a shell header that leaves a <p> open."""
+        stray = self.timeline.function is None and self.layout.mode != "component"
+        opaque = set()
+        if self.shell is not None and "p" in self.units.functions[self.shell.header].open_tags:
+            opaque.add(self.shell.header_call)
+        return stray, frozenset(opaque)
 
     def stage2_reviews(self, page: _File, page_key: str) -> None:
         """Stage 2's review statuses carry through to the flag file (spec section 6)."""
@@ -1545,7 +1588,8 @@ class Generator:
             fallback = {f.name: marks.get(f.key, 1) for f in file.functions}
             for e in file.entries:
                 line = marks.get(e.mark) or fallback.get(e.function, 1)
-                node = self.output_by_id.get(e.node_id) or self.part_owner.get(e.node_id)
+                node = self.output_by_id.get(e.node_id) or self.part_owner.get(e.node_id) \
+                    or self.calls.get(e.node_id.split(",")[0])  # a call site (the first of a merged run)
                 part = self.parts_by_id.get(e.node_id)
                 if part is not None and part.loc is not None:  # an expression part: its own position
                     node = replace(node, loc=part.loc)

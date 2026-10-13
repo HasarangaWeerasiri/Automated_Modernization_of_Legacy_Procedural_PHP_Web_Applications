@@ -6,8 +6,8 @@ fully determine are applied to the markup tree before it is generated:
 
   implicit <tbody>   `<tr>` directly inside `<table>`: each run of rows is wrapped in a `<tbody>`
                      (what "in table" insertion mode builds). A loop whose body is only `<tr>`
-                     elements lies inside the run. A run with no static `<tr>` is left alone: the
-                     `<tbody>` would then exist only when the loop yields a row.
+                     elements lies inside the run, and (spec v0.7) is a run by itself too: the
+                     `.map()` goes inside the `<tbody>`.
   implicit </p>      an open `<p>` is closed before a block start tag ("close a p element"). The
                      block element and what follows it move out, after the `<p>`; the `</p>` that
                      was written for it then has no `<p>` to close, so it makes an empty `<p>`,
@@ -71,9 +71,11 @@ def _wrap_rows(table: MElement, flags: list) -> None:
     def close() -> None:
         while run and _blank(run[-1]):  # trailing whitespace stays outside the tbody
             tail.insert(0, run.pop())
-        if any(isinstance(c, MElement) for c in run):  # at least one static <tr>: the tbody always exists
-            body = MElement("tbody", [], next(c for c in run if isinstance(c, MElement)).node_id, parent=table,
-                            end="explicit")
+        if any(not _blank(c) for c in run):  # static rows, a loop of rows (spec v0.7), or both
+            first = next(c for c in run if not _blank(c))
+            if isinstance(first, MLoop):
+                first = next(c for c in first.children if isinstance(c, MElement))
+            body = MElement("tbody", [], first.node_id, parent=table, end="explicit")
             body.children = list(run)
             for child in run:
                 child.parent = body

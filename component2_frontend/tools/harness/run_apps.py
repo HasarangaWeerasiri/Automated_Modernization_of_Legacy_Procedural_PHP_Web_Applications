@@ -3,9 +3,11 @@
 An app's timelines are not independent: a page calls functions, and a header / footer pair wraps
 pages (boundary-rules section 4). So an app is run as a set of units:
 
-  page         a file's top-level output -> app/(<group>)/<path>/page.tsx
+  page         a file's top-level output -> app/(<group>)/<route>/page.tsx; the route is the file's path
+               from the app's document root, without ".php", and index.php is its directory
   component    a function that is called and is tag-balanced (R-F1) -> components/<Name>.tsx
-  shell        a header / footer pair (R-F2) -> components/<H>Shell.tsx + app/(<h>)/layout.tsx
+  shell        a header / footer pair, functions or included files (R-F2)
+               -> components/<H>Shell.tsx + app/(<h>)/layout.tsx
   not called   a function with output that no page calls (or that is not a component): run on its
                own so it is still checked, but it is not part of the app
 
@@ -15,12 +17,15 @@ For each app this writes, under output/apps/<app>/:
   next-app/                                                       every unit's files as one app
   index.json                                                      every unit, any crash, its tsc errors
 
+`next build` (--next-build) writes its result beside the app's folder, output/apps/<app>.next-build.json,
+with a hash of the app it built: index.json and the app's folder are the same bytes whether or not it ran.
+
 No labels file exists for whole apps, so every node is unlabelled (CONTEXT hard rule 3); no contract
 or endpoint map exists, so every page is no_endpoint. A unit that makes a stage raise is recorded
 as a crash, with the error, and the run goes on: a crash is a bug to fix, not a reason to stop.
 
 Usage, from component2_frontend/:
-    venv/Scripts/python.exe tools/harness/run_apps.py            # hms and wackopicko
+    venv/Scripts/python.exe tools/harness/run_apps.py            # every app of the active corpus
     venv/Scripts/python.exe tools/harness/run_apps.py hms --no-tsc
     venv/Scripts/python.exe tools/harness/run_apps.py --next-build   # also `next build` each app once
 """
@@ -85,10 +90,24 @@ def run_page(timeline_path: Path, folder: Path, config, generation_config, contr
     return {"nodes": len(timeline.sequence)}
 
 
+def route_of(path: str, docroot: str = "") -> tuple[str, str]:
+    """(route, name stem) of a page: its path from the document root without ".php"; index.php is its directory
+    (generation-spec v0.7 section 8a). The stem names the page's components and keeps `index`."""
+    relative = path[len(docroot) + 1:] if docroot and path.startswith(docroot + "/") else path
+    relative = relative.removesuffix(".php")
+    route = "" if relative == "index" else relative.removesuffix("/index")
+    return route, app_units.pascal(relative)
+
+
+def _label(document: dict) -> str:
+    """A function's name, or an included file's base name."""
+    return document["function"]["name"] if "function" in document else document["entrypoint"].rsplit("/", 1)[-1]
+
+
 def _shell_document(header: dict, footer: dict) -> dict:
     """The header's and the footer's harness timelines as one document, for the reports."""
     return {
-        "entrypoint": f"{header['entrypoint']}+{footer['function']['name']}",
+        "entrypoint": f"{header['entrypoint']}+{_label(footer)}",
         "schemaVersion": header["schemaVersion"],
         "sequence": header["sequence"] + footer["sequence"],
         "queries": {**header["queries"], **footer["queries"]},
@@ -117,8 +136,11 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, bu
             f.write(dump_timeline(page.timeline))
         loaded[page.key] = loader.load_timeline(page_folder / "timeline.json")
         raw[page.key] = page.timeline
-    units = app_units.analyse(list(loaded.values()), config)
-    key_of = {t.function.node_id: key for key, t in loaded.items() if t.function is not None}
+    prefix = timelines.prefix + "/" if timelines.prefix else ""
+    file_names = {prefix + page.path: route_of(page.path, timelines.docroot)[0] or "index"
+                  for page in timelines.pages if page.function is None}
+    units = app_units.analyse(list(loaded.values()), config, file_names)
+    key_of = {t.function.node_id if t.function is not None else t.entrypoint: key for key, t in loaded.items()}
 
     # ---- the units to run: (key, path, function label, role, timeline, layout, units or None)
     plan = []
@@ -126,16 +148,16 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, bu
         timeline = loaded[page.key]
         base = {"key": page.key, "path": page.path, "function": page.function,
                 "entrypoint": page.timeline["entrypoint"]}
-        if timeline.function is None:
-            route = page.path.removesuffix(".php")
+        if timeline.function is None and timeline.entrypoint not in units.shell_functions:
+            route, stem = route_of(page.path, timelines.docroot)
 
-            def layout(tree, route=route):
+            def layout(tree, route=route, stem=stem):
                 group = units.shells[tree.root.shell.header].group if tree.root.shell else PLAIN_GROUP
-                return stage5.UnitLayout(mode="page", route=f"{group}/{route}", stem=app_units.pascal(route))
+                return stage5.UnitLayout(mode="page", route=f"{group}/{route}" if route else group, stem=stem)
 
-            plan.append((base | {"role": "page"}, timeline, layout, units))
+            plan.append((base | {"role": "page", "route": "/" + route}, timeline, layout, units))
             continue
-        unit = units.functions[timeline.function.node_id]
+        unit = units.functions[timeline.function.node_id if timeline.function is not None else timeline.entrypoint]
         if unit.node_id in units.shell_functions:
             shell = units.shells.get(unit.node_id) or units.shell_of_footer(unit.node_id)
             plan.append((base | {"role": "shell_part", "partOf": shell.name}, None, None, None))
@@ -147,7 +169,7 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, bu
     for shell in units.shells.values():
         header_key, footer_key = key_of[shell.header], key_of[shell.footer]
         header_page = next(p for p in timelines.pages if p.key == header_key)
-        label = f"{raw[header_key]['function']['name']}+{raw[footer_key]['function']['name']}"
+        label = f"{_label(raw[header_key])}+{_label(raw[footer_key])}"
         key = page_key(header_page.path, label)
         (folder / key).mkdir(parents=True)
         with (folder / key / "timeline.json").open("w", encoding="utf-8", newline="\n") as f:
@@ -156,7 +178,7 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, bu
                                    props=tuple((name, kind) for name, kind, _ in shell.props))
         plan.append(({"key": key, "path": header_page.path, "function": label, "role": "shell",
                       "component": shell.name, "group": shell.group,
-                      "entrypoint": f"{raw[header_key]['entrypoint']}+{raw[footer_key]['function']['name']}"},
+                      "entrypoint": f"{raw[header_key]['entrypoint']}+{_label(raw[footer_key])}"},
                      app_units.shell_timeline(shell, units), layout, units))
 
     # ---- run them
@@ -168,6 +190,7 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, bu
             continue
         entry["nodes"] = len(timeline.sequence)
         entry["calls"] = sum(c.kind == "call" for c in timeline.calls)
+        entry["includes"] = sum(c.kind == "include" for c in timeline.calls)
         try:
             tree, _ = run_stages(timeline, folder / entry["key"], config, generation_config, contract, unit_facts,
                                  layout)
@@ -223,21 +246,20 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, bu
                 if entry["key"] in errors:
                     entry["tsc"] = errors[entry["key"]]
             unattributed += errors.get("", 0)
-    built = None
     if build and app_dir.exists() and compile_check.unavailable() is None:
+        # Kept out of index.json and of the app's folder: a run is the same bytes whether or not it built.
         ok, text = compile_check.next_build(timelines.app, app_dir)
-        built = {"ok": ok, "output": text}
+        compile_check.write_build(output, timelines.app, app_dir, ok, text)
 
     index = {
         "app": timelines.app, "sourceCommit": APPS.get(timelines.app, {}).get("commit", ""),
-        "files": timelines.files,
+        "docroot": timelines.docroot, "files": timelines.files,
         "pages": pages, "silentFiles": list(timelines.silent), "parseErrors": timelines.parse_errors,
         "schemaFiles": list(timelines.schema_files), "functions": timelines.functions or {},
         "shells": [{"name": s.name, "group": s.group, "header": s.header, "footer": s.footer,
                     "props": [list(p) for p in s.props]} for s in units.shells.values()],
         "appFiles": sorted(owners), "collisions": collisions,
         "tscRan": tsc_output is not None, "tscUnattributed": unattributed, "tscOutput": tsc_output or "",
-        "nextBuild": built,
     }
     with (folder / "index.json").open("w", encoding="utf-8", newline="\n") as f:
         f.write(json.dumps(index, indent=2, ensure_ascii=False) + "\n")
@@ -271,8 +293,9 @@ def main(argv: list[str]) -> int:
             print(f"  TSC   {page['key']}: {page['tsc']} errors")
         for line in index["collisions"]:
             print(f"  COLLISION {line}")
-        if index["nextBuild"] is not None:
-            print(f"  next build: {'ok' if index['nextBuild']['ok'] else 'FAILED'}")
+        built = compile_check.read_build(OUTPUT, app, OUTPUT / app / NEXT_APP) if build else None
+        if built is not None:
+            print(f"  next build: {'ok' if built['ok'] else 'FAILED'}")
         failed += len(crashes) + len(index["collisions"])
     return 1 if failed else 0
 

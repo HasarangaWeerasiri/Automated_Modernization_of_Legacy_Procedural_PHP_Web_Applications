@@ -254,12 +254,24 @@ class _Builder:
                 out.append(self.node("Static", (), "static", list(run)))
             run.clear()
 
+        def flush_calls():
+            if unresolved:  # spec v0.7 section 8a: consecutive unresolved calls are one gap
+                out.append(self.abstain("unresolved_call", list(unresolved), tuple(k.node_id for k in unresolved)))
+            unresolved.clear()
+
+        unresolved: list[KeptNode] = []
         for k in nodes:
             if _is_call(k):
                 flush()
                 run_attribute = None
-                out.append(self.call(k))
+                node = self.call(k)
+                if node.status == "abstain" and node.reason == "unresolved_call":
+                    unresolved.append(k)
+                else:
+                    flush_calls()
+                    out.append(node)
                 continue
+            flush_calls()
             if k.output.parts and self.tags[k.node_id].dynamic_in_name:
                 # boundary-rules section 1: an expression in a tag-name or attribute-name position
                 flush()
@@ -272,6 +284,7 @@ class _Builder:
             run.append(k)
             run_attribute = attribute
         flush()
+        flush_calls()
         return out
 
     def call(self, k: KeptNode) -> ComponentNode:
@@ -282,6 +295,14 @@ class _Builder:
         if self.tags[k.node_id].in_tag_before:
             return self.abstain("call_in_attribute", [k], source)
         unit = self.units.functions.get(entry.callee) if entry.callee else None
+        if entry.kind == app_units.INCLUDE:
+            # An included file is a unit only as half of a shell pair (R-F2), which the page takes care of.
+            # Anywhere else its output is not in this timeline, and no rule places it here (section 5).
+            if unit is None:  # not a file of the app, or a file whose own output cannot be followed
+                return self.abstain("unresolved_call", [k], source)
+            if not unit.balanced:
+                return self.abstain("tag_crosses_function", [k], source, ("R-F2",))
+            return self.abstain("cross_file_output", [k], source)
         if unit is None or entry.outputs_inside == "unknown":  # no single callee, or output that cannot be followed
             return self.abstain("unresolved_call", [k], source)
         if unit.recursive:
@@ -317,7 +338,21 @@ class _Builder:
             if not outside:
                 children += self.items(group)
                 continue
-            for item in group:
+            i = 0
+            while i < len(group):
+                item = group[i]
+                if _is_call(item):
+                    # A call or include that is itself a gap keeps its own reason (nothing of it is generated
+                    # anyway); one that would print here is output outside the shell.
+                    j = i
+                    while j < len(group) and _is_call(group[j]):
+                        j += 1
+                    for node in self.leaves(group[i:j]):
+                        children.append(node if node.status == "abstain" else self.abstain(
+                            "output_outside_shell", [k for k in group[i:j] if k.node_id in node.node_ids],
+                            node.source_ids, ("R-F2",)))
+                    i = j
+                    continue
                 if isinstance(item, KeptNode) and _blank(item):
                     children += self.leaves([item])
                 elif isinstance(item, KeptNode):
@@ -325,6 +360,7 @@ class _Builder:
                 else:
                     source = item.node_id if isinstance(item, _If) else item.enclosure.node_id
                     children.append(self.abstain("output_outside_shell", _flat([item]), (source,), ("R-F2",)))
+                i += 1
         return ShellUse(pair.header, header.node_id, footer.node_id), children
 
     # ---- ifs
@@ -453,15 +489,21 @@ class _Builder:
 
         label = region.enclosure.label
         common = {"reason": reason, "container": container, "loop_concern": label.concern.value if label else None}
+        def judged(item) -> bool:
+            """Something in the row that has a node of its own: an if or loop, a call, or an echo with an
+            expression where a tag or attribute name is written (section 1: markup_from_expression)."""
+            return (not isinstance(item, KeptNode) or _is_call(item)
+                    or bool(item.output.parts and self.tags[item.node_id].dynamic_in_name))
+
         if not roots:  # R-L3b: text and expressions only -> an inline map of keyed Fragments, no Item component
-            regions = [item for item in region.items if not isinstance(item, KeptNode) or _is_call(item)]
+            regions = [item for item in region.items if judged(item)]
             children = self.items(region.items) if regions else ()
             return common | {"rules": ("R-L1", container_rule, "R-L3b"),
                              "child": self.node("Static", ("R-L3b",), "inline_text_map", nodes, (), children)}
         if len(roots) == 1 and tagtrack.element_count(run) == 1:  # R-L3: stays an inline map
             # v0.7 scope: R-L3 decides only that there is no Item component. An if in the row is judged by the
             # if rules like any other (an inline map whose body holds one gets those nodes as children).
-            regions = [item for item in region.items if not isinstance(item, KeptNode) or _is_call(item)]
+            regions = [item for item in region.items if judged(item)]
             children = self.items(region.items) if regions else ()
             return common | {"rules": ("R-L1", container_rule, "R-L3"),
                              "child": self.node("Static", ("R-L3",), "inline_map", nodes, (), children)}

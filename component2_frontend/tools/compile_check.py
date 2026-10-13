@@ -12,6 +12,7 @@ Usage, from component2_frontend/ (after `npm ci` in output/test-app and a Stage 
 Each run writes output/tsc_<mock>.json (error count), which tools/results_table.py reads.
 """
 
+import hashlib
 import json
 import re
 import shutil
@@ -163,6 +164,35 @@ def check_app(name: str, source: Path) -> tuple[dict[str, int], str]:
 
 
 BUILD_DIR = TEST_APP / "c2-build"  # inside the test app, so its node_modules are found without any link
+
+
+def tree_hash(folder: Path) -> str:
+    """One sha256 over every file of a folder (path and bytes), in sorted order."""
+    digest = hashlib.sha256()
+    for path in sorted(p for p in folder.rglob("*") if p.is_file()):
+        digest.update(path.relative_to(folder).as_posix().encode("utf-8") + b"\0" + path.read_bytes() + b"\0")
+    return digest.hexdigest()
+
+
+def build_record(output: Path, app: str) -> Path:
+    """Where the result of `next build` of an app is kept: beside the app's folder, not in it, so the app's
+    outputs are the same bytes whether or not it was built."""
+    return output / f"{app}.next-build.json"
+
+
+def write_build(output: Path, app: str, app_dir: Path, ok: bool, text: str) -> None:
+    with build_record(output, app).open("w", encoding="utf-8", newline="\n") as f:
+        f.write(json.dumps({"app": app, "ok": ok, "appSha256": tree_hash(app_dir), "output": text}, indent=2,
+                           ensure_ascii=False) + "\n")
+
+
+def read_build(output: Path, app: str, app_dir: Path) -> dict | None:
+    """The recorded `next build` result, only if it is the build of the app that is there now."""
+    path = build_record(output, app)
+    if not path.exists() or not app_dir.exists():
+        return None
+    record = json.loads(path.read_text(encoding="utf-8"))
+    return record if record.get("appSha256") == tree_hash(app_dir) else None
 BUILD_FILES = ("package.json", "tsconfig.json", "next.config.ts", "postcss.config.mjs")
 
 

@@ -435,10 +435,18 @@ def test_rows_directly_in_a_table_get_the_tbody_a_browser_builds(tmp_path):
     assert flag["severity"] == "info"
 
 
-def test_a_table_with_only_loop_rows_is_not_repaired(tmp_path):
-    """The tbody would exist only when the loop yields a row: the result depends on what runs."""
+def test_a_table_with_only_loop_rows_is_repaired_too(tmp_path):
+    """Spec v0.7 section 5b: a List whose Item root is statically <tr>; the .map() goes inside the <tbody>."""
     result = stages(tmp_path, "<table><?php foreach ($rows as $r) { ?><tr><td>x</td></tr><?php } ?></table>")
-    assert "<tbody>" not in result["files"]["components/PageList1.tsx"]
+    component = result["files"]["components/PageList1.tsx"]
+    assert component.index("<tbody>") < component.index("{items.map(") < component.index("</tbody>")
+    assert flag_names(result) == ["implicit_tbody"]
+
+
+def test_a_loop_whose_row_is_not_statically_a_tr_is_not_repaired(tmp_path):
+    php = "<table><?php foreach ($rows as $r) { if ($r) { ?><tr><td>x</td></tr><?php } } ?></table>"
+    result = stages(tmp_path, php)
+    assert "<tbody>" not in "".join(result["files"].values())
     assert flag_names(result) == ["html_nesting_changed"]
 
 
