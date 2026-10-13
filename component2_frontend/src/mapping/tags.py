@@ -49,6 +49,8 @@ class NodeTags:
     in_tag_after: bool
     # Dynamic output of this node lands where a tag name or an attribute name is written (`<$tag>`, `<td $attr>`).
     dynamic_in_name: bool = False
+    # The node prints text a reader sees: character data outside tags and outside script / style / title content.
+    visible_text: bool = False
 
 
 class _Tracker:
@@ -64,6 +66,7 @@ class _Tracker:
         self.tag_node = None  # node in which the tag being read started
         self.events: dict[str, list[TagEvent]] = {}
         self.dynamic_in_name: set[str] = set()  # nodes whose dynamic output lands in a tag or attribute name
+        self.visible_text: set[str] = set()  # nodes that print non-whitespace character data
 
     def feed(self, node_id: str, text: str) -> None:
         self.node = node_id
@@ -85,6 +88,8 @@ class _Tracker:
         if state == "text":
             if ch == "<":
                 self.state = "lt"
+            elif not ch.isspace():
+                self.visible_text.add(self.node)
         elif state == "lt":
             if ch.isascii() and ch.isalpha():
                 self.state, self.buf, self.quote, self.tag_node = "tag", ch, None, self.node
@@ -94,6 +99,7 @@ class _Tracker:
                 self.state, self.buf = "bang", ch
             else:  # a bare "<" in text
                 self.state = "text"
+                self.visible_text.add(self.node)
                 self._char(ch)
         elif state == "tag":
             if self.quote:
@@ -189,7 +195,7 @@ def track(nodes: tuple[OutputNode, ...] | list[OutputNode], config: BoundaryConf
         snapshots.append((node.id, before, (tuple(tracker.stack), tracker.state == "tag")))
     return {
         node_id: NodeTags(node_id, before[0], before[1], tuple(tracker.events[node_id]), after[0], after[1],
-                          node_id in tracker.dynamic_in_name)
+                          node_id in tracker.dynamic_in_name, node_id in tracker.visible_text)
         for node_id, before, after in snapshots
     }
 
@@ -200,6 +206,13 @@ def track(nodes: tuple[OutputNode, ...] | list[OutputNode], config: BoundaryConf
 def element_count(run: list[NodeTags]) -> int:
     """Number of HTML opening tags that start in these nodes (void elements included)."""
     return sum(e.kind in ("open", "void") for t in run for e in t.events)
+
+
+def only_inline_js(run: list[NodeTags]) -> bool:
+    """These nodes print `<script>` elements and nothing else a page shows (boundary rule R-I7)."""
+    elements = [e for t in run for e in t.events if e.kind in ("open", "void")]
+    return bool(elements) and all(e.tag == "script" for e in elements) and not any(t.visible_text for t in run) \
+        and not run[0].in_tag_before
 
 
 def has_unmatched_close(run: list[NodeTags]) -> bool:

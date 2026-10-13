@@ -23,6 +23,8 @@ How the rules are applied:
           size: R-I4 inline (up to small_if_max_elements), R-I5 its own
           component (fallback_component_min_elements or more). R-I6 merges
           adjacent small ifs in one element. R-I1 is decided at page level.
+  R-I7    An if or loop whose only output is inline JS (`<script>`, which
+          Stage 5 drops) has nothing to render: not a boundary, like R-L5.
 
 Labels and statuses (boundary-rules.md sections 4a and 5):
   - An abstaining if still shows what is inside it: its children are built.
@@ -41,14 +43,28 @@ piece: its literal text goes through the tag tracker like inline HTML. An
 expression part where a tag name or an attribute name is written cannot be
 generated: that echo abstains (`markup_from_expression`).
 
-Not implemented: R-F1 and R-F2 (function and layout components), blocked on
-whether a page's timeline includes the output of the functions it calls.
+Functions and layout (boundary-rules section 4), only when the app's units
+(src/mapping/app_units.py) are given - a single timeline cannot show them:
+
+  calls   A call entry that may print takes its place among the output nodes
+          as an empty slot. R-F1: a call of a function that is a component ->
+          FunctionCall. No single callee, or output that cannot be followed ->
+          abstain unresolved_call. A recursive function -> abstain
+          recursive_function. A function whose tags are not balanced, outside
+          a shell pair -> abstain tag_crosses_function.
+  R-F1b   In a function's own timeline, a loop whose container is not open in
+          the function (the caller opens it) -> a List without wrapper.
+  R-F2    A page that calls a shell pair's header and, later, its footer, both
+          at the page's top level (the level inside an R-I1 page guard counts)
+          -> the Page is wrapped in that shell. Output before the header or
+          after the footer -> abstain output_outside_shell.
 """
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
+from src.mapping import app_units
 from src.mapping import tags as tagtrack
 from src.model import (
     BoundaryConfig,
@@ -59,7 +75,9 @@ from src.model import (
     KeptNode,
     Label,
     ListContainer,
+    OutputNode,
     PresentationResult,
+    ShellUse,
     Status,
     Timeline,
     TreeCounts,
@@ -144,20 +162,29 @@ def _flat(items: list) -> list[KeptNode]:
     return nodes
 
 
+def _is_call(item) -> bool:
+    """A call site's slot among the output nodes."""
+    return isinstance(item, KeptNode) and item.node_type == "call"
+
+
 def _blank(node: KeptNode) -> bool:
     """Whitespace-only inline HTML."""
-    return node.output.raw is not None and node.output.raw.strip() == ""
+    return not _is_call(node) and node.output.raw is not None and node.output.raw.strip() == ""
 
 
 # ----------------------------------------------------------------------------- the rules
 
 
 class _Builder:
-    def __init__(self, outputs: list[KeptNode], review: dict[str, str], config: BoundaryConfig):
+    def __init__(self, outputs: list[KeptNode], review: dict[str, str], config: BoundaryConfig,
+                 timeline: Timeline | None = None, units=None):
         self.outputs = outputs
         self.review = review  # Stage 1 review reason by node id
         self.config = config
         self.tags = tagtrack.track([k.output for k in outputs], config)
+        self.units = units  # the app's function and shell facts; None for a timeline on its own
+        self.calls = {c.id: c for c in timeline.calls} if timeline is not None else {}
+        self.in_function = timeline is not None and timeline.function is not None
 
     def run(self, nodes: list[KeptNode]) -> list[tagtrack.NodeTags]:
         return [self.tags[k.node_id] for k in nodes]
@@ -228,6 +255,11 @@ class _Builder:
             run.clear()
 
         for k in nodes:
+            if _is_call(k):
+                flush()
+                run_attribute = None
+                out.append(self.call(k))
+                continue
             if k.output.parts and self.tags[k.node_id].dynamic_in_name:
                 # boundary-rules section 1: an expression in a tag-name or attribute-name position
                 flush()
@@ -241,6 +273,59 @@ class _Builder:
             run_attribute = attribute
         flush()
         return out
+
+    def call(self, k: KeptNode) -> ComponentNode:
+        """What stands at a call site (boundary-rules section 4, the call-entry table)."""
+        entry, source = self.calls[k.node_id], (k.node_id,)
+        if entry.kind == app_units.CHILDREN:  # the place of the page inside a shell component
+            return self.node("Static", ("R-F2",), "shell_children", [k], source)
+        if self.tags[k.node_id].in_tag_before:
+            return self.abstain("call_in_attribute", [k], source)
+        unit = self.units.functions.get(entry.callee) if entry.callee else None
+        if unit is None or entry.outputs_inside == "unknown":  # no single callee, or output that cannot be followed
+            return self.abstain("unresolved_call", [k], source)
+        if unit.recursive:
+            return self.abstain("recursive_function", [k], source, ("R-F1",))
+        if unit.component is None:  # its tags cross the function boundary, and this call is not part of a shell
+            return self.abstain("tag_crosses_function", [k], source, ("R-F2",))
+        return self.node("FunctionCall", ("R-F1",), "function_component", [k], source, callee=unit.node_id)
+
+    def shell(self, items: list):
+        """R-F2 condition 3 for this page: (ShellUse, the page's children) or (None, None).
+
+        The page calls the header once and, later, the footer once, both at this level, and calls no other
+        header or footer anywhere. What is printed before the header or after the footer abstains."""
+        def callee(item):
+            return self.calls[item.node_id].callee
+
+        tops = [(i, item) for i, item in enumerate(items) if _is_call(item)]
+        headers = [(i, item) for i, item in tops if callee(item) in self.units.shells]
+        if len(headers) != 1:
+            return None, None
+        h, header = headers[0]
+        pair = self.units.shells[callee(header)]
+        footers = [(i, item) for i, item in tops if callee(item) == pair.footer]
+        if len(footers) != 1 or footers[0][0] < h:
+            return None, None
+        f, footer = footers[0]
+        mine = {header.node_id, footer.node_id}
+        if any(_is_call(k) and k.node_id not in mine and callee(k) in self.units.shell_functions
+               for k in self.outputs):
+            return None, None
+        children = []
+        for group, outside in ((items[:h], True), (items[h + 1:f], False), (items[f + 1:], True)):
+            if not outside:
+                children += self.items(group)
+                continue
+            for item in group:
+                if isinstance(item, KeptNode) and _blank(item):
+                    children += self.leaves([item])
+                elif isinstance(item, KeptNode):
+                    children.append(self.abstain("output_outside_shell", [item], (item.node_id,), ("R-F2",)))
+                else:
+                    source = item.node_id if isinstance(item, _If) else item.enclosure.node_id
+                    children.append(self.abstain("output_outside_shell", _flat([item]), (source,), ("R-F2",)))
+        return ShellUse(pair.header, header.node_id, footer.node_id), children
 
     # ---- ifs
 
@@ -262,12 +347,13 @@ class _Builder:
             "crosses": any(not tagtrack.is_balanced(r) for r in runs),
             "loops": loops,
             "blocked": blocked,
+            "only_js": tagtrack.only_inline_js(self.run(nodes)),
         }
 
     def chainable(self, region: _If) -> bool:
         f = self.facts(region)
         return (not f["starts_in_tag"] and not f["crosses"] and not f["loops"] and not f["blocked"]
-                and f["elements"] <= self.config.small_if_max_elements)
+                and not f["only_js"] and f["elements"] <= self.config.small_if_max_elements)
 
     def parent_element(self, region: _If):
         stack = self.tags[self.facts(region)["nodes"][0].node_id].stack_before
@@ -290,6 +376,8 @@ class _Builder:
             return self.node("AttributeExpression", ("R-I3",), "attribute_conditional", nodes, source)
         if f["starts_in_tag"]:
             return self.abstain("partial_attribute_output", nodes, source)
+        if f["only_js"]:  # R-I7: nothing left to render, so no boundary (the JS is flagged by Stage 5)
+            return self.node("Static", ("R-I7",), "only_inline_js", nodes, source)
         if f["crosses"]:
             return self.abstain("tag_crosses_branch", nodes, source, ("R-L6",), self.branch_children(region),
                                 flags=("tag_crosses_branch",))
@@ -337,6 +425,8 @@ class _Builder:
             return self.node("Static", ("R-L5",), "loop_without_output", nodes, source)
         if run[0].in_tag_before:
             return self.abstain("loop_in_attribute", nodes, source)
+        if tagtrack.only_inline_js(run):  # R-I7
+            return self.node("Static", ("R-I7",), "only_inline_js", nodes, source)
         if tagtrack.closes_outer(run):
             reopened = [e.tag for e in run[-1].stack_after] == [e.tag for e in run[0].stack_before]
             if reopened and not run[-1].in_tag_after:  # R-L7
@@ -352,22 +442,26 @@ class _Builder:
             container, container_rule, reason = ListContainer(False, None, None, None), "R-L2b", "item_has_no_wrapper"
         else:  # R-L2a
             outer = [e for e in reversed(run[0].stack_before) if e.tag not in self.config.table_section_tags]
-            if not outer:
+            if not outer and self.in_function:  # R-F1b: the caller opens the container, around the call site
+                container = ListContainer(False, None, None, None)
+                container_rule, reason = "R-F1b", "container_opened_by_caller"
+            elif not outer:
                 return self.abstain("container_undetermined", nodes, source)
-            container = ListContainer(True, outer[0].tag, outer[0].element_id, outer[0].opened_in)
-            container_rule, reason = "R-L2a", "container_is_nearest_open_tag"
+            else:
+                container = ListContainer(True, outer[0].tag, outer[0].element_id, outer[0].opened_in)
+                container_rule, reason = "R-L2a", "container_is_nearest_open_tag"
 
         label = region.enclosure.label
         common = {"reason": reason, "container": container, "loop_concern": label.concern.value if label else None}
         if not roots:  # R-L3b: text and expressions only -> an inline map of keyed Fragments, no Item component
-            regions = [item for item in region.items if not isinstance(item, KeptNode)]
+            regions = [item for item in region.items if not isinstance(item, KeptNode) or _is_call(item)]
             children = self.items(region.items) if regions else ()
             return common | {"rules": ("R-L1", container_rule, "R-L3b"),
                              "child": self.node("Static", ("R-L3b",), "inline_text_map", nodes, (), children)}
         if len(roots) == 1 and tagtrack.element_count(run) == 1:  # R-L3: stays an inline map
             # v0.7 scope: R-L3 decides only that there is no Item component. An if in the row is judged by the
             # if rules like any other (an inline map whose body holds one gets those nodes as children).
-            regions = [item for item in region.items if not isinstance(item, KeptNode)]
+            regions = [item for item in region.items if not isinstance(item, KeptNode) or _is_call(item)]
             children = self.items(region.items) if regions else ()
             return common | {"rules": ("R-L1", container_rule, "R-L3"),
                              "child": self.node("Static", ("R-L3",), "inline_map", nodes, (), children)}
@@ -387,12 +481,16 @@ class _Builder:
         items = _regions(self.outputs)
         regions = [item for item in items if not isinstance(item, KeptNode)]
         others_blank = all(_blank(item) for item in items if isinstance(item, KeptNode))
+        rules, reason, sources, inner = (), "page", (), items
         if len(regions) == 1 and isinstance(regions[0], _If) and len(regions[0].branches) == 1 and others_blank:
             # R-I1: the if wraps everything the page prints, so it is not a component.
             guard = regions[0]
             inner = [x for item in items for x in (guard.branches[0].items if item is guard else [item])]
-            return self.node("Page", ("R-I1",), "page_guard", self.outputs, (guard.node_id,), self.items(inner))
-        return self.node("Page", (), "page", self.outputs, (), self.items(items))
+            rules, reason, sources = ("R-I1",), "page_guard", (guard.node_id,)
+        shell, children = self.shell(inner) if self.units is not None else (None, None)
+        if shell is None:
+            return self.node("Page", rules, reason, self.outputs, sources, self.items(inner))
+        return self.node("Page", (*rules, "R-F2"), reason, self.outputs, sources, children, shell=shell)
 
 
 def _walk(node: ComponentNode):
@@ -401,9 +499,22 @@ def _walk(node: ComponentNode):
         yield from _walk(child)
 
 
-def infer_boundaries(stage1_result: PresentationResult, timeline: Timeline, config: BoundaryConfig) -> ComponentTree:
+def infer_boundaries(stage1_result: PresentationResult, timeline: Timeline, config: BoundaryConfig,
+                     units=None) -> ComponentTree:
+    """`units` (src/mapping/app_units.py) turns on the function and layout rules; without it call entries are
+    not looked at, as for a timeline on its own."""
     order = {node.id: index for index, node in enumerate(timeline.sequence)}
     outputs = sorted((k for k in stage1_result.kept if k.node_type == "output"), key=lambda k: order[k.node_id])
+    if units is not None and app_units.slots(timeline):
+        # Every call that may print gets an empty slot among the output nodes, at its place in the sequence.
+        labels = {e.node_id: e.label for k in outputs for e in k.enclosed_by}
+        order = {node_id: index for index, node_id in enumerate(timeline.order)}
+        for slot in app_units.slots(timeline):
+            enclosed = tuple(replace(e, label=labels.get(e.node_id)) for e in slot.enclosed_by)
+            outputs.append(KeptNode(
+                node_id=slot.id, node_type="call", kind=slot.kind, status=Status.OK, reason="call", label=None,
+                enclosed_by=enclosed, output=OutputNode(slot.id, slot.kind, "", (), enclosed, slot.loc)))
+        outputs.sort(key=lambda k: order[k.node_id])
     # Reviews that carry from an enclosing if or loop to the node built from it. `mixed` is left out:
     # it is information only (section 4a) and is recorded as loop_concern instead. A review on an
     # output node is read from the node itself when its leaf is built.
@@ -412,7 +523,7 @@ def infer_boundaries(stage1_result: PresentationResult, timeline: Timeline, conf
         if k.status is Status.REVIEW and k.node_type != "output"
         and not (k.label is not None and k.label.concern is Concern.MIXED)
     }
-    root = _Builder(outputs, review, config).page()
+    root = _Builder(outputs, review, config, timeline, units).page()
     nodes = list(_walk(root))
     counts = TreeCounts(
         components=sum(n.type in COMPONENT_TYPES for n in nodes),
@@ -451,6 +562,9 @@ def _node_dict(node: ComponentNode) -> dict:
         "elements": node.elements,
         "flags": list(node.flags),
         "nodeIds": list(node.node_ids),
+        **({"callee": node.callee} if node.callee is not None else {}),
+        **({"shell": {"header": node.shell.header, "headerCall": node.shell.header_call,
+                      "footerCall": node.shell.footer_call}} if node.shell is not None else {}),
         "children": [_node_dict(child) for child in node.children],
     }
 

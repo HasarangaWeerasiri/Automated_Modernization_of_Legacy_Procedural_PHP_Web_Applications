@@ -124,6 +124,8 @@ def recover_requirements(component_tree: ComponentTree, timeline: Timeline) -> R
             row_of = parent_list
         if not node.children:
             for node_id in node.node_ids:
+                if node_id not in outputs:  # a call site (boundary rule R-F1): it reads nothing itself
+                    continue
                 loc = outputs[node_id].loc
                 for read in outputs[node_id].reads:
                     for base, wrappers in _base_reads(read):

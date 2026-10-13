@@ -34,7 +34,7 @@ import html
 import json
 import re
 import shutil
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from src.mapping import jsx, nesting
@@ -45,6 +45,7 @@ from src.mapping.markup import (
     Markup,
     MAbstain,
     MBranch,
+    MCall,
     MDynamic,
     MElement,
     MIf,
@@ -54,6 +55,8 @@ from src.mapping.markup import (
     build_region,
     php_literal_text,
 )
+from src.mapping import app_units
+from src.mapping.repair import repair
 from src.mapping.stage3_requirements import _base_reads, _wrapper
 from src.model import (
     BoundaryConfig,
@@ -148,6 +151,32 @@ def css_property(name: str) -> str:
 # ----------------------------------------------------------------------------- per-file and per-function state
 
 
+# The root layout of app/(plain)/: pages that use no shell pair (boundary-rules R-F2, "Route groups").
+PLAIN_LAYOUT = """import type { ReactNode } from "react";
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html>
+      <body>{children}</body>
+    </html>
+  );
+}
+"""
+
+
+@dataclass(frozen=True)
+class UnitLayout:
+    """Where a timeline's code goes in a whole app (roadmap Phase 2b). The default is one page on its own,
+    as for a mock: app/<file name>/page.tsx."""
+
+    mode: str = "page"  # page | component (R-F1: a function) | shell (R-F2: a header / footer pair)
+    route: str = ""  # page: its path under app/, e.g. "(plain)/users/login"
+    stem: str = ""  # PascalCase prefix of the List / Section components this unit owns
+    name: str = ""  # component / shell: the exported function
+    props: tuple = ()  # component / shell: typed props, ((name, "string" | "number"), ...)
+    group: str = ""  # shell: its route group, e.g. "(our_header)"
+
+
 @dataclass
 class _Entry:
     kind: str
@@ -209,6 +238,7 @@ class _Ctx:
     row: _Row | None = None
     preserve: bool = False
     in_abstained: bool = False
+    silent: bool = False  # inside an R-I7 region: nothing is rendered, only its flags are collected
     uses: set = field(default_factory=set)  # props the function reads: items, row, data
     locals: list = field(default_factory=list)
     pending: list = field(default_factory=list)  # abstained functions to write after this one
@@ -238,12 +268,24 @@ class _Value:
 
 class Generator:
     def __init__(self, tree: ComponentTree, requirements: RequirementsResult, report: ReconciliationReport,
-                 contract: Contract, timeline: Timeline, boundary_config: BoundaryConfig, config: GenerationConfig):
+                 contract: Contract, timeline: Timeline, boundary_config: BoundaryConfig, config: GenerationConfig,
+                 units=None, layout: UnitLayout | None = None):
         self.tree, self.report, self.timeline = tree, report, timeline
         self.boundary_config, self.config, self.react = boundary_config, config, config.react
-        self.route = route_of(timeline.entrypoint)
-        self.outputs = [n for n in timeline.sequence if n.id in set(tree.root.node_ids)]
+        self.units, self.layout = units, layout or UnitLayout()
+        self.route = self.layout.route or route_of(timeline.entrypoint)
+        self.root_name = "Page" if self.layout.mode == "page" else self.layout.name
+        self.root_path = f"app/{self.route}/page.tsx" if self.layout.mode == "page" else \
+            f"components/{self.layout.name}.tsx"
+        self.props = dict(self.layout.props)  # typed props of the function component being written
+        self.calls = {c.id: c for c in timeline.calls}
+        self.shell = tree.root.shell  # R-F2: the shell this page's content is wrapped in
+        self.layout_head, self.layout_attrs, self.layout_marks = [], {}, {}  # shell: what goes in layout.tsx
+        merged = app_units.outputs_with_slots(timeline) if units is not None else list(timeline.sequence)
+        self.outputs = [n for n in merged if n.id in set(tree.root.node_ids)]
         self.output_by_id = {n.id: n for n in timeline.sequence}
+        self.parts_by_id = {p.node_id: p for n in timeline.sequence for p in n.parts}
+        self.part_owner = {p.node_id: n for n in timeline.sequence for p in n.parts}
         self.files: dict[str, _File] = {}
         self.generated: dict[int, tuple[str, set]] = {}  # id(component) -> (name, props it takes)
         self.cond_marks: dict[int, str] = {}  # id(Stage 2 conditional) -> (file path, mark) of its first if
@@ -273,6 +315,7 @@ class Generator:
         self.abstain = {n.source_ids[0]: n for n in nodes if n.type == "Abstain"}
         self.lists = [n for n in nodes if n.type == "List"]
         self.r_l5 = {n.source_ids[0] for n in nodes if n.rule == "R-L5"}
+        self.r_i7 = {n.source_ids[0] for n in nodes if n.rule == "R-I7"}  # only inline JS: not a boundary
         self.conds = {}
         for n in nodes:
             if n.type in ("InlineConditional", "ConditionalComponent"):
@@ -304,7 +347,7 @@ class Generator:
 
     def _names(self) -> None:
         self.names, used, lists, sections = {}, set(), 0, 0
-        route = pascal(self.route)
+        route = self.layout.stem or pascal(self.route)
 
         def unique(name):
             candidate, n = name, 2
@@ -375,15 +418,15 @@ class Generator:
         inside it is flagged output_dropped (with why), so no read disappears unlisted."""
         self.place_markup_flags(node, ctx, [])
         if isinstance(node, MDynamic):
-            self.flag(ctx, "output_dropped", REVIEW, node.output.id, "inside a dropped element", reason=why)
+            self.flag(ctx, "output_dropped", REVIEW, _dynamic_id(node), "inside a dropped element", reason=why)
         for part in getattr(node, "content", None) or []:
             if isinstance(part, MDynamic):
-                self.flag(ctx, "output_dropped", REVIEW, part.output.id, "inside a dropped element", reason=why)
+                self.flag(ctx, "output_dropped", REVIEW, _dynamic_id(part), "inside a dropped element", reason=why)
         for attr in getattr(node, "attrs", []):
             for part in attr.parts or []:
                 if isinstance(part, MDynamic):
-                    self.flag(ctx, "output_dropped", REVIEW, part.output.id, f"in {attr.name} of a dropped element",
-                              reason=why)
+                    self.flag(ctx, "output_dropped", REVIEW, _dynamic_id(part),
+                              f"in {attr.name} of a dropped element", reason=why)
         for child in getattr(node, "children", []):
             self.drop_subtree_flags(child, ctx, why)
         for branch in getattr(node, "branches", []):
@@ -444,6 +487,9 @@ class Generator:
         if isinstance(item, MDynamic):
             self.emitted_in.setdefault(item.output.id, (ctx.file, ctx.function, ctx.function_key, ctx.in_abstained))
             return self.dynamic(item, ctx)
+        if isinstance(item, MCall):
+            self.emitted_in.setdefault(item.node.id, (ctx.file, ctx.function, ctx.function_key, ctx.in_abstained))
+            return self.slot(item, ctx)
         if isinstance(item, MElement):
             return self.element(item, ctx)
         if isinstance(item, MLoop):
@@ -453,6 +499,46 @@ class Generator:
         if isinstance(item, MAbstain):
             return self.abstained(item, ctx)
         raise TypeError(item)
+
+    def slot(self, item: MCall, ctx: _Ctx) -> list:
+        """What is written at a call site (boundary-rules section 4, the call-entry table)."""
+        node = item.node
+        if self.shell is not None and node.id in (self.shell.header_call, self.shell.footer_call):
+            return []  # the shell component is written around the page's content instead (page_body)
+        if node.kind == app_units.CHILDREN:
+            ctx.uses.add("children")
+            return [jsx.Expr("children")]
+        call = self.calls[node.id]
+        unit = self.units.functions.get(call.callee) if call.callee else None
+        if unit is None or unit.component is None:  # Stage 2 abstains on these; kept as a last line of defence
+            return [self.todo(node.id, "unresolved_call", ctx)]
+        ctx.file.use(self.component_module(ctx.file, unit.component), unit.component)
+        return [jsx.Element(unit.component, self.prop_attrs(unit.props, call))]
+
+    def prop_attrs(self, props, call) -> list:
+        """A call's literal arguments as the props of the function component it calls."""
+        values = app_units.prop_values(props, self.units.timelines[call.callee], call)
+        return [jsx.Attr(name, value) if kind == "string" else jsx.Attr(name, code=repr(value))
+                for name, kind, value in values]
+
+    def page_body(self, children: list, ctx: _Ctx) -> list:
+        """A page's content; inside a shell pair (R-F2) what lies between the two calls is the shell's children."""
+        shell = self.shell
+        calls = [i for i, c in enumerate(children) if isinstance(c, MCall) and shell is not None
+                 and c.node.id in (shell.header_call, shell.footer_call)]
+        if len(calls) != 2:
+            return self.nodes(children, ctx)
+        first, last = calls
+        unit = self.units.shells[shell.header]
+        before, inside, after = (self.nodes(part, ctx) for part in (
+            children[:first], children[first + 1:last], children[last + 1:]))
+        attrs = []
+        for function, call_id in ((unit.header, shell.header_call), (unit.footer, shell.footer_call)):
+            attrs += self.prop_attrs([(n, t) for n, t, owner in unit.props if owner == function], self.calls[call_id])
+        ctx.file.use(self.component_module(ctx.file, unit.name), unit.name)
+        for child in (children[first], children[last]):
+            self.emitted_in.setdefault(child.node.id, (ctx.file, ctx.function, ctx.function_key, ctx.in_abstained))
+        return [*before, jsx.Element(unit.name, attrs, inside), *after]
 
     def text(self, item: MText, ctx: _Ctx) -> list:
         decoded = html.unescape(item.text)
@@ -486,6 +572,8 @@ class Generator:
             if text is None or wrappers:
                 return _Value(todo="expression_not_translatable")
             return _Value(text=text)
+        if read.source_kind == "unresolved" and read.var and not read.path and read.var[1:] in self.props:
+            return _Value(code=read.var[1:], wrappers=tuple(wrappers))  # a parameter that is a typed prop (R-F1)
         result = self.results.get((output.id, read.expr))
         if result is None:
             return _Value(todo="no_stage4_result", wrappers=tuple(wrappers))
@@ -522,9 +610,10 @@ class Generator:
 
     def dynamic(self, item: MDynamic, ctx: _Ctx) -> list:
         output = item.output
+        node_id = _dynamic_id(item)  # spec v0.6: one expression of an echo string has its own (AST) id
         marks = []
         if not self.escaped(output):
-            marks.append(self.flag(ctx, "escaping_changed", INFO, output.id,
+            marks.append(self.flag(ctx, "escaping_changed", INFO, node_id,
                                    "unescaped in PHP; React escapes it (an expected difference)"))
         value = self.value(output, ctx)
         if value.text is not None:
@@ -533,13 +622,13 @@ class Generator:
             detail = f"wrappers: {', '.join(value.wrappers)}" if value.wrappers else ""
             if item.part is not None:  # one expression of an echo string: say which
                 detail = f"part {item.part.expr}" + (f"; {detail}" if detail else "")
-            node = self.todo(output.id, value.todo, ctx, detail)
+            node = self.todo(node_id, value.todo, ctx, detail)
             node.marks = tuple(marks) + node.marks
             return [node]
         code = value.code
         for wrapper in value.wrappers:
             code += f" /* TODO(C2): {wrapper} */"
-            marks.append(self.flag(ctx, "unsupported_wrapper", REVIEW, output.id, f"{wrapper}() not applied"))
+            marks.append(self.flag(ctx, "unsupported_wrapper", REVIEW, node_id, f"{wrapper}() not applied"))
         return [jsx.Expr(code, marks=tuple(marks))]
 
     # ---- elements and attributes
@@ -547,6 +636,12 @@ class Generator:
     def element(self, el: MElement, ctx: _Ctx) -> list:
         tag, marks = el.tag, []
         self.emitted_in.setdefault(el.node_id, (ctx.file, ctx.function, ctx.function_key, ctx.in_abstained))
+        if self.layout.mode == "shell" and tag == "head":  # R-F2: its literal parts go to the group's layout.tsx
+            return self.shell_head(el, ctx)
+        if self.layout.mode == "shell" and tag in self.config.document_shell_tags:
+            self.layout_attrs[tag], self.layout_marks[tag] = self.shell_attributes(el, ctx)
+            self.place_markup_flags(el, ctx, [])
+            return self.nodes(el.children, ctx)
         if tag in self.config.dropped_tags:
             flag = self.config.dropped_tags[tag]
             self.flag(ctx, flag, REVIEW, el.node_id, f"<{tag}> and its content dropped")
@@ -582,6 +677,54 @@ class Generator:
                 children[0] = jsx.Text(children[0].text[1:], marks=children[0].marks)  # HTML drops that newline
         self.place_markup_flags(el, ctx, marks)
         return [jsx.Element(tag, attrs, children, marks=tuple(marks))]
+
+    # ---- the shell's document parts (R-F2): app/(<h>)/layout.tsx
+
+    def layout_ctx(self, ctx: _Ctx) -> _Ctx:
+        file = self.file(f"app/{self.layout.group}/layout.tsx")
+        if not file.functions:
+            file.functions.append(_Function("RootLayout", "", [], [], file.mark()))
+        return _Ctx(file=file, markup=ctx.markup, boundary={}, function="RootLayout",
+                    function_key=file.functions[0].key)
+
+    def shell_head(self, el: MElement, ctx: _Ctx) -> list:
+        """<head> of a shell header: every child that is literal goes into the layout; a child with anything
+        dynamic in it is left out and flagged document_shell."""
+        layout, literal = self.layout_ctx(ctx), []
+        for child in el.children:
+            if _is_static(child):
+                literal.append(child)
+            else:
+                self.flag(ctx, "document_shell", REVIEW, getattr(child, "node_id", el.node_id),
+                          "dynamic content in <head> is not in app/layout.tsx")
+                self.drop_subtree_flags(child, ctx, "document_shell")
+        self.layout_head = self.nodes(literal, layout)
+        self.place_markup_flags(el, layout, [])
+        return []
+
+    def shell_attributes(self, el: MElement, ctx: _Ctx) -> tuple[list, tuple]:
+        """The literal attributes of <html> / <body>, written for the layout; a dynamic one is flagged."""
+        layout, marks = self.layout_ctx(ctx), []
+        for a in el.attrs:
+            if any(not isinstance(part, str) for part in a.parts or []):
+                self.flag(ctx, "document_shell", REVIEW, a.node_id, f"dynamic {a.name} on <{el.tag}> is not in "
+                          "app/layout.tsx")
+        literal = replace(el, attrs=[a for a in el.attrs if all(isinstance(p, str) for p in a.parts or [])])
+        return self.attributes(literal, layout, marks), tuple(marks)
+
+    def write_layout(self) -> None:
+        """The root layout of the shell's route group: <html>, <head> and <body> as the header wrote them."""
+        file = self.file(f"app/{self.layout.group}/layout.tsx")
+        if not file.functions:
+            file.functions.append(_Function("RootLayout", "", [], [], file.mark()))
+        function = file.functions[0]
+        file.use("react", "ReactNode", type_only=True)
+        function.header = "export default function RootLayout({ children }: { children: ReactNode }) {"
+        head = [jsx.Element("head", [], self.layout_head)] if self.layout_head else []
+        body = jsx.Element("body", self.layout_attrs.get("body", []), [jsx.Expr("children")],
+                           marks=self.layout_marks.get("body", ()))
+        function.body = [jsx.Element("html", self.layout_attrs.get("html", []), [*head, body],
+                                     marks=self.layout_marks.get("html", ()))]
 
     def prop_kinds(self, tag: str, prop: str) -> str | None:
         stack, seen = [self.react.elements[tag], "AriaAttributes"], set()
@@ -619,8 +762,8 @@ class Generator:
                 marks.append(self.flag(ctx, "inline_js_dropped", REVIEW, a.node_id, f"{name} on <{el.tag}>"))
                 continue
             if name in seen:
-                marks.append(self.flag(ctx, "duplicate_attribute_dropped", INFO, a.node_id,
-                                       f"second {name} on <{el.tag}> (HTML keeps the first)"))
+                marks.append(self.flag(ctx, "duplicate_attribute", INFO, a.node_id,
+                                       f"second {name} on <{el.tag}> dropped: a browser keeps the first"))
                 continue
             seen.add(name)
             omitted = self.config.omitted_attributes.get(el.tag, {}).get(name)
@@ -693,21 +836,21 @@ class Generator:
             if isinstance(part, str):
                 pieces.append(("text", html.unescape(part)))
             elif isinstance(part, MDynamic):
-                output = part.output
+                output, node_id = part.output, _dynamic_id(part)
                 self.emitted_in.setdefault(output.id, (ctx.file, ctx.function, ctx.function_key, ctx.in_abstained))
                 if not self.escaped(output):
-                    marks.append(self.flag(ctx, "escaping_changed", INFO, output.id,
+                    marks.append(self.flag(ctx, "escaping_changed", INFO, node_id,
                                            "unescaped in PHP; React escapes it (an expected difference)"))
                 value = self.value(output, ctx)
                 if value.text is not None:
                     pieces.append(("text", value.text))
                 elif value.code is None:
-                    failures.append((value.todo, output.id))
+                    failures.append((value.todo, node_id))
                 else:
                     code = value.code
                     for wrapper in value.wrappers:
                         code += f" /* TODO(C2): {wrapper} */"
-                        marks.append(self.flag(ctx, "unsupported_wrapper", REVIEW, output.id,
+                        marks.append(self.flag(ctx, "unsupported_wrapper", REVIEW, node_id,
                                                f"{wrapper}() not applied"))
                     pieces.append(("code", code))
             else:  # MAttrIf: an if inside the value (R-I3)
@@ -797,7 +940,7 @@ class Generator:
     def scope(self, ctx: _Ctx, guard_var: str | None = None) -> Scope:
         row = ctx.row
         return Scope(row_var=row.php_var if row else None, row_fields=row.fields if row else None,
-                     guard_var=guard_var)
+                     guard_var=guard_var, props=tuple(self.props.items()))
 
     def note_condition_uses(self, code: str, ctx: _Ctx) -> None:
         if re.search(r"\brow\b", code):
@@ -823,7 +966,14 @@ class Generator:
 
     def if_(self, mif: MIf, ctx: _Ctx) -> list:
         if mif.if_id == self.page_guard:  # R-I1: the page renders normally
-            return self.nodes(mif.branches[0].children, ctx)
+            return self.page_body(mif.branches[0].children, ctx)
+        if mif.if_id in self.r_i7 or ctx.silent:  # R-I7: only inline JS inside; its flags are placed, nothing more
+            silent = ctx.child(silent=True, row=None)
+            for branch in mif.branches:
+                self.place_markup_flags(branch, silent, [])
+                self.nodes(branch.children, silent)
+            self.place_markup_flags(mif, silent, [])
+            return []
         lst = ctx.list_node
         if lst is not None and len(lst.source_ids) > 1 and lst.source_ids[1] == mif.if_id:
             return self.guard(mif, ctx)
@@ -886,6 +1036,11 @@ class Generator:
             return self.list_map(mloop, ctx)
         if loop_id in self.r_l5:  # R-L5: a loop that prints nothing is not a boundary
             return []
+        if loop_id in self.r_i7 or ctx.silent:  # R-I7: the same, for a loop that prints only inline JS
+            silent = ctx.child(silent=True, row=None)
+            self.place_markup_flags(mloop, silent, [])
+            self.nodes(mloop.children, silent)
+            return []
         if ctx.in_abstained:  # an abstained loop, written out for the developer over an empty list
             rows = f"rows_{safe_id(loop_id)}"
             ctx.locals.append(f"const {rows}: Record<string, unknown>[] = [];")
@@ -942,6 +1097,8 @@ class Generator:
     def abstained(self, item: MAbstain, ctx: _Ctx) -> list:
         node = item.node
         source = node.source_ids[0]
+        if isinstance(item.region, OutputNode) and app_units.is_slot(item.region):
+            return [self.todo(source, node.reason, ctx, "a call whose output is not generated here")]
         todo = self.todo(source, node.reason, ctx, "Stage 2 abstained; content in " + f"Abstained_{safe_id(source)}()")
         ctx.pending.append((item, ctx.row))  # the row in scope where the region stands (e.g. an R-L3 row)
         return [todo]
@@ -953,6 +1110,7 @@ class Generator:
         name = f"Abstained_{safe_id(source)}"
         try:
             markup = build_region(item.region, self.outputs, self.boundary_config, self.abstain)
+            repair(markup)
         except GenerationError as e:
             self.flag(ctx, "abstained_code_not_generated", INFO, source, e.detail, mark=ctx.function_key)
             return
@@ -1025,7 +1183,7 @@ class Generator:
         # have no Stage 2 node); outside the loop, the container may hold only what Stage 2 put in this List.
         allowed = set(lst.node_ids) | {s for n in _walk(lst) for s in n.source_ids}
         for inner in _markup_walk(root, skip=loop):
-            owner = inner.output.id if isinstance(inner, MDynamic) else (
+            owner = inner.output.id if isinstance(inner, MDynamic) else inner.node.id if isinstance(inner, MCall) else (
                 inner.enclosure.node_id if isinstance(inner, MLoop) else inner.if_id if isinstance(inner, MIf) else
                 inner.node.source_ids[0] if isinstance(inner, MAbstain) else None)
             if owner is not None and owner not in allowed:
@@ -1110,6 +1268,20 @@ class Generator:
         source = component.source_ids[0] if component.source_ids else component.node_ids[0]
         return [self.todo(source, error.reason, ctx, f"{component.type} {name}: {error.detail}")]
 
+    def unit_signature(self, file: _File) -> str:
+        """The props of a function component (its typed props) or of a shell (children, then its typed props)."""
+        names, types = [], []
+        if self.layout.mode == "shell":
+            file.use("react", "ReactNode", type_only=True)
+            names.append("children")
+            types.append("children?: ReactNode")  # optional: a page may print nothing between header and footer
+        for name, kind in self.layout.props:
+            names.append(name)
+            types.append(f"{name}: {kind}")
+        if not names:
+            return ""
+        return "{ " + ", ".join(names) + " }: { " + "; ".join(types) + " }"
+
     def signature(self, props: set, row: _Row | None, required: tuple = (), component=None) -> str:
         names, types = [], []
         if "items" in props:
@@ -1139,27 +1311,37 @@ class Generator:
     # ---- the page
 
     def run(self) -> GenerationResult:
-        page = self.file(f"app/{self.route}/page.tsx")
+        page = self.file(self.root_path)
         key = page.mark()
         try:
             markup = build_page(self.outputs, self.boundary_config, self.abstain)
-            ctx = _Ctx(file=page, markup=markup, boundary=self.boundaries(markup), function="Page", function_key=key)
+            repair(markup)  # spec v0.6 section 5b: what a browser builds from this markup
+            ctx = _Ctx(file=page, markup=markup, boundary=self.boundaries(markup), function=self.root_name,
+                       function_key=key)
             self.queue_markup_flags(markup)
-            body = self.nodes(markup.children, ctx)
+            body = self.page_body(markup.children, ctx)
             self.place_markup_flags(None, ctx, [])
         except GenerationError as e:  # the last resort: the whole page is one C2Todo, never a guess
             self.files = {page.path: page}
             for state in (page.entries, page.functions, page.imports, page.type_imports, self.generated,
                           self.cond_marks, self.emitted_in, self.pending_flags):
                 state.clear()
-            ctx = _Ctx(file=page, markup=Markup([], {}, {}, []), boundary={}, function="Page", function_key=key)
+            self.layout_head, self.layout_attrs, self.layout_marks = [], {}, {}
+            ctx = _Ctx(file=page, markup=Markup([], {}, {}, []), boundary={}, function=self.root_name,
+                       function_key=key)
             body = [self.todo("page", e.reason, ctx, e.detail)]
-        if self.page_gap is not None:
+        unit = self.layout.mode != "page"  # a function component or a shell: no fetch, its own props
+        if self.page_gap is not None and not unit:
             body.insert(0, self.todo("page", self.page_gap, ctx))
-        fetch = "data" in ctx.uses
-        header = f"export default {'async ' if fetch else ''}function Page() {{"
-        page.functions.insert(0, _Function("Page", header, (
+        fetch = "data" in ctx.uses and not unit
+        if unit:
+            header = f"export function {self.root_name}({self.unit_signature(page)}) {{"
+        else:
+            header = f"export default {'async ' if fetch else ''}function Page() {{"
+        page.functions.insert(0, _Function(self.root_name, header, (
             [f"const data = await {self.fetch_name}();"] if fetch else []) + ctx.locals, body, key))
+        if self.layout.mode == "shell":
+            self.write_layout()
         if fetch:
             page.use(self.lib(page, "api"), self.fetch_name)
         for pending in ctx.pending:
@@ -1185,7 +1367,7 @@ class Generator:
             else:
                 first = next((n for n in node.node_ids if n in self.emitted_in), None)
                 file, function, mark, in_abstained = self.emitted_in[first] if first else (
-                    page, "Page", page_key, False)
+                    page, self.root_name, page_key, False)
             file.entries.append(_Entry("flag", "stage2_review", node.reason, REVIEW, ",".join(node.source_ids),
                                        f"{node.type} {self.ids[id(node)]}", mark, function, in_abstained))
 
@@ -1316,6 +1498,10 @@ class Generator:
                     out.append(nesting.TEXT)
                 elif isinstance(item, jsx.Element) and item.tag == "C2Todo":
                     continue
+                elif isinstance(item, jsx.Element) and item.tag[:1].isupper() and item.tag not in functions:
+                    # a function component or a shell of another unit: checked with its own unit; here only
+                    # what this unit puts inside it
+                    out += build(item.children, file, function)
                 elif isinstance(item, jsx.Element) and item.tag[:1].isupper():  # a component: its output here
                     called, called_file = functions[item.tag]
                     out += build(called.body, called_file, called.name)
@@ -1333,10 +1519,10 @@ class Generator:
                     out += build(item.body, file, function)
             return out
 
-        roots = [name for name in functions if name == "Page" or name.startswith("Abstained_")]
-        for root in sorted(roots, key=lambda name: (name != "Page", name)):
+        roots = [name for name in functions if name == self.root_name or name.startswith("Abstained_")]
+        for root in sorted(roots, key=lambda name: (name != self.root_name, name)):
             top, top_file = functions[root]
-            in_abstained = root != "Page"
+            in_abstained = root != self.root_name
             for difference in nesting.compare(build(top.body, top_file, root),
                                               frozenset(self.boundary_config.void_tags)):
                 element, file, function = difference.owner or (None, top_file, root)
@@ -1359,7 +1545,10 @@ class Generator:
             fallback = {f.name: marks.get(f.key, 1) for f in file.functions}
             for e in file.entries:
                 line = marks.get(e.mark) or fallback.get(e.function, 1)
-                node = self.output_by_id.get(e.node_id)
+                node = self.output_by_id.get(e.node_id) or self.part_owner.get(e.node_id)
+                part = self.parts_by_id.get(e.node_id)
+                if part is not None and part.loc is not None:  # an expression part: its own position
+                    node = replace(node, loc=part.loc)
                 severity, if_rendered = severity_of(e.kind, e.flag, e.status, e.in_abstained)
                 entry = GenerationEntry(
                     kind=e.kind, flag=e.flag, reason=e.reason, status=e.status, file=path, line=line,
@@ -1376,7 +1565,7 @@ class Generator:
         components = []
         for node in [self.tree.root] + [n for n in self.order if n.type in COMPONENT_FILES]:
             if node is self.tree.root:
-                name, path = "Page", f"app/{self.route}/page.tsx"
+                name, path = self.root_name, self.root_path
             elif id(node) in self.generated:
                 name = self.names[id(node)]
                 path = f"components/{name}.tsx"
@@ -1388,6 +1577,25 @@ class Generator:
         return GenerationResult(entrypoint=self.timeline.entrypoint, route=self.route, files=tuple(files),
                                 components=tuple(components), todos=tuple(sorted(todos, key=order)),
                                 flags=tuple(sorted(flags, key=order)))
+
+
+def _is_static(node) -> bool:
+    """Markup with nothing dynamic anywhere in it: text and elements only, literal attributes and content."""
+    if isinstance(node, MText):
+        return True
+    if not isinstance(node, MElement):
+        return False
+    if any(not isinstance(part, str) for a in node.attrs for part in a.parts or []):
+        return False
+    if any(not isinstance(part, str) for part in node.content or []):
+        return False
+    return all(_is_static(child) for child in node.children)
+
+
+def _dynamic_id(item: MDynamic) -> str:
+    """The id a C2Todo or flag for this output carries: the part's AST node for one expression of an echo
+    string (spec v0.6), the output statement's id otherwise."""
+    return item.part.node_id if item.part is not None else item.output.id
 
 
 def _split_declarations(style: str) -> list[str]:
@@ -1449,8 +1657,11 @@ def _markup_walk(node, skip=None):
 
 
 def generate(tree: ComponentTree, requirements: RequirementsResult, report: ReconciliationReport, contract: Contract,
-             timeline: Timeline, boundary_config: BoundaryConfig, config: GenerationConfig) -> GenerationResult:
-    return Generator(tree, requirements, report, contract, timeline, boundary_config, config).run()
+             timeline: Timeline, boundary_config: BoundaryConfig, config: GenerationConfig, units=None,
+             layout: UnitLayout | None = None) -> GenerationResult:
+    """`units` and `layout` place the timeline in a whole app (function components, shells, route groups);
+    without them it is generated as one page on its own."""
+    return Generator(tree, requirements, report, contract, timeline, boundary_config, config, units, layout).run()
 
 
 def write_files(result: GenerationResult, directory: Path) -> list[Path]:

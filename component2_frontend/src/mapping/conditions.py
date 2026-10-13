@@ -65,6 +65,8 @@ class Scope:
     row_code: str = "row"
     guard_var: str | None = None  # an R-I2 guard's list variable (the loop's iterExpr), e.g. "$comments"
     items_code: str = "items"
+    # Typed props of the function component being written (R-F1 / R-F2): (name without "$", "string" | "number").
+    props: tuple[tuple[str, str], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -207,6 +209,10 @@ class _Parser:
         if name == self.scope.guard_var and self.peek(1) != ("op", "["):
             self.take()
             return _Node(f"{self.scope.items_code}.length > 0", _TS["<"], "boolean")
+        props = dict(self.scope.props)
+        if name[1:] in props and self.peek(1) != ("op", "["):  # a parameter that is a typed prop: its own value
+            self.take()
+            return _Node(name[1:], _TS_PRIMARY, props[name[1:]])
         raise NotTranslatable()
 
     def truth(self, node: _Node) -> _Node:

@@ -528,7 +528,8 @@ def test_a_call_site_is_a_sequence_entry_in_source_order(tmp_path):
     names = timeline["callNames"]
     assert [(names[c["id"]], c["outputsInside"], c["loc"]["startLine"]) for c in calls(timeline)] == [
         ("table", True, 9), ("helper", False, 9), ("view::title", True, 9)]  # table prints through row()
-    assert all(set(c) == {"id", "kind", "callee", "outputsInside", "enclosedBy", "loc"} for c in calls(timeline))
+    assert all(set(c) == {"id", "kind", "callee", "outputsInside", "enclosedBy", "loc", "args"}
+               for c in calls(timeline))
     title = calls(timeline)[2]
     assert title["callee"] == found["View.title"]["_provenance"]["functionNodeId"]  # the function's AST node
     assert all(c["enclosedBy"] == [] for c in calls(timeline))  # strlen: PHP's own function, no entry
@@ -670,11 +671,18 @@ def apps_output(tmp_path_factory):
 
 def test_every_page_of_both_apps_runs_without_a_crash(apps_output):
     _, indexes = apps_output
-    assert {app: (index["files"], len(index["pages"])) for app, index in indexes.items()} == {
-        "hms": (29, 33), "wackopicko": (49, 33)}
+    def roles(index):
+        return tuple(sum(p["role"] == role for p in index["pages"]) for role in (
+            "page", "component", "shell", "not_called", "shell_part"))
+
+    # units: pages, function components (R-F1), shells (R-F2), functions not in the app; and the two functions
+    # that are one shell (they have no unit of their own)
+    assert {app: (index["files"], roles(index)) for app, index in indexes.items()} == {
+        "hms": (29, (26, 2, 0, 5, 0)), "wackopicko": (49, (29, 2, 1, 0, 2))}
     for index in indexes.values():
         assert [p["key"] for p in index["pages"] if p["crash"]] == []
-        assert index["parseErrors"] == {}
+        assert index["parseErrors"] == {} and index["collisions"] == []
+    assert [s["name"] for s in indexes["wackopicko"]["shells"]] == ["OurHeaderShell"] and not indexes["hms"]["shells"]
 
 
 def test_every_page_of_both_apps_compiles(apps_output):
@@ -682,7 +690,8 @@ def test_every_page_of_both_apps_compiles(apps_output):
     if compile_check.unavailable():
         pytest.skip(f"compile check skipped: {compile_check.unavailable()}")
     for index in indexes.values():
-        assert index["tscRan"] and [(p["key"], p["tsc"]) for p in index["pages"] if p["tsc"] != 0] == []
+        assert index["tscRan"] and index["tscUnattributed"] == 0, index["tscOutput"]
+        assert [(p["key"], p["tsc"]) for p in index["pages"] if p["role"] != "shell_part" and p["tsc"] != 0] == []
 
 
 def test_libraries_are_excluded_and_only_discovery_apps_are_configured(apps_output):
@@ -693,19 +702,25 @@ def test_libraries_are_excluded_and_only_discovery_apps_are_configured(apps_outp
 
 def test_whole_app_totals(apps_output):
     """Nodes, S2 components / abstain / review, S5 todo / review / info. Phase 1 and 1b: hms (269, 59, 8, 180,
-    133, 397, 230). Phase 2a: three one-echo rows and one text-only loop are Lists now (4 abstains fewer, 7
-    components more), and each cell of an echo string is its own gap (more todos, finer ones)."""
+    133, 397, 230). Phase 2a: hms (269, 66, 4, 188, 179, 405, 295), wackopicko (383, 58, 4, 278, 164, 276, 113).
+    Phase 2b: function components and the shell; in HMS the 4 caller-opened loops are Lists (R-F1b) and the 15
+    TCPDF method calls are unresolved_call; in WackoPicko header and footer are one shell unit."""
     output, indexes = apps_output
     totals = {}
     for app, index in indexes.items():
-        rows = [apps_results_table.page_row(output / app, entry) for entry in index["pages"]]
+        rows = [apps_results_table.page_row(output / app, entry) for entry in index["pages"]
+                if entry["role"] != "shell_part"]
         totals[app] = tuple(sum(r[key] for r in rows) for key in ("nodes", "components", "abstain", "review", "todo",
                                                                     "s5review", "info"))
-    assert totals == {"hms": (269, 66, 4, 188, 179, 405, 295), "wackopicko": (383, 58, 4, 278, 164, 276, 113)}
+    assert totals == {"hms": (269, 68, 15, 174, 202, 391, 285), "wackopicko": (383, 57, 5, 307, 156, 299, 120)}
     hms = [apps_results_table.page_row(output / "hms", entry) for entry in indexes["hms"]["pages"]]
-    assert (sum(r["review_unlabelled"] for r in hms), sum(r["review_other"] for r in hms)) == (184, 4)
-    assert (sum(r["s5review_unlabelled"] for r in hms), sum(r["s5review_other"] for r in hms)) == (184, 221)
-    assert not [r["abstains"] for r in hms if "no_rule" in r["abstains"]]
+    assert (sum(r["review_unlabelled"] for r in hms), sum(r["review_other"] for r in hms)) == (171, 3)
+    assert (sum(r["s5review_unlabelled"] for r in hms), sum(r["s5review_other"] for r in hms)) == (171, 220)
+    reasons = {}
+    for r in hms:
+        for reason, n in r["abstains"].items():
+            reasons[reason] = reasons.get(reason, 0) + n
+    assert reasons == {"unresolved_call": 15}  # the TCPDF method calls; no container_undetermined, no no_rule
 
 
 def test_hms_select_star_reads_are_expanded_from_its_own_schema(apps_output):

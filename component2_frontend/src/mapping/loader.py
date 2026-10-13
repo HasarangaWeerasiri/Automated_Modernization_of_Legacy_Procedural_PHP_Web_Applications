@@ -11,12 +11,15 @@ from pathlib import Path
 from src.model import (
     Ast,
     AstNode,
+    CallArg,
     CallEntry,
     Concern,
     Contract,
     EchoPart,
     Enclosure,
     Endpoint,
+    FunctionInfo,
+    FunctionParam,
     EndpointRef,
     Label,
     Loc,
@@ -117,10 +120,12 @@ def _check_parts(entry: dict, where: str) -> None:
         raise ValueError(f"{where}: parts must be a list")
     for part in parts:
         kind = part.get("kind") if isinstance(part, dict) else None
-        if kind not in PART_KEYS or set(part) != PART_KEYS[kind]:
+        if kind not in PART_KEYS or not PART_KEYS[kind] <= set(part) <= PART_KEYS[kind] | {"loc"}:
             raise ValueError(f"{where}: part {part!r} is not a literal {{kind, value, nodeId}} or an expr "
                              "{kind, expr, nodeId, read}")
         _check_node_id(part["nodeId"], f"{where} part")
+        if "loc" in part:
+            _check_loc(part["loc"], f"{where} part {part['nodeId']}")
         if kind == "literal":
             if not isinstance(part["value"], str):
                 raise ValueError(f"{where}: a literal part's value is its text")
@@ -130,6 +135,30 @@ def _check_parts(entry: dict, where: str) -> None:
                     or not last < index < len(reads):
                 raise ValueError(f"{where}: an expr part names its own read by index, in order")
             last = index
+
+
+def _check_argument(arg, where: str) -> None:
+    """A call argument or parameter default (harness extension): a typed literal, or an expression's source."""
+    literal = isinstance(arg, dict) and arg.get("kind") == "literal" and set(arg) == {"kind", "type", "value"} \
+        and arg["type"] in ("string", "number")
+    expression = isinstance(arg, dict) and arg.get("kind") == "expr" and set(arg) == {"kind", "expr"} \
+        and isinstance(arg["expr"], str)
+    if not (literal or expression):
+        raise ValueError(f"{where}: {arg!r} is not {{kind: literal, type, value}} or {{kind: expr, expr}}")
+
+
+def _check_function(function, where: str) -> None:
+    """`function` on a function's own timeline (harness extension): its node id, name and parameters."""
+    if not isinstance(function, dict) or set(function) != {"nodeId", "name", "params"} \
+            or not isinstance(function["name"], str) or not isinstance(function["params"], list):
+        raise ValueError(f"{where}: function needs exactly nodeId, name and params")
+    _check_node_id(function["nodeId"], f"{where} function")
+    for param in function["params"]:
+        if not isinstance(param, dict) or not {"name", "default"} <= set(param) <= {"name", "default", "readOnly"} \
+                or not isinstance(param["name"], str) or not isinstance(param.get("readOnly", False), bool):
+            raise ValueError(f"{where}: parameter {param!r} needs name and default, and optionally readOnly")
+        if param["default"] is not None:
+            _check_argument(param["default"], f"{where} default of {param['name']}")
 
 
 def _check_loc(loc, where: str) -> None:
@@ -171,6 +200,8 @@ def load_timeline_json(path: Path) -> dict:
         raise ValueError(f"{path}: timeline is missing top-level keys {missing}")
     if timeline["schemaVersion"] != SCHEMA_VERSION:
         raise ValueError(f"{path}: schemaVersion {timeline['schemaVersion']!r}, expected {SCHEMA_VERSION!r}")
+    if "function" in timeline:
+        _check_function(timeline["function"], str(path))
 
     for qid, query in timeline.get("queries", {}).items():
         _check_node_id(qid, f"{path}: queries")
@@ -189,8 +220,11 @@ def load_timeline_json(path: Path) -> dict:
         seen.add(eid)
         if entry.get("kind") == CALL_KIND:
             required = {"id", "kind", "enclosedBy", "callee", "outputsInside"}
-            if not required <= set(entry) <= required | {"loc"}:
-                raise ValueError(f"{where}: call keys {sorted(entry)}; expected {sorted(required)} and optionally loc")
+            if not required <= set(entry) <= required | {"loc", "args"}:
+                raise ValueError(f"{where}: call keys {sorted(entry)}; expected {sorted(required)} and optionally "
+                                 "loc / args")
+            for arg in entry.get("args", []):
+                _check_argument(arg, f"{where} argument")
             if entry["callee"] is not None:
                 _check_node_id(entry["callee"], f"{where} callee")
             if not isinstance(entry["outputsInside"], bool) and entry["outputsInside"] != "unknown":
@@ -275,6 +309,10 @@ def _read(d: dict) -> Read:
     )
 
 
+def _argument(d: dict) -> CallArg:
+    return CallArg(kind=d["kind"], type=d.get("type"), value=d.get("value"), expr=d.get("expr"))
+
+
 def _enclosure(d: dict) -> Enclosure:
     if d["role"] == "iteration":
         return Enclosure(node_id=d["nodeId"], kind=d["kind"], role="iteration", iter_expr=d["iterExpr"],
@@ -299,15 +337,22 @@ def load_timeline(path: Path) -> Timeline:
             enclosed_by=tuple(_enclosure(x) for x in e["enclosedBy"]),
             loc=_loc(e.get("loc")),
             parts=tuple(EchoPart(kind=p["kind"], node_id=p["nodeId"], value=p.get("value"), expr=p.get("expr"),
-                                 read=p.get("read")) for p in e.get("parts", ())),
+                                 read=p.get("read"), loc=_loc(p.get("loc"))) for p in e.get("parts", ())),
         )
         for e in doc["sequence"] if e["kind"] != CALL_KIND
     )
     calls = tuple(
         CallEntry(id=e["id"], callee=e["callee"], outputs_inside=e["outputsInside"],
-                  enclosed_by=tuple(_enclosure(x) for x in e["enclosedBy"]), loc=_loc(e.get("loc")))
+                  enclosed_by=tuple(_enclosure(x) for x in e["enclosedBy"]), loc=_loc(e.get("loc")),
+                  args=None if "args" not in e else tuple(_argument(a) for a in e["args"]))
         for e in doc["sequence"] if e["kind"] == CALL_KIND
     )
+    function = doc.get("function")
+    if function is not None:
+        function = FunctionInfo(function["nodeId"], function["name"], tuple(
+            FunctionParam(p["name"], None if p["default"] is None else _argument(p["default"]),
+                          p.get("readOnly", False))
+            for p in function["params"]))
     queries = {
         qid: Query(node_id=qid, line=q["line"], sql=q["sql"], tables=tuple(q["tables"]),
                    columns=None if q["columns"] is None else tuple(q["columns"]), result_var=q["resultVar"],
@@ -315,7 +360,8 @@ def load_timeline(path: Path) -> Timeline:
         for qid, q in doc.get("queries", {}).items()
     }
     return Timeline(entrypoint=doc["entrypoint"], schema_version=doc["schemaVersion"], sequence=sequence,
-                    queries=queries, provenance=doc.get("_provenance", {}), calls=calls)
+                    queries=queries, provenance=doc.get("_provenance", {}), calls=calls, function=function,
+                    order=tuple(e["id"] for e in doc["sequence"]))
 
 
 def load_labels(path: Path) -> dict[str, Label]:

@@ -309,7 +309,7 @@ def test_a_row_printed_by_one_echo_string_becomes_a_list_and_an_item(tmp_path):
     assert item_file.count('reason="no_endpoint"') == 2  # each cell is its own gap: $id, $name
     todos = [t for t in result["stage5"]["c2todos"] if t["file"] == "components/PageList1Item.tsx"]
     assert sorted(t["detail"] for t in todos) == ["part $id", "part $name"]  # which piece of the echo
-    assert {(t["sourceLine"], t["sourceCol"]) for t in todos} == {(6, 3)}  # the echo statement
+    assert {(t["sourceLine"], t["sourceCol"]) for t in todos} == {(7, 15), (8, 25)}  # each part's own position
 
 
 def test_an_expression_inside_an_attribute_value_of_an_echo_string(tmp_path):

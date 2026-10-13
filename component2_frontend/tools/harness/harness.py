@@ -52,6 +52,7 @@ piece, in order. Roadmap Phase 2a adds three more inputs, each conservative and 
       An interpolation anywhere else leaves the read unresolved.
 """
 
+import posixpath
 import re
 from dataclasses import dataclass, field
 
@@ -81,10 +82,16 @@ COND_EXPR_NOTE = ("Member 01's convention (Q2): condExpr on then/elseif branch e
                   "if/elseif `cond` node; condNodeId is that node's id.")
 CALLS_NOTE = ("Member 01 Q4 (proposed): a call site is a sequence entry {kind: \"call\", callee, outputsInside}; no "
               "output is inlined. callee is the called function's node id, or null when the call is not resolved to "
-              "one function of the app (a method call on an object, a dynamic call, a name defined more than once). "
-              "outputsInside is true, false or \"unknown\" (the callee, or something it calls, cannot be followed). "
-              "Calls of PHP's own functions have no entry. Harness extensions: `callNames` (call id -> the name as "
-              "written) and `includes` (every include/require, with node id, line and enclosedBy).")
+              "one function of the app (a method call on an object, a dynamic call, a name that several files "
+              "define and the file's literal includes do not narrow to one). outputsInside is true, false or "
+              "\"unknown\" (the callee, or something it calls, cannot be followed). Calls of PHP's own functions have "
+              "no entry. Harness extensions: `args` on a call entry (each argument as {kind: \"literal\", type, value} "
+              "or {kind: \"expr\", expr}), `function` on a function's timeline ({nodeId, name, params: [{name, default, readOnly}]}), `callNames` "
+              "(call id -> the name as written) and `includes` (every include/require, with node id, line and "
+              "enclosedBy).")
+RESOLUTION_NOTE = ("boundary-rules v0.11 section 4: a name defined in several files resolves only through the calling "
+                   "file's own literal includes, followed transitively; exactly one reachable definition -> that "
+                   "function, otherwise callee null.")
 SELECT_STAR_NOTE = ("Member 01 Q1 (proposed): a single-table SELECT * is resolved only when the app ships a schema "
                     "(.sql with CREATE TABLE) that declares the table; such reads carry basis \"schema-expanded\". "
                     "Otherwise it is ambiguous.")
@@ -93,7 +100,8 @@ QUERIES_NOTE = ("Agent extension: `queries` holds the SQL of every query a read 
 PARTS_NOTE = ("Harness extension, pending Member 01 Q16: `parts` on an echo/print entry lists what it prints in "
               "source order, taken from the AST: {kind: \"literal\", value, nodeId} (value is the PHP-decoded text) "
               "or {kind: \"expr\", expr, nodeId, read} (read is the index of this part's read in `reads`). nodeId "
-              "is the AST node of the part. An echo that cannot be split exactly has no parts.")
+              "is the AST node of the part and loc is that node's loc. An echo that cannot be split exactly has no "
+              "parts.")
 COPY_NOTE = ("Harness extension, pending Member 01 Q17: a read of $v right after `$v = $row['k'];` (same block, no "
              "branch, no assignment to $v or $row and no call taking either as an argument in between) is "
              "`computed` with derivedFrom = the read of $row['k'].")
@@ -170,6 +178,7 @@ class _Scope:
     name: str | None  # None: the file's top level
     line: int = 1
     node_id: str | None = None  # the function's AST node; None for the top level
+    params: list = field(default_factory=list)  # {name, default}: default is a literal, an expr, or None
     outputs: list = field(default_factory=list)  # (node, kind, chain, enclosures)
     defs: dict = field(default_factory=dict)  # "$name" -> [_Def]
     breakers: list = field(default_factory=list)  # positions of include / extract / eval
@@ -251,6 +260,14 @@ class FileHarness:
     def quoted(self, node: _N) -> bool:
         """A '...' or "..." string (not a heredoc or nowdoc)."""
         return self.source[node.start:node.start + 1] in (b"'", b'"')
+
+    def argument(self, node: _N) -> dict:
+        """A call argument or a parameter default: a literal with its value, or an expression as written."""
+        if _is(node, "Scalar_String") and self.quoted(node):
+            return {"kind": "literal", "type": "string", "value": node.get("value")}
+        if _is(node, "Scalar_Int", "Scalar_Float"):
+            return {"kind": "literal", "type": "number", "value": node.get("value")}
+        return {"kind": "expr", "expr": self.node_text(node)}
 
     def header_text(self, node: _N) -> str:
         """A C-style for's header expressions as written: from the first one to the last one."""
@@ -354,12 +371,13 @@ class FileHarness:
                 scope.notes.append({"kind": "output_buffering", "line": line, "col": col,
                                     "detail": "ob_start()"})
             for argument in _args(node):  # a call may change a variable it is given (by reference)
-                if _variable(argument):
+                if _variable(argument) and callee not in ESCAPE_WRAPPERS:  # (those take their value by copy)
                     scope.arguments.setdefault(_variable(argument), []).append(argument.start)
             # plain: a call by plain function name, which is PHP's own function when the app does not define it
             scope.calls.append({"node": node, "name": callee, "enclosures": list(enclosures),
                                 "plain": kind == "Expr_FuncCall" and callee is not None
-                                and callee not in DYNAMIC_CALLERS})
+                                and callee not in DYNAMIC_CALLERS,
+                                "args": [self.argument(a) for a in _args(node)]})
 
     def _define(self, scope: _Scope, name: str | None, node: _N, chain: tuple, kind: str, rhs=None) -> None:
         if name:
@@ -435,10 +453,16 @@ class FileHarness:
         scope = _Scope(name, node.line, node.id)
         for param in node.get("params") or []:
             self._define(scope, _variable(param.get("var")), param, (), "other")
+            default = param.get("default")
+            scope.params.append({"name": _variable(param.get("var")),
+                                 "default": self.argument(default) if isinstance(default, _N) else None})
         for use in node.get("uses") or []:
             self._define(scope, _variable(use.get("var")), use, (), "other")
         body = node.get("stmts") if kind != "Expr_ArrowFunction" else [node.get("expr")]
         self._walk_list(body, scope, (), [])
+        for param in scope.params:  # read-only: never assigned, never handed to a call, nothing that could set it
+            param["readOnly"] = bool(param["name"]) and len(scope.defs.get(param["name"], [])) == 1 \
+                and not scope.breakers and not scope.arguments.get(param["name"])
         self.functions.setdefault(name, scope)
 
     # ---- reaching definitions
@@ -725,14 +749,15 @@ class FileHarness:
         reads, parts = [], []
         for piece in pieces:
             if piece[0] == "literal":
-                parts.append({"kind": "literal", "value": piece[2], "nodeId": piece[1].id})
+                parts.append({"kind": "literal", "value": piece[2], "nodeId": piece[1].id,
+                              "loc": loc_dict(piece[1].loc)})
                 if not _is(piece[1], "InterpolatedStringPart"):  # a literal of its own in the source: read as before
                     reads.append({"expr": self.node_text(piece[1]), "var": None, "path": None,
                                   "sourceKind": "literal", "confidence": "resolved", "source": None})
             else:
                 (read,) = self._reads(scope, piece[1], chain, queries, notes)
                 parts.append({"kind": "expr", "expr": self.node_text(piece[1]), "nodeId": piece[1].id,
-                              "read": len(reads)})
+                              "read": len(reads), "loc": loc_dict(piece[1].loc)})
                 reads.append(read)
         forms = [form for form, found in (
             ("heredoc", any(self.source[e.start:e.start + 3] == b"<<<" for e in exprs)),
@@ -780,6 +805,7 @@ class FileHarness:
             return None
         if resolve is None:
             resolve = function_resolver({self.file_id: self})
+        own_resolve, resolve = resolve, lambda name: own_resolve(name, self)
         queries, notes, sequence, call_names = {}, list(scope.notes), [], {}
         for node, kind, chain, enclosures in scope.outputs:
             entry = {"id": node.id, "kind": kind}
@@ -807,16 +833,19 @@ class FileHarness:
             sequence.append((node.start, {
                 "id": node.id, "kind": "call", "callee": callee, "outputsInside": outputs_inside,
                 "enclosedBy": [self.loop_enclosure(e) if e["role"] == "iteration" else e for e in call["enclosures"]],
-                "loc": loc_dict(node.loc)}))
+                "loc": loc_dict(node.loc), "args": call["args"]}))
             if call["name"]:
                 call_names[node.id] = call["name"]
         sequence.sort(key=lambda item: (item[0], item[1]["id"]))
         entrypoint = self.entrypoint if scope.name is None else f"{self.entrypoint}#{scope.name}"
         notes = [dict(items) for items in dict.fromkeys(tuple(n.items()) for n in notes)]  # a read made twice
         notes.sort(key=lambda n: (n["line"], n["col"], n["kind"], n["detail"]))
+        function = {} if scope.node_id is None else {
+            "function": {"nodeId": scope.node_id, "name": scope.name, "params": scope.params}}
         return {
             "entrypoint": entrypoint,
             "schemaVersion": SCHEMA_VERSION,
+            **function,
             "sequence": [entry for _, entry in sequence],
             "queries": dict(sorted(queries.items())),
             "callNames": dict(sorted(call_names.items())),
@@ -827,6 +856,7 @@ class FileHarness:
                 "functionNodeId": scope.node_id,
                 "sourceEncoding": self.encoding,
                 "locConvention": LOC_NOTE, "condExprConvention": COND_EXPR_NOTE, "callsConvention": CALLS_NOTE,
+                "callResolution": RESOLUTION_NOTE,
                 "selectStarConvention": SELECT_STAR_NOTE,
                 "partsExtension": PARTS_NOTE, "copyPropagationExtension": COPY_NOTE,
                 "sqlValuesExtension": SQL_VALUES_NOTE,
@@ -836,42 +866,76 @@ class FileHarness:
 
 
 def function_resolver(harnesses: dict):
-    """resolve(name) for a set of files that form one app: (callee node id or None, outputsInside), or None.
+    """resolve(name, harness) for a set of files that form one app, keyed by their path in the app.
+
+    It gives (callee node id or None, outputsInside) for a name the app defines, and None for any other name.
+    A name with one definition is that function. A name that several files define resolves only through the
+    calling file's own literal includes, followed transitively: exactly one reachable definition -> that
+    function; otherwise there is no single callee (id None, and its output is what all definitions agree on).
 
     A function prints if it prints itself or calls a function that prints. It is "unknown" when it, or something
-    it calls, includes a file or makes a call that cannot be followed. A name defined more than once has no
-    single callee: its id is None and its output is what all its definitions agree on, else "unknown".
+    it calls, includes a file or makes a call that cannot be followed.
     """
-    definitions: dict[str, list] = {}  # lower-case name -> [(harness, scope)]
+    definitions: dict[str, list] = {}  # lower-case name -> [(file key, harness, scope)]
     for key in sorted(harnesses):
         for name, scope in harnesses[key].functions.items():
-            definitions.setdefault(name.lower(), []).append((harnesses[key], scope))
-    state = {name: [harness.direct_output(scope) for harness, scope in found] for name, found in definitions.items()}
+            definitions.setdefault(name.lower(), []).append((key, harnesses[key], scope))
+    key_of = {id(harness): key for key, harness in harnesses.items()}
+    state = {id(scope): harness.direct_output(scope) for found in definitions.values() for _, harness, scope in found}
+    reach: dict[str, set] = {}
 
-    def together(name: str) -> bool | str:
-        values = set(state[name])
+    def reachable(key: str) -> set:
+        """The file itself and every app file its top-level literal includes lead to."""
+        if key not in reach:
+            seen, todo = {key}, [key]
+            while todo:
+                current = todo.pop()
+                for include in harnesses[current].top.includes:
+                    if include["literal"] is None:
+                        continue
+                    for target in (posixpath.normpath(posixpath.join(posixpath.dirname(current), include["literal"])),
+                                   posixpath.normpath(include["literal"])):
+                        if target in harnesses and target not in seen:
+                            seen.add(target)
+                            todo.append(target)
+                            break
+            reach[key] = seen
+        return reach[key]
+
+    def targets(name: str, key: str) -> list:
+        """The definitions a call of `name` written in file `key` may reach: one when it is resolved."""
+        found = definitions.get(name.lower(), [])
+        if len(found) > 1:
+            narrowed = [d for d in found if d[0] in reachable(key)]
+            if len(narrowed) == 1:
+                return narrowed
+        return found
+
+    def together(found: list) -> bool | str:
+        values = {state[id(scope)] for _, _, scope in found}
         return values.pop() if len(values) == 1 else "unknown"
 
-    def called(call: dict) -> bool | str:
-        if call["name"] in state:
-            return together(call["name"])
+    def called(call: dict, key: str) -> bool | str:
+        found = targets(call["name"], key) if call["name"] else []
+        if found:
+            return together(found)
         return False if call["plain"] else "unknown"
 
     changed = True
     while changed:
         changed = False
-        for name, found in definitions.items():
-            for index, (_, scope) in enumerate(found):
-                value = weakest([state[name][index]] + [called(call) for call in scope.calls])
-                if value != state[name][index]:
-                    state[name][index] = value
+        for found in definitions.values():
+            for key, _, scope in found:
+                value = weakest([state[id(scope)]] + [called(call, key) for call in scope.calls])
+                if value != state[id(scope)]:
+                    state[id(scope)] = value
                     changed = True
 
-    def resolve(name: str):
-        found = definitions.get(name.lower())
+    def resolve(name: str, harness):
+        found = targets(name, key_of[id(harness)])
         if not found:
             return None
-        return (found[0][1].node_id if len(found) == 1 else None), together(name.lower())
+        return (found[0][2].node_id if len(found) == 1 else None), together(found)
 
     return resolve
 

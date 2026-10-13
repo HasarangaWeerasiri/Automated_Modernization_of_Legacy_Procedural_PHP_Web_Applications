@@ -64,6 +64,14 @@ class MDynamic:
 
 
 @dataclass(eq=False)
+class MCall:
+    """The place of a call that may print, or of a shell's children: what stands there is Stage 5's to write."""
+
+    node: OutputNode  # the slot's pseudo node (kind "call" or "children")
+    parent: object = None
+
+
+@dataclass(eq=False)
 class MAttrIf:
     if_id: str
     branches: list  # of (Enclosure, parts)
@@ -84,6 +92,8 @@ class MElement:
     children: list = field(default_factory=list)
     content: list | None = None  # raw-text elements: their text and MDynamic parts
     parent: object = None
+    end: str = "open"  # how it was closed: "explicit" (its own end tag) | "implied" (an outer end tag) | "open"
+    clean: bool = True  # nothing was still open inside it when it closed (void elements: always)
 
 
 @dataclass(eq=False)
@@ -206,6 +216,7 @@ class Builder:
             entry = self.stack.pop()
             if isinstance(entry, _Frame):
                 raise GenerationError("markup_not_generatable", "region left open")
+            entry.clean = False  # never closed: nothing is certain about what it holds
             self.flag("unclosed_at_end", "info", entry.node_id, f"<{entry.tag}> is never closed; closed at the end",
                       self.stack[-1] if self.stack and isinstance(self.stack[-1], MElement) else None)
         return Markup(self.root, self.loops, self.ifs, self.flags)
@@ -215,6 +226,8 @@ class Builder:
             if isinstance(item, OutputNode):
                 if item.id in self.abstain_by_source:  # e.g. markup_from_expression: opaque, its text is not read
                     self.abstained(item, self.abstain_by_source[item.id])
+                elif item.kind in ("call", "children"):
+                    self.slot(item)
                 else:
                     self.output(item)
                 continue
@@ -255,6 +268,12 @@ class Builder:
         self.flush_text()
         self.append(MAbstain(node, item))
 
+    def slot(self, node: OutputNode) -> None:
+        if self.state != "data":
+            raise GenerationError("markup_not_generatable", f"call {node.id} inside a tag")
+        self.flush_text()
+        self.append(MCall(node))
+
     def loop(self, item: _Loop) -> None:
         if self.state != "data":
             raise GenerationError("markup_not_generatable", f"loop {item.enclosure.node_id} inside a tag")
@@ -290,6 +309,7 @@ class Builder:
             entry = self.stack.pop()
             if self.strict:
                 raise GenerationError("markup_not_generatable", f"<{entry.tag}> crosses a region boundary")
+            entry.clean = False
             self.flag("implicit_close", "info", entry.node_id, f"<{entry.tag}> closed at the end of its branch",
                       entry.parent if isinstance(entry.parent, MElement) else None)
         self.stack.pop()
@@ -554,8 +574,11 @@ class Builder:
             if isinstance(entry, _Frame):
                 break
             if entry.tag == name:
-                for inner in self.stack[index + 1:]:
+                open_inside = self.stack[index + 1:]
+                for inner in open_inside:
                     self.flag("implicit_close", "review", inner.node_id, f"<{inner.tag}> closed by </{name}>", entry)
+                    inner.end, inner.clean = "implied", inner is open_inside[-1]
+                entry.end, entry.clean = "explicit", not open_inside
                 del self.stack[index:]
                 return
         self.flag("unmatched_close", "info", self.tag_node, f"</{name}> closes nothing open; dropped (R-L6)",

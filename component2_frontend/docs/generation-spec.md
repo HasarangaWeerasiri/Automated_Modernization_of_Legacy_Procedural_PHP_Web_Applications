@@ -1,8 +1,8 @@
-# Component 2 — Stage 5 Generation Specification (v0.5)
+# Component 2 — Stage 5 Generation Specification (v0.6)
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. v0.5 adds what the Phase 1 whole-app run needed (§5a, §8, §8a). Evaluation apps stay locked |
+| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. v0.5 adds what the Phase 1 whole-app run needed (§5a, §8, §8a). v0.6: browser-equivalent markup (§5b), per-part ids, route groups. Evaluation apps stay locked |
 | Date | 10 October 2026 |
 | Owner | Jayawardhana R D L L (IT23213876) |
 | Input | Stage 2 tree, Stage 3 needs, Stage 4 report, contract, endpoint map, timeline |
@@ -106,6 +106,26 @@ output/generated/<name>/
 
 R-L3b text-only loop → `{items.map((row, i) => <Fragment key={i}>…</Fragment>)}` (import `Fragment` from `react`).
 
+Each C2Todo / flag for an expression part uses **that part's AST node id**, not the echo's id (v0.6), so
+every gap points to its exact source position.
+
+## 5b. Browser-equivalent markup (v0.6)
+
+Legacy pages were rendered by browsers, which **repair** some invalid HTML by fixed HTML5 parsing rules.
+React does not repair; it renders the tree as written (and warns / mismatches on hydration). So, inside each
+component's static markup, Stage 5 applies the two repairs that are fully determined by the HTML5 spec:
+
+| Repair | Rule | Flag |
+|---|---|---|
+| Implicit `<tbody>` | `<tr>` directly inside `<table>` → wrapped in `<tbody>` (what every browser builds) | `implicit_tbody` (info) |
+| Implicit `</p>` | An open `<p>` is closed before a block start tag (`address, article, aside, blockquote, details, div, dl, fieldset, figcaption, figure, footer, form, h1–h6, header, hgroup, hr, main, menu, nav, ol, p, pre, section, table, ul`) — HTML5 "close a p element" | `implicit_p_close` (info) |
+| Duplicate attribute | Keep the **first** occurrence (browsers ignore later ones); JSX cannot have duplicate props | `duplicate_attribute` (info) |
+
+Only within one component's static markup. A repair that would cross a loop, branch, call or expression
+boundary is **not** applied (its result depends on runtime output) → `html_nesting_changed` (review), as now.
+**Foster parenting** (`<form>`, `<input>` or text directly inside `<table>`) is never repaired — it moves
+content elsewhere in the tree → stays `html_nesting_changed` (review).
+
 ## 6. Conditions (InlineConditional, ConditionalComponent, AttributeExpression, Empty)
 
 The condition text is not in schema 1.0 (Member 01 Q2). Until it is, generated mocks may carry
@@ -168,7 +188,8 @@ has the code — but it is not rendered.
 | Unit | Generated |
 |---|---|
 | R-F1 function | `components/<Name>.tsx`, `export function <Name>(props)`; props typed from literal arguments; `<Name … />` at each call site |
-| R-F2 shell | Root `app/layout.tsx` (literal `<html>/<head>/<body>`, `{children}`); `components/<H>Shell.tsx` with `{children}`; each page's content wrapped in `<…Shell>`; `document_shell` flag removed for those pages |
+| R-F2 shell | `app/(<h>)/layout.tsx` — a root layout per shell (literal `<html>/<head>/<body>`, `{children}`); `components/<H>Shell.tsx` with `{children}`; each page using it is generated under `app/(<h>)/<route>/page.tsx`, its content wrapped in `<…Shell>`; `document_shell` removed for those pages. Every other page → `app/(plain)/<route>/page.tsx` with a minimal root layout (boundary-rules R-F2 "Route groups") |
+| Unresolved call / unknown output at a call site | `<C2Todo reason="unresolved_call" />` (todo) |
 | R-F1/R-F2 parameter compared to a literal (`$selected == "home"`) | Translatable (whitelist row added): `selected == "home"` when the parameter is a typed prop |
 
 ## 9. Formatting and determinism
@@ -233,6 +254,9 @@ Every flag in `stage5_<name>.json` carries `severity`: `todo` (a C2Todo, an `unr
 | 11 Oct 2026 | v0.4: **todo** flags inside abstained code are `info` too (owner's v0.3 expected totals were wrong) | v0.3 only removed the double count for review flags; a C2Todo inside an abstained region is the same double count. Rule now: one abstained region = one todo |
 | 12 Oct 2026 | v0.5: echo strings decomposed into parts | HMS prints whole rows as one interpolated echo; without parts these rows abstain (`no_rule`) |
 | 12 Oct 2026 | v0.5: every generated file is a module; no `lib/api.ts` without an endpoint | A global script fails under Next.js `isolatedModules`; Phase 1 hid this with a checker override, which is removed |
+| 13 Oct 2026 | v0.6: browser-equivalent markup (implicit `tbody`, implicit `</p>`, first duplicate attribute) | These are fixed HTML5 parser rules: the legacy page was rendered this way, so generating it is faithful, not a guess. Foster parenting is not repaired |
+| 13 Oct 2026 | v0.6: one id per expression part | A shared echo id made 5 gaps in one row indistinguishable |
+| 13 Oct 2026 | v0.6: route groups with one root layout each | Next.js applies the root layout to every route; a shell's `<head>` must not leak onto other pages |
 | 12 Oct 2026 | v0.5: shell component for per-page header arguments | Next.js layouts get no page props; `our_header("guestbook")` needs one |
 | 11 Oct 2026 | v0.4: last-resort fallback replaces the smallest enclosing component | A synthetic R-L3 case replaced a whole page for one small structure |
 | 10 Oct 2026 | v0.3: `unresolvedCondition` is severity `todo` | The guarded content never renders — the same as a C2Todo |

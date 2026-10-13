@@ -19,6 +19,8 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "output" / "apps"
 DEFAULT_MARKDOWN = ROOT / "docs" / "c2-apps-results.md"
 APPS = ("hms", "wackopicko")
+ROLES = {"page": "page", "component": "function component (R-F1)", "shell": "shell (R-F2)",
+         "not_called": "function, not in the app"}
 
 
 def _walk(node):
@@ -30,7 +32,8 @@ def _walk(node):
 def page_row(folder: Path, entry: dict) -> dict:
     """One page's numbers, from its stage outputs."""
     row = {"key": entry["key"], "path": entry["path"], "function": entry["function"], "nodes": entry["nodes"],
-           "crash": entry["crash"], "tsc": entry["tsc"]}
+           "crash": entry["crash"], "tsc": entry["tsc"], "role": entry.get("role", "page"),
+           "group": entry.get("group") or ""}
     if entry["crash"]:
         return row
     stage2 = json.loads((folder / entry["key"] / "stage2.json").read_text(encoding="utf-8"))
@@ -55,6 +58,10 @@ def name(row: dict) -> str:
     return f"`{row['path']}`" + (f" · `{row['function']}()`" if row["function"] else "")
 
 
+def role(row: dict) -> str:
+    return ROLES[row["role"]] + (f" `{row['group']}`" if row["group"] else "")
+
+
 def abstain_cell(row: dict) -> str:
     if not row["abstain"]:
         return "0"
@@ -70,31 +77,43 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
         "node is unlabelled, so Stage 2 marks it `review`), no contract and no endpoint map (every page is "
         "`no_endpoint`). The numbers show that whole apps run through Stages 1–5; they are not migration quality.",
         "",
+        "Each app is generated as **one Next.js app** (`output/apps/<app>/next-app/`). Its units are pages, "
+        "function components (boundary rule R-F1) and shells (R-F2: a header / footer pair, which replaces the "
+        "two functions' own rows). A function with output that no page calls is still run, on its own, but is "
+        "not part of the app.",
+        "",
     ]
     totals = []
     for app in APPS:
         index = json.loads((output / app / "index.json").read_text(encoding="utf-8"))
-        rows = [page_row(output / app, entry) for entry in index["pages"]]
+        rows = [page_row(output / app, entry) for entry in index["pages"] if entry.get("role") != "shell_part"]
         ran = [r for r in rows if not r["crash"]]
+        parts = [e for e in index["pages"] if e.get("role") == "shell_part"]
+        build = index.get("nextBuild")
         lines += [
             f"## {app} (commit `{index['sourceCommit'][:7]}`)",
             "",
-            f"{index['files']} PHP files (libraries excluded) → {len(rows)} timelines: "
-            f"{sum(r['function'] is None for r in rows)} pages and {sum(r['function'] is not None for r in rows)} "
-            f"functions that print. {len(index['silentFiles'])} files print nothing at their top level. "
-            f"{len(index['parseErrors'])} parse errors, {sum(bool(r['crash']) for r in rows)} crashes.",
+            f"{index['files']} PHP files (libraries excluded) → {len(rows)} units: "
+            + ", ".join(f"{sum(r['role'] == role for r in rows)} × {label}" for role, label in ROLES.items()
+                        if any(r["role"] == role for r in rows))
+            + (". " + "; ".join(f"`{e['function']}()` is part of `{e['partOf']}`" for e in parts) if parts else "")
+            + f". {len(index['silentFiles'])} files print nothing at their top level. "
+            f"{len(index['parseErrors'])} parse errors, {sum(bool(r['crash']) for r in rows)} crashes, "
+            f"{len(index.get('collisions', []))} file collisions. `next build`: "
+            + ("not run" if build is None else "**ok**" if build["ok"] else "**failed**") + ".",
             "",
-            "| Page / function | Nodes | S2 components | S2 abstain (by reason) | S2 review unlabelled | "
+            "| Unit | Role | Nodes | S2 components | S2 abstain (by reason) | S2 review unlabelled | "
             "S2 review other | S5 todo | S5 review unlabelled | S5 review other | S5 info | tsc errors | "
             "Nesting flags |",
-            "|---|---|---|---|---|---|---|---|---|---|---|---|",
+            "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
         ]
         for r in rows:
             if r["crash"]:
-                lines.append(f"| {name(r)} | {r['nodes']} | **crash**: {r['crash']['error']} | | | | | | | | | |")
+                lines.append(f"| {name(r)} | {role(r)} | {r['nodes']} | **crash**: {r['crash']['error']} "
+                             "| | | | | | | | | |")
                 continue
             tsc = "not run" if r["tsc"] is None else str(r["tsc"])
-            lines.append(f"| {name(r)} | {r['nodes']} | {r['components']} | {abstain_cell(r)} | "
+            lines.append(f"| {name(r)} | {role(r)} | {r['nodes']} | {r['components']} | {abstain_cell(r)} | "
                          f"{r['review_unlabelled']} | {r['review_other']} | {r['todo']} | {r['s5review_unlabelled']} | "
                          f"{r['s5review_other']} | {r['info']} | {tsc} | {r['nesting']} |")
         total = {key: sum(r[key] for r in ran) for key in (
@@ -109,7 +128,7 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
                   "timelines": len(rows), "crashes": sum(bool(r["crash"]) for r in rows),
                   "compiling": sum(r["tsc"] == 0 for r in ran), "tscKnown": tsc_known, "app": app}
         totals.append(total)
-        lines.append(f"| **{app} total** | {total['nodes']} | {total['components']} | {abstain_cell(total)} | "
+        lines.append(f"| **{app} total** | | {total['nodes']} | {total['components']} | {abstain_cell(total)} | "
                      f"{total['review_unlabelled']} | {total['review_other']} | {total['todo']} | "
                      f"{total['s5review_unlabelled']} | {total['s5review_other']} | {total['info']} | "
                      f"{total['tsc'] if tsc_known else 'not run for every page'} | {total['nesting']} |")
@@ -117,7 +136,7 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
     lines += [
         "## Totals per app",
         "",
-        "| App | Timelines | Crashes | Compiling (0 strict tsc errors) | Nodes | S2 components | S2 abstain | "
+        "| App | Units | Crashes | Compiling (0 strict tsc errors) | Nodes | S2 components | S2 abstain | "
         "S2 review unlabelled | S2 review other | S5 todo | S5 review unlabelled | S5 review other | S5 info | "
         "Flag rate | Flag rate without unlabelled | Nesting flags |",
         "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
@@ -133,8 +152,9 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
         "Flag rate = S5 todo + S5 review (generation-spec v0.4 §12). Review is split in two: *unlabelled* = the "
         "only reason is that the node has no label, which is every loop and `if` of a whole app until Component 1's "
         "labels exist; *other* = any other reason. *Flag rate without unlabelled* = S5 todo + S5 review other. "
-        "tsc errors come from one strict `tsc --noEmit` run per app over all its pages, with the test app's own "
-        "tsconfig (`tools/compile_check.py`).",
+        "tsc errors come from one strict `tsc --noEmit` run over the whole generated app (all route groups "
+        "together), with the test app's own tsconfig; functions that are not in the app are checked apart "
+        "(`tools/compile_check.py`).",
         "",
     ]
     return "\n".join(lines)

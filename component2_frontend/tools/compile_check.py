@@ -129,3 +129,62 @@ def main(names: list[str]) -> int:
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))
+
+
+def check_app(name: str, source: Path) -> tuple[dict[str, int], str]:
+    """One tsc run over a whole generated Next.js app (app/, components/, lib/ with all its route groups):
+    errors per file, relative to the app, and tsc's output. Uses the test app's own tsconfig, nothing overridden.
+
+    A failure tsc does not put in a file of the app is counted under the key ""."""
+    if not strict_enabled():
+        return {"": 1}, 'output/test-app/tsconfig.json does not set "strict": true'
+    target = CHECK_DIR / name
+    if target.exists():
+        shutil.rmtree(target)
+    shutil.copytree(source, target)
+    config = {"extends": "../../tsconfig.json", "compilerOptions": {"incremental": False, "noEmit": True},
+              "include": ["**/*.ts", "**/*.tsx"]}
+    (target / "tsconfig.json").write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+    run = subprocess.run([shutil.which("npx"), "--no-install", "tsc", "--noEmit", "-p", str(target / "tsconfig.json")],
+                         cwd=TEST_APP, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    output = (run.stdout + run.stderr).strip()
+    errors: dict[str, int] = {}
+    prefix = f"c2-check/{name}/"
+    for line in output.splitlines():
+        if not re.search(r"error TS\d+", line):
+            continue
+        path = line.replace("\\", "/")
+        found = re.match(re.escape(prefix) + r"(.+?)\(\d+,\d+\)", path)
+        key = found.group(1) if found else ""
+        errors[key] = errors.get(key, 0) + 1
+    if run.returncode != 0 and not errors:
+        errors[""] = 1  # tsc failed without an error line: never report a pass
+    return errors, output
+
+
+BUILD_DIR = TEST_APP / "c2-build"  # inside the test app, so its node_modules are found without any link
+BUILD_FILES = ("package.json", "tsconfig.json", "next.config.ts", "postcss.config.mjs")
+
+
+def next_build(name: str, source: Path, timeout: int = 900) -> tuple[bool, str]:
+    """`next build` of a whole generated app, once: (it built, the end of Next's output).
+
+    The app is put in a project of its own inside the test app, output/test-app/c2-build/<name>/: the test
+    app's configuration files and the generated tree as src/. Nothing is installed: Node finds the test app's
+    node_modules one level up."""
+    target = BUILD_DIR / name
+    if target.exists():
+        shutil.rmtree(target)
+    target.mkdir(parents=True)
+    for file in BUILD_FILES:
+        if (TEST_APP / file).exists():
+            shutil.copyfile(TEST_APP / file, target / file)
+    shutil.copytree(source, target / "src")
+    next_bin = TEST_APP / "node_modules" / "next" / "dist" / "bin" / "next"
+    try:
+        run = subprocess.run([shutil.which("node"), str(next_bin), "build", str(target)], cwd=TEST_APP,
+                             capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
+    except subprocess.TimeoutExpired:
+        return False, f"next build did not finish in {timeout} s"
+    text = (run.stdout + run.stderr).strip()
+    return run.returncode == 0, "\n".join(text.splitlines()[-60:])

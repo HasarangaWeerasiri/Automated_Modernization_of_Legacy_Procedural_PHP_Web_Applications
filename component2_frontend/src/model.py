@@ -108,6 +108,7 @@ class EchoPart:
     value: str | None = None  # literal: the PHP-decoded text
     expr: str | None = None  # expr: its source
     read: int | None = None  # expr: index of its read in the output node's reads
+    loc: "Loc | None" = None  # optional: where the piece is (its AST node's loc)
 
 
 @dataclass(frozen=True)
@@ -134,6 +135,34 @@ class CallEntry:
     outputs_inside: bool | str  # True | False | "unknown"
     enclosed_by: tuple[Enclosure, ...]  # outermost first
     loc: Loc | None = None
+    args: tuple["CallArg", ...] | None = None  # optional (harness extension): the arguments, in order
+    kind: str = "call"  # "children" for the place where a shell component puts its page (never from a file)
+
+
+@dataclass(frozen=True)
+class CallArg:
+    """One argument of a call, or a parameter's default: a literal with its value, or an expression."""
+
+    kind: str  # "literal" | "expr"
+    type: str | None = None  # literal: "string" | "number"
+    value: object = None  # literal: its value
+    expr: str | None = None  # expr: its source
+
+
+@dataclass(frozen=True)
+class FunctionParam:
+    name: str  # as written, e.g. "$selected"
+    default: CallArg | None = None  # None: the parameter has no default
+    read_only: bool = False  # the function never assigns it or hands it to a call: it is its argument throughout
+
+
+@dataclass(frozen=True)
+class FunctionInfo:
+    """The function a timeline is the output of (harness extension; None for a page timeline)."""
+
+    node_id: str
+    name: str
+    params: tuple[FunctionParam, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -196,6 +225,8 @@ class Timeline:
     # Call sites, in source order (Member 01 Q4, proposed). Kept apart from `sequence`, which holds the
     # output statements only. No rule reads them yet (R-F1 / R-F2, roadmap Phase 2b).
     calls: tuple[CallEntry, ...] = ()
+    function: "FunctionInfo | None" = None  # set when this is a function's own timeline
+    order: tuple[str, ...] = ()  # the id of every entry (output statements and calls) in sequence order
 
 
 # ----------------------------------------------------------------------------- Stage 1 result
@@ -285,6 +316,17 @@ class ComponentNode:
     root_tags: tuple[str, ...] = ()  # Item only: the item's root elements
     elements: int | None = None  # conditionals only: largest number of opening tags in one branch
     flags: tuple[str, ...] = ()  # e.g. unmatched_close, tag_crosses_branch
+    callee: str | None = None  # FunctionCall only (R-F1): the called function's node id
+    shell: "ShellUse | None" = None  # Page only (R-F2): the shell component the page's content is wrapped in
+
+
+@dataclass(frozen=True)
+class ShellUse:
+    """A page's use of a shell pair (boundary rule R-F2)."""
+
+    header: str  # the header function's node id (the shell is named after it)
+    header_call: str  # the page's call of the header
+    footer_call: str  # ... and of the footer
 
 
 @dataclass(frozen=True)

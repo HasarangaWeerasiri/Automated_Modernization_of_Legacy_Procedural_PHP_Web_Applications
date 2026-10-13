@@ -40,10 +40,24 @@ CATALOGUE = {
         "A", "A tag opens in one branch and closes outside it", "existing: Malformed HTML (R-L6, per-branch balance)",
         "An `if` branch opens an element that is closed after the `if`, or closes one opened before it."),
     "abstain:container_undetermined@function": (
-        "A", "Loop in a function whose container is opened by the caller",
-        "existing: Cross-file output (function echoes `<option>` into a page's `<select>`)",
-        "The function's timeline has no open element at the loop, so R-L2a finds no container. Waits on R-F1 "
-        "(Member 01 Q4)."),
+        "A", "Loop in a function with no determinable container", "existing: Malformed HTML",
+        "The loop's tags do not balance inside the function (R-F1b covers only a container the caller opens)."),
+    "abstain:unresolved_call": (
+        "A", "Call whose output cannot be followed", "existing: rules v0.11 section 4 (call-entry table); Member 01 Q11",
+        "A call with no single callee (a method call on an object, a dynamic call, a name several files define) "
+        "or whose output is unknown. One C2Todo at the call site."),
+    "abstain:tag_crosses_function": (
+        "A", "Tags cross a function boundary outside a shell pair", "existing: rules v0.11 R-F2",
+        "A page calls a header without its footer (or the other way round), or a function leaves tags open "
+        "without being half of a pair."),
+    "abstain:output_outside_shell": (
+        "A", "Page output before the header or after the footer", "existing: rules v0.11 R-F2",
+        "It would stand outside the shell's `<html>`."),
+    "abstain:recursive_function": (
+        "A", "Recursive function", "existing: rules v0.11 R-F1", "A function component cannot call itself here."),
+    "abstain:call_in_attribute": (
+        "A", "Call that prints inside a tag", NEW,
+        "A function is called where an attribute is written. A component cannot stand there."),
     "abstain:container_undetermined@page": (
         "A", "Loop with no determinable container", "existing: Malformed HTML",
         "No element is open at the loop start, or the loop's tags do not balance."),
@@ -110,12 +124,35 @@ CATALOGUE = {
         "An echo inside `<script>` or `<head>`. Stage 5 drops the element (inline JS, document shell), so the value "
         "is dropped with it and flagged `output_dropped`."),
     "flag:html_nesting_changed": (
-        "D", "Nesting a browser repairs", "existing: Malformed HTML",
-        "The generated tree differs from what an HTML5 parser builds (e.g. `<tr>` directly in `<table>`, a block "
-        "inside `<p>`)."),
-    "flag:duplicate_attribute_dropped": (
-        "D", "Duplicate attribute", "existing: Malformed HTML", "The second one is dropped, as HTML does."),
+        "D", "Nesting a browser repairs, not repaired here",
+        "existing: Invalid nesting the browser repairs (rules v0.11 section 8)",
+        "The generated tree differs from what an HTML5 parser builds and the difference is not one of spec "
+        "section 5b's repairs: foster parenting (`<form>` / `<input>` directly in `<table>`), a repair that would "
+        "cross a loop, if, call or expression, or a stray `</p>`."),
     "flag:unsupported_style": ("D", "Style attribute Stage 5 cannot convert", NEW, "The attribute is omitted."),
+    "handled:r_f1": (
+        "E", "Function output as a component at the call site (R-F1)", "existing: Function = component / Cross-file output (rules v0.11 R-F1)",
+        "A function that prints, is called, and is tag-balanced on its own is one component; each call site "
+        "holds `<Name />`."),
+    "handled:r_f1b": (
+        "E", "Function loop whose container the caller opens (R-F1b)", "existing: Cross-file output (rules v0.11 R-F1b)",
+        "A List without wrapper inside the function component; the container stays around the call site."),
+    "handled:r_f2": (
+        "E", "Page inside a header / footer shell (R-F2)", "existing: Layout via functions (rules v0.11 R-F2)",
+        "The page's content is the shell component's children; `<html>`, `<head>` and `<body>` are the route "
+        "group's root layout."),
+    "handled:r_i7": (
+        "E", "`if` or loop whose only output is inline JS (R-I7)", "existing: rules v0.11 R-I7",
+        "Nothing to render, so no boundary. The JS is still flagged `inline_js_dropped`."),
+    "flag:implicit_tbody": (
+        "E", "Rows directly in `<table>`: implicit `<tbody>` (spec 5b)",
+        "existing: Invalid nesting the browser repairs (rules v0.11 section 8)", "Wrapped as a browser does."),
+    "flag:implicit_p_close": (
+        "E", "`<p>` closed by a block element (spec 5b)",
+        "existing: Invalid nesting the browser repairs (rules v0.11 section 8)", "Split as a browser does."),
+    "flag:duplicate_attribute": (
+        "E", "Duplicate attribute: the first is kept (spec 5b)", "existing: Malformed HTML",
+        "The later one is dropped, as a browser does."),
     "handled:echo_parts+markup": (
         "E", "Echo string with markup, read piece by piece", "existing: Rows printed by one echo string / concatenated echo with markup (rules v0.9 §1, §8)",
         "`echo \"<tr><td>$x</td>…\"`, a concatenation, a heredoc or several echo arguments. The timeline gives "
@@ -142,7 +179,7 @@ GROUPS = {
     "B": "Last-resort fallback in Stage 5",
     "C": "Not modelled by the timeline (harness notes)",
     "D": "Dropped or changed by Stage 5",
-    "E": "Handled since Phase 2a (no longer a gap)",
+    "E": "Handled since Phases 2a and 2b (no longer a gap)",
 }
 
 
@@ -181,6 +218,8 @@ def collect(output: Path) -> dict:
         printing_pages = {p["path"] for p in index["pages"] if p["function"] is None}
         summary[app] = index
         for entry in index["pages"]:
+            if entry.get("role") == "shell_part":  # its output is in the shell's unit
+                continue
             if entry["crash"]:
                 add("crash", where(app, entry, None), entry["crash"]["error"])
                 continue
@@ -188,7 +227,7 @@ def collect(output: Path) -> dict:
             timeline = json.loads((folder / "timeline.json").read_text(encoding="utf-8"))
             stage2 = json.loads((folder / "stage2.json").read_text(encoding="utf-8"))
             stage5 = json.loads((folder / "stage5.json").read_text(encoding="utf-8"))
-            line_of = {e["id"]: e["loc"] for e in timeline["sequence"]}
+            line_of = {e["id"]: e["loc"] for e in timeline["sequence"] if e.get("loc")}
             cond_of = {}
             for e in timeline["sequence"]:
                 for enc in e["enclosedBy"]:
@@ -217,6 +256,15 @@ def collect(output: Path) -> dict:
                     checklist["r_i5"].append((where(app, entry, *first), node["elements"]))
                 if node["type"] == "List" and any(p["type"] == "Item" for p in parents):
                     checklist["nested"].append(where(app, entry, *first))
+                if node["type"] == "FunctionCall":
+                    add("handled:r_f1", where(app, entry, *first),
+                        timeline["callNames"].get(node["sourceIds"][0], ""))
+                if node["type"] == "List" and "R-F1b" in node["rules"]:
+                    add("handled:r_f1b", where(app, entry, *first))
+                if node["type"] == "Page" and "R-F2" in node["rules"]:
+                    add("handled:r_f2", where(app, entry, None))
+                if node["rule"] == "R-I7":
+                    add("handled:r_i7", where(app, entry, *first))
                 if node["type"] == "List" and "R-L3b" in node["rules"]:
                     add("handled:r_l3b", where(app, entry, *first))
                 if node["rule"] == "R-L3":
@@ -294,7 +342,7 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
         f"Generated by `tools/harness/pattern_log.py` from the outputs of `tools/harness/run_apps.py`, "
         f"{source(markdown)}. Apps: " + ", ".join(
             f"{app} @ `{summary[app]['sourceCommit'][:7]}` ({summary[app]['files']} files, "
-            f"{len(summary[app]['pages'])} timelines)" for app in APPS) + ".",
+            f"{sum(p['role'] != 'shell' for p in summary[app]['pages'])} timelines)" for app in APPS) + ".",
         "",
         "Every construct the pipeline **abstains on**, **cannot model**, or handles with a **last-resort fallback**, "
         "with its count and file:line examples, mapped to the pattern checklist in `boundary-rules.md` §8. This log "
@@ -319,7 +367,7 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
         "",
         f"**New patterns (not in §8): {len(new)}** — " + ("; ".join(new) if new else "none") + ".",
         "",
-        f"Groups A–D are what remains ({remaining} places). Group E is what Phase 2a now handles ({handled} "
+        f"Groups A–D are what remains ({remaining} places). Group E is what Phases 2a and 2b now handle ({handled} "
         "places): it is listed for the record, not as a gap.",
         "",
         f"Crashes: {len(found.get('crash', []))}. Parse errors: "
@@ -338,7 +386,12 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
             lines += [f"### {title} — {len(found[kind])}", "", f"- §8 mapping: {mapping}", f"- {text}",
                       f"- Examples: {examples(found[kind])}", ""]
 
-    lines += [f"## {number}. Functions and includes (evidence for R-F1 / R-F2)", "",
+    shells = [(app, s) for app in APPS for s in summary[app].get("shells", [])]
+    lines += [f"## {number}. Functions and includes (R-F1 / R-F2)", "",
+              "Shell pairs found (R-F2): " + ("; ".join(
+                  f"{app}: `{s['name']}` in route group `{s['group']}`, props "
+                  + (", ".join(f"`{p[0]}: {p[1]}`" for p in s["props"]) or "none") for app, s in shells) or "none")
+              + ".", "",
               "Call sites are timeline entries `{kind: \"call\", callee, outputsInside}` (Member 01 Q4, proposed); "
               "nothing is inlined. *Callee* says whether the call is resolved to one function of the app "
               "(`callee` is its node id) or not (`callee` is null: a method call on an object, a dynamic call, or "

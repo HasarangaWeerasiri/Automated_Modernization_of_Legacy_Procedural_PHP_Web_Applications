@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Component 2 compile check: generated mocks copied in by tools/compile_check.py
 /c2-check/
+
+# Component 2 whole-app build check: tools/compile_check.py next_build
+/c2-build/
