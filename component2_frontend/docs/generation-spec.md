@@ -1,8 +1,8 @@
-# Component 2 — Stage 5 Generation Specification (v0.7)
+# Component 2 — Stage 5 Generation Specification (v0.8)
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. v0.5 adds what the Phase 1 whole-app run needed (§5a, §8, §8a). v0.6: browser-equivalent markup (§5b), per-part ids, route groups. v0.7: corrections after Phase 2b (§5 form state, §5b stray end tags and loop rows, §8a routes and calls). Evaluation apps stay locked |
+| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. v0.5 adds what the Phase 1 whole-app run needed (§5a, §8, §8a). v0.6: browser-equivalent markup (§5b), per-part ids, route groups. v0.7: corrections after Phase 2b (§5 form state, §5b stray end tags and loop rows, §8a routes and calls). v0.8: phpBlog rules (§6a), implied end tags, start-tag fallback. Evaluation apps stay locked |
 | Date | 10 October 2026 |
 | Owner | Jayawardhana R D L L (IT23213876) |
 | Input | Stage 2 tree, Stage 3 needs, Stage 4 report, contract, endpoint map, timeline |
@@ -118,14 +118,31 @@ component's static markup, Stage 5 applies the two repairs that are fully determ
 | Repair | Rule | Flag |
 |---|---|---|
 | Implicit `<tbody>` | `<tr>` directly inside `<table>` → wrapped in `<tbody>` (what every browser builds). **v0.7:** also when the table's row children are a List whose Item root is statically `<tr>` (the `.map()` goes inside the `<tbody>`), with or without static rows | `implicit_tbody` (info) |
+| Implied end tags (v0.8) | A start tag `<li>` closes an open `<li>`; `<dt>`/`<dd>` close an open `<dt>`/`<dd>`; `<option>` closes an open `<option>` (HTML5 "generate implied end tags" — every browser does this) | `implied_end_tag` (info) |
 | Stray `</p>` / `</br>` (v0.7) | An end tag `</p>` with no open `<p>` → an **empty `<p></p>`**; `</br>` → `<br />` (HTML5 parser rules — every browser does this; an empty `<p>` has visible margins). All other unmatched end tags are ignored by browsers, which is what R-L6 already does | `stray_end_tag_repaired` (info) |
 | Implicit `</p>` | An open `<p>` is closed before a block start tag (`address, article, aside, blockquote, details, div, dl, fieldset, figcaption, figure, footer, form, h1–h6, header, hgroup, hr, main, menu, nav, ol, p, pre, section, table, ul`) — HTML5 "close a p element" | `implicit_p_close` (info) |
 | Duplicate attribute | Keep the **first** occurrence (browsers ignore later ones); JSX cannot have duplicate props | `duplicate_attribute` (info) |
+
+**Start-tag fallback (v0.8).** A construct that cannot be generated **inside a start tag** (an `if` or expression
+in an attribute-name position that R-I3b does not cover) loses **only that tag's affected attributes**
+(`attribute_omitted:partial_attribute_output`); the element and its children are kept. It never replaces the
+whole unit (phpBlog lost 5 whole units, up to 108 nodes each, to this in v0.7).
 
 Only within one component's static markup. A repair that would cross a loop, branch, call or expression
 boundary is **not** applied (its result depends on runtime output) → `html_nesting_changed` (review), as now.
 **Foster parenting** (`<form>`, `<input>` or text directly inside `<table>`) is never repaired — it moves
 content elsewhere in the tree → stays `html_nesting_changed` (review).
+
+## 6a. phpBlog rules (v0.8; boundary-rules v0.13)
+
+| Rule | Generated |
+|---|---|
+| R-I3b attribute presence | `<option value="Yes" selected={…}>` is not generated for `<option>` (`option_selected_not_converted`, as §5); otherwise `attr={cond ? "v" : undefined}`, boolean `attr={cond}`, `checked` → `defaultChecked={cond}`. Condition by the §6 whitelist, else `unresolvedCondition` |
+| R-I2b multi-loop guard | `{cond ? <>{ListA}{ListB}</> : <XEmpty />}` |
+| R-I8 redirect guard | Nothing rendered for the arm; the rest renders; flag `redirect_guard` (review) with the redirect target if literal |
+| R-I8 other exit arm | `{cond ? <ArmOutput /> : <Rest />}` — `<Rest>` is everything after the `if` to the end of the enclosing block |
+| R-L4 nested loop | Inner Item gets `outer` (the outer row) as a prop when needed |
+| `non_html_response` unit | No page generated; listed in `stage5_<app>.json` under `notGenerated` with the reason (C1: Route Handler) |
 
 ## 6. Conditions (InlineConditional, ConditionalComponent, AttributeExpression, Empty)
 
@@ -256,6 +273,8 @@ Every flag in `stage5_<name>.json` carries `severity`: `todo` (a C2Todo, an `unr
 | 11 Oct 2026 | v0.4: **todo** flags inside abstained code are `info` too (owner's v0.3 expected totals were wrong) | v0.3 only removed the double count for review flags; a C2Todo inside an abstained region is the same double count. Rule now: one abstained region = one todo |
 | 12 Oct 2026 | v0.5: echo strings decomposed into parts | HMS prints whole rows as one interpolated echo; without parts these rows abstain (`no_rule`) |
 | 12 Oct 2026 | v0.5: every generated file is a module; no `lib/api.ts` without an endpoint | A global script fails under Next.js `isolatedModules`; Phase 1 hid this with a checker override, which is removed |
+| 13 Oct 2026 | v0.8: start-tag fallback drops attributes, not the unit | One unparseable attribute cost phpBlog 5 whole units |
+| 13 Oct 2026 | v0.8: implied end tags (`li`, `dt`/`dd`, `option`) | Fixed HTML5 rule; WackoPicko `tos.php` |
 | 13 Oct 2026 | v0.7: `value` kept on non-editable input types | `defaultValue` on a submit button rendered the same HTML but is the wrong prop; React needs no `onChange` for those types |
 | 13 Oct 2026 | v0.7: stray `</p>` / `</br>` repaired | Fixed HTML5 parser rules; WackoPicko `tos.php` renders an empty paragraph in every browser |
 | 13 Oct 2026 | v0.7: routes from the document root | `website/` is not part of WackoPicko's URLs; Phase 4 compares pages by URL |

@@ -34,7 +34,8 @@ from src.model import (
 
 SCHEMA_VERSION = "1.0"
 TIMELINE_KEYS = ("entrypoint", "schemaVersion", "sequence")  # "queries" is an optional extension
-OUTPUT_KINDS = ("Stmt_InlineHTML", "Stmt_Echo", "Expr_Print")
+# Expr_Exit: exit("msg") / die("msg") as a statement prints its message (harness extension, pending Q20)
+OUTPUT_KINDS = ("Stmt_InlineHTML", "Stmt_Echo", "Expr_Print", "Expr_Exit")
 CALL_KIND = "call"  # a call site (Member 01 Q4, proposed): {id, kind, callee, outputsInside, enclosedBy}
 # an include / require at its position (harness extension, pending Q4): {id, kind, path, outputsInside, enclosedBy}
 INCLUDE_KIND = "include"
@@ -205,6 +206,9 @@ def load_timeline_json(path: Path) -> dict:
         raise ValueError(f"{path}: schemaVersion {timeline['schemaVersion']!r}, expected {SCHEMA_VERSION!r}")
     if "function" in timeline:
         _check_function(timeline["function"], str(path))
+    content_type = timeline.get("responseContentType")
+    if "responseContentType" in timeline and (not isinstance(content_type, str) or not content_type.strip()):
+        raise ValueError(f"{path}: responseContentType must be a media type such as \"text/xml\"")
 
     for qid, query in timeline.get("queries", {}).items():
         _check_node_id(qid, f"{path}: queries")
@@ -272,8 +276,9 @@ def load_timeline_json(path: Path) -> dict:
                     raise ValueError(f"{where}: loop {enc['nodeId']} differs from its earlier copy")
             elif enc.get("role") == "branch":
                 # condExpr is optional (agent extension, pending Member 01 Q2): the condition's PHP source.
-                if (not BRANCH_KEYS <= set(enc) <= BRANCH_KEYS | {"condExpr", "loc"} or enc["kind"] != "Stmt_If"
-                        or enc["branch"] not in BRANCHES):
+                if (not BRANCH_KEYS <= set(enc) <= BRANCH_KEYS | {"condExpr", "loc", "exits"}
+                        or enc["kind"] != "Stmt_If" or enc["branch"] not in BRANCHES
+                        or not isinstance(enc.get("exits", False), bool)):
                     raise ValueError(f"{where}: malformed branch {enc}")
                 _check_node_id(enc["condNodeId"], where)
                 if "condExpr" in enc and (enc["branch"] == "else" or not isinstance(enc["condExpr"], str)
@@ -333,7 +338,8 @@ def _enclosure(d: dict) -> Enclosure:
                          loc=_loc(d.get("loc")))
     if d["role"] == "branch":
         return Enclosure(node_id=d["nodeId"], kind=d["kind"], role="branch", branch=d["branch"],
-                         cond_node_id=d["condNodeId"], cond_expr=d.get("condExpr"), loc=_loc(d.get("loc")))
+                         cond_node_id=d["condNodeId"], cond_expr=d.get("condExpr"), loc=_loc(d.get("loc")),
+                         exits=d.get("exits", False))
     extra = tuple(sorted((k, v) for k, v in d.items() if k not in ENCLOSURE_BASE_KEYS))
     return Enclosure(node_id=d["nodeId"], kind=d["kind"], role=d["role"], extra=extra)
 
@@ -375,7 +381,8 @@ def load_timeline(path: Path) -> Timeline:
     }
     return Timeline(entrypoint=doc["entrypoint"], schema_version=doc["schemaVersion"], sequence=sequence,
                     queries=queries, provenance=doc.get("_provenance", {}), calls=calls, function=function,
-                    order=tuple(e["id"] for e in doc["sequence"]))
+                    order=tuple(e["id"] for e in doc["sequence"]),
+                    content_type=doc.get("responseContentType"))
 
 
 def load_labels(path: Path) -> dict[str, Label]:

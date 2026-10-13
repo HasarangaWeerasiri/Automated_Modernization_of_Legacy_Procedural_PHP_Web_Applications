@@ -41,6 +41,22 @@ HTML_SPACE = " \t\n\f\r"
 _IN_TAG = ("tag_name", "before_attr_name", "attr_name", "after_attr_name", "before_attr_value", "value_dq",
            "value_sq", "value_unq", "after_attr_value", "self_closing")
 _ATTR_VALUE = ("value_dq", "value_sq", "value_unq")
+_BETWEEN_ATTRIBUTES = ("before_attr_name", "after_attr_name", "after_attr_value")
+# HTML5 "special" elements: a start tag looking for an open <li> / <dd> / <dt> to close stops at one of them,
+# except address, div and p (section 13.2.6.4.7, "in body").
+_SPECIAL = frozenset((
+    "applet", "area", "article", "aside", "base", "basefont", "bgsound", "blockquote", "body", "br", "button",
+    "caption", "center", "col", "colgroup", "dd", "details", "dir", "dl", "dt", "embed", "fieldset", "figcaption",
+    "figure", "footer", "form", "frame", "frameset", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup",
+    "hr", "html", "iframe", "img", "input", "keygen", "li", "link", "listing", "main", "marquee", "menu", "meta",
+    "nav", "noembed", "noframes", "noscript", "object", "ol", "param", "plaintext", "pre", "script", "search",
+    "section", "select", "source", "style", "summary", "table", "tbody", "td", "template", "textarea", "tfoot", "th",
+    "thead", "title", "tr", "track", "ul", "wbr", "xmp"))
+# Closing one of these makes a browser open it again in what follows ("reconstruct the active formatting
+# elements"): the tree is then not simply the one with the element closed, so no repair is made.
+_FORMATTING = frozenset(("a", "b", "big", "code", "em", "font", "i", "nobr", "s", "small", "strike", "strong",
+                         "tt", "u"))
+_IMPLIED_END = {"li": ("li",), "dd": ("dd", "dt"), "dt": ("dd", "dt")}  # start tag -> the open elements it ends
 
 
 class GenerationError(Exception):
@@ -75,6 +91,38 @@ class MCall:
 class MAttrIf:
     if_id: str
     branches: list  # of (Enclosure, parts)
+
+
+@dataclass(eq=False)
+class MAttrGap:
+    """Something written inside a start tag that cannot be generated (spec v0.8 section 5b, start-tag fallback):
+    the attribute it belongs to is left out and flagged; the element and its children are kept. Stands in a
+    tag's attribute list (between attributes) or among the parts of one attribute value."""
+
+    node_id: str
+    reason: str
+    name: str = ""
+    parts: list = None  # itself: never static text, so whatever asks "is this attribute literal?" says no
+
+    def __post_init__(self):
+        self.parts = [self]
+
+
+@dataclass(eq=False)
+class MAttrPresence:
+    """An if between the attributes of a start tag whose every arm prints complete literal attributes (R-I3b)."""
+
+    if_id: str
+    branches: list  # of (Enclosure, [MAttr])
+    name: str = ""
+    parts: list = None
+
+    def __post_init__(self):
+        self.parts = [self]
+
+    @property
+    def node_id(self) -> str:
+        return self.if_id
 
 
 @dataclass(eq=False)
@@ -267,8 +315,10 @@ class Builder:
         self.container().append(node)
 
     def abstained(self, item, node: ComponentNode) -> None:
-        if self.state != "data":
-            raise GenerationError("markup_not_generatable", f"abstained region {region_id(item)} inside a tag")
+        if self.state != "data":  # inside a start tag: only that tag's attribute is lost (start-tag fallback)
+            self.attribute_gap(_outputs([item]), node.source_ids[0], node.reason,
+                               f"abstained region {region_id(item)} inside a tag")
+            return
         self.flush_text()
         self.certain = False
         container = self.container()
@@ -297,8 +347,17 @@ class Builder:
         if self.state in _ATTR_VALUE:
             self.attribute_if(item)
             return
+        if self.state == "rawtext":
+            # An if inside <style> / <script> / <title> / <textarea> content: like an echo there, the element
+            # has content that is not text (Stage 5: dynamic_raw_text, or document_shell in a shell's <head>).
+            nodes = _outputs([item])
+            if not nodes or any(self.tracker[n.id].events for n in nodes):
+                raise GenerationError("markup_not_generatable", f"if {item.node_id} ends a raw-text element")
+            self.tag.content.append(MAttrGap(item.node_id, "dynamic_raw_text"))
+            return
         if self.state != "data":
-            raise GenerationError("markup_not_generatable", f"if {item.node_id} inside a tag, outside a value")
+            self.attribute_presence(item)
+            return
         self.flush_text()
         node = MIf(item.node_id)
         self.append(node)
@@ -323,6 +382,48 @@ class Builder:
             self.flag("implicit_close", "info", entry.node_id, f"<{entry.tag}> closed at the end of its branch",
                       entry.parent if isinstance(entry.parent, MElement) else None)
         self.stack.pop()
+
+    def stays_in_tag(self, nodes: list) -> bool:
+        """These nodes start and end inside the tag being read and cannot end the value or the tag: leaving
+        them out keeps the reading of everything after them right."""
+        tracked = [self.tracker[n.id] for n in nodes]
+        if not tracked or not all(t.in_tag_before and t.in_tag_after and not t.events for t in tracked):
+            return False
+        text = "".join(tagtrack.output_text(n) for n in nodes)
+        if self.state == "value_dq":
+            return '"' not in text
+        if self.state == "value_sq":
+            return "'" not in text
+        if self.state == "value_unq":
+            return not any(ch in HTML_SPACE for ch in text)
+        return True
+
+    def attribute_gap(self, nodes: list, node_id: str, reason: str, what: str) -> None:
+        """Spec v0.8 section 5b: what cannot be generated inside a start tag costs only that tag's attribute."""
+        if self.state in ("tag_name", "tag_open", "end_tag_open", "end_tag_name", "end_tag_rest") \
+                or self.tag is None or not self.stays_in_tag(nodes):
+            raise GenerationError("markup_not_generatable", what)
+        if self.state in _ATTR_VALUE:
+            self.attr.parts.append(MAttrGap(node_id, reason))
+            return
+        if self.state in ("attr_name", "before_attr_value") and self.attr in self.tag.attrs:
+            self.tag.attrs.remove(self.attr)  # the attribute being written is cut in two: it goes too
+        self.tag.attrs.append(MAttrGap(node_id, reason))
+
+    def attribute_presence(self, item: _If) -> None:
+        """An if between attributes (R-I3b): conditional attributes when every arm prints complete literal
+        ones; otherwise that tag's attribute gap (Stage 2 abstained on it: partial_attribute_output)."""
+        arms = []
+        for arm in item.branches:
+            direct = all(isinstance(inner, OutputNode) for inner in arm.items)
+            found = tagtrack.literal_attributes(tagtrack.literal_text(arm.items)) if direct else None
+            if found is None or self.state not in _BETWEEN_ATTRIBUTES:
+                self.attribute_gap(_outputs([item]), item.node_id, "partial_attribute_output",
+                                   f"if {item.node_id} inside a tag, outside a value")
+                return
+            arms.append((arm.enclosure, [MAttr(name, None if value is None else [value], arm.items[0].id)
+                                         for name, value in found]))
+        self.tag.attrs.append(MAttrPresence(item.node_id, arms))
 
     def attribute_if(self, item: _If) -> None:
         attr, state, outer = self.attr, self.state, self.attr.parts
@@ -380,8 +481,15 @@ class Builder:
             self.tag.content.append(part)
         elif state in ("comment", "bogus", "markup_decl"):
             self.flag("html_comment_dropped", "info", node.id, "output inside an HTML comment", self.anchor())
+        elif state in _BETWEEN_ATTRIBUTES or state in ("attr_name", "self_closing"):
+            # A value where an attribute (or the rest of its name) is written: start-tag fallback. A value is
+            # text, so it cannot end the tag; reading goes on after it.
+            if state == "attr_name" and self.attr in self.tag.attrs:
+                self.tag.attrs.remove(self.attr)
+            self.tag.attrs.append(MAttrGap(echo_part.node_id if echo_part is not None else node.id,
+                                           "partial_attribute_output"))
         else:
-            raise GenerationError("markup_not_generatable", f"output {node.id} inside a tag name or attribute name")
+            raise GenerationError("markup_not_generatable", f"output {node.id} inside a tag name")
 
     # ---- the tokenizer
 
@@ -565,10 +673,52 @@ class Builder:
         else:
             parts.append(ch)
 
+    def implied_end_tags(self, tag: str) -> None:
+        """Spec v0.8 section 5b: the end tags a start tag implies in every browser. `<li>` ends an open `<li>`,
+        `<dt>` / `<dd>` an open `<dt>` / `<dd>`, `<option>` an open `<option>`; and `<body>` ends an open
+        `<head>` (boundary-rules v0.13, R-F2). Only inside one region's static markup: never across a loop or
+        an if, never when what would be closed holds anything but text and elements, and never when a
+        formatting element would be closed with it (a browser reopens those)."""
+        index = None
+        if tag == "option":
+            if self.stack and isinstance(self.stack[-1], MElement) and self.stack[-1].tag == "option":
+                index = len(self.stack) - 1
+        elif tag in _IMPLIED_END:
+            for position in range(len(self.stack) - 1, -1, -1):
+                entry = self.stack[position]
+                if isinstance(entry, _Frame):
+                    break
+                if entry.tag in _IMPLIED_END[tag]:
+                    index = position
+                    break
+                if entry.tag in _SPECIAL:  # (address, div and p are not in the set: the search goes past them)
+                    break
+        elif tag == "body":
+            for position in range(len(self.stack) - 1, -1, -1):
+                entry = self.stack[position]
+                if isinstance(entry, _Frame):
+                    break
+                if entry.tag == "head":
+                    index = position
+                    break
+        if index is None:
+            return
+        closing = self.stack[index:]
+        if any(isinstance(e, _Frame) or e.tag in _FORMATTING for e in closing) or not all(
+                isinstance(child, (MText, MElement)) for e in closing for child in e.children):
+            return
+        for inner in closing:
+            inner.end, inner.clean = "implied", True
+        self.flag("implied_end_tag", "info", closing[0].node_id,
+                  f"<{closing[0].tag}> ended by the next <{tag}>, as a browser does",
+                  closing[0].parent if isinstance(closing[0].parent, MElement) else None)
+        del self.stack[index:]
+
     def start_tag(self, self_closing: bool = False) -> None:
         element = self.tag
         element.tag = self.tag_name.lower()
         self.state = "data"
+        self.implied_end_tags(element.tag)
         self.append(element)
         if element.tag in self.void or self_closing:
             return
@@ -612,6 +762,20 @@ class Builder:
                       self.anchor())
         else:
             self.flag("html_comment_dropped", "info", self.tag_node, f"<{self.decl[:20]}...> dropped", self.anchor())
+
+
+def _outputs(items: list) -> list[OutputNode]:
+    """Every output node of these items, in order."""
+    out = []
+    for item in items:
+        if isinstance(item, OutputNode):
+            out.append(item)
+        elif isinstance(item, _If):
+            for branch in item.branches:
+                out += _outputs(branch.items)
+        else:
+            out += _outputs(item.items)
+    return out
 
 
 def _first_output(item) -> OutputNode | None:

@@ -69,6 +69,9 @@ class Enclosure:
     # Optional (agent extension, pending Member 01 Q2): the condition's PHP source, then/elseif only.
     # Used by Stage 5's whitelist translator only; None means the condition is not available.
     cond_expr: str | None = None
+    # Optional (harness extension, pending Member 01 Q20): the arm has an `exit` / `die` statement directly in
+    # its own statement list, so it always ends the script (boundary rule R-I8).
+    exits: bool = False
     # roles "switch_case" / "try_catch": their fields are not specified yet, so whatever the
     # timeline gives is carried here as (key, value) pairs sorted by key. Opaque: never used in a decision.
     extra: tuple[tuple[str, object], ...] = ()
@@ -113,7 +116,8 @@ class EchoPart:
 
 @dataclass(frozen=True)
 class OutputNode:
-    """One output statement (Stmt_InlineHTML / Stmt_Echo / Expr_Print)."""
+    """One output statement (Stmt_InlineHTML / Stmt_Echo / Expr_Print; Expr_Exit for exit("msg"), a harness
+    extension pending Member 01 Q20)."""
 
     id: str
     kind: str
@@ -231,6 +235,8 @@ class Timeline:
     calls: tuple[CallEntry, ...] = ()
     function: "FunctionInfo | None" = None  # set when this is a function's own timeline
     order: tuple[str, ...] = ()  # the id of every entry (output statements and calls) in sequence order
+    # Optional (harness extension): the media type of a literal header("Content-Type: ...") call, lower-cased.
+    content_type: str | None = None
 
 
 # ----------------------------------------------------------------------------- Stage 1 result
@@ -566,3 +572,5 @@ class GenerationResult:
     components: tuple[GeneratedComponent, ...]  # in tree order
     todos: tuple[GenerationEntry, ...]  # C2Todo and unresolvedCondition, by file and line
     flags: tuple[GenerationEntry, ...]  # by file and line
+    # Set when nothing is generated for the unit (spec v0.8 section 6a): {"reason", "contentType", "owner"}
+    not_generated: dict | None = None

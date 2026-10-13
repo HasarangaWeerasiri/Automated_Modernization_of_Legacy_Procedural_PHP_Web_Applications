@@ -9,6 +9,22 @@ commit each one must be checked out at; mock timelines are byte-exact against th
 | WackoPicko | `legacy-apps/wackopicko` | `adamdoupe/WackoPicko` | `cabc1b3a06beda7df98e839fa2d84db9a4bdfee7` | MIT | `website/` | Rule-discovery app. All its PHP is under `website/` |
 | phpBlog | `legacy-apps/phpblog` | `codeplay-code/phpBlog-blogScript` | `4ffe3c9641a42b99829cf4b8e4185093793a3abc` | GPL-3.0 (its `LICENSE` file stays with it) | the repository root | Rule-discovery app, opened 13 Oct 2026 (roadmap Phase 3, app 1). Schema: `install/database.sql`. `config.php` is not in the repository: the installer (`install/`) writes it from `install/config.tpl`. The installer is parsed like any other page and never run |
 
+## Analysis substitutions (owner decision, 13 Oct 2026)
+
+A file that an app needs but that is **not in its repository** is analysed from another file, only where the
+evidence below shows what the missing file holds. The harness reads the list from `APPS[...]["substitutions"]`
+in `tools/harness/app.py`; a timeline made from a substituted file says so in `_provenance.analysisSubstitution`.
+No other substitution is made without asking the owner.
+
+| App | Missing file | Analysed from | Evidence |
+|---|---|---|---|
+| phpBlog | `config.php` | `install/config.tpl` | `install/done.php` 49–53: the installer reads the template and writes it as `config.php` after `str_replace` of the `<DB_HOST>`, `<DB_NAME>`, `<DB_USER>`, `<DB_PASSWORD>` placeholders, which stand only inside string literals (`config.tpl` 2–5). Its code is therefore the template's code |
+| phpBlog | `config_settings.php` | itself (it is in the repository) | `install/done.php` 22 rewrites it as `'<?php $settings = ' . var_export($settings, true) . '; ?>'`: one assignment, no output. It is a **no-output include** whatever the installer wrote |
+
+Note: `config.tpl` 10–13 prints through `printf("Database connection failed: ...")` and exits when the
+connection fails. `printf` is not an output kind of the timeline, so an include of `config.php` *may print*
+(`outputsInside: true`) although the file has no timeline of its own.
+
 The **document root** is the folder the web server serves. A generated page's route is its path from
 there, without `.php`; `index.php` is its directory (generation-spec v0.7 section 8a). The harness reads
 it from `APPS[...]["docroot"]` in `tools/harness/app.py`, which must say the same as this table.

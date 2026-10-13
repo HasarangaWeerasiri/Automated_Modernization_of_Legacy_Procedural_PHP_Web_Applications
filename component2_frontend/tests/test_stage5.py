@@ -916,11 +916,20 @@ def test_rl3_case_b_business_logic_if_abstains(tmp_path):
 
 
 def test_page_fallback_is_kept_when_the_page_is_the_smallest_component(tmp_path):
-    # A loop inside an attribute value cannot be placed anywhere: Stage 2 abstains on it, and the markup of the
-    # page itself cannot be built, so the page is the smallest enclosing component.
-    result = tiny(tmp_path, [html('<a href="'), ("loop", [html("x")]), html('">t</a>')])
+    # Output where a tag's *name* is written cannot be placed anywhere: the markup of the page itself cannot be
+    # built, so the page is the smallest enclosing component.
+    result = tiny(tmp_path, [html("<h"), echo(read("$level")), html(">t</h1>")])
     assert [(t.node_id, t.reason) for t in result.todos if t.reason != "no_endpoint"] == [
         ("page", "markup_not_generatable")]
+
+
+def test_a_loop_inside_an_attribute_value_costs_only_that_attribute(tmp_path):
+    # Spec v0.8 section 5b (start-tag fallback). Until v0.7 this replaced the whole page.
+    result = tiny(tmp_path, [html('<a href="'), ("loop", [html("x")]), html('">t</a>')])
+    assert body(result) == ["<a>t</a>"]
+    assert [(f.reason, f.severity) for f in flags(result) if f.flag == "attribute_omitted"] == [
+        ("loop_in_attribute", "todo")]
+    assert not todos(result, "markup_not_generatable")
 
 
 def test_list_whose_container_holds_page_output_falls_back_alone(tmp_path):

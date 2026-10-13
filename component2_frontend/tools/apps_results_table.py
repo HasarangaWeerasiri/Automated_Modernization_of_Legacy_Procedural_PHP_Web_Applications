@@ -101,7 +101,10 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
             + (". " + "; ".join((f"`{e['function']}()`" if e["function"] else f"`{e['path']}`")
                                 + f" is part of `{e['partOf']}`" for e in parts) if parts else "")
             + f". {len(index['silentFiles'])} files print nothing at their top level. "
-            f"{len(index['parseErrors'])} parse errors, {sum(bool(r['crash']) for r in rows)} crashes, "
+            + (f"{len(index['notGenerated'])} units are not generated (`"
+               + "`, `".join(f"{n['path']}: {n['reason']}" for n in index["notGenerated"]) + "`). "
+               if index.get("notGenerated") else "")
+            + f"{len(index['parseErrors'])} parse errors, {sum(bool(r['crash']) for r in rows)} crashes, "
             f"{len(index.get('collisions', []))} file collisions. `next build`: "
             + ("not run for this output" if build is None else "**ok**" if build["ok"] else "**failed**") + ".",
             "",

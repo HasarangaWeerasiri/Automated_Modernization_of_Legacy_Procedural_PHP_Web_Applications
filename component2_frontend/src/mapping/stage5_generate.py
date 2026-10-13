@@ -44,6 +44,8 @@ from src.mapping.markup import (
     GenerationError,
     Markup,
     MAbstain,
+    MAttrGap,
+    MAttrPresence,
     MBranch,
     MCall,
     MDynamic,
@@ -56,6 +58,7 @@ from src.mapping.markup import (
     php_literal_text,
 )
 from src.mapping import app_units
+from src.mapping import tags as tagtrack
 from src.mapping.repair import repair
 from src.mapping.stage3_requirements import _base_reads, _wrapper
 from src.model import (
@@ -78,7 +81,8 @@ from src.model import (
 COMPONENT_FILES = ("List", "Item", "Empty", "ConditionalComponent")
 REVIEW, INFO = "review", "info"
 SEVERITIES = ("todo", "review", "info")
-TODO_FLAGS = ("attribute_omitted", "output_dropped")  # flags that stand for a gap, like a C2Todo
+# flags that stand for a gap, like a C2Todo
+TODO_FLAGS = ("attribute_omitted", "output_dropped", "non_html_response")
 FLAGGED = ("missing", "cannot_reconcile")
 _SPACE_RUN = re.compile(f"[{re.escape(HTML_SPACE)}]+")
 _IDENTIFIER = re.compile(r"[A-Za-z_$][\w$]*")
@@ -236,6 +240,7 @@ class _Ctx:
     root: object = None  # the markup node of the component being written
     list_node: ComponentNode | None = None  # the List being written
     row: _Row | None = None
+    outer: _Row | None = None  # R-L4: the row of the loop around the List being written (its Item's `outer`)
     preserve: bool = False
     in_abstained: bool = False
     silent: bool = False  # inside an R-I7 region: nothing is rendered, only its flags are collected
@@ -319,6 +324,11 @@ class Generator:
         self.lists = [n for n in nodes if n.type == "List"]
         self.r_l5 = {n.source_ids[0] for n in nodes if n.rule == "R-L5"}
         self.r_i7 = {n.source_ids[0] for n in nodes if n.rule == "R-I7"}  # only inline JS: not a boundary
+        # R-I8: an if whose arms that print all exit after a redirect (nothing rendered), and an if whose
+        # `then` arm exits after other output (`cond ? arm : rest`)
+        self.r_i8_guard = {n.source_ids[0] for n in nodes if n.rule == "R-I8" and n.type == "Static"}
+        self.r_i8_exit = {n.source_ids[0] for n in nodes if n.rule == "R-I8" and n.type == "InlineConditional"}
+        self.r_i2b = {n.source_ids[0]: n for n in nodes if n.rule == "R-I2b" and n.type == "InlineConditional"}
         self.conds = {}
         for n in nodes:
             if n.type in ("InlineConditional", "ConditionalComponent"):
@@ -359,6 +369,7 @@ class Generator:
             used.add(candidate)
             return candidate
 
+        guards = [node for node in self.order if node.rule == "R-I2b" and node.type == "InlineConditional"]
         for node in self.order:
             if node.type == "List":
                 lists += 1
@@ -374,6 +385,11 @@ class Generator:
             elif node.type == "ConditionalComponent":
                 sections += 1
                 self.names[id(node)] = unique(f"{route}Section{sections}")
+        for node in guards:  # R-I2b: the Empty of several Lists is named after the first of them
+            stem = next((self.names[id(n)] for n in _walk(node) if n.type == "List"), f"{route}Lists")
+            for child in node.children:
+                if child.type == "Empty":
+                    self.names[id(child)] = unique(stem + "Empty")
 
     def row_scope(self, list_node: ComponentNode) -> _Row:
         list_id = self.ids[id(list_node)]
@@ -447,9 +463,75 @@ class Generator:
 
     def nodes(self, items: list, ctx: _Ctx) -> list:
         out = []
-        for item in items:
+        for index, item in enumerate(items):
+            if isinstance(item, MIf) and item.if_id in self.r_i8_exit and not ctx.silent:
+                # R-I8, case 2: everything after the if, to the end of its block, is its implicit else
+                out += self.exit_conditional(item, lambda: self.nodes(items[index + 1:], ctx), ctx)
+                break
             out += self.node(item, ctx)
         return self.spaces(out)
+
+    def exit_conditional(self, mif: MIf, rest, ctx: _Ctx) -> list:
+        """`cond ? <the arm that exits> : <rest>` (spec v0.8 section 6a). Stage 2 made sure the exiting arm is
+        the `then` arm; any other arm of the if is part of what follows when the condition is false."""
+        marks, arm = [], mif.branches[0]
+        self.place_markup_flags(mif, ctx, marks)
+        self.place_markup_flags(arm, ctx, marks)
+        condition = self.condition(mif, arm, ctx, marks)
+        content = self.nodes(arm.children, ctx)
+        branches, otherwise = [], None
+        for branch in mif.branches[1:]:
+            self.place_markup_flags(branch, ctx, marks)
+            inner = self.nodes(branch.children, ctx)
+            if branch.enclosure.branch == "else":
+                otherwise = inner
+            else:
+                branches.append((self.condition(mif, branch, ctx, marks), inner))
+        tail = [jsx.Cond(branches, otherwise)] if branches else list(otherwise or [])
+        tail += rest()
+        node = self.conds.get(mif.if_id)
+        if node is not None and id(node) not in self.cond_marks:
+            mark = ctx.file.mark()
+            marks.append(mark)
+            self.cond_marks[id(node)] = (ctx.file, mark, ctx.function, ctx.in_abstained)
+        return [jsx.Cond([(condition, content)], tail or None, marks=tuple(marks))]
+
+    # ---- R-I8, case 1: redirect guards
+
+    def arm_outputs(self, mif: MIf, branch: MBranch) -> list:
+        enclosure = branch.enclosure
+        return [n for n in self.outputs if any(
+            e.node_id == mif.if_id and (e.branch, e.cond_node_id) == (enclosure.branch, enclosure.cond_node_id)
+            for e in n.enclosed_by)]
+
+    def redirect_arm(self, mif: MIf, branch: MBranch) -> bool:
+        """The arm always exits and prints only a redirect (the test Stage 2 makes, on the same text)."""
+        nodes = self.arm_outputs(mif, branch)
+        return bool(branch.enclosure.exits and nodes and not any(app_units.is_slot(n) for n in nodes)
+                    and tagtrack.only_redirect("".join(tagtrack.output_text(n) for n in nodes)))
+
+    def redirect_flag(self, mif: MIf, branch: MBranch, ctx: _Ctx) -> None:
+        nodes = self.arm_outputs(mif, branch)
+        target = tagtrack.redirect_target("".join(tagtrack.output_text(n) for n in nodes))
+        self.flag(ctx, "redirect_guard", REVIEW, nodes[0].id,
+                  ("redirect to " + target if target else "redirect") + ", then exit: not rendered; the redirect "
+                  "belongs to Component 1 (R-I8)")
+
+    def redirect_guard(self, mif: MIf, ctx: _Ctx) -> list:
+        """An if that only redirects and exits: nothing is rendered for it and what follows renders."""
+        silent = ctx.child(silent=True, row=None)
+        for branch in mif.branches:
+            if self.redirect_arm(mif, branch):
+                self.redirect_flag(mif, branch, ctx)
+                self.place_markup_flags(branch, silent, [])
+                self.nodes(branch.children, silent)
+            else:  # its arms are guards themselves
+                self.place_markup_flags(branch, silent, [])
+                for child in branch.children:
+                    if isinstance(child, MIf):
+                        self.redirect_guard(child, ctx)
+        self.place_markup_flags(mif, silent, [])
+        return []
 
     def spaces(self, items: list) -> list:
         out, i = [], 0
@@ -529,6 +611,11 @@ class Generator:
         shell = self.shell
         calls = [i for i, c in enumerate(children) if isinstance(c, MCall) and shell is not None
                  and c.node.id in (shell.header_call, shell.footer_call)]
+        exiting = next((i for i, c in enumerate(children) if isinstance(c, MIf) and c.if_id in self.r_i8_exit), None)
+        if exiting is not None and len(calls) == 2 and exiting < calls[0]:
+            # R-I8 before the shell's header: the shell is part of what renders when the arm does not exit
+            return [*self.nodes(children[:exiting], ctx), *self.exit_conditional(
+                children[exiting], lambda: self.page_body(children[exiting + 1:], ctx), ctx)]
         if len(calls) != 2:
             return self.nodes(children, ctx)
         first, last = calls
@@ -559,6 +646,10 @@ class Generator:
 
     def value(self, output: OutputNode, ctx: _Ctx) -> _Value:
         """What an echo prints: a TypeScript expression, a literal text, or the reason it is a gap."""
+        outer = ctx.outer
+        if outer is not None and outer.php_var and (ctx.row is None or ctx.row.php_var != outer.php_var) and any(
+                base.var == outer.php_var for r in output.reads for base, _ in _base_reads(r)):
+            ctx.uses.add("outer")  # R-L4: a read of the outer loop's row inside the inner loop
         if len(output.reads) != 1:
             return _Value(todo="expression_not_translatable")
         read, wrappers = output.reads[0], []
@@ -710,8 +801,8 @@ class Generator:
         layout, marks = self.layout_ctx(ctx), []
         for a in el.attrs:
             if any(not isinstance(part, str) for part in a.parts or []):
-                self.flag(ctx, "document_shell", REVIEW, a.node_id, f"dynamic {a.name} on <{el.tag}> is not in "
-                          "app/layout.tsx")
+                self.flag(ctx, "document_shell", REVIEW, a.node_id,
+                          f"dynamic {a.name or 'attribute'} on <{el.tag}> is not in app/layout.tsx")
         literal = replace(el, attrs=[a for a in el.attrs if all(isinstance(p, str) for p in a.parts or [])])
         return self.attributes(literal, layout, marks), tuple(marks)
 
@@ -770,36 +861,119 @@ class Generator:
 
     def attributes(self, el: MElement, ctx: _Ctx, marks: list) -> list:
         out, seen = [], set()
+        # R-I3b says what a conditional attribute does when the same attribute stands *earlier* in the tag (it has
+        # no effect). One that stands *later* (static, or in a second if) is not covered: which of the two a
+        # browser takes depends on the condition. Both are left out and flagged (start-tag fallback).
+        conditional, uncovered = set(), set()
         for a in el.attrs:
-            name = a.name
-            if _EVENT_ATTRIBUTE.fullmatch(name):
-                marks.append(self.flag(ctx, "inline_js_dropped", REVIEW, a.node_id, f"{name} on <{el.tag}>"))
+            names = {m.name for _, found in a.branches for m in found} if isinstance(a, MAttrPresence) else {a.name}
+            uncovered |= names & conditional
+            if isinstance(a, MAttrPresence):
+                conditional |= names
+        for a in el.attrs:
+            if isinstance(a, MAttrGap):  # spec v0.8 section 5b: only this tag's attribute is lost
+                marks.append(self.flag(ctx, "attribute_omitted", REVIEW, a.node_id, f"an attribute of <{el.tag}>",
+                                       reason=a.reason))
                 continue
-            if name in seen:
+            if isinstance(a, MAttrPresence):
+                out += self.presence(a, el, ctx, marks, seen, uncovered)
+                continue
+            if a.name in uncovered:
+                marks.append(self.flag(ctx, "attribute_omitted", REVIEW, a.node_id,
+                                       f"{a.name} on <{el.tag}>: also printed by an if earlier in the tag",
+                                       reason="partial_attribute_output"))
+                continue
+            if a.name in seen and not _EVENT_ATTRIBUTE.fullmatch(a.name):
                 marks.append(self.flag(ctx, "duplicate_attribute", INFO, a.node_id,
-                                       f"second {name} on <{el.tag}> dropped: a browser keeps the first"))
+                                       f"second {a.name} on <{el.tag}> dropped: a browser keeps the first"))
                 continue
-            seen.add(name)
-            omitted = self.config.omitted_attributes.get(el.tag, {}).get(name)
-            if omitted:
-                marks.append(self.flag(ctx, omitted, REVIEW, a.node_id, f"{name} on <{el.tag}> omitted"))
-                continue
-            if name == "style":
-                attr = self.style(a, el, ctx, marks)
-                if attr is not None:
-                    out.append(attr)
-                continue
-            prop = self.prop_name(el, name)
-            kinds = self.prop_kinds(el.tag, prop) if prop is not None else None
-            if prop is not None and kinds is None and "-" in prop and not prop.startswith("aria-"):
-                kinds = "s"  # TypeScript does not check hyphenated JSX attribute names it does not know
-            if kinds is None:
-                marks.append(self.flag(ctx, "attribute_dropped", REVIEW, a.node_id,
-                                       f"{name} is not in React's types for <{el.tag}>"))
-                continue
-            attr = self.attribute(a, el, prop, kinds, ctx, marks)
+            attr = self.static_attribute(a, el, ctx, marks, seen)
             if attr is not None:
                 out.append(attr)
+        return out
+
+    def static_attribute(self, a, el: MElement, ctx: _Ctx, marks: list, seen: set):
+        """One attribute as a JSX prop, or None when it is dropped or omitted (flagged)."""
+        name = a.name
+        if _EVENT_ATTRIBUTE.fullmatch(name):
+            marks.append(self.flag(ctx, "inline_js_dropped", REVIEW, a.node_id, f"{name} on <{el.tag}>"))
+            return None
+        seen.add(name)
+        omitted = self.config.omitted_attributes.get(el.tag, {}).get(name)
+        if omitted:
+            marks.append(self.flag(ctx, omitted, REVIEW, a.node_id, f"{name} on <{el.tag}> omitted"))
+            return None
+        if name == "style":
+            return self.style(a, el, ctx, marks)
+        prop = self.prop_name(el, name)
+        kinds = self.prop_kinds(el.tag, prop) if prop is not None else None
+        if prop is not None and kinds is None and "-" in prop and not prop.startswith("aria-"):
+            kinds = "s"  # TypeScript does not check hyphenated JSX attribute names it does not know
+        if kinds is None:
+            marks.append(self.flag(ctx, "attribute_dropped", REVIEW, a.node_id,
+                                   f"{name} is not in React's types for <{el.tag}>"))
+            return None
+        return self.attribute(a, el, prop, kinds, ctx, marks)
+
+    def presence(self, a: MAttrPresence, el: MElement, ctx: _Ctx, marks: list, seen: set, uncovered: set) -> list:
+        """R-I3b (spec v0.8 section 6a): each attribute an if prints between attributes is a conditional prop,
+        `attr={cond ? "v" : undefined}`, a boolean one `attr={cond}`."""
+        plans = []  # (prop, the value code each arm of the if prints for it, or None where the arm does not)
+        for name in dict.fromkeys(m.name for _, found in a.branches for m in found):
+            first = next(m for _, found in a.branches for m in found if m.name == name)
+            if name in uncovered:
+                marks.append(self.flag(ctx, "attribute_omitted", REVIEW, first.node_id,
+                                       f"{name} on <{el.tag}>: printed by an if and again later in the tag",
+                                       reason="partial_attribute_output"))
+                continue
+            if name in seen:  # R-I3b: it stands earlier in the tag, and a browser keeps the first
+                marks.append(self.flag(ctx, "duplicate_attribute", INFO, first.node_id,
+                                       f"conditional {name} on <{el.tag}> has no effect: a browser keeps the first"))
+                continue
+            seen.add(name)
+            prop, values = None, []
+            for _, found in a.branches:
+                written = next((m for m in found if m.name == name), None)
+                attr = self.static_attribute(written, el, ctx, marks, set()) if written is not None else None
+                if written is not None and attr is None:
+                    prop = None  # dropped or omitted for its own reason (flagged), e.g. `selected` on <option>
+                    break
+                if attr is not None:
+                    prop = attr.name
+                values.append(None if attr is None else attr.code if attr.code is not None else (
+                    jsx.js_string(attr.value) if attr.value is not None else "true"))
+            if prop is not None:
+                plans.append((prop, values))
+        if not plans:
+            return []  # nothing is written: the conditions are not needed either
+        conditions = []  # per arm; None for the else arm
+        for enclosure, _ in a.branches:
+            if enclosure.branch == "else":
+                conditions.append(None)
+                continue
+            node_id = a.if_id if enclosure.branch == "then" else enclosure.cond_node_id
+            translation = translate(enclosure.cond_expr, self.scope(ctx), self.config.condition_context_reasons)
+            if translation.code is not None:
+                self.translated(translation, node_id, ctx, marks)
+                conditions.append(translation.code)
+            else:
+                conditions.append(self.unresolved(node_id, translation.reason, ctx, marks))
+        silent_then = None  # the if's `then` arm prints nothing: its condition is not in the timeline
+        if a.branches[0][0].branch != "then":
+            silent_then = self.unresolved(a.if_id, "condition_unavailable", ctx, marks)
+        out = []
+        for prop, values in plans:
+            code = "undefined"
+            for condition, value in reversed(list(zip(conditions, values))):
+                if condition is None:
+                    code = value if value is not None else "undefined"
+                elif value is not None or code != "undefined":
+                    code = f"{condition} ? {value if value is not None else 'undefined'} : {code}"
+            if silent_then is not None:
+                code = f"{silent_then} ? undefined : {code}"
+            elif len(conditions) == 1 and values == ["true"]:
+                code = conditions[0]  # a boolean attribute under one condition
+            out.append(jsx.Attr(prop, code=code))
         return out
 
     def attribute(self, a, el: MElement, prop: str, kinds: str, ctx: _Ctx, marks: list):
@@ -867,6 +1041,8 @@ class Generator:
                         marks.append(self.flag(ctx, "unsupported_wrapper", REVIEW, node_id,
                                                f"{wrapper}() not applied"))
                     pieces.append(("code", code))
+            elif isinstance(part, MAttrGap):  # start-tag fallback: something in the value cannot be written
+                failures.append((part.reason, part.node_id))
             else:  # MAttrIf: an if inside the value (R-I3)
                 code, inner = self.attribute_if(part, ctx, marks)
                 failures += inner
@@ -985,6 +1161,8 @@ class Generator:
     def if_(self, mif: MIf, ctx: _Ctx) -> list:
         if mif.if_id == self.page_guard:  # R-I1: the page renders normally
             return self.page_body(mif.branches[0].children, ctx)
+        if mif.if_id in self.r_i8_guard and not ctx.silent:  # R-I8: a redirect guard is not a component
+            return self.redirect_guard(mif, ctx)
         if mif.if_id in self.r_i7 or ctx.silent:  # R-I7: only inline JS inside; its flags are placed, nothing more
             silent = ctx.child(silent=True, row=None)
             for branch in mif.branches:
@@ -1002,9 +1180,21 @@ class Generator:
         marks = []
         self.place_markup_flags(mif, ctx, marks)
         contents = []
+        guard = self.r_i2b.get(mif.if_id)  # R-I2b: one guard around several Lists
+        empties = [c for c in guard.children if c.type == "Empty"] if guard is not None else []
         for branch in mif.branches:
             self.place_markup_flags(branch, ctx, marks)
-            contents.append(self.nodes(branch.children, ctx))
+            if branch.enclosure.exits and self.redirect_arm(mif, branch):
+                # R-I8 beside arms that print something else: this arm renders nothing
+                self.redirect_flag(mif, branch, ctx)
+                self.nodes(branch.children, ctx.child(silent=True, row=None))
+                contents.append([])
+            elif guard is not None and not any(isinstance(n, MLoop) for n in _markup_walk(branch)) and empties:
+                empty = empties.pop(0)  # the guard's other arm is the Lists' Empty
+                self.roots[id(empty)] = branch
+                contents.append(self.call(empty, ctx))
+            else:
+                contents.append(self.nodes(branch.children, ctx))
         if not any(contents):
             return []  # renders nothing whatever the condition says
         branches, otherwise = self.silent_then(mif, ctx, marks), None
@@ -1079,6 +1269,18 @@ class Generator:
             return [jsx.Map(rows, "_row, i", [jsx.Fragment(body, key="i")], marks=tuple(marks))]
         raise GenerationError("markup_not_generatable", f"loop {loop_id} is not part of a List")
 
+    def iterates_over(self, loop, outer: _Row) -> bool:
+        """The inner loop's iterable uses the outer row: its expression names the outer loop's variable, or it
+        walks the result of a query whose SQL does (`... WHERE id='$row[post_id]'`)."""
+        if not outer.php_var or loop.value_var == outer.php_var:
+            return False
+        uses = re.compile(re.escape(outer.php_var) + r"(?![A-Za-z0-9_])")
+        text = loop.iter_expr or ""
+        if uses.search(text):
+            return True
+        return any(q.result_var and re.search(re.escape(q.result_var) + r"(?![A-Za-z0-9_])", text)
+                   and uses.search(q.sql) for q in self.timeline.queries.values())
+
     def list_map(self, mloop: MLoop, ctx: _Ctx) -> list:
         lst, out, marks = ctx.list_node, [], []
         self.place_markup_flags(mloop, ctx, marks)
@@ -1088,6 +1290,8 @@ class Generator:
         ctx.uses.add("items")
         item = next((c for c in lst.children if c.type == "Item"), None)
         row = self.row_scope(lst)
+        if ctx.outer is not None and self.iterates_over(mloop.enclosure, ctx.outer):
+            ctx.uses.add("outer")  # R-L4: what the inner loop iterates over comes from the outer row
         if item is None and "R-L3b" in lst.rules:  # a text-only body: an inline map of keyed Fragments (spec 5a)
             had_row = "row" in ctx.uses
             body = self.nodes(mloop.children, ctx.child(row=row))
@@ -1100,6 +1304,9 @@ class Generator:
             name, props = self.component(item, ctx, row)
             ctx.file.use(self.component_module(ctx.file, name), name)
             attrs = [jsx.Attr("key", code="i"), jsx.Attr("row", code="row")]
+            if "outer" in props:
+                attrs.append(jsx.Attr("outer", code="outer"))
+                ctx.uses.add("outer")
             if "data" in props:
                 attrs.append(jsx.Attr("data", code="data"))
                 ctx.uses.add("data")
@@ -1236,6 +1443,12 @@ class Generator:
         if "row" in props and component.type != "List":
             attrs.append(jsx.Attr("row", code="row"))
             ctx.uses.add("row")
+        if "outer" in props and component.type == "List" and ctx.row is not None:
+            attrs.append(jsx.Attr("outer", code="row"))  # R-L4: the inner List is given the outer Item's row
+            ctx.uses.add("row")
+        elif "outer" in props and component.type != "List":
+            attrs.append(jsx.Attr("outer", code="outer"))
+            ctx.uses.add("outer")
         if "data" in props:
             attrs.append(jsx.Attr("data", code="data"))
             ctx.uses.add("data")
@@ -1250,7 +1463,10 @@ class Generator:
         key = file.mark()
         root = self.roots[id(component)]
         ctx = _Ctx(file=file, markup=caller.markup, boundary=caller.boundary, function=name, function_key=key,
-                   root=root, row=row, in_abstained=caller.in_abstained)
+                   root=root, row=row, in_abstained=caller.in_abstained,
+                   outer=row if component.type == "List" else caller.outer)
+        if component.type == "Item" and "outer" in caller.uses:
+            ctx.uses.add("outer")  # R-L4: the inner Item receives the outer row whenever its List does
         required = {"List": ("items",), "Item": ("row",)}.get(component.type, ())
         if component.type == "List":
             ctx.list_node = component
@@ -1267,7 +1483,7 @@ class Generator:
         slot = _Function(name, "", ctx.locals, body, key)
         file.functions.insert(0, slot)
         props = set(ctx.uses) | set(required)
-        slot.header = f"export function {name}({self.signature(props, ctx.row, required, component)}) {{"
+        slot.header = f"export function {name}({self.signature(props, ctx.row, required, component, ctx.outer)}) {{"
         for pending in ctx.pending:
             self.abstained_function(pending, ctx)
         self.generated[id(component)] = (name, props)
@@ -1314,7 +1530,8 @@ class Generator:
             return ""
         return "{ " + ", ".join(names) + " }: { " + "; ".join(types) + " }"
 
-    def signature(self, props: set, row: _Row | None, required: tuple = (), component=None) -> str:
+    def signature(self, props: set, row: _Row | None, required: tuple = (), component=None,
+                  outer: _Row | None = None) -> str:
         names, types = [], []
         if "items" in props:
             item_type = self.row_scope(component).type_code if component is not None and component.type == "List" \
@@ -1324,6 +1541,9 @@ class Generator:
         if "row" in props:
             names.append("row")
             types.append(f"row: {row.type_code if row else 'Record<string, unknown>'}")
+        if "outer" in props:
+            names.append("outer")
+            types.append(f"outer: {outer.type_code if outer else 'Record<string, unknown>'}")
         if "data" in props:
             names.append("data")
             types.append(f"data: {self.response_type}")
@@ -1342,7 +1562,24 @@ class Generator:
 
     # ---- the page
 
+    def not_generated(self) -> GenerationResult:
+        """Section 5 / spec v0.8 section 6a: a unit that is not an HTML response is no page. Nothing is written
+        for it; it is listed under notGenerated, with one entry that counts as a gap."""
+        media_type = self.timeline.content_type
+        detail = (f"Content-Type {media_type}: not an HTML page. An API route (Next.js Route Handler), owned by "
+                  "Component 1")
+        entry = GenerationEntry(
+            kind="flag", flag="non_html_response", reason="non_html_response", status=REVIEW, file="", line=0,
+            node_id="page", detail=detail, function="", in_abstained=False, source_line=None, severity="todo",
+            severity_if_rendered="todo")
+        return GenerationResult(entrypoint=self.timeline.entrypoint, route=self.route, files=(), components=(),
+                                todos=(), flags=(entry,),
+                                not_generated={"reason": "non_html_response", "contentType": media_type,
+                                               "owner": "Component 1 (Route Handler)"})
+
     def run(self) -> GenerationResult:
+        if self.tree.root.status == "abstain" and self.tree.root.reason == "non_html_response":
+            return self.not_generated()
         page = self.file(self.root_path)
         key = page.mark()
         try:
@@ -1774,6 +2011,7 @@ def result_to_dict(result: GenerationResult, output_dir: str) -> dict:
         "outputDir": output_dir,
         "counts": counts(result),
         "files": [f.path for f in result.files],
+        **({"notGenerated": result.not_generated} if result.not_generated else {}),
         "components": [{"componentId": c.component_id, "type": c.type, "name": c.name, "file": c.file,
                         "c2todos": c.todos} for c in result.components],
         "c2todos": [_entry_dict(t) for t in result.todos],

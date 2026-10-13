@@ -362,9 +362,10 @@ def test_the_included_shell_is_generated_like_a_function_shell(site):
     assert not [f for f in site["stage"]("site__users__login.php", 5)["flags"] if f["flag"] == "document_shell"]
 
 
-def test_header_and_footer_files_that_do_not_close_exactly_are_no_pair(tmp_path):
-    """phpBlog admin/header.php: <head> and <main> are left open and only the browser closes them."""
-    files = {"header.php": "<html><head><title>T</title><body><div><main>", "footer.php": "</div></body></html>",
+def test_header_and_footer_files_that_do_not_close_at_all_are_no_pair(tmp_path):
+    """(What phpBlog's admin header leaves to the browser, <head> and <main>, pairs since rules v0.13: see
+    tests/test_phase3b.py. A footer that leaves a <div> open still does not.)"""
+    files = {"header.php": "<html><head><title>T</title></head><body><div><div>", "footer.php": "</div>",
              "page.php": "<?php include 'header.php'; ?><p>x</p><?php include 'footer.php'; ?>"}
     result = run(tmp_path, files)
     assert result["index"]["shells"] == []
@@ -488,13 +489,13 @@ def test_an_expression_where_an_attribute_name_is_written_abstains_inside_an_inl
         "markup_from_expression") == 1
 
 
-def test_an_if_that_prints_a_whole_attribute_still_reaches_the_last_resort(tmp_path):
-    """No rule covers it (R-I3 is for an `if` inside an attribute value): recorded as a candidate, not handled."""
-    php = "<div><p>kept?</p><select><option value=\"a\" <?php if ($v == 'a') { echo 'selected'; } ?>>A</option></select></div>"
+def test_the_pattern_log_counts_every_if_between_attributes(tmp_path):
+    """Step 1 recorded it as a candidate; since rules v0.13 it is R-I3b (tests/test_phase3b.py)."""
+    php = "<div><p>kept</p><select><option value=\"a\" <?php if ($v == 'a') { echo 'selected'; } ?>>A</option></select></div>"
     result = stages(tmp_path, php)
-    (todo,) = [t for t in result["stage5"]["c2todos"] if t["reason"] == "markup_not_generatable"]
-    assert "inside a tag, outside a value" in todo["detail"] and "<select>" not in result["files"]["app/page/page.tsx"]
-    assert pattern_log.attribute_ifs(result["path"], load_boundary_config()) == [((1, 50), "option", "selected")]
+    assert not [t for t in result["stage5"]["c2todos"] if t["reason"] == "markup_not_generatable"]
+    assert "<select>" in result["files"]["app/page/page.tsx"]
+    assert pattern_log.attribute_ifs(result["path"], load_boundary_config()) == [((1, 49), "option", "selected")]
 
 
 # ---------------------------------------------------------------- phpBlog, the first new discovery app
@@ -521,25 +522,40 @@ def test_phpblog_is_pinned_and_keeps_its_licence():
 
 def test_phpblog_runs_whole_without_a_crash_and_compiles(phpblog):
     _, index = phpblog
-    assert index["files"] == 50 and index["parseErrors"] == {} and index["collisions"] == []
+    assert index["files"] == 51 and index["parseErrors"] == {} and index["collisions"] == []  # with config.php
     assert [p["key"] for p in index["pages"] if p["crash"]] == []
     assert index["schemaFiles"] == ["install/database.sql"]  # SELECT * is expanded from its own schema
-    assert [(s["name"], s["group"]) for s in index["shells"]] == [("HeadShell", "(head)"), ("HeadShell2", "(head-2)")]
+    assert [(s["name"], s["group"]) for s in index["shells"]] == [
+        ("HeadShell", "(head)"), ("HeadShell2", "(head-2)"), ("AdminHeaderShell", "(admin-header)")]
     assert {"app/(head)/page.tsx", "app/(head)/layout.tsx", "app/(head)/post/page.tsx", "components/Sidebar.tsx",
-            "app/(head-2)/install/page.tsx", "app/(plain)/admin/page.tsx",
-            "app/(plain)/admin/dashboard/page.tsx"} <= set(index["appFiles"])
+            "app/(head-2)/install/page.tsx", "app/(plain)/admin/page.tsx", "components/AdminHeaderShell.tsx",
+            "app/(admin-header)/layout.tsx", "app/(admin-header)/admin/dashboard/page.tsx"} <= set(index["appFiles"])
+    assert [(n["path"], n["reason"]) for n in index["notGenerated"]] == [
+        ("rss.php", "non_html_response"), ("sitemap.php", "non_html_response")]
+    assert not [f for f in index["appFiles"] if "rss" in f or "sitemap" in f]
     if compile_check.unavailable() is None:
         assert index["tscRan"] and index["tscUnattributed"] == 0, index["tscOutput"]
-        assert [(p["key"], p["tsc"]) for p in index["pages"] if p["role"] != "shell_part" and p["tsc"] != 0] == []
+        assert [(p["key"], p["tsc"]) for p in index["pages"]
+                if p["role"] != "shell_part" and not p.get("notGenerated") and p["tsc"] != 0] == []
 
 
-def test_phpblog_admin_header_and_footer_files_are_no_pair_as_r_f2_is_written(phpblog):
+def test_phpblog_admin_header_and_footer_files_pair_after_implicit_closes(phpblog):
+    """Rules v0.13, R-F2 refined. Step 1: no pair as the rule was written, 48 tag_crosses_function."""
     output, index = phpblog
     admin = [p for p in index["pages"] if p["path"].startswith("admin/") and p["role"] == "page"]
-    assert len(admin) == 27 and {p["group"] for p in admin} == {"(plain)"}
-    stage2 = json.loads((output / "phpblog" / "admin__dashboard.php" / "stage2.json").read_text(encoding="utf-8"))
-    reasons = [n["reason"] for n in apps_results_table._walk(stage2["tree"]) if n["status"] == "abstain"]
-    assert reasons == ["tag_crosses_function", "tag_crosses_function"]  # include header.php, include footer.php
+    assert len(admin) == 25 and sorted({p["group"] for p in admin}) == ["(admin-header)", "(plain)"]
+    assert [p["path"] for p in admin if p["group"] == "(plain)"] == ["admin/index.php"]  # the login page: no include
+    reasons = {}
+    for entry in index["pages"]:
+        if entry["role"] == "shell_part" or entry.get("notGenerated"):
+            continue
+        stage2 = json.loads((output / "phpblog" / entry["key"] / "stage2.json").read_text(encoding="utf-8"))
+        for node in apps_results_table._walk(stage2["tree"]):
+            if node["status"] == "abstain":
+                reasons[node["reason"]] = reasons.get(node["reason"], 0) + 1
+    assert "tag_crosses_function" not in reasons and reasons["cross_file_output"] == 24
+    shell = (output / "phpblog" / "next-app" / "components" / "HeadShell.tsx").read_text(encoding="utf-8")
+    assert shell.count("\n") > 100 and "{children}" in shell  # the public shell is generated, not one C2Todo
 
 
 def test_the_pattern_log_has_a_phpblog_section_that_does_not_decide(phpblog, tmp_path):
@@ -552,9 +568,11 @@ def test_the_pattern_log_has_a_phpblog_section_that_does_not_decide(phpblog, tmp
     finally:
         pattern_log.APPS = apps
     assert "phpblog: constructs against the §8 definition of a new pattern (Phase 3)" in log
-    for heading in ("### (a) Candidate new patterns", "### (b) Existing patterns with new instances",
+    for heading in ("### (a) New patterns (the owner's verdict, rules v0.13) and what each is now",
+                    "### (b) Existing patterns with new instances",
                     "### (c) Implementation gaps fixed for this app (not new patterns)",
                     "### (d) Unresolved reads, missing labels, no endpoint only"):
         assert heading in log
-    assert "`if` that prints a whole attribute inside a tag — **9**" in log and "**This table does not decide**" in log
+    assert "Attribute-presence conditional (R-I3b)" in log and "**This table does not decide**" in log
+    assert "Redirect guard (R-I8, case 1) — **" in log and "Unit that is not an HTML response — **2**" in log
     assert "`phpblog/admin/comments.php:67:" in log and "prints `selected`" in log  # every such `if`

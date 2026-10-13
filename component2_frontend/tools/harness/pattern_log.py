@@ -73,9 +73,19 @@ CATALOGUE = {
         "The included file's top level prints (it has a timeline of its own) and it is not half of a shell pair. "
         "R-F1 is written for functions, so no rule places that output here: one C2Todo at the include."),
     "abstain:list_guard_multiple_loops": (
-        "A", "An `if` that holds two or more output loops", CANDIDATE,
-        "R-I2 is written for one List per guard. Stage 2 abstains on the `if`; its content is in an unused "
-        "`Abstained_` function."),
+        "A", "An `if` with output loops in different arms", "existing: R-I2 / R-I2b (rules v0.13)",
+        "R-I2b covers several loops in one arm. Loops in different arms: neither rule says which List an arm "
+        "is the Empty of."),
+    "abstain:non_html_response": (
+        "A", "Unit that is not an HTML response", "existing: section 5 `non_html_response` (rules v0.13)",
+        "`header(\"Content-Type: text/xml\")`: an RSS feed, a sitemap. Not a page; an API route owned by C1. "
+        "Nothing is generated; the unit is listed under `notGenerated`."),
+    "abstain:exit_arm_not_covered": (
+        "A", "Exit arm where R-I8's written text does not fit", CANDIDATE,
+        "An arm that ends in `exit` / `die` after output that is not a redirect, where \"the rest of the "
+        "enclosing block is its implicit else\" is not the whole truth: the arm is nested in another `if` or "
+        "loop, or stands in a function or an included file (the exit also ends what encloses the block), or it "
+        "is not the `then` arm, or the rest closes tags opened before the `if`."),
     "abstain:partial_attribute_output": (
         "A", "An `if` that starts inside a tag and also prints elements", "existing: section 5 (no rule matches)",
         "R-I3 covers an `if` that stays inside one attribute value. This one starts in a tag and goes on."),
@@ -125,8 +135,10 @@ CATALOGUE = {
         "last resort replaces the smallest enclosing component with one C2Todo: here that is the whole page or "
         "shell (one row below per unit lost; the first such `if` of the unit is shown)."),
     "seen:if_prints_attribute": (
-        "B", "… every such `if` (counted by re-reading the markup)", CANDIDATE,
-        "All occurrences, not only the first per unit. The detail says what the `if` prints."),
+        "E", "`if` between the attributes of a start tag (counted by re-reading the markup)",
+        "existing: R-I3b (rules v0.13)",
+        "Every occurrence. The detail says what the `if` prints. Complete literal attributes are conditional "
+        "props (R-I3b); anything else costs that tag's attribute only (start-tag fallback)."),
     "fallback:expression_in_attribute_name": (
         "B", "Expression where an attribute name is written (not caught by Stage 2)", "existing: rules v0.9 §1",
         "A separate `echo $selected` between attributes. Section 1 abstains on this for an echo *part* "
@@ -154,7 +166,7 @@ CATALOGUE = {
     "note:heredoc_output+markup": ("C", "Markup inside a heredoc, not split", "existing: Rows printed by one echo string / concatenated echo with markup (rules v0.9 §1, §8)", "One unresolved read."),
     "note:heredoc_output": ("C", "Heredoc output, not split", "existing: Rows printed by one echo string / concatenated echo with markup (rules v0.9 §1, §8)", "One unresolved read."),
     "note:exit_after_output": (
-        "C", "Output followed by `exit` in one block (redirect guard)", CANDIDATE,
+        "E", "Output followed by `exit` in one block, as the harness sees it", "existing: R-I8 (rules v0.13)",
         "`if (...) { echo '<meta http-equiv=\"refresh\" ...>'; exit; }`. When the block runs, nothing after it is "
         "printed. The timeline has no exit, so everything after the guard is generated as if it always rendered. "
         "Related section 8 row: `die()` / `exit()` with a message."),
@@ -163,7 +175,8 @@ CATALOGUE = {
         "Only arms with output are in the timeline, so the later arm looks as if it followed the earlier ones "
         "directly: `if (a) {X} elseif (b) {} else {Y}` would be generated as `a ? X : Y`."),
     "note:markup_in_assigned_string": (
-        "C", "Markup or an attribute kept in a variable (`$image = '<img ...>'`)", CANDIDATE,
+        "C", "Markup or an attribute kept in a variable (`$image = '<img ...>'`)",
+        "data flow, not a boundary rule (rules v0.13 section 8)",
         "A string literal with a tag or a written-out attribute is assigned (or appended) to a variable. Where the "
         "variable is printed it is one value: an unresolved read, which React would escape. Not every such "
         "variable is printed (some are mailed or written to a file)."),
@@ -202,6 +215,21 @@ CATALOGUE = {
         "E", "Page inside a header / footer shell (R-F2)", "existing: Layout via functions (rules v0.11 R-F2)",
         "The page's content is the shell component's children; `<html>`, `<head>` and `<body>` are the route "
         "group's root layout."),
+    "handled:r_i3b": (
+        "E", "Attribute-presence conditional (R-I3b)", "existing: R-I3b (rules v0.13)",
+        "`<li <?php if (...) echo 'class=\"nav-item\"'; ?>>`: each attribute is a conditional prop."),
+    "handled:r_i2b": (
+        "E", "List guard around several loops (R-I2b)", "existing: R-I2b (rules v0.13)",
+        "One conditional around all the Lists; the guard's other arm is their Empty."),
+    "handled:r_i8_guard": (
+        "E", "Redirect guard (R-I8, case 1)", "existing: R-I8 (rules v0.13)",
+        "An arm that prints only a redirect and exits: not a component, nothing rendered, flag `redirect_guard`."),
+    "handled:r_i8_exit": (
+        "E", "Exit arm with other output (R-I8, case 2)", "existing: R-I8 (rules v0.13)",
+        "`cond ? <arm> : <rest of the block>`."),
+    "flag:implied_end_tag": (
+        "E", "Implied end tag: `<li>`, `<dt>` / `<dd>`, `<option>`, `<head>` before `<body>` (spec 5b, v0.8)",
+        "existing: Invalid nesting the browser repairs (rules v0.11 section 8)", "Closed as a browser does."),
     "handled:r_i7": (
         "E", "`if` or loop whose only output is inline JS (R-I7)", "existing: rules v0.11 R-I7",
         "Nothing to render, so no boundary. The JS is still flagged `inline_js_dropped`."),
@@ -270,7 +298,7 @@ class _AttributeIfs(markup.Builder):
         self.found = []  # (if id, the tag it is in, what its first branch prints)
 
     def if_(self, item):
-        if self.state != "data" and self.state not in markup._ATTR_VALUE:
+        if self.state not in ("data", "rawtext") and self.state not in markup._ATTR_VALUE:
             first = markup._first_output(item)
             text = (first.raw if first.raw is not None else markup.php_literal_text(first.reads[0].expr)
                     if len(first.reads) == 1 else None) if first is not None else None
@@ -405,6 +433,14 @@ def collect(output: Path) -> dict:
                     add("handled:r_f2", where(app, entry, None))
                 if node["rule"] == "R-I7":
                     add("handled:r_i7", where(app, entry, *first))
+                if node["rule"] == "R-I3b" and node["status"] != "abstain":
+                    add("handled:r_i3b", where(app, entry, *first))
+                if node["rule"] == "R-I2b" and node["type"] == "InlineConditional":
+                    add("handled:r_i2b", where(app, entry, *first))
+                if node["rule"] == "R-I8" and node["type"] == "Static":
+                    add("handled:r_i8_guard", where(app, entry, *first))
+                if node["rule"] == "R-I8" and node["type"] == "InlineConditional":
+                    add("handled:r_i8_exit", where(app, entry, *first))
                 if node["type"] == "List" and "R-L3b" in node["rules"]:
                     add("handled:r_l3b", where(app, entry, *first))
                 if node["rule"] == "R-L3":
@@ -475,38 +511,25 @@ def per_app(places: list, app: str) -> int:
 # Phase 3 (boundary-rules v0.12 section 8): where each kind stands against the definition of a new pattern.
 # class a = candidate new, b = existing pattern with new instances, d = data / labels / endpoint only.
 PHASE3 = {
-    "fallback:if_prints_attribute": ("a", "NEW (candidate)",
-        "R-I3 is written for an `if` inside an attribute value. No rule or abstain reason of §2–§5 names an `if` "
-        "that prints the attribute itself, and the units it is in are lost whole. 0 in HMS and WackoPicko."),
-    "seen:if_prints_attribute": ("a", "NEW (candidate), the same construct",
-        "Every occurrence: `selected` / `checked` / `autofocus` on form controls, `class=\"nav-item\"` on menu "
-        "items."),
-    "note:exit_after_output": ("a", "NEW (candidate); nearest row: `die()` / `exit()` with a message",
-        "(b) of the definition: once the guard's condition is resolved, the generated page prints the redirect "
-        "*and* the rest of the page, the legacy page stops at `exit`. Today the condition is unresolved (false), "
-        "so the rest renders, which matches the legacy page when the guard does not fire."),
-    "note:markup_in_assigned_string": ("a", "NEW (candidate); nearest row: Rows printed by one echo string",
-        "The echo-string row is about markup in the echo's own literal pieces. Here the markup is the *value* of "
-        "a variable (`$image = '<img ...>'`, `$active = 'class=\"active\"'`), set earlier, often in an `if`. It is "
-        "generated as one unresolved read: flagged, but nothing says the value is markup."),
-    "abstain:list_guard_multiple_loops": ("a", "NEW (candidate); nearest rule: R-I2",
-        "The abstain reason is not in §5's list (the code has had it since Stage 2 v0.3, never met on a whole "
-        "app)."),
-    "fallback:element_not_in_react_types": ("a", "Element with no React type; candidate: non-HTML response",
-        "By mechanism it is the existing row. But `rss.php` and `sitemap.php` print XML (`<rss>`, `<urlset>`), "
-        "not a page: no row says what a non-HTML response is."),
-    "flag:output_dropped": ("a", "PHP output inside a dropped element (recorded as new in Phase 2); here: XML",
-        "The values inside the XML elements of `rss.php` / `sitemap.php`."),
-    "abstain:tag_crosses_function@include": ("a", "Layout via `include header.php` + Malformed HTML (existing reason)",
-        "Not new by the letter of (a): R-F2 and its abstain reason exist. Listed as a candidate because of what "
-        "it shows: R-F2's condition 2 (\"close exactly S, in reverse\") does not hold when the header leaves "
-        "elements open that only the browser closes (`<head>`, `<main>`), so 24 admin pages have no shell."),
-    "abstain:cross_file_output": ("a", "§5 cross-file output (\"not detectable yet\"); Layout via `include`",
-        "§5 has the bullet; it is detectable now that an include is a timeline entry. The reason name "
-        "`cross_file_output` is new in code. Here: `core.php`, whose top level prints a redirect guard."),
-    "seen:nested_list": ("a", "§8 \"not yet seen: nested loops\" (R-L4, design only)",
-        "Not new by (a): R-L4 exists. First real instances, so R-L4 is no longer design only; one sub-case "
-        "(the inner loop's body reads the outer loop's row) has no place in the inner Item's props."),
+    "seen:if_prints_attribute": ("a", "NEW (owner, v0.13) → R-I3b",
+        "`selected` / `checked` / `autofocus` on form controls, `class=\"nav-item\"` on menu items: conditional "
+        "props now. No unit is lost to them any more."),
+    "handled:r_i2b": ("a", "NEW (owner, v0.13) → R-I2b", "One conditional around both carousel Lists."),
+    "handled:r_i8_guard": ("a", "NEW (owner, v0.13) → R-I8, redirect guard",
+        "`echo '<meta http-equiv=\"refresh\" ...>'; exit;`: nothing rendered, flag `redirect_guard` (review)."),
+    "handled:r_i8_exit": ("a", "NEW (owner, v0.13) → R-I8, exit arm", "`cond ? <arm> : <rest>`."),
+    "abstain:non_html_response": ("a", "NEW (owner, v0.13) → `non_html_response`",
+        "`rss.php`, `sitemap.php`: not generated, listed under `notGenerated`."),
+    "abstain:exit_arm_not_covered": ("a", "R-I8, where its written text does not fit (reported to the owner)",
+        "See the log entry."),
+    "note:markup_in_assigned_string": ("b", "Not new (owner, v0.13): data flow, Member 01's DFG",
+        "Stays `unresolved` / `markup_from_expression`."),
+    "abstain:list_guard_multiple_loops": ("b", "R-I2 / R-I2b", "Loops in different arms of one `if`."),
+    "abstain:cross_file_output": ("b", "§5 cross-file output (name accepted in v0.13)",
+        "`core.php` (a redirect guard at its top level) and `config.php` (analysed from `install/config.tpl`: "
+        "it prints through `printf` when the connection fails)."),
+    "seen:nested_list": ("b", "Nested loops, R-L4 (first real cases, v0.13)",
+        "The inner Item receives the outer row as `outer` where the inner loop's iterable or reads use it."),
     "seen:r_i5_other": ("b", "R-I5 fallback (existing rule)",
         "The rule fires as written. What changes is the report statement (rules §3): these are display "
         "conditionals above 3 elements (role checks, login state, settings switches), not request handlers."),
@@ -526,7 +549,7 @@ PHASE3 = {
     "note:row_read_not_traced": ("d", "data (Member 01 Q1, Q3, Q17)", "Unresolved reads; the DFG's job."),
 }
 PHASE3_CLASSES = {
-    "a": "(a) Candidate new patterns",
+    "a": "(a) New patterns (the owner's verdict, rules v0.13) and what each is now",
     "b": "(b) Existing patterns with new instances",
     "d": "(d) Unresolved reads, missing labels, no endpoint only",
 }
@@ -555,7 +578,8 @@ def phase3_section(number: int, app: str, data: dict, ordered: list) -> list:
              "boundary-rules v0.12 §8: an app adds a new pattern if a construct (a) needs a rule or abstain reason "
              "that §2–§5 do not have, or (b) is handled by an existing rule wrongly. More instances of an existing "
              "row, an implementation gap for a written rule, and unresolved reads are not new. **This table does "
-             "not decide**: where there is doubt the construct is listed as a candidate, with the reason.", ""]
+             "not decide**: the owner did (rules v0.13: 4 new patterns, saturation counter 0 / 2). It shows what "
+             "each construct is after the new rules were implemented.", ""]
     for letter, heading in PHASE3_CLASSES.items():
         rows = []
         for kind in ordered:

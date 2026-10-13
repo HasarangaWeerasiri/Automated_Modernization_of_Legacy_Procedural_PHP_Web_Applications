@@ -1,9 +1,9 @@
-# Component 2 — UI Boundary Rules (DRAFT v0.12)
+# Component 2 — UI Boundary Rules (DRAFT v0.13)
 
 | Item | Value |
 |---|---|
 | Status | **Draft** — not frozen. Freeze when 2 consecutive new rule-discovery apps add no new pattern (saturation) |
-| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note · v0.6, 10 Oct: Q2 note gives the exact condExpr form · v0.7, 11 Oct: R-L3 scope clarified; filter-in-loop added to the checklist as not yet seen · v0.8, 12 Oct: corpus extended — 2 discovery apps queued, 3 evaluation apps added by random split · v0.9, 12 Oct: after the Phase 1 whole-app run — echo-string parts (§1), R-L3b, R-F1/R-F2 written in full, R-I5 evidence re-opened, Q16 · v0.10, 12 Oct: Member 01's answers recorded in §9 · v0.11, 13 Oct: R-I5 hits classified, R-I7 added, R-F1/R-F2 completed for Phase 2b, record-guard candidate, Q18 · v0.12, 13 Oct: Phase 2b accepted; §8 defines "new pattern" for saturation; Q19; phpBlog opened for Phase 3) |
+| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note · v0.6, 10 Oct: Q2 note gives the exact condExpr form · v0.7, 11 Oct: R-L3 scope clarified; filter-in-loop added to the checklist as not yet seen · v0.8, 12 Oct: corpus extended — 2 discovery apps queued, 3 evaluation apps added by random split · v0.9, 12 Oct: after the Phase 1 whole-app run — echo-string parts (§1), R-L3b, R-F1/R-F2 written in full, R-I5 evidence re-opened, Q16 · v0.10, 12 Oct: Member 01's answers recorded in §9 · v0.11, 13 Oct: R-I5 hits classified, R-I7 added, R-F1/R-F2 completed for Phase 2b, record-guard candidate, Q18 · v0.12, 13 Oct: Phase 2b accepted; §8 defines "new pattern" for saturation; Q19; phpBlog opened for Phase 3 · v0.13, 13 Oct: phpBlog judged — 4 new patterns (R-I3b, R-I2b, R-I8, `non_html_response`), R-L4 and R-F2 refined, saturation counter 0 / 2) |
 | Owner | Jayawardhana R D L L (IT23213876) — Component 2, Frontend Migration |
 | Rule-discovery corpus | HMS (`kishan0725/Hospital-Management-System`, commit `777fda4`), WackoPicko (`adamdoupe/WackoPicko`, commit `cabc1b3`, MIT) |
 | Evaluation corpus | **Locked — do not open** (see §7) |
@@ -56,7 +56,7 @@ byte-exact `raw`), which does not have these limits.
 | **R-L2b** | If the loop item has **multiple root elements and no wrapper tag**, the List component has **no wrapper** (renders a Fragment); do not take the enclosing section | The 2 WackoPicko loops where R-L2a cut too broad (`guestbook.php` 35–41, `pictures/view.php` 51–59) |
 | **R-L3** | Loop body that emits **one element with no child elements** (e.g. `<option>`) → keep `.map()` inline, no Item component. Otherwise → Item component. **Scope (v0.7):** an `if` inside that one element is classified by §3 and §4a exactly like any other `if` (incl. abstain `cuts_across_business_logic`); R-L3 changes only whether an Item component is created, never how its `if`s are judged. An `if` that wraps the whole element is **not** R-L3 (see §8, filter-in-loop) | HMS `<option>` loops in `newfunc.php`, `func1.php`, `func3.php` (none has an `if`; all are in functions, so no mock has R-L3 until Member 01 Q4) |
 | **R-L3b** Text-only loop (v0.9) | Loop body that emits **text and expressions but no element** → inline `.map()` returning a keyed Fragment, no Item component | HMS `include/header.php` 38 (Phase 1 pattern log) |
-| **R-L4** | Nested loops → resolve innermost first; the inner List becomes one node of the outer Item | **Design only — not observed** in any in-scope app (seen only in out-of-scope osCommerce / vBulletin) |
+| **R-L4** | Nested loops → resolve innermost first; the inner List becomes one node of the outer Item | Design only until v0.12 (not observed in HMS / WackoPicko) (seen only in out-of-scope osCommerce / vBulletin) · **v0.13, first real cases** (phpBlog `admin/dashboard.php`, `gallery.php`): the inner Item receives the outer loop's row as a prop `outer` when the inner loop's iterable or reads use it; any other outer variable → `unresolved` |
 | **R-L5** | Loop with no output → not a UI boundary; ignore | HMS 3/3 (incl. one inside an HTML comment) |
 | **R-L6** | Tag tracker **ignores unmatched closing tags** and flags them for Stage 5 (JSX will not compile them). Tag balance is checked **per branch**, not only on the linear sequence | HMS `doctor-panel.php` 246 (`</tr></a>`); WackoPicko `<form>` inside `<table>`, `<p>` inside `<ul>` |
 | **R-L7** Chunked loop | A loop body that **closes and reopens its own container** (e.g. rows of four) → **abstain and flag** `chunked_container`. Not a rule yet: seen once. If it recurs, candidate rule = chunk the list, then map each chunk | WackoPicko `include/html_functions.php` 97–129 (lines 109–117) |
@@ -72,16 +72,21 @@ Loop kinds observed: `while`, `foreach`, C-style `for`. Item shapes observed: ta
 | **R-I1** Page guard | An `if` that wraps the **whole page output** (incl. layout calls) → **not a component**. The page renders normally; the condition is form/redirect logic owned by Component 1. Single-branch only: a page-level `if/else` is not covered yet and falls through to the other rules | WackoPicko 4/4 (`users/login.php` 30–49, `users/register.php` 39–64, `pictures/upload.php` 74–97, `admin/login.php` 22–32) |
 | **R-I2** List guard | An `if` whose body contains an output loop **and whose own concern is not `business_logic`** → the List component's **empty-state condition**. Any heading inside the guard belongs to the List. The non-loop branch → Empty component. A `business_logic` guard around a loop is an authorization check, not an empty-state check → **abstain** (`cuts_across_business_logic`, §5) | WackoPicko 8/8 (all `if ($list)` emptiness checks) |
 | **R-I3** Attribute conditional | An `if` inside an HTML attribute value → JSX attribute expression. **Never** a boundary | WackoPicko 5/5 (menu `class="current"`) |
+| **R-I3b** Attribute-presence conditional (v0.13) | An `if` **inside a start tag, between attributes** (not inside a value), whose every arm prints only **complete literal attributes** (`selected`, `checked`, `class="nav-item"`) → each attribute becomes a conditional prop (`attr={cond ? "v" : undefined}`; boolean → `cond`). If the same attribute already appears **earlier** in the tag, the conditional one has no effect in a browser (first wins) → dropped, flag `duplicate_attribute`. An arm printing anything else (a variable, half an attribute) → abstain `partial_attribute_output` **for that tag's attributes only** (spec §5b fallback) | phpBlog: 59 `if`s in 9 units (`admin/comments.php` 67 `<option … <?php if(...) echo 'selected'; ?>>`, `admin/header.php` 258 `<li <?php if(...) echo 'class="nav-item"'; ?>>`). 0 in HMS / WackoPicko |
+| **R-I2b** Multi-loop list guard (v0.13) | An R-I2 guard whose body holds **several** output loops → one conditional wrapper holding all their Lists; the guard's other arm → Empty. Same label condition as R-I2 | phpBlog `index.php` 14 (`if ($count > 0)` around the carousel indicators loop and the carousel items loop) |
 | **R-I4** Small content `if` | Content `if` with **≤ 3 elements** (with or without `else`) → inline conditional / ternary | WackoPicko 11/11, HMS 12/12 |
 | **R-I5** Fallback | Content `if` with **≥ N = 4 elements** (i.e. above the R-I4 limit — no gap) that matches none of R-I1–R-I3 → own Conditional component | v0.8: "never triggered" (regex scan of `if`s). **v0.11: classified.** All 10 hits are in HMS and all are **request-handling** conditionals, not display conditionals: 2 × `admin-panel.php` 18/40 (POST booking handler; only output = `<script>alert()</script>` → now R-I7) and 4 search pages × 2 (`appsearch` 13/19, `doctorsearch` 12/18, `messearch` 11/17, `patientsearch` 11/17): an outer `if (isset($_POST['…_submit']))` that wraps the whole `<body>` content, and an inner found / not-found `if/else` (alert vs result table, one fetched row). Labels would not change this (R-I1/R-I2 do not read labels to fire). Condition → `needs_request_context` (Stage 5) |
 | **R-I6** Sibling chain | Consecutive sibling `if`s that output into the same parent element with mutually exclusive conditions → **one** conditional value. Exclusivity cannot be checked without condition text, so status is **`review`**, reason `exclusivity_not_verified`, until Member 01 Q2 is answered | HMS: 3 chains × 3 `if`s (status cell in `admin-panel.php`, `admin-panel1.php`, `doctor-panel.php`) |
 
+| **R-I8** Exit-terminated arm (v0.13) | An `if` arm that **always** ends with `exit` / `die` (a statement in the same `stmts` list, read from the AST) makes the rest of the enclosing block its implicit `else`. (1) If the arm's only output is a **redirect** (`<meta http-equiv="refresh">`, a `<script>` setting `location`) → **redirect guard**: not a component; the rest renders; flag `redirect_guard` (review — the redirect belongs to C1, like R-I1). (2) Otherwise → a conditional: `cond ? <arm output> : <rest>`. `die("msg")` / `exit("msg")` print their message: that message is the arm's output | phpBlog 45 (`admin/header.php` 12 `echo '<meta http-equiv="refresh" …>'; exit;`, `category.php` 16); WackoPicko `guestbook.php` 17 (`die()` with a message) |
 | **R-I7** No output left (v0.11) | An `if` (or loop) whose **only** output is inline JS (`<script>`, dropped by spec §5) has nothing to render → **not a UI boundary** (same as R-L5). The JS is still flagged `inline_js_dropped` | HMS `admin-panel.php` 18 / 40 (POST handler alerts); HMS uses `echo "<script>alert(…)</script>"` in every POST handler |
 
-**Statement for the report (rewritten in v0.11):** *Boundary decisions are structural (page guard, list
-guard, attribute, inline). A size threshold N = 4 exists only as a fallback. On whole apps it fired 10 times,
-all on request-handling conditionals in HMS (POST-submit handlers and their found / not-found checks); no
-display conditional above 3 elements was found in the rule-discovery corpus.*
+**Statement for the report (rewritten in v0.13):** *Boundary decisions are structural (page guard, list
+guard, attribute, attribute presence, early exit, inline). A size threshold N = 4 is the fallback for content
+conditionals no structural rule covers. In HMS it fired only on request-handling conditionals; in phpBlog it
+also fired on 30 display conditionals (role checks, login state, settings switches), each becoming its own
+Conditional component.* (v0.11's "no display conditional above 3 elements" was true for HMS and WackoPicko
+only.)
 
 ---
 
@@ -109,6 +114,13 @@ reachable file defines it → that function; otherwise `callee: null`. (HMS `adm
 | **R-F1** Function component | A user function with output, called from ≥ 1 page, whose markup is **tag-balanced on its own** → one component (`PascalCase(function)`) in `components/`, placed at **each call site** at the call's position (inside whatever element is open there, e.g. `<select>`). Parameters → props: a parameter whose argument is a **literal at every call site** (or the default value) becomes a typed prop (`string` / `number` from the literal); any other parameter is not a prop, and reads of it → `unresolved`. Recursive calls → abstain `recursive_function` | WackoPicko `thumbnail_pic_list` (4 callers); HMS `display_docs()` / `display_specs()` into `<select>` (`admin-panel.php` 359, 331) |
 | **R-F1b** Caller-opened container (v0.11) | A loop inside a function whose List container is **not** open in the function (the caller opens it, e.g. `<select>` around `display_docs()`) → List without wrapper (Fragment, as R-L2b) inside the function component; the container stays in the caller's markup around the call site. Replaces `container_undetermined` for these loops | Phase 2a pattern log: 4 loops (HMS `newfunc.php` / `func*.php` `<option>` loops) |
 | **R-F2** Shell pair | A header unit H and a footer unit F (functions, or included files) such that: (1) H leaves open-tag stack S; (2) F's unmatched closing tags close exactly S, in reverse; (3) on every page that calls H, F is called later, both at **top level** (not inside a loop/branch), with all other page output between them. Then: `<html>`, `<head>`, `<body>` from H/F → root `app/layout.tsx` (literal parts only; anything dynamic there → flag `document_shell`); the rest → a **shell component** `components/<H>Shell.tsx` with `{children}` at the gap and H's/F's literal-argument parameters as props; each page wraps its content in `<…Shell …props>`. Page output before H or after F → abstain `output_outside_shell`. A page that calls H without F, or tags that cross a function boundary without forming such a pair → abstain `tag_crosses_function` | WackoPicko `our_header()` (26 files) / `our_footer()` (25 files): H opens `<html><body><div class="container">`, F closes `</div></body></html>` |
+
+**R-F2 condition (2), refined in v0.13 (phpBlog admin shell):** "F closes exactly S" is checked **after
+the HTML5 implicit closes** every browser applies: `<head>` is closed by the first body content or `<body>`
+tag, and elements still open at `</body>`, `</html>` or end of file are closed there. phpBlog's
+`admin/header.php` leaves `<head>` and `<main>` open; `admin/footer.php` closes the rest and ends with
+`</body></html>` — the browser builds the same tree as an explicit pair. Anything else that F leaves
+unclosed → still `tag_crosses_function`.
 
 **Why a shell component and not `layout.tsx` for the menu part:** Next.js layouts receive no per-page props,
 but `our_header("guestbook")` passes the page name that sets the menu's `class="current"`. A shell component
@@ -143,7 +155,8 @@ layout from repeated per-page markup would be a similarity guess → not done.
 - A tag opens in one branch and closes outside it (unbalanced per branch).
 - Loop body closes and reopens its own container (R-L7).
 - Node enclosed by `switch_case` or `try_catch` (no rule yet).
-- Output comes from a called function whose output is not in the current timeline (cross-file output). **Not detectable yet**: the timeline does not record calls (Member 01 Q4). Call sites are listed by hand in §6.5.
+- Output comes from an **included file** that prints and is not half of a shell pair → abstain `cross_file_output` (v0.13 name). (Function calls are handled by R-F1 and the call-entry table in §4.)
+- The unit is **not an HTML response** (`header('Content-Type: …xml…')`, RSS, sitemap) → abstain `non_html_response` for the whole unit; it is an API route (Next.js Route Handler), owned by C1, not a page (v0.13; phpBlog `rss.php`, `sitemap.php`).
 - A content `if` labelled `business_logic` (authorization guard), whether or not it holds a loop → abstain `cuts_across_business_logic`. Candidate rule, **not adopted** (one hand-written mock only): render the content normally and delegate the condition to C1 (server-side 403 / no data). Decide after C1 confirms how authorization appears in the contract.
 
 ---
@@ -230,6 +243,14 @@ more abstains for an existing reason, an implementation gap for a rule that is a
 included files), and unresolved reads (the DFG's job) are **not** new patterns. Saturation: two consecutive
 discovery apps add no new pattern → the rules are frozen.
 
+**Saturation counter: 0 / 2** (13 Oct 2026). phpBlog (app 3) added 4 new patterns: attribute-presence
+conditional (R-I3b), multi-loop list guard (R-I2b), exit-terminated arm (R-I8), non-HTML response
+(`non_html_response`). **Not counted as new** (by the definition above): markup kept in a variable and
+echoed later (that is echo parts + data flow — Member 01's DFG; until then `unresolved`), nested loops (R-L4
+already written; first real cases), header/footer includes that pair only after implicit closes (R-F2
+refined, not a new rule), includes of printing files (existing §5 bullet), R-I5 on display conditionals (the
+rule fired as written). Next: attendance (app 4); if it adds a new pattern, the reserve app follows.
+
 | Pattern | Seen in |
 |---|---|
 | Loop → table rows | HMS, WackoPicko |
@@ -239,7 +260,14 @@ discovery apps add no new pattern → the rules are frozen.
 | Small status `if`, sibling chain | HMS |
 | Rows printed by one echo string (`echo "<tr>…$x…</tr>"`), concatenated / multi-argument echo with markup | HMS (Phase 1: 3 + 7 + 5 + 6) |
 | Text-only loop | HMS `include/header.php` 38 |
-| Request-handling `if` (`isset($_POST['…_submit'])`) wrapping a page's body, with an inner found / not-found check | HMS: 4 search pages (copies of one pattern) + `admin-panel.php` handler. **Candidate, not a rule:** *record guard* — a found / not-found check on one fetched row → single-record component + Empty. Seen in one app only (copy-paste); decide at saturation |
+| Attribute-presence conditional (`<option <?php if(...) echo 'selected'; ?>>`) | phpBlog (59) → R-I3b |
+| List guard with several loops | phpBlog `index.php` 14 → R-I2b |
+| Arm ending in `exit` / `die` (redirect guards, error stops) | phpBlog (45), WackoPicko (1) → R-I8 |
+| Non-HTML response (RSS, sitemap) | phpBlog `rss.php`, `sitemap.php` → `non_html_response` |
+| Markup or attribute text kept in a variable, echoed later (`$image = '<img …>'`, `$active1 = 'class="active"'`) | phpBlog (49), HMS (1) — data flow, not a boundary rule; `unresolved` / `markup_from_expression` until the DFG |
+| Nested loops | phpBlog `admin/dashboard.php`, `gallery.php` (4) → R-L4 |
+| Shell via `include header.php` / `footer.php` with implicit closes | phpBlog admin (24 pages) → R-F2 refined |
+| Request-handling `if` (`isset($_POST['…_submit'])`) wrapping a page's body, with an inner found / not-found check | HMS: 4 search pages (copies of one pattern) + `admin-panel.php` handler. **Candidate, not a rule:** *record guard* — a found / not-found check on one fetched row → single-record component + Empty. Seen in one app only; **phpBlog does not use it** (its not-found checks redirect and `exit` → R-I8). Stays a candidate |
 | Invalid nesting the browser repairs (`<p>` closed by a block element, rows without `<tbody>`, `<form>` / `<input>` inside `<table>`) | WackoPicko 9 (Phase 2a nesting check) |
 | Page output inside a List's container outside the loop (`if(!$result) echo mysqli_error(...)`) | HMS `admin-panel.php`, `doctor-panel.php` — likely excluded once C1 labels exist (data_access); until then List-level fallback |
 | Element with no React type (`<frameset>`) | WackoPicko `test.php` → fallback |
@@ -251,7 +279,7 @@ discovery apps add no new pattern → the rules are frozen.
 | Malformed HTML | HMS, WackoPicko |
 | Cross-file output (function echoes `<option>` into a page's `<select>`) | HMS |
 | Escape wrapper on output (`h()` — 89 of 116 `<?= ?>` tags) | WackoPicko |
-| **Not yet seen:** nested loops; switch; try; **filter-in-loop** (`if` wrapping the whole loop body, e.g. `while(...) { if ($row['n'] > 0) { echo '<option>…'; } }` — synthetic test only; until seen in a real app it abstains via the narrowed fallback) | — |
+| **Not yet seen:** switch; try; **filter-in-loop** (`if` wrapping the whole loop body, e.g. `while(...) { if ($row['n'] > 0) { echo '<option>…'; } }` — synthetic test only; until seen in a real app it abstains via the narrowed fallback) | — |
 
 ---
 
@@ -284,6 +312,7 @@ the call site (`callee`, `outputsInside`), no inlining — R-F1/R-F2 will read c
 17. Copy propagation: will a read of `$username` after `$username = $row['username'];` (same block, no reassignment) resolve to `$row['username']`? And for interpolated SQL (`… where fname='$fname'`) — is the table/column resolved when interpolation appears only in value positions? (40 row reads in HMS + WackoPicko depend on these.)
 18. How are `fileId`s assigned in a whole-app run (manifest order? alphabetical? excluded folders)? Your AST has `admin-panel1.php` = `f001`; the harness numbers HMS files differently (`f002`). The id is the join key, so the file numbering must match too.
 19. Calls and parameters: will a `call` entry carry the call node's AST id (so arguments come from the AST), and will the DFG mark a function parameter that is never reassigned in the body? R-F1 props need both; the harness emits `args` and `params[].readOnly` as extensions.
+20. Will the timeline mark `exit` / `die` after output? Until then C2 reads them from the AST (an `Expr_Exit` statement in the same `stmts` list). Empty `if` arms are also read from the AST (`elseifs`, `else`), so arm structure needs no new field.
 
 **For Component 1:** HMS never includes `include/checklogin.php`, so it has no working login gate.
 **For Component 4:** WackoPicko has intentionally unescaped output (`<?= $comment['text'] ?>`, `<?= $guest["comment"] ?>`). React escapes by default, so this output will differ — an expected, intended difference. WackoPicko uses `mysql_*` → needs PHP 5.x to run for runtime capture.
@@ -309,3 +338,6 @@ the call site (`callee`, `outputsInside`), no inlining — R-F1/R-F2 will read c
 | 7 Oct 2026 | Mixed loops are information regardless of label reason | Decisions may use `concern` only (CONTEXT hard rule 2), so the "because" cannot be checked |
 | 12 Oct 2026 | 5 new licensed procedural apps split at random: 3 evaluation, 2 discovery | Avoids picking easy evaluation apps; seed recorded so the split is reproducible |
 | 12 Oct 2026 | Saturation is judged on **whole apps** run through the harness, not on excerpts | Excerpts were chosen by us and hide patterns |
+| 13 Oct 2026 | phpBlog adds 4 new patterns → R-I3b, R-I2b, R-I8, `non_html_response`; counter 0 / 2 | Judged by the §8 definition fixed before the app was opened |
+| 13 Oct 2026 | R-F2 pairing checked after HTML5 implicit closes | phpBlog's admin shell leaves `<head>`/`<main>` to the browser; the tree is the same as an explicit pair |
+| 13 Oct 2026 | Markup in variables is not a boundary rule | It is data flow (Member 01's DFG); a C2 rule would guess values across branches |

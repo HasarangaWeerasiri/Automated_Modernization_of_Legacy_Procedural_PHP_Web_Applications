@@ -601,8 +601,11 @@ def test_includes_are_recorded(tmp_path):
 
 
 def test_output_the_schema_cannot_express_is_noted(tmp_path):
-    notes = page(tmp_path, "<?php echo 'x'; printf('%d', 1); die('stop'); ob_start();")["harnessNotes"]
-    assert sorted(n["kind"] for n in notes) == ["exit_with_output", "output_buffering", "output_function"]
+    timeline = page(tmp_path, "<?php echo 'x'; printf('%d', 1); $q or die('stop'); ob_start(); die('end');")
+    assert sorted(n["kind"] for n in timeline["harnessNotes"]) == [
+        "exit_with_output", "output_buffering", "output_function"]  # the `or die`: when it prints is not known
+    # since Phase 3 step 2 a die("msg") statement at a file's top level is an entry: it prints its message (R-I8)
+    assert [e["kind"] for e in timeline["sequence"]] == ["Stmt_Echo", "Expr_Exit"]
 
 
 def test_provenance_marks_the_harness_and_the_conventions(tmp_path):
@@ -682,8 +685,10 @@ def test_every_page_of_both_apps_runs_without_a_crash(apps_output):
     # that are one shell (they have no unit of their own)
     # Phase 3: WackoPicko users/sample.php (only `include("view.php")`) is a page now; phpBlog has two shells
     # (head() / footer() of core.php and of install/core.php)
+    # (Phase 3 step 2: admin/header.php and admin/footer.php pair after implicit closes, a third shell; and
+    # config.php is analysed from install/config.tpl, a 51st file)
     expected = {"hms": (29, (26, 2, 0, 5, 0)), "wackopicko": (49, (30, 2, 1, 0, 2)),
-                "phpblog": (50, (49, 1, 2, 0, 4))}
+                "phpblog": (51, (47, 1, 3, 0, 6))}
     assert {app: (index["files"], roles(index)) for app, index in indexes.items()} == {
         app: expected[app] for app in indexes}
     for index in indexes.values():
@@ -698,7 +703,8 @@ def test_every_page_of_both_apps_compiles(apps_output):
         pytest.skip(f"compile check skipped: {compile_check.unavailable()}")
     for index in indexes.values():
         assert index["tscRan"] and index["tscUnattributed"] == 0, index["tscOutput"]
-        assert [(p["key"], p["tsc"]) for p in index["pages"] if p["role"] != "shell_part" and p["tsc"] != 0] == []
+        assert [(p["key"], p["tsc"]) for p in index["pages"]
+                if p["role"] != "shell_part" and not p.get("notGenerated") and p["tsc"] != 0] == []
 
 
 def test_libraries_are_excluded_and_only_discovery_apps_are_configured(apps_output):
@@ -723,8 +729,13 @@ def test_whole_app_totals(apps_output):
                 if entry["role"] != "shell_part"]
         totals[app] = tuple(sum(r[key] for r in rows) for key in ("nodes", "components", "abstain", "review", "todo",
                                                                     "s5review", "info"))
-    expected = {"hms": (269, 68, 5, 174, 192, 391, 285), "wackopicko": (383, 58, 6, 307, 158, 299, 120),
-                "phpblog": (800, 193, 101, 861, 468, 869, 279)}
+    # Phase 3 step 1: wackopicko (383, 58, 6, 307, 158, 299, 120), phpblog (800, 193, 101, 861, 468, 869, 279).
+    # Step 2 (rules v0.13): HMS unchanged. WackoPicko: guestbook's die() is an entry (one node, one abstain:
+    # exit_arm_not_covered) and tos.php's unclosed <li> is repaired. phpBlog: abstains 101 -> 52 (the admin
+    # shell pairs: tag_crosses_function 48 -> 0); the nine units that were one C2Todo each are generated now, so
+    # their own gaps are counted (todo 468 -> 635).
+    expected = {"hms": (269, 68, 5, 174, 192, 391, 285), "wackopicko": (384, 58, 7, 307, 159, 296, 126),
+                "phpblog": (800, 186, 52, 834, 635, 936, 454)}
     assert totals == {app: expected[app] for app in totals}
     hms = [apps_results_table.page_row(output / "hms", entry) for entry in indexes["hms"]["pages"]]
     assert (sum(r["review_unlabelled"] for r in hms), sum(r["review_other"] for r in hms)) == (171, 3)

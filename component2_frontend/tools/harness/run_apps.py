@@ -192,8 +192,11 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, bu
         entry["calls"] = sum(c.kind == "call" for c in timeline.calls)
         entry["includes"] = sum(c.kind == "include" for c in timeline.calls)
         try:
-            tree, _ = run_stages(timeline, folder / entry["key"], config, generation_config, contract, unit_facts,
+            tree, result = run_stages(timeline, folder / entry["key"], config, generation_config, contract, unit_facts,
                                  layout)
+            if result.not_generated is not None:  # spec v0.8 section 6a: not a page (e.g. non_html_response)
+                entry["notGenerated"] = result.not_generated
+                continue
             if entry["role"] == "page":
                 entry["group"] = units.shells[tree.root.shell.header].group if tree.root.shell else PLAIN_GROUP
             (alone if entry["role"] == "not_called" else in_app)[entry["key"]] = folder / entry["key"] / "generated"
@@ -258,6 +261,8 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, bu
         "schemaFiles": list(timelines.schema_files), "functions": timelines.functions or {},
         "shells": [{"name": s.name, "group": s.group, "header": s.header, "footer": s.footer,
                     "props": [list(p) for p in s.props]} for s in units.shells.values()],
+        "notGenerated": [{"key": p["key"], "path": p["path"], **p["notGenerated"]} for p in pages
+                         if p.get("notGenerated")],
         "appFiles": sorted(owners), "collisions": collisions,
         "tscRan": tsc_output is not None, "tscUnattributed": unattributed, "tscOutput": tsc_output or "",
     }

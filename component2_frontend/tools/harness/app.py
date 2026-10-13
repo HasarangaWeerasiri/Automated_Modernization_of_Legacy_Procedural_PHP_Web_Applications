@@ -7,6 +7,7 @@ and whether it prints, directly or through a function it calls.
 """
 
 import json
+import shutil
 import subprocess
 import tarfile
 import tempfile
@@ -27,8 +28,12 @@ APPS = {
             "exclude": ("TCPDF/", "vendor/")},  # libraries
     "wackopicko": {"root": ROOT / "legacy-apps" / "wackopicko", "prefix": "legacy-apps/wackopicko",
                    "commit": "cabc1b3a06beda7df98e839fa2d84db9a4bdfee7", "docroot": "website", "exclude": ()},
+    # `substitutions` (owner decision, CONTEXT v18): a file that is not in the repository is analysed from
+    # another file, {missing file: the file read in its place}. Each one is recorded in legacy-apps/PINS.md
+    # with its evidence; none is added without asking the owner.
     "phpblog": {"root": ROOT / "legacy-apps" / "phpblog", "prefix": "legacy-apps/phpblog",
-                "commit": "4ffe3c9641a42b99829cf4b8e4185093793a3abc", "docroot": "", "exclude": ()},
+                "commit": "4ffe3c9641a42b99829cf4b8e4185093793a3abc", "docroot": "", "exclude": (),
+                "substitutions": {"config.php": "install/config.tpl"}},
 }
 
 
@@ -147,6 +152,11 @@ def app_timelines(app: str) -> AppTimelines:
     with tempfile.TemporaryDirectory() as work:
         tree = Path(work) / "tree"
         export_commit(root, commit, tree)
+        substitutions = config.get("substitutions", {})
+        for missing, source in sorted(substitutions.items()):
+            if (tree / missing).exists():
+                raise RuntimeError(f"{app}: {missing} exists at {commit}; its substitution is out of date")
+            shutil.copyfile(tree / source, tree / missing)
         files = app_files(app, tree)
         schema, schema_files = load_schema(tree)
         sources = [SourceFile(tree / path, f"f{index:03d}", f"{config['prefix']}/{path}")
@@ -161,6 +171,8 @@ def app_timelines(app: str) -> AppTimelines:
     def provenance(path: str) -> dict:
         return {"generator": "c2-harness", "parser": meta["parser"], "parserSyntax": meta["syntax"][file_ids[path]],
                 "php": meta["php"], "source": f"{config['prefix']}/{path}", "sourceCommit": commit,
+                **({"analysisSubstitution": f"not in the repository: analysed from {substitutions[path]} "
+                                            "(legacy-apps/PINS.md)"} if path in substitutions else {}),
                 "astFormat": "Member 01 schema 1.0 (produced by the harness: tools/harness/parse.php)",
                 "schemaFiles": schema_files,
                 "labels": "none: no labels file exists for whole apps, so every node is unlabelled",

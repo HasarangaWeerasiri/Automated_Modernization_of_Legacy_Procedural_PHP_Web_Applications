@@ -51,6 +51,9 @@ class NodeTags:
     dynamic_in_name: bool = False
     # The node prints text a reader sees: character data outside tags and outside script / style / title content.
     visible_text: bool = False
+    # Inside an open tag: the node starts / ends inside an attribute value (after an `=`), not between attributes.
+    in_value_before: bool = False
+    in_value_after: bool = False
 
 
 class _Tracker:
@@ -189,15 +192,73 @@ def track(nodes: tuple[OutputNode, ...] | list[OutputNode], config: BoundaryConf
     """Tag state around every node, keyed by node id, in sequence order."""
     tracker = _Tracker(config.void_tags)
     snapshots = []
+    def state() -> tuple:
+        in_tag = tracker.state == "tag"
+        return tuple(tracker.stack), in_tag, in_tag and tracker._in_value()
+
     for node in nodes:
-        before = (tuple(tracker.stack), tracker.state == "tag")
+        before = state()
         tracker.feed(node.id, output_text(node))
-        snapshots.append((node.id, before, (tuple(tracker.stack), tracker.state == "tag")))
+        snapshots.append((node.id, before, state()))
     return {
         node_id: NodeTags(node_id, before[0], before[1], tuple(tracker.events[node_id]), after[0], after[1],
-                          node_id in tracker.dynamic_in_name, node_id in tracker.visible_text)
+                          node_id in tracker.dynamic_in_name, node_id in tracker.visible_text, before[2], after[2])
         for node_id, before, after in snapshots
     }
+
+
+# ----------------------------------------------------------------------------- literal text of an if arm
+
+_ATTRIBUTE = re.compile(r"""\s*([^\s"'<>/=`]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?""")
+_REDIRECT = re.compile(
+    r"""\s*(?:<meta\b[^>]*\bhttp-equiv\s*=\s*["']?refresh["']?[^>]*>\s*(?:</meta\s*>\s*)?"""
+    r"""|<script\b[^>]*>(?P<js>.*?)</script\s*>\s*)""", re.I | re.S)
+_SETS_LOCATION = re.compile(r"\blocation(?:\s*\.\s*href)?\s*=(?!=)")
+_REDIRECT_TARGET = re.compile(r"""\burl\s*=\s*([^"'>\s;]+)""", re.I)
+
+
+def literal_text(nodes: list[OutputNode]) -> str | None:
+    """What these nodes print when every piece of it is literal; None when any value is not known statically."""
+    text = "".join(output_text(node) for node in nodes)
+    return None if DYNAMIC in text else text
+
+
+def literal_attributes(text: str | None) -> list[tuple[str, str | None]] | None:
+    """`text` read as complete attributes (boundary rule R-I3b): [(name lower-cased, value or None)], or None
+    when it is anything else (half an attribute, markup, nothing at all)."""
+    if text is None or not text.strip():
+        return None
+    out, position = [], 0
+    while text[position:].strip():
+        found = _ATTRIBUTE.match(text, position)
+        if not found or found.end() == position:
+            return None
+        if found.end() < len(text) and not text[found.end()].isspace():
+            return None  # no space before the next one: not complete attributes
+        value = next((g for g in found.groups()[1:] if g is not None), None)
+        out.append((found.group(1).lower(), value))
+        position = found.end()
+    return out
+
+
+def only_redirect(text: str) -> bool:
+    """These nodes print a redirect and nothing else (boundary rule R-I8, case 1): `<meta http-equiv="refresh">`
+    elements, or `<script>` elements that set `location`. `text` is their output_text (values as DYNAMIC)."""
+    position, found_any = 0, False
+    while text[position:].strip():
+        found = _REDIRECT.match(text, position)
+        if not found:
+            return False
+        if found.group("js") is not None and not _SETS_LOCATION.search(found.group("js")):
+            return False
+        position, found_any = found.end(), True
+    return found_any
+
+
+def redirect_target(text: str) -> str | None:
+    """The literal `url=` of a meta refresh in this output, if it has one."""
+    found = _REDIRECT_TARGET.search(text)
+    return found.group(1) if found and DYNAMIC not in found.group(1) else None
 
 
 # ----------------------------------------------------------------------------- questions about a run of nodes

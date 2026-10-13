@@ -110,6 +110,24 @@ def _tag_facts(timeline: Timeline, config: BoundaryConfig) -> tuple[bool, tuple,
     return balanced, open_tags, unmatched
 
 
+def closes(open_tags: tuple, unmatched: tuple) -> bool:
+    """R-F2 condition 2 as refined in boundary-rules v0.13: the footer's closing tags close the header's open
+    elements once the implicit closes every browser applies are counted.
+
+    `<head>` is closed by the `<body>` tag. An end tag closes the nearest open element of its name and whatever
+    is still open inside it (so `</div>` also ends an unclosed `<main>`, and `</body>` / `</html>` end everything
+    in them). `<body>` and `<html>` may be left to the end of the file (their end tags are optional). A closing
+    tag that matches nothing the header opened, or any other element left open, is no pair."""
+    stack = list(open_tags)
+    if "head" in stack and "body" in stack[stack.index("head") + 1:]:
+        stack.remove("head")
+    for tag in unmatched:
+        if tag not in stack:
+            return False
+        del stack[len(stack) - 1 - stack[::-1].index(tag):]
+    return all(tag in ("html", "body") for tag in stack)
+
+
 def _typed_props(timeline: Timeline, calls: list[CallEntry]) -> tuple[tuple[str, str], ...]:
     """R-F1: a parameter is a typed prop when it is read-only in the function and every call site gives it a
     literal of one type (or leaves it to a literal default)."""
@@ -205,7 +223,7 @@ def analyse(timelines: list[Timeline], config: BoundaryConfig, file_names: dict 
     for header in headers:
         # Condition 3 is about pages that call both: a footer that no caller of this header ever calls is not its
         # footer, however well the tags fit (phpBlog: core.php's footer() and admin/footer.php close the same tags).
-        matching = [f for f in footers if f.unmatched == tuple(reversed(header.open_tags)) and f.node_id not in used
+        matching = [f for f in footers if closes(header.open_tags, f.unmatched) and f.node_id not in used
                     and callers[f.node_id] & callers[header.node_id]]
         if len(matching) != 1:
             continue  # no footer, or more than one: nothing certain

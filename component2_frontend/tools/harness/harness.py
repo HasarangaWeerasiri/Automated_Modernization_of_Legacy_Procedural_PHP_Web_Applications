@@ -92,6 +92,14 @@ CALLS_NOTE = ("Member 01 Q4 (proposed): a call site is a sequence entry {kind: \
               "or {kind: \"expr\", expr}), `function` on a function's timeline ({nodeId, name, params: [{name, default, readOnly}]}), `callNames` "
               "(call id -> the name as written) and `includes` (every include/require, with node id, line and "
               "enclosedBy).")
+EXIT_NOTE = ("Harness extensions, pending Member 01 Q20 (boundary rule R-I8 reads them): `exits: true` on a branch "
+             "enclosure whose arm has an `exit` / `die` statement directly in its own statement list (read from the "
+             "AST); an `exit(\"msg\")` / `die(\"msg\")` that is a statement of its own is a sequence entry of kind "
+             "\"Expr_Exit\" (it prints its message), with reads and parts like an echo, at a file's top level only. "
+             "An exit inside an expression (`... or die(\"msg\")`) or inside a function has no entry (a harness "
+             "note records it): when it prints, and what it ends, is not known from the block structure.")
+CONTENT_TYPE_NOTE = ("Harness extension: `responseContentType` is the media type of the first `header(\"Content-Type: "
+                     "...\")` call with a literal argument in this scope (boundary-rules section 5, non_html_response).")
 INCLUDES_NOTE = ("Harness extension, pending Member 01 Q4: an include / require is a sequence entry at its position, "
                  "like a call entry: {kind: \"include\", path, outputsInside}. path is the entrypoint of the included "
                  "file, or null when the path is not a literal or names no PHP file of the app (a library, a file "
@@ -196,6 +204,7 @@ class _Scope:
     arguments: dict = field(default_factory=dict)  # "$name" -> positions where it is passed to a call
     includes: list = field(default_factory=list)
     include_nodes: list = field(default_factory=list)  # (the Expr_Include node, its enclosures), as `includes`
+    content_type: str | None = None  # the media type of the first literal header("Content-Type: ...")
     notes: list = field(default_factory=list)
 
 
@@ -255,6 +264,7 @@ class FileHarness:
         self.errors = list(ast.parse_errors)
         self._class: str | None = None  # the class whose methods are being walked
         self._loops: dict[str, tuple] = {}  # loop id -> (enclosure, node, scope, chain around it)
+        self._printing_exits: set[str] = set()  # ids of exit("msg") statements that are sequence entries
         self.nodes = node_views(ast)
         self._walk_list(self.nodes[ast.root_id].get("stmts"), self.top, (), [])
 
@@ -296,6 +306,14 @@ class FileHarness:
                         not _is(previous, "Stmt_Expression") or _is(previous.get("expr"), "Expr_Print")):
                 scope.notes.append({"kind": "exit_after_output", "line": node.line, "col": node.loc.column,
                                     "detail": self.node_text(previous)[:80]})
+            if _is(node, "Stmt_Expression") and _is(node.get("expr"), "Expr_Exit"):
+                message = node.get("expr").get("expr")
+                # exit("msg") prints its message. Only at a file's top level: R-I8 speaks of the rest of the
+                # enclosing block, and an exit inside a function also ends the page that called it, so there
+                # the message stays what it was, a note (not in the timeline).
+                if message is not None and not _is(message, "Scalar_Int") and scope.name is None:
+                    scope.outputs.append((node.get("expr"), "Expr_Exit", chain, list(enclosures)))
+                    self._printing_exits.add(node.get("expr").id)
             self._walk(node, scope, chain, enclosures)
             previous = node
 
@@ -378,7 +396,8 @@ class FileHarness:
             scope.include_nodes.append((node, list(enclosures)))
         elif kind == "Expr_Eval":
             scope.breakers.append(pos)
-        elif kind == "Expr_Exit" and node.get("expr") and not _is(node.get("expr"), "Scalar_Int"):
+        elif kind == "Expr_Exit" and node.get("expr") and not _is(node.get("expr"), "Scalar_Int") \
+                and node.id not in self._printing_exits:
             scope.notes.append({"kind": "exit_with_output", "line": line, "col": col,
                                 "detail": self.node_text(node)[:80]})
         elif kind in CALL_NODES:
@@ -394,6 +413,11 @@ class FileHarness:
                 _args(node)[1], "Expr_ConstFetch") and (_name(_args(node)[1].get("name")) or "").lower() == "true"
             if callee in OUTPUT_FUNCTIONS and not returns:
                 scope.notes.append({"kind": "output_function", "line": line, "col": col, "detail": callee})
+            if callee == "header" and scope.content_type is None and _args(node) \
+                    and _is(_args(node)[0], "Scalar_String"):
+                found = re.match(r"\s*content-type\s*:\s*([^;\s]+)", _args(node)[0].get("value") or "", re.I)
+                if found:
+                    scope.content_type = found.group(1).lower()
             if callee == "ob_start":
                 scope.notes.append({"kind": "output_buffering", "line": line, "col": col,
                                     "detail": "ob_start()"})
@@ -453,6 +477,8 @@ class FileHarness:
             if branch != "else":
                 enclosure["condExpr"] = self.node_text(branch_cond)
             enclosure["loc"] = loc_dict(node.loc)
+            if any(_is(s, "Stmt_Expression") and _is(s.get("expr"), "Expr_Exit") for s in stmts or []):
+                enclosure["exits"] = True  # R-I8: the arm always ends the script (Member 01 Q20)
             before = len(scope.outputs)
             self._walk_list(stmts, scope, chain + ((if_id, f"{branch}{index}"),), enclosures + [enclosure])
             printed.append(len(scope.outputs) > before)
@@ -910,6 +936,7 @@ class FileHarness:
             "entrypoint": entrypoint,
             "schemaVersion": SCHEMA_VERSION,
             **function,
+            **({"responseContentType": scope.content_type} if scope.content_type else {}),
             "sequence": [entry for _, entry in sequence],
             "queries": dict(sorted(queries.items())),
             "callNames": dict(sorted(call_names.items())),
@@ -921,6 +948,7 @@ class FileHarness:
                 "sourceEncoding": self.encoding,
                 "locConvention": LOC_NOTE, "condExprConvention": COND_EXPR_NOTE, "callsConvention": CALLS_NOTE,
                 "callResolution": RESOLUTION_NOTE, "includesExtension": INCLUDES_NOTE,
+                "exitExtension": EXIT_NOTE, "contentTypeExtension": CONTENT_TYPE_NOTE,
                 "selectStarConvention": SELECT_STAR_NOTE,
                 "partsExtension": PARTS_NOTE, "copyPropagationExtension": COPY_NOTE,
                 "sqlValuesExtension": SQL_VALUES_NOTE,
