@@ -1,0 +1,32 @@
+# Copy to .github/workflows/c1-static-analysis.yml at the repo root.
+# The repo has no CI today. This runs the C1 tests, including the determinism checks, on every push.
+name: c1-static-analysis
+on:
+  push:
+    paths: ["components/c1_static_analysis/**"]
+  pull_request:
+    paths: ["components/c1_static_analysis/**"]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: components/c1_static_analysis
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"      # keep equal to TARGET_PHP_VERSION in extract_ast.php
+          tools: composer
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: composer install --no-interaction --prefer-dist
+      - run: pip install -r requirements.txt
+      - run: python -m pytest -q
+      - name: Determinism (diff -r across two runs)
+        run: |
+          export PYTHONPATH=src
+          python -m c1.extract tests/fixtures/php --out /tmp/run1
+          python -m c1.extract tests/fixtures/php --out /tmp/run2
+          diff -r /tmp/run1 /tmp/run2
