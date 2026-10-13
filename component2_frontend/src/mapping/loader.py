@@ -14,6 +14,7 @@ from src.model import (
     CallEntry,
     Concern,
     Contract,
+    EchoPart,
     Enclosure,
     Endpoint,
     EndpointRef,
@@ -47,6 +48,7 @@ BRANCH_KEYS = {"nodeId", "kind", "role", "branch", "condNodeId"}
 READ_KEYS = {"expr", "var", "path", "sourceKind", "confidence", "source"}
 SOURCE_KEYS = {"fetchNodeId", "queryNodeId", "table", "column"}
 QUERY_KEYS = {"line", "sql", "tables", "columns", "resultVar"}
+PART_KEYS = {"literal": {"kind", "value", "nodeId"}, "expr": {"kind", "expr", "nodeId", "read"}}
 LABEL_KEYS = {"concern", "basis", "ruleId", "reason"}
 LOC_KEYS = {"startLine", "endLine", "startCol", "endCol", "startByte", "endByte"}
 AST_KEYS = {"schemaVersion", "fileId", "path", "sha256", "bytes", "parseOk", "parseErrors", "rootId", "nodeCount",
@@ -108,6 +110,28 @@ def _check_read(read: dict, where: str) -> None:
             _check_read(inner, f"{where} derivedFrom")
 
 
+def _check_parts(entry: dict, where: str) -> None:
+    """parts is optional (harness extension, pending Member 01 Q16): what an echo prints, piece by piece."""
+    parts, reads, last = entry["parts"], entry["reads"], -1
+    if not isinstance(parts, list):
+        raise ValueError(f"{where}: parts must be a list")
+    for part in parts:
+        kind = part.get("kind") if isinstance(part, dict) else None
+        if kind not in PART_KEYS or set(part) != PART_KEYS[kind]:
+            raise ValueError(f"{where}: part {part!r} is not a literal {{kind, value, nodeId}} or an expr "
+                             "{kind, expr, nodeId, read}")
+        _check_node_id(part["nodeId"], f"{where} part")
+        if kind == "literal":
+            if not isinstance(part["value"], str):
+                raise ValueError(f"{where}: a literal part's value is its text")
+        else:
+            index = part["read"]
+            if not isinstance(part["expr"], str) or isinstance(index, bool) or not isinstance(index, int) \
+                    or not last < index < len(reads):
+                raise ValueError(f"{where}: an expr part names its own read by index, in order")
+            last = index
+
+
 def _check_loc(loc, where: str) -> None:
     """loc follows Member 01's convention (Q13-Q15): 1-based lines; 0-based columns and bytes; exclusive ends."""
     if not isinstance(loc, dict) or set(loc) != LOC_KEYS:
@@ -150,8 +174,10 @@ def load_timeline_json(path: Path) -> dict:
 
     for qid, query in timeline.get("queries", {}).items():
         _check_node_id(qid, f"{path}: queries")
-        if set(query) != QUERY_KEYS:
+        if not QUERY_KEYS <= set(query) <= QUERY_KEYS | {"valuesInterpolated"}:
             raise ValueError(f"{path}: query {qid} keys {sorted(query)} != {sorted(QUERY_KEYS)}")
+        if not isinstance(query.get("valuesInterpolated", False), bool):
+            raise ValueError(f"{path}: query {qid}: valuesInterpolated must be true or false")
 
     seen, loops_seen = set(), {}
     for entry in timeline["sequence"]:
@@ -175,13 +201,16 @@ def load_timeline_json(path: Path) -> dict:
         else:
             payload = "raw" if entry["kind"] == "Stmt_InlineHTML" else "reads"
             required = {"id", "kind", "enclosedBy", payload}
-            if not required <= set(entry) <= required | {"loc"}:
+            optional = {"loc"} | ({"parts"} if payload == "reads" else set())
+            if not required <= set(entry) <= required | optional:
                 raise ValueError(f"{where}: {entry['kind']} keys {sorted(entry)}; expected id/kind/enclosedBy/"
-                                 f"{payload} and optionally loc")
+                                 f"{payload} and optionally {' / '.join(sorted(optional))}")
         if "loc" in entry:
             _check_loc(entry["loc"], where)
         for read in entry.get("reads", []):
             _check_read(read, where)
+        if "parts" in entry:
+            _check_parts(entry, where)
 
         for enc in entry["enclosedBy"]:
             _check_node_id(enc.get("nodeId"), where)
@@ -269,6 +298,8 @@ def load_timeline(path: Path) -> Timeline:
             reads=tuple(_read(r) for r in e.get("reads", ())),
             enclosed_by=tuple(_enclosure(x) for x in e["enclosedBy"]),
             loc=_loc(e.get("loc")),
+            parts=tuple(EchoPart(kind=p["kind"], node_id=p["nodeId"], value=p.get("value"), expr=p.get("expr"),
+                                 read=p.get("read")) for p in e.get("parts", ())),
         )
         for e in doc["sequence"] if e["kind"] != CALL_KIND
     )
@@ -279,7 +310,8 @@ def load_timeline(path: Path) -> Timeline:
     )
     queries = {
         qid: Query(node_id=qid, line=q["line"], sql=q["sql"], tables=tuple(q["tables"]),
-                   columns=None if q["columns"] is None else tuple(q["columns"]), result_var=q["resultVar"])
+                   columns=None if q["columns"] is None else tuple(q["columns"]), result_var=q["resultVar"],
+                   values_interpolated=q.get("valuesInterpolated", False))
         for qid, q in doc.get("queries", {}).items()
     }
     return Timeline(entrypoint=doc["entrypoint"], schema_version=doc["schemaVersion"], sequence=sequence,

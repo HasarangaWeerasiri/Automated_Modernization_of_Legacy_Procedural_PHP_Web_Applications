@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from results_table import source  # noqa: E402
+from results_table import review_split, source  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "output" / "apps"
@@ -40,10 +40,14 @@ def page_row(folder: Path, entry: dict) -> dict:
         if node["status"] == "abstain":
             abstains[node["reason"]] = abstains.get(node["reason"], 0) + 1
     severity = stage5["counts"]["severity"]
+    review = review_split(None, stage2, stage5)
     row |= {"components": stage2["counts"]["components"], "abstain": stage2["counts"]["abstain"],
             "abstains": dict(sorted(abstains.items())), "review": stage2["counts"]["review"],
-            "todo": severity["todo"], "s5review": severity["review"], "info": severity["info"],
+            "review_unlabelled": review["s2"][0], "review_other": review["s2"][1],
+            "todo": severity["todo"], "s5review": severity["review"],
+            "s5review_unlabelled": review["s5"][0], "s5review_other": review["s5"][1], "info": severity["info"],
             "nesting": sum(f["flag"] == "html_nesting_changed" for f in stage5["flags"])}
+    assert sum(review["s2"]) == row["review"] and sum(review["s5"]) == row["s5review"], entry["key"]
     return row
 
 
@@ -80,19 +84,22 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
             f"functions that print. {len(index['silentFiles'])} files print nothing at their top level. "
             f"{len(index['parseErrors'])} parse errors, {sum(bool(r['crash']) for r in rows)} crashes.",
             "",
-            "| Page / function | Nodes | S2 components | S2 abstain (by reason) | S2 review | S5 todo | S5 review | "
-            "S5 info | tsc errors | Nesting flags |",
-            "|---|---|---|---|---|---|---|---|---|---|",
+            "| Page / function | Nodes | S2 components | S2 abstain (by reason) | S2 review unlabelled | "
+            "S2 review other | S5 todo | S5 review unlabelled | S5 review other | S5 info | tsc errors | "
+            "Nesting flags |",
+            "|---|---|---|---|---|---|---|---|---|---|---|---|",
         ]
         for r in rows:
             if r["crash"]:
-                lines.append(f"| {name(r)} | {r['nodes']} | **crash**: {r['crash']['error']} | | | | | | | |")
+                lines.append(f"| {name(r)} | {r['nodes']} | **crash**: {r['crash']['error']} | | | | | | | | | |")
                 continue
             tsc = "not run" if r["tsc"] is None else str(r["tsc"])
-            lines.append(f"| {name(r)} | {r['nodes']} | {r['components']} | {abstain_cell(r)} | {r['review']} | "
-                         f"{r['todo']} | {r['s5review']} | {r['info']} | {tsc} | {r['nesting']} |")
-        total = {key: sum(r[key] for r in ran) for key in ("nodes", "components", "abstain", "review", "todo",
-                                                            "s5review", "info", "nesting")}
+            lines.append(f"| {name(r)} | {r['nodes']} | {r['components']} | {abstain_cell(r)} | "
+                         f"{r['review_unlabelled']} | {r['review_other']} | {r['todo']} | {r['s5review_unlabelled']} | "
+                         f"{r['s5review_other']} | {r['info']} | {tsc} | {r['nesting']} |")
+        total = {key: sum(r[key] for r in ran) for key in (
+            "nodes", "components", "abstain", "review", "review_unlabelled", "review_other", "todo", "s5review",
+            "s5review_unlabelled", "s5review_other", "info", "nesting")}
         reasons = {}
         for r in ran:
             for reason, n in r["abstains"].items():
@@ -103,26 +110,31 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
                   "compiling": sum(r["tsc"] == 0 for r in ran), "tscKnown": tsc_known, "app": app}
         totals.append(total)
         lines.append(f"| **{app} total** | {total['nodes']} | {total['components']} | {abstain_cell(total)} | "
-                     f"{total['review']} | {total['todo']} | {total['s5review']} | {total['info']} | "
+                     f"{total['review_unlabelled']} | {total['review_other']} | {total['todo']} | "
+                     f"{total['s5review_unlabelled']} | {total['s5review_other']} | {total['info']} | "
                      f"{total['tsc'] if tsc_known else 'not run for every page'} | {total['nesting']} |")
         lines.append("")
     lines += [
         "## Totals per app",
         "",
-        "| App | Timelines | Crashes | Compiling (0 strict tsc errors) | Nodes | S2 components | S2 abstain | S2 review | "
-        "S5 todo | S5 review | S5 info | Flag rate | Nesting flags |",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+        "| App | Timelines | Crashes | Compiling (0 strict tsc errors) | Nodes | S2 components | S2 abstain | "
+        "S2 review unlabelled | S2 review other | S5 todo | S5 review unlabelled | S5 review other | S5 info | "
+        "Flag rate | Flag rate without unlabelled | Nesting flags |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for t in totals:
         compiling = f"{t['compiling']}/{t['timelines']}" if t["tscKnown"] else "not run"
         lines.append(f"| {t['app']} | {t['timelines']} | {t['crashes']} | {compiling} | {t['nodes']} | "
-                     f"{t['components']} | {abstain_cell(t)} | {t['review']} | {t['todo']} | {t['s5review']} | "
-                     f"{t['info']} | {t['todo'] + t['s5review']} | {t['nesting']} |")
+                     f"{t['components']} | {abstain_cell(t)} | {t['review_unlabelled']} | {t['review_other']} | "
+                     f"{t['todo']} | {t['s5review_unlabelled']} | {t['s5review_other']} | {t['info']} | "
+                     f"{t['todo'] + t['s5review']} | {t['todo'] + t['s5review_other']} | {t['nesting']} |")
     lines += [
         "",
-        "Flag rate = S5 todo + S5 review (generation-spec v0.4 §12). S2 review is high by construction: with no "
-        "labels every loop and `if` is `unlabelled`. tsc errors come from one strict `tsc --noEmit` run per app "
-        "over all its pages (`tools/compile_check.py`).",
+        "Flag rate = S5 todo + S5 review (generation-spec v0.4 §12). Review is split in two: *unlabelled* = the "
+        "only reason is that the node has no label, which is every loop and `if` of a whole app until Component 1's "
+        "labels exist; *other* = any other reason. *Flag rate without unlabelled* = S5 todo + S5 review other. "
+        "tsc errors come from one strict `tsc --noEmit` run per app over all its pages, with the test app's own "
+        "tsconfig (`tools/compile_check.py`).",
         "",
     ]
     return "\n".join(lines)

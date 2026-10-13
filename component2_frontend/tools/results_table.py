@@ -50,17 +50,38 @@ def _walk(node):
         yield from _walk(child)
 
 
+def only_unlabelled(reason: str) -> bool:
+    """A review whose one reason is the missing label: it goes away when Component 1's labels arrive."""
+    return {part.strip() for part in reason.split(",")} == {"unlabelled"}
+
+
+def review_split(stage1: dict | None, stage2: dict, stage5: dict) -> dict:
+    """Each stage's review count as (unlabelled only, any other reason). Stage 5 counts review-severity flags."""
+    def split(reasons):
+        reasons = list(reasons)
+        unlabelled = sum(only_unlabelled(r) for r in reasons)
+        return unlabelled, len(reasons) - unlabelled
+
+    out = {"s2": split(n["reason"] for n in _walk(stage2["tree"]) if n["status"] == "review"),
+           "s5": split(f["reason"] if f["flag"] == "stage2_review" else f["flag"]
+                       for f in stage5["flags"] + stage5["c2todos"] if f["severity"] == "review")}
+    if stage1 is not None:
+        out["s1"] = split(n["reason"] for n in stage1["kept"] if n["status"] == "review")
+    return out
+
+
 def row(mock: str, s: dict) -> dict:
     c1, c2, c3, c4, c5 = (s[i]["counts"] for i in range(1, 6))
     nesting = sum(f["flag"] == "html_nesting_changed" for f in s[5]["flags"])
+    review = review_split(s[1], s[2], s[5])
+    assert tuple(sum(review[k]) for k in ("s1", "s2", "s5")) == (c1["review"], c2["review"], c5["severity"]["review"])
     return {
         "mock": mock,
-        "s1": (c1["kept"], c1["review"], c1["excluded"]),
-        "s2": (c2["components"], c2["abstain"], c2["review"]),
+        "s1": (c1["kept"], *review["s1"], c1["excluded"]),
+        "s2": (c2["components"], c2["abstain"], *review["s2"]),
         "s3": (c3["field"], c3["ambiguous"], c3["unresolved"], c3["context"], c3["collection"]),
         "s4": (c4["matched"], c4["missing"], c4["excluded"], c4["cannotReconcile"], c4["unused"]),
-        "s5": (c5["severity"]["todo"], c5["severity"]["review"], c5["severity"]["info"],
-               c5["metrics"]["flagRate"]),
+        "s5": (c5["severity"]["todo"], *review["s5"], c5["severity"]["info"], c5["metrics"]["flagRate"]),
         "without": (c5["componentsWithoutC2Todo"], c5["components"]),
         "tsc": None if s["tsc"] is None else s["tsc"]["errors"],
         "nesting": nesting,
@@ -115,9 +136,11 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
         "",
         "## Table A — per mock",
         "",
-        "| Mock | S1 ok / review / excluded | S2 components / abstain / review | "
+        "| Mock | S1 ok / review unlabelled / review other / excluded | "
+        "S2 components / abstain / review unlabelled / review other | "
         "S3 field / ambiguous / unresolved / context / collection | "
-        "S4 matched / missing / excluded / cannot reconcile / unused | S5 todo / review / info / flag rate | "
+        "S4 matched / missing / excluded / cannot reconcile / unused | "
+        "S5 todo / review unlabelled / review other / info / flag rate | "
         "S5 without C2Todo | tsc errors | Nesting flags |",
         "|---|---|---|---|---|---|---|---|---|",
     ]
@@ -137,7 +160,9 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
                  f"{tsc_total if tsc_known else 'not run for every mock'} | {nesting_total} |")
     lines += [
         "",
-        "S1 ok = kept with status ok. S3 counts needs by class (one collection need per List). S4 counts field, "
+        "S1 ok = kept with status ok. Review is split in two: *unlabelled* = the only reason is that the node "
+        "has no label (it goes away when Component 1's labels arrive); *other* = any other reason. "
+        "S3 counts needs by class (one collection need per List). S4 counts field, "
         "ambiguous, unresolved and context needs, collections apart; `unused` is a lower bound (condition reads are "
         "not visible). S5 flag rate = todo + review; info is reported, not counted (generation-spec v0.3 §12). "
         "tsc errors come from tools/compile_check.py (strict).",

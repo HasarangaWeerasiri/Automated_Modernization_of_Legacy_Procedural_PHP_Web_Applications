@@ -82,11 +82,9 @@ def check_many(name: str, sources: dict[str, Path]) -> tuple[dict[str, int], str
         shutil.rmtree(target)
     for key, source in sources.items():
         shutil.copytree(source, target / key)
-    # moduleDetection "force": each page's files are modules of their own. Without it, the lib/api.ts of every
-    # no-endpoint page (no import or export, so a global script) would declare the same global authHeaders and
-    # the pages would collide with each other. No type is loosened; a page checked alone needs no such option.
-    config = {"extends": "../../tsconfig.json",
-              "compilerOptions": {"incremental": False, "noEmit": True, "moduleDetection": "force"},
+    # The test app's own tsconfig, with no compiler option overridden (spec v0.5 section 8): every generated
+    # file is a module, so many pages can be checked in one program without their names colliding.
+    config = {"extends": "../../tsconfig.json", "compilerOptions": {"incremental": False, "noEmit": True},
               "include": ["**/*.ts", "**/*.tsx"]}
     target.mkdir(parents=True, exist_ok=True)
     (target / "tsconfig.json").write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")

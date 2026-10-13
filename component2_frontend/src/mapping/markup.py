@@ -30,7 +30,7 @@ then replaces the part with a C2Todo instead of guessing.
 """
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from src.mapping import tags as tagtrack
 from src.mapping.stage2_boundaries import _If, _Loop, _regions
@@ -58,8 +58,9 @@ class MText:
 
 @dataclass(eq=False)
 class MDynamic:
-    output: OutputNode
+    output: OutputNode  # for one part of an echo: that echo with this part's read only
     parent: object = None
+    part: object = None  # the EchoPart, when this is one expression of an echo that has parts
 
 
 @dataclass(eq=False)
@@ -139,6 +140,8 @@ class _Frame:
 
 
 def region_id(item) -> str:
+    if isinstance(item, OutputNode):  # an output node Stage 2 abstained on by itself
+        return item.id
     return item.node_id if isinstance(item, _If) else item.enclosure.node_id
 
 
@@ -210,7 +213,10 @@ class Builder:
     def walk(self, items: list) -> None:
         for item in items:
             if isinstance(item, OutputNode):
-                self.output(item)
+                if item.id in self.abstain_by_source:  # e.g. markup_from_expression: opaque, its text is not read
+                    self.abstained(item, self.abstain_by_source[item.id])
+                else:
+                    self.output(item)
                 continue
             rid = region_id(item)
             first = _first_output(item)
@@ -308,6 +314,13 @@ class Builder:
         if node.raw is not None:
             self.feed(node.raw)
             return
+        if node.parts:  # boundary-rules section 1: literal pieces are markup, each expression is one value
+            for part in node.parts:
+                if part.kind == "literal":
+                    self.feed(part.value)
+                else:
+                    self.dynamic(replace(node, reads=(node.reads[part.read],), parts=()), part)
+            return
         literal = php_literal_text(node.reads[0].expr) if len(node.reads) == 1 and \
             node.reads[0].source_kind == "literal" else None
         if literal is not None:
@@ -319,8 +332,8 @@ class Builder:
         for ch in text.replace("\r\n", "\n").replace("\r", "\n"):
             self.char(ch)
 
-    def dynamic(self, node: OutputNode) -> None:
-        part = MDynamic(node)
+    def dynamic(self, node: OutputNode, echo_part=None) -> None:
+        part = MDynamic(node, part=echo_part)
         state = self.state
         if state == "tag_open":
             self.text_append("<")

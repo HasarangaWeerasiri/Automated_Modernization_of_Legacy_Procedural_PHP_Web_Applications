@@ -13,6 +13,8 @@ How the rules are applied:
           R-L2a (container = nearest open tag, walking past table sections).
           R-L3: a one-element item stays inline, no Item component; an if
           inside it is still judged by the if rules (boundary-rules v0.7).
+          R-L3b: a body of text and expressions with no element is an
+          inline map too (a keyed Fragment), no Item component.
           R-L4 needs no code of its own: the walk is innermost first.
   ifs     R-I3 output in attribute position. R-L6 tags crossing a branch ->
           abstain. An if labelled business_logic is an authorization guard ->
@@ -33,6 +35,11 @@ Labels and statuses (boundary-rules.md sections 4a and 5):
     from it (CONTEXT.md rules 3 and 4).
   - An R-I6 chain is always review: the conditions' text is not in the
     timeline, so their mutual exclusivity cannot be checked.
+
+An echo that carries `parts` (boundary-rules section 1) is read piece by
+piece: its literal text goes through the tag tracker like inline HTML. An
+expression part where a tag name or an attribute name is written cannot be
+generated: that echo abstains (`markup_from_expression`).
 
 Not implemented: R-F1 and R-F2 (function and layout components), blocked on
 whether a page's timeline includes the output of the functions it calls.
@@ -221,6 +228,12 @@ class _Builder:
             run.clear()
 
         for k in nodes:
+            if k.output.parts and self.tags[k.node_id].dynamic_in_name:
+                # boundary-rules section 1: an expression in a tag-name or attribute-name position
+                flush()
+                run_attribute = None
+                out.append(self.abstain("markup_from_expression", [k], (k.node_id,)))
+                continue
             attribute = k.output.raw is None and self.tags[k.node_id].in_tag_before
             if attribute != run_attribute:
                 flush()
@@ -333,7 +346,7 @@ class _Builder:
             return self.abstain("container_undetermined", nodes, source, ("R-L6",))
 
         roots = tagtrack.root_tags(run)
-        if not roots:  # a loop that prints text only: no rule describes its item
+        if not roots and tagtrack.element_count(run):  # elements, but none at the body's own level
             return self.abstain("no_rule", nodes, source)
         if len(roots) > 1:  # R-L2b
             container, container_rule, reason = ListContainer(False, None, None, None), "R-L2b", "item_has_no_wrapper"
@@ -346,6 +359,11 @@ class _Builder:
 
         label = region.enclosure.label
         common = {"reason": reason, "container": container, "loop_concern": label.concern.value if label else None}
+        if not roots:  # R-L3b: text and expressions only -> an inline map of keyed Fragments, no Item component
+            regions = [item for item in region.items if not isinstance(item, KeptNode)]
+            children = self.items(region.items) if regions else ()
+            return common | {"rules": ("R-L1", container_rule, "R-L3b"),
+                             "child": self.node("Static", ("R-L3b",), "inline_text_map", nodes, (), children)}
         if len(roots) == 1 and tagtrack.element_count(run) == 1:  # R-L3: stays an inline map
             # v0.7 scope: R-L3 decides only that there is no Item component. An if in the row is judged by the
             # if rules like any other (an inline map whose body holds one gets those nodes as children).

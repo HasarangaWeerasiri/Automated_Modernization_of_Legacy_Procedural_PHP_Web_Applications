@@ -120,7 +120,7 @@ def recover_requirements(component_tree: ComponentTree, timeline: Timeline) -> R
                                                expr=loop.iter_expr if loop else "", file=timeline.entrypoint,
                                                from_abstained=abstained)}
                 parent_list = component_id
-        if node.type == "Static" and node.rule == "R-L3":  # an inline map's body is the List's row
+        if node.type == "Static" and node.rule in ("R-L3", "R-L3b"):  # an inline map's body is the List's row
             row_of = parent_list
         if not node.children:
             for node_id in node.node_ids:

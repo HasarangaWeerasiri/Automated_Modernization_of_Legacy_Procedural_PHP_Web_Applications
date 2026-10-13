@@ -6,7 +6,7 @@ into Next.js (App Router) Server Components:
   app/<route>/page.tsx        the Page
   components/<Name>.tsx       one per List, Item, Empty, ConditionalComponent
   lib/api-types.ts            the response types the page uses
-  lib/api.ts                  one typed fetch function per mapped endpoint
+  lib/api.ts                  one typed fetch function per mapped endpoint (none: no file)
   lib/c2-todo.tsx             C2Todo (renders nothing) and unresolvedCondition (false)
 
 Core rule (section 1): a part that cannot be generated faithfully becomes a
@@ -80,6 +80,7 @@ FLAGGED = ("missing", "cannot_reconcile")
 _SPACE_RUN = re.compile(f"[{re.escape(HTML_SPACE)}]+")
 _IDENTIFIER = re.compile(r"[A-Za-z_$][\w$]*")
 _EVENT_ATTRIBUTE = re.compile(r"on[a-z]+")
+_PLAIN_VARIABLE = re.compile(r"\$[A-Za-z_]\w*")
 C2TODO_SOURCE = """\
 // Component 2, Stage 5 (docs/generation-spec.md section 1).
 // C2Todo marks a part the generator could not produce faithfully. It renders nothing;
@@ -474,9 +475,10 @@ class Generator:
         read, wrappers = output.reads[0], []
         while read.source_kind == "computed":
             name = _wrapper(read.expr)
-            if name is None or len(read.derived_from) != 1:
+            copy = name is None and _PLAIN_VARIABLE.fullmatch(read.expr)  # $v after `$v = $row['k'];`: the same value
+            if (name is None and not copy) or len(read.derived_from) != 1:
                 return _Value(todo=self.worst_reason(output.id, read), wrappers=tuple(wrappers))
-            if name not in self.config.escape_wrappers:
+            if name is not None and name not in self.config.escape_wrappers:
                 wrappers.append(name)
             read = read.derived_from[0]
         if read.source_kind == "literal":
@@ -529,6 +531,8 @@ class Generator:
             return [jsx.Text(value.text, marks=tuple(marks))]
         if value.code is None:
             detail = f"wrappers: {', '.join(value.wrappers)}" if value.wrappers else ""
+            if item.part is not None:  # one expression of an echo string: say which
+                detail = f"part {item.part.expr}" + (f"; {detail}" if detail else "")
             node = self.todo(output.id, value.todo, ctx, detail)
             node.marks = tuple(marks) + node.marks
             return [node]
@@ -901,7 +905,14 @@ class Generator:
         ctx.uses.add("items")
         item = next((c for c in lst.children if c.type == "Item"), None)
         row = self.row_scope(lst)
-        if item is not None:
+        if item is None and "R-L3b" in lst.rules:  # a text-only body: an inline map of keyed Fragments (spec 5a)
+            had_row = "row" in ctx.uses
+            body = self.nodes(mloop.children, ctx.child(row=row))
+            if not had_row:
+                ctx.uses.discard("row")
+            ctx.file.use("react", "Fragment")
+            body = [jsx.Fragment(body, key="i")]
+        elif item is not None:
             self.roots[id(item)] = mloop
             name, props = self.component(item, ctx, row)
             ctx.file.use(self.component_module(ctx.file, name), name)
@@ -1158,6 +1169,10 @@ class Generator:
                 self.flag(ctx, f.flag, f.status, f.node_id, f.detail, mark=key)
         self.pending_flags.clear()
         self.stage2_reviews(page, key)
+        for query in self.timeline.queries.values():  # reporting only: the query's shape came from its fixed text
+            if query.values_interpolated:
+                page.entries.append(_Entry("flag", "sql_interpolated_values", "sql_interpolated_values", INFO,
+                                           query.node_id, " ".join(query.sql.split())[:120], key, "Page", False))
         return self.result()
 
     def stage2_reviews(self, page: _File, page_key: str) -> None:
@@ -1177,10 +1192,13 @@ class Generator:
     # ---- files
 
     def lib_files(self) -> dict[str, str]:
+        """Every file is an ES module (spec v0.5 section 8): a page with no endpoint has nothing to fetch, so it
+        gets no lib/api.ts at all rather than a file with no export (a global script)."""
         files = {"lib/c2-todo.tsx": C2TODO_SOURCE}
         types = self.api_types()
         files["lib/api-types.ts"] = types
-        files["lib/api.ts"] = self.api_module()
+        if self.schema is not None:
+            files["lib/api.ts"] = self.api_module()
         return files
 
     def api_types(self) -> str:
@@ -1220,18 +1238,14 @@ class Generator:
         return header + "\n" + "\n\n".join(blocks) + "\n"
 
     def api_module(self) -> str:
-        lines = []
-        if self.schema is not None:
-            lines += [f'import type {{ {self.response_type} }} from "./api-types";', ""]
-        lines += ["// TODO(C2): token forwarding is Component 1's design (docs/generation-spec.md section 8).",
-                  "function authHeaders(): Record<string, string> {", "  return {};", "}"]
-        if self.schema is not None:
-            path = self.report.endpoint.path
-            lines += ["", f"export async function {self.fetch_name}(): Promise<{self.response_type}> {{",
-                      f"  const response = await fetch(`${{process.env.{self.config.api_base_url_env}}}{path}`, {{",
-                      '    cache: "no-store",', "    headers: authHeaders(),", "  });", "  return response.json();", "}"]
-        else:
-            lines += ["", f"// No fetch function: {self.page_gap or 'no mapped endpoint'}."]
+        """lib/api.ts for a page with a mapped endpoint: the typed fetch function, and authHeaders (exported)."""
+        path = self.report.endpoint.path
+        lines = [f'import type {{ {self.response_type} }} from "./api-types";', "",
+                 "// TODO(C2): token forwarding is Component 1's design (docs/generation-spec.md section 8).",
+                 "export function authHeaders(): Record<string, string> {", "  return {};", "}",
+                 "", f"export async function {self.fetch_name}(): Promise<{self.response_type}> {{",
+                 f"  const response = await fetch(`${{process.env.{self.config.api_base_url_env}}}{path}`, {{",
+                 '    cache: "no-store",', "    headers: authHeaders(),", "  });", "  return response.json();", "}"]
         return "\n".join(lines) + "\n"
 
     def render(self, file: _File) -> tuple[str, dict]:
@@ -1350,7 +1364,8 @@ class Generator:
                 entry = GenerationEntry(
                     kind=e.kind, flag=e.flag, reason=e.reason, status=e.status, file=path, line=line,
                     node_id=e.node_id, detail=e.detail, function=e.function, in_abstained=e.in_abstained,
-                    source_line=node.loc.start_line if node is not None and node.loc is not None else None,
+                    source_line=node.loc.start_line if node is not None and node.loc is not None else (
+                        self.timeline.queries[e.node_id].line if e.node_id in self.timeline.queries else None),
                     source_col=node.loc.column if node is not None and node.loc is not None else None,
                     severity=severity, severity_if_rendered=if_rendered)
                 (flags if e.kind == "flag" else todos).append(entry)

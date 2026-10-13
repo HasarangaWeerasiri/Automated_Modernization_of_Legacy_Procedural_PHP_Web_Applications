@@ -100,6 +100,17 @@ class Loc:
 
 
 @dataclass(frozen=True)
+class EchoPart:
+    """One piece of what an echo / print prints (boundary-rules section 1; Member 01 Q16, pending)."""
+
+    kind: str  # "literal" | "expr"
+    node_id: str  # the AST node of the piece
+    value: str | None = None  # literal: the PHP-decoded text
+    expr: str | None = None  # expr: its source
+    read: int | None = None  # expr: index of its read in the output node's reads
+
+
+@dataclass(frozen=True)
 class OutputNode:
     """One output statement (Stmt_InlineHTML / Stmt_Echo / Expr_Print)."""
 
@@ -109,6 +120,9 @@ class OutputNode:
     reads: tuple[Read, ...]  # Stmt_Echo / Expr_Print only
     enclosed_by: tuple[Enclosure, ...]  # outermost first
     loc: Loc | None = None  # optional: absent when the timeline does not give it; never guessed
+    # Optional: what an echo prints, piece by piece and in order. Empty when the timeline does not give it;
+    # the statement is then one opaque piece (its reads).
+    parts: tuple[EchoPart, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -163,6 +177,9 @@ class Query:
     tables: tuple[str, ...]
     columns: tuple[str, ...] | None  # None when unknown (SELECT * the analysis could not expand)
     result_var: str
+    # Optional (harness extension, Member 01 Q17): the SQL has interpolated values, so its select list and table
+    # were read from its fixed text. Reporting only (Stage 5 flag sql_interpolated_values).
+    values_interpolated: bool = False
 
 
 @dataclass(frozen=True)

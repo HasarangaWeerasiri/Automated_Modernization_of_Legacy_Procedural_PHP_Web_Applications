@@ -30,7 +30,8 @@ def test_totals_row_adds_up_the_mocks():
     rows = [results_table.row(m, results_table.load(results_table.OUTPUT, m)) for m in results_table.MOCKS]
     text = results_table.render()
     totals = next(line for line in text.splitlines() if line.startswith("| **All 10**"))
-    flag_rate = sum(r["s5"][3] for r in rows)
+    flag_rate = sum(r["s5"][-1] for r in rows)  # s5 = todo, review unlabelled, review other, info, flag rate
+    assert "review unlabelled / review other" in text
     without = sum(r["without"][0] for r in rows), sum(r["without"][1] for r in rows)
     assert f"/ {flag_rate} |" in totals and f"| {without[0]}/{without[1]} |" in totals
 

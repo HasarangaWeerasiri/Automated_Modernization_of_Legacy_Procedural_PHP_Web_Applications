@@ -1,6 +1,6 @@
 # Component 2 — Agent Context (read this first, every task)
 
-_Version 14 — 12 Oct 2026 (Member 01 answered Q1–Q4, Q11, Q13–Q15 and sent the first **real AST**; Phase 1b = align with it, then Phase 2a)._
+_Version 15 — 13 Oct 2026 (Phase 1b accepted: the harness reproduces Member 01's real AST byte for byte; Phase 2a next)._
 
 This file is the handoff between the research chat and the coding agent. It records decisions
 already made. **Do not change a decision recorded here.** If something here looks wrong or a task
@@ -116,7 +116,9 @@ harness, not Member 01's core** (`_provenance.generator = "c2-harness"`).
 - WackoPicko mocks: `{timeline,labels}_wp_{guestbook,view,login,header,thumbnails}.json` (generated). Their **labels are generator placeholders**, not C1 output, and every WackoPicko read is `unresolved` (data comes through class methods in `include/*.php`). Use them for Stage 2 only.
 - Deliberate contract gap: field **`contact`** (flagged on list pages only). `sku` appears in no schema.
 - `undecided` nodes: edge_cases (1, `auth_or_display`), wp_login (1, placeholder `logic_or_display`), wp_thumbnails (1, placeholder `logic_or_display`).
-- Tests: 636 passing (after Phase 1). Whole-app harness `tools/harness/` (nikic/php-parser 5.9.0, composer.lock committed, `vendor/` ignored); reads each app at its pinned commit via `git archive` (the HMS working copy has 11 locally patched files). Whole-app outputs `output/apps/` (ignored); tables `docs/c2-apps-results.md`, `docs/php-analysis/pattern-log.md`. Phase 1 totals: HMS 33 timelines, WackoPicko 33, 0 crashes, 0 tsc errors. Review counts are dominated by `unlabelled` (no C1 labels for whole apps). Docker 29.7.2 is installed (Phase 4).
+- Tests: 706 passing, 0 skipped (after Phase 1b). **AST acceptance:** the harness's AST for HMS `admin-panel1.php` is **byte-identical** to Member 01's (602/602 nodes + header). Fixes needed: `null` sub-nodes in `fields`, `_kind` copied, sorted keys. Still our own choice (the real file cannot show it): `parseErrors` item shape, other nikic attributes, non-ASCII JSON escaping, echoes closed by `?>`. `.gitattributes` keeps `legacy-apps/real/` byte-exact (owner's git has `core.autocrlf=true`). Timeline builder gives the same 49 entries from either AST. Mocks and whole-app outputs unchanged by the fixes.
+- HMS `callee: null` calls: 16 — 15 are TCPDF `$obj_pdf->…()` method calls (Q11, stay unknown); 1 (`display_docs()`, `admin-panel.php:359`) resolves through the page's literal includes to `newfunc.php` (Phase 2b).
+- Earlier: 636 passing after Phase 1. Whole-app harness `tools/harness/` (nikic/php-parser 5.9.0, composer.lock committed, `vendor/` ignored); reads each app at its pinned commit via `git archive` (the HMS working copy has 11 locally patched files). Whole-app outputs `output/apps/` (ignored); tables `docs/c2-apps-results.md`, `docs/php-analysis/pattern-log.md`. Phase 1 totals: HMS 33 timelines, WackoPicko 33, 0 crashes, 0 tsc errors. Review counts are dominated by `unlabelled` (no C1 labels for whole apps). Docker 29.7.2 is installed (Phase 4).
 - Earlier: 573 passing after Stage 5 v0.4 / rules v0.7 (`3d1d798` + owner commit).
 - Earlier: 568 passing after the Stage 5 close-out (`3d1d798`). Results table: `tools/results_table.py` → `docs/c2-results.md` (re-run after each commit).
 - Earlier: 564 passing after Stage 5 v0.2 (`ee21ff8`). `html5lib==1.1` pinned for the nesting check. All-mock totals (spec v0.4): 58 todo, 39 review, 120 info, **flag rate 97**, 9/27 components without C2Todo, 0 tsc errors, 2 nesting flags. Stage 1–4 outputs unchanged since `ee21ff8` (482,900 bytes compared).

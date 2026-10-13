@@ -47,6 +47,8 @@ class NodeTags:
     events: tuple[TagEvent, ...]
     stack_after: tuple[OpenTag, ...]
     in_tag_after: bool
+    # Dynamic output of this node lands where a tag name or an attribute name is written (`<$tag>`, `<td $attr>`).
+    dynamic_in_name: bool = False
 
 
 class _Tracker:
@@ -61,6 +63,7 @@ class _Tracker:
         self.node = None  # node being fed
         self.tag_node = None  # node in which the tag being read started
         self.events: dict[str, list[TagEvent]] = {}
+        self.dynamic_in_name: set[str] = set()  # nodes whose dynamic output lands in a tag or attribute name
 
     def feed(self, node_id: str, text: str) -> None:
         self.node = node_id
@@ -68,8 +71,17 @@ class _Tracker:
         for ch in text:
             self._char(ch)
 
+    def _in_value(self) -> bool:
+        """Inside a tag: whether the text read so far ends in an attribute value (after an `=`)."""
+        if self.quote or self.buf.rstrip().endswith("="):
+            return True
+        token = self.buf.split()[-1] if self.buf.split() and not self.buf[-1:].isspace() else ""
+        return "=" in token
+
     def _char(self, ch: str) -> None:
         state = self.state
+        if ch == DYNAMIC and (state in ("lt", "close") or (state == "tag" and not self._in_value())):
+            self.dynamic_in_name.add(self.node)
         if state == "text":
             if ch == "<":
                 self.state = "lt"
@@ -161,6 +173,8 @@ def output_text(node: OutputNode) -> str:
     """What the node prints, with DYNAMIC standing in for values not known statically."""
     if node.raw is not None:
         return node.raw
+    if node.parts:  # the echo's pieces in order: literal text is read as markup, an expression is a value
+        return "".join(p.value if p.kind == "literal" else DYNAMIC for p in node.parts)
     parts = [_literal_text(r.expr) if r.source_kind == "literal" else DYNAMIC for r in node.reads]
     return "".join(parts) or DYNAMIC
 
@@ -174,7 +188,8 @@ def track(nodes: tuple[OutputNode, ...] | list[OutputNode], config: BoundaryConf
         tracker.feed(node.id, output_text(node))
         snapshots.append((node.id, before, (tuple(tracker.stack), tracker.state == "tag")))
     return {
-        node_id: NodeTags(node_id, before[0], before[1], tuple(tracker.events[node_id]), after[0], after[1])
+        node_id: NodeTags(node_id, before[0], before[1], tuple(tracker.events[node_id]), after[0], after[1],
+                          node_id in tracker.dynamic_in_name)
         for node_id, before, after in snapshots
     }
 

@@ -268,9 +268,10 @@ def test_a_join_is_ambiguous(tmp_path):
     assert (read["source"]["table"], read["source"]["column"]) == (None, None)
 
 
-@pytest.mark.parametrize("sql", ['"select * from users where id = \'$id\'"', '"select * from users where id=" . $id',
-                                 "$sql"])
-def test_interpolated_or_built_sql_is_unresolved(tmp_path, sql):
+@pytest.mark.parametrize("sql", ['"select * from $table where id = 3"', '"select * from users " . $where', "$sql",
+                                 "build_sql()"])
+def test_built_sql_is_unresolved(tmp_path, sql):
+    """SQL whose structure is not fixed text. (Interpolated *values* are resolved: tests/test_phase2a.py.)"""
     timeline = page(tmp_path, FETCH % sql, USERS)
     assert kinds(timeline) == [("$row['name']", "unresolved", "unresolved")]
     (note,) = timeline["harnessNotes"]
@@ -314,22 +315,23 @@ def test_anything_else_is_unresolved(tmp_path, expr):
     assert kinds(page(tmp_path, f"<?php echo {expr};")) == [(expr, "unresolved", "unresolved")]
 
 
-def test_an_interpolated_string_is_one_unresolved_read_and_noted(tmp_path):
+def test_an_interpolated_string_gives_one_read_per_expression_and_is_noted(tmp_path):
+    """Phase 2a: no longer one opaque read. Its parts are tested in tests/test_phase2a.py."""
     timeline = page(tmp_path, '<?php echo "<td>$name</td>";')
-    assert kinds(timeline) == [('"<td>$name</td>"', "unresolved", "unresolved")]
+    assert kinds(timeline) == [("$name", "unresolved", "unresolved")]
     (note,) = timeline["harnessNotes"]
-    assert (note["kind"], note["markup"]) == ("interpolated_string_output", True)
+    assert (note["kind"], note["form"], note["markup"]) == ("echo_parts", "interpolated_string", True)
 
 
 def test_a_heredoc_is_noted_as_one(tmp_path):
     timeline = page(tmp_path, "<?php echo <<<HTML\n<b>$x</b>\nHTML;\n")
-    assert [n["kind"] for n in timeline["harnessNotes"]] == ["heredoc_output"]
+    assert [(n["kind"], n["form"]) for n in timeline["harnessNotes"]] == [("echo_parts", "heredoc")]
 
 
 def test_a_concatenated_echo_gives_one_read_per_piece(tmp_path):
     timeline = page(tmp_path, "<?php echo '<td>' . $_GET['q'] . '</td>', 'x';")
     assert [r["sourceKind"] for r in reads(timeline)] == ["literal", "request", "literal", "literal"]
-    assert [n["kind"] for n in timeline["harnessNotes"]] == ["markup_in_concatenated_echo"]
+    assert [(n["kind"], n["form"]) for n in timeline["harnessNotes"]] == [("echo_parts", "concatenation")]
 
 
 # ---------------------------------------------------------------- "comes from" is decided only when certain
@@ -644,12 +646,10 @@ switch ($x) { case 1: echo 'a'; }
 def test_harness_reproduces_the_mocks_except_where_the_read_rules_differ(tmp_path):
     differences = regress.run(tmp_path)
     assert {mock: len(d) for mock, d in differences.items()} == {
-        "list_while": 0, "detail": 5, "wp_guestbook": 0, "wp_view": 1, "wp_login": 0, "wp_header": 0,
+        "list_while": 0, "detail": 0, "wp_guestbook": 0, "wp_view": 1, "wp_login": 0, "wp_header": 0,
         "wp_thumbnails": 0}
-    # detail: its SQL is interpolated (where fname ='$fname'), which the read table makes unresolved; the mock's
-    # table and columns were given by hand.
-    assert all(d["field"] == "reads" and d["harness"][0]["sourceKind"] == "unresolved"
-               and d["mock"][0]["sourceKind"] == "db_row_field" for d in differences["detail"])
+    # detail: its SQL interpolates values only (where fname ='$fname' and lname='$lname'), so since Phase 2a the
+    # harness resolves the same table and columns the mock was given by hand (5 reads; they differed before).
     # wp_view: date(...) inside h() is a function result (unresolved); the mock made it a computed read.
     (view,) = differences["wp_view"]
     assert view["id"] == "f007#00211" and view["harness"][0]["derivedFrom"][0]["sourceKind"] == "unresolved"
@@ -691,24 +691,33 @@ def test_libraries_are_excluded_and_only_discovery_apps_are_configured(apps_outp
     assert not any(p["path"].startswith(("TCPDF/", "vendor/")) for p in indexes["hms"]["pages"])
 
 
-def test_whole_app_totals_are_those_of_phase_1(apps_output):
-    """Aligning ids, loc, calls and SELECT * with Member 01 changed no page's result (roadmap Phase 1b)."""
+def test_whole_app_totals(apps_output):
+    """Nodes, S2 components / abstain / review, S5 todo / review / info. Phase 1 and 1b: hms (269, 59, 8, 180,
+    133, 397, 230). Phase 2a: three one-echo rows and one text-only loop are Lists now (4 abstains fewer, 7
+    components more), and each cell of an echo string is its own gap (more todos, finer ones)."""
     output, indexes = apps_output
     totals = {}
     for app, index in indexes.items():
         rows = [apps_results_table.page_row(output / app, entry) for entry in index["pages"]]
         totals[app] = tuple(sum(r[key] for r in rows) for key in ("nodes", "components", "abstain", "review", "todo",
                                                                     "s5review", "info"))
-    assert totals == {"hms": (269, 59, 8, 180, 133, 397, 230), "wackopicko": (383, 58, 4, 278, 164, 276, 113)}
+    assert totals == {"hms": (269, 66, 4, 188, 179, 405, 295), "wackopicko": (383, 58, 4, 278, 164, 276, 113)}
+    hms = [apps_results_table.page_row(output / "hms", entry) for entry in indexes["hms"]["pages"]]
+    assert (sum(r["review_unlabelled"] for r in hms), sum(r["review_other"] for r in hms)) == (184, 4)
+    assert (sum(r["s5review_unlabelled"] for r in hms), sum(r["s5review_other"] for r in hms)) == (184, 221)
+    assert not [r["abstains"] for r in hms if "no_rule" in r["abstains"]]
 
 
 def test_hms_select_star_reads_are_expanded_from_its_own_schema(apps_output):
     output, indexes = apps_output
     assert indexes["hms"]["schemaFiles"] == ["myhmsdb.sql"]
     timeline = json.loads((output / "hms" / "admin-panel1.php" / "timeline.json").read_text(encoding="utf-8"))
-    expanded = [r for r in reads(timeline) if r.get("basis")]
-    assert len(expanded) == 15 and {r["basis"] for r in expanded} == {"schema-expanded"}
-    assert {r["source"]["table"] for r in expanded} == {"appointmenttb", "contact"}
+    direct = [r for r in reads(timeline) if r.get("basis")]
+    assert len(direct) == 15 and {r["source"]["table"] for r in direct} == {"appointmenttb", "contact"}
+    copied = [r["derivedFrom"][0] for r in reads(timeline) if r["sourceKind"] == "computed"]  # $v = $row['k']
+    assert len(copied) == 22 and {r["source"]["table"] for r in copied} == {"doctb", "patreg", "prestb"}
+    expanded = direct + copied
+    assert {r["basis"] for r in expanded} == {"schema-expanded"}
     assert not [r for r in reads(timeline) if r["confidence"] == "ambiguous"]
 
 
@@ -751,7 +760,8 @@ def test_batch_compile_check_attributes_a_planted_error_to_its_page(apps_output,
 
     for key in ("index.php", "error.php"):
         shutil.copytree(output / "hms" / key / "generated", tmp_path / key)
-    planted = tmp_path / "error.php" / "lib" / "api.ts"
-    planted.write_text(planted.read_text(encoding="utf-8") + 'const wrong: number = "text";\n', encoding="utf-8")
+    planted = tmp_path / "error.php" / "lib" / "c2-todo.tsx"  # (a no-endpoint page has no lib/api.ts)
+    planted.write_text(planted.read_text(encoding="utf-8") + 'export const wrong: number = "text";\n',
+                       encoding="utf-8")
     errors, _ = compile_check.check_many("planted_many", {key: tmp_path / key for key in ("index.php", "error.php")})
     assert errors == {"index.php": 0, "error.php": 1}

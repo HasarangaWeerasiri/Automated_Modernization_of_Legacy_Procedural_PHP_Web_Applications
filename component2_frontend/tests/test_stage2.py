@@ -376,9 +376,14 @@ def test_unmatched_closing_tag_is_ignored_and_flagged():
     assert leaf.flags == ("unmatched_close",) and leaf.status == "ok"
 
 
-def test_text_only_loop_has_no_rule():
+def test_text_only_loop_is_an_inline_map():
+    """R-L3b (boundary-rules v0.9): text and expressions but no element -> an inline map, no Item component.
+    Before v0.9 no rule described this loop and it abstained (no_rule)."""
     tree = synthetic(html("<p>"), echo(LOOP), html("</p>"))
-    assert [n.reason for n in find(tree, type="Abstain")] == ["no_rule"]
+    (lst,) = find(tree, type="List")
+    assert lst.rules == ("R-L1", "R-L2a", "R-L3b") and lst.container.tag == "p"
+    assert [(c.type, c.rule, c.reason) for c in lst.children] == [("Static", "R-L3b", "inline_text_map")]
+    assert not find(tree, type="Abstain") and not find(tree, type="Item")
 
 
 # ---------------------------------------------------------------- fixtures

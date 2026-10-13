@@ -31,8 +31,25 @@ between it and the use, and not be overwritten later in a loop both share. A row
 assigned only from fetch calls. Otherwise the read is unresolved.
 
 An echo whose expression is a `.` concatenation (or several echo arguments) gives one read per
-piece, in order. An interpolated string or heredoc is one unresolved read: its pieces are not
-separate source expressions.
+piece, in order. Roadmap Phase 2a adds three more inputs, each conservative and each named in
+`_provenance`:
+
+  parts (boundary-rules section 1, Member 01 Q16)
+      An echo or print whose arguments are strings, interpolated strings, heredocs, concatenations
+      or several arguments carries `parts`, in source order: {kind: "literal", value, nodeId} with
+      the PHP-decoded text, or {kind: "expr", expr, nodeId, read} with the index of its own read.
+      They come from the AST (Scalar_InterpolatedString.parts, concat nodes, Stmt_Echo.exprs), and
+      nodeId is the AST node. An argument that cannot be split exactly (a float) leaves the echo
+      without parts: one opaque node, as before.
+  copy propagation (Q17)
+      `$v = $row['k'];` then a use of `$v` in the same block, with no branch, no assignment to
+      `$v` or `$row` and no call that takes either as an argument in between: the read of `$v` is
+      `computed`, derived from the read of `$row['k']`. Anything else stays unresolved.
+  interpolated SQL values (Q17)
+      When every interpolation in a SQL string sits inside a quoted value or is a whole value
+      after a comparison operator, the select list and the table come from the string's fixed
+      text, so reads resolve as for literal SQL and the query is marked `valuesInterpolated`.
+      An interpolation anywhere else leaves the read unresolved.
 """
 
 import re
@@ -71,7 +88,20 @@ CALLS_NOTE = ("Member 01 Q4 (proposed): a call site is a sequence entry {kind: \
 SELECT_STAR_NOTE = ("Member 01 Q1 (proposed): a single-table SELECT * is resolved only when the app ships a schema "
                     "(.sql with CREATE TABLE) that declares the table; such reads carry basis \"schema-expanded\". "
                     "Otherwise it is ambiguous.")
-QUERIES_NOTE = "Agent extension: `queries` holds the SQL of every query a read was traced to."
+QUERIES_NOTE = ("Agent extension: `queries` holds the SQL of every query a read was traced to; "
+                "`valuesInterpolated: true` marks a query whose SQL has interpolated values (see sqlValuesExtension).")
+PARTS_NOTE = ("Harness extension, pending Member 01 Q16: `parts` on an echo/print entry lists what it prints in "
+              "source order, taken from the AST: {kind: \"literal\", value, nodeId} (value is the PHP-decoded text) "
+              "or {kind: \"expr\", expr, nodeId, read} (read is the index of this part's read in `reads`). nodeId "
+              "is the AST node of the part. An echo that cannot be split exactly has no parts.")
+COPY_NOTE = ("Harness extension, pending Member 01 Q17: a read of $v right after `$v = $row['k'];` (same block, no "
+             "branch, no assignment to $v or $row and no call taking either as an argument in between) is "
+             "`computed` with derivedFrom = the read of $row['k'].")
+SQL_VALUES_NOTE = ("Harness extension, pending Member 01 Q17: a query whose SQL interpolates values only (inside a "
+                   "quoted value, or a whole value after a comparison operator) is resolved from its fixed text and "
+                   "marked valuesInterpolated. This assumes the query's structure is its template: a value that "
+                   "carries SQL (injection) could change the select list or the table at run time.")
+COMPARISONS = re.compile(r"(?:<>|!=|<=|>=|=|<|>)\s*$")
 NOTES_NOTE = ("Harness extension: `harnessNotes` lists output the schema cannot express or that the harness left "
               "unresolved on purpose (for docs/php-analysis/pattern-log.md).")
 
@@ -144,6 +174,8 @@ class _Scope:
     defs: dict = field(default_factory=dict)  # "$name" -> [_Def]
     breakers: list = field(default_factory=list)  # positions of include / extract / eval
     calls: list = field(default_factory=list)  # {node, name, plain, enclosures}
+    controls: list = field(default_factory=list)  # start of every if / loop / switch / try
+    arguments: dict = field(default_factory=dict)  # "$name" -> positions where it is passed to a call
     includes: list = field(default_factory=list)
     notes: list = field(default_factory=list)
 
@@ -239,6 +271,8 @@ class FileHarness:
             return
         kind = node.kind
 
+        if kind in ("Stmt_If", "Stmt_Switch", "Stmt_TryCatch") or kind in LOOP_NODES:
+            scope.controls.append(node.start)
         if kind in ("Stmt_InlineHTML", "Stmt_Echo", "Expr_Print"):
             scope.outputs.append((node, kind, chain, list(enclosures)))
             self._walk(node.get("exprs") or node.get("expr"), scope, chain, enclosures)
@@ -319,6 +353,9 @@ class FileHarness:
             if callee == "ob_start":
                 scope.notes.append({"kind": "output_buffering", "line": line, "col": col,
                                     "detail": "ob_start()"})
+            for argument in _args(node):  # a call may change a variable it is given (by reference)
+                if _variable(argument):
+                    scope.arguments.setdefault(_variable(argument), []).append(argument.start)
             # plain: a call by plain function name, which is PHP's own function when the app does not define it
             scope.calls.append({"node": node, "name": callee, "enclosures": list(enclosures),
                                 "plain": kind == "Expr_FuncCall" and callee is not None
@@ -423,16 +460,53 @@ class FileHarness:
         return latest
 
     def _sql(self, scope: _Scope, node, pos: int, chain: tuple):
-        """(sql text, source text) for a string-literal SQL argument, directly or through a variable."""
-        if _is(node, "Scalar_String") and self.quoted(node):
-            return node.get("value"), self.node_text(node)
+        """(sql text, source text, values interpolated) for a SQL argument, directly or through a variable.
+
+        A string literal is its own text. A string with interpolated values (Q17) is its fixed text with a
+        placeholder for each value. Anything else is None."""
         name = _variable(node)
         if name:
             reaching = self._reaching(scope, name, pos, chain)
-            if reaching and reaching.kind == "assign" and _is(reaching.node, "Scalar_String") \
-                    and self.quoted(reaching.node):
-                return reaching.node.get("value"), self.node_text(reaching.node)
-        return None
+            if reaching is None or reaching.kind != "assign":
+                return None
+            node = reaching.node
+        if _is(node, "Scalar_String") and self.quoted(node):
+            return node.get("value"), self.node_text(node), False
+        template = self._sql_template(node)
+        return (template, self.node_text(node), True) if template is not None else None
+
+    def _sql_template(self, node) -> str | None:
+        """The SQL of an interpolated or concatenated string, with a placeholder for every interpolated value.
+
+        None unless every interpolation is a value: inside a quoted SQL string, or a whole value right after a
+        comparison operator. A table name, a column list, ORDER BY, LIMIT, IN (...) or a whole clause is not."""
+        pieces = self._pieces(node) if _is(node, "Scalar_InterpolatedString", "Expr_BinaryOp_Concat") else None
+        if pieces is None or not any(piece[0] == "expr" for piece in pieces):
+            return None
+        text, quote = "", None
+        for index, piece in enumerate(pieces):
+            if piece[0] == "literal":
+                skip = False
+                for ch in piece[2]:
+                    if skip:
+                        skip = False
+                    elif quote and ch == "\\":
+                        skip = True
+                    elif quote:
+                        quote = None if ch == quote else quote
+                    elif ch in "'\"`":
+                        quote = ch
+                text += piece[2]
+            elif quote in ("'", '"'):
+                text += "?"  # part of a quoted value
+            elif quote is None and COMPARISONS.search(text):
+                after = pieces[index + 1] if index + 1 < len(pieces) else None
+                if after is not None and (after[0] != "literal" or (after[2][:1] and after[2][:1] not in " \t\r\n);")):
+                    return None  # the value runs on into something else
+                text += "0"
+            else:
+                return None
+        return text if quote is None else None
 
     def _query_of(self, scope: _Scope, fetch: _N, pos: int, chain: tuple):
         """The query call a fetch call reads from: the call node, or None when that is not certain."""
@@ -502,7 +576,10 @@ class FileHarness:
         if name in SUPERGLOBALS:
             return read | {"sourceKind": SUPERGLOBALS[name], "confidence": "resolved", "source": None}
         unresolved = read | {"sourceKind": "unresolved", "confidence": "unresolved", "source": None}
-        fetched = self._row_fetch(scope, name, pos, chain) if path else None
+        if not path:
+            copied = self._copy_read(scope, node, name, chain, queries, notes)
+            return copied if copied is not None else unresolved
+        fetched = self._row_fetch(scope, name, pos, chain)
         if fetched is None:
             return unresolved
         fetch, fetch_pos, fetch_chain = fetched
@@ -518,11 +595,11 @@ class FileHarness:
         arguments = _args(query)
         index = QUERY_FUNCTIONS[_callee(query)]
         sql = self._sql(scope, arguments[index], query_pos, query_chain) if len(arguments) > index else None
-        if sql is None:  # interpolated or computed SQL: never guessed
+        if sql is None:  # built SQL, or an interpolation that is not a value: never guessed
             notes.append({"kind": "row_read_not_traced", "line": line, "col": col,
-                          "detail": "the SQL is not a string literal (interpolated or built)"})
+                          "detail": "the SQL is not a string literal, and not one with interpolated values only"})
             return unresolved
-        sql_value, sql_source = sql
+        sql_value, sql_source, interpolated = sql
         shape = parse_select(sql_value)
         columns, basis = shape.columns, None
         if shape.table is not None and columns is None:  # SELECT * on one table (Member 01 Q1)
@@ -532,6 +609,10 @@ class FileHarness:
         queries[query_id] = {"line": query.line, "sql": sql_source,
                              "tables": [shape.table] if shape.table else [],
                              "columns": list(columns) if columns is not None else None, "resultVar": result_var}
+        if interpolated:
+            queries[query_id]["valuesInterpolated"] = True
+            notes.append({"kind": "sql_interpolated_values", "line": query.line, "col": query.loc.column,
+                          "detail": " ".join(sql_source.split())[:80]})
         source = {"fetchNodeId": fetch_id, "queryNodeId": query_id, "table": None, "column": None}
         ambiguous = read | {"sourceKind": "db_row_field", "confidence": "ambiguous", "source": source}
         if shape.table is None or columns is None or len(path) != 1:
@@ -544,6 +625,33 @@ class FileHarness:
         resolved = read | {"sourceKind": "db_row_field", "confidence": "resolved",
                            "source": source | {"table": shape.table, "column": column}}
         return resolved | {"basis": basis} if basis else resolved
+
+    def _copy_read(self, scope: _Scope, node: _N, name: str, chain: tuple, queries: dict, notes: list):
+        """Copy propagation (Q17): the read of `$v` straight after `$v = $row['k'];`, or None.
+
+        Only in the same block (the same control path), and only when nothing between the copy and the use
+        could change either variable: no if / loop / switch / try, no assignment to `$v` or `$row`, no include,
+        and no call that is given `$v` or `$row`."""
+        pos = node.start
+        copy = self._reaching(scope, name, pos, chain)
+        if copy is None or copy.kind != "assign" or copy.chain != chain or not _is(copy.node, "Expr_ArrayDimFetch"):
+            return None
+        base = copy.node
+        while _is(base, "Expr_ArrayDimFetch"):
+            base = base.get("var")
+        row = _variable(base)
+        if row is None or row in SUPERGLOBALS:  # $v = $_SESSION['k'] is Member 01 Q3, still open
+            return None
+        between = [p for p in scope.controls if copy.pos < p < pos]
+        between += [d.pos for d in scope.defs.get(row, []) if copy.pos < d.pos < pos]
+        between += [p for v in (name, row) for p in scope.arguments.get(v, []) if copy.pos < p < pos]
+        if between:
+            return None
+        inner = self._var_read(scope, copy.node, copy.chain, queries, notes)
+        if inner is None or inner["sourceKind"] != "db_row_field":
+            return None
+        return {"expr": self.node_text(node), "var": None, "path": None, "sourceKind": "computed",
+                "confidence": inner["confidence"], "source": None, "derivedFrom": [inner]}
 
     def _opaque(self, node: _N) -> dict:
         text = self.node_text(node)
@@ -576,6 +684,66 @@ class FileHarness:
             return [self._opaque(node)]
         read = self._var_read(scope, node, chain, queries, notes)
         return [read if read is not None else self._opaque(node)]
+
+    def _pieces(self, node) -> list | None:
+        """What one echo argument prints, in order: ("literal", node, text) or ("expr", node).
+
+        None when a piece cannot be split exactly (a float prints by PHP's own rules)."""
+        if _is(node, "Expr_BinaryOp_Concat"):
+            left, right = self._pieces(node.get("left")), self._pieces(node.get("right"))
+            return None if left is None or right is None else left + right
+        if _is(node, "Scalar_String"):  # '...', "..." without variables, or a heredoc / nowdoc without them
+            return [("literal", node, node.get("value"))] if isinstance(node.get("value"), str) else None
+        if _is(node, "Scalar_Int"):
+            return [("literal", node, str(node.get("value")))]
+        if _is(node, "Scalar_Float"):
+            return None
+        if _is(node, "Scalar_InterpolatedString"):
+            pieces = []
+            for part in node.get("parts") or []:
+                if _is(part, "InterpolatedStringPart") and isinstance(part.get("value"), str):
+                    pieces.append(("literal", part, part.get("value")))
+                elif isinstance(part, _N) and not _is(part, "InterpolatedStringPart"):
+                    pieces.append(("expr", part))
+                else:
+                    return None
+            return pieces
+        return [("expr", node)] if isinstance(node, _N) else None
+
+    def _echo(self, scope: _Scope, node: _N, exprs: list, chain: tuple, queries: dict, notes: list):
+        """(reads, parts or None) of an echo / print. Without parts the reads are as before: one per piece of
+        a concatenation, and a string with variables in it is one unresolved read."""
+        pieces = []
+        for expr in exprs:
+            found = self._pieces(expr)
+            if found is None:
+                pieces = None
+                break
+            pieces += found
+        if pieces is None or [piece[0] for piece in pieces] == ["expr"]:  # nothing to split, or not exactly
+            return [read for expr in exprs for read in self._reads(scope, expr, chain, queries, notes)], None
+        reads, parts = [], []
+        for piece in pieces:
+            if piece[0] == "literal":
+                parts.append({"kind": "literal", "value": piece[2], "nodeId": piece[1].id})
+                if not _is(piece[1], "InterpolatedStringPart"):  # a literal of its own in the source: read as before
+                    reads.append({"expr": self.node_text(piece[1]), "var": None, "path": None,
+                                  "sourceKind": "literal", "confidence": "resolved", "source": None})
+            else:
+                (read,) = self._reads(scope, piece[1], chain, queries, notes)
+                parts.append({"kind": "expr", "expr": self.node_text(piece[1]), "nodeId": piece[1].id,
+                              "read": len(reads)})
+                reads.append(read)
+        forms = [form for form, found in (
+            ("heredoc", any(self.source[e.start:e.start + 3] == b"<<<" for e in exprs)),
+            ("interpolated_string", any(_is(p[1], "InterpolatedStringPart") for p in pieces)),
+            ("concatenation", any(_is(e, "Expr_BinaryOp_Concat") for e in exprs)),
+            ("several_arguments", len(exprs) > 1)) if found]
+        if forms and any(part["kind"] == "expr" for part in parts):
+            notes.append({"kind": "echo_parts", "line": node.line, "col": node.loc.column, "form": forms[0],
+                          "markup": any(p["kind"] == "literal" and "<" in p["value"] for p in parts),
+                          "detail": self.text(node.start, min(node.end, node.start + 80))})
+        return reads, parts
 
     # ---- timelines
 
@@ -619,8 +787,10 @@ class FileHarness:
                 entry["raw"] = self.node_text(node)
             else:
                 exprs = node.get("exprs") if kind == "Stmt_Echo" else [node.get("expr")]
-                entry["reads"] = [read for expr in exprs for read in self._reads(scope, expr, chain, queries, notes)]
-                if len(entry["reads"]) > 1 and any(
+                entry["reads"], parts = self._echo(scope, node, exprs, chain, queries, notes)
+                if parts is not None:
+                    entry["parts"] = parts
+                elif len(entry["reads"]) > 1 and any(
                         r["sourceKind"] == "literal" and "<" in r["expr"] for r in entry["reads"]):
                     notes.append({"kind": "markup_in_concatenated_echo", "line": node.line,
                                   "col": node.loc.column, "markup": True,
@@ -642,6 +812,7 @@ class FileHarness:
                 call_names[node.id] = call["name"]
         sequence.sort(key=lambda item: (item[0], item[1]["id"]))
         entrypoint = self.entrypoint if scope.name is None else f"{self.entrypoint}#{scope.name}"
+        notes = [dict(items) for items in dict.fromkeys(tuple(n.items()) for n in notes)]  # a read made twice
         notes.sort(key=lambda n: (n["line"], n["col"], n["kind"], n["detail"]))
         return {
             "entrypoint": entrypoint,
@@ -657,6 +828,8 @@ class FileHarness:
                 "sourceEncoding": self.encoding,
                 "locConvention": LOC_NOTE, "condExprConvention": COND_EXPR_NOTE, "callsConvention": CALLS_NOTE,
                 "selectStarConvention": SELECT_STAR_NOTE,
+                "partsExtension": PARTS_NOTE, "copyPropagationExtension": COPY_NOTE,
+                "sqlValuesExtension": SQL_VALUES_NOTE,
                 "queriesExtension": QUERIES_NOTE, "harnessNotesExtension": NOTES_NOTE,
             },
         }

@@ -1,4 +1,4 @@
-# Component 2 — Roadmap to 100% (v1.2)
+# Component 2 — Roadmap to 100% (v1.3)
 
 | Item | Value |
 |---|---|
@@ -11,12 +11,12 @@
 C2 is 100% when every row below is ✅. Rows 0–6 depend only on C2. Row 7 depends on Member 01 / C1;
 it has a fallback so C2 can still finish.
 
-| # | Phase | Exit check | Depends on | Status (12 Oct) |
+| # | Phase | Exit check | Depends on | Status (13 Oct) |
 |---|---|---|---|---|
 | 0 | Stages 1–5 on mocks | 573 tests, 0 strict `tsc` errors, every gap visible | — | ✅ done |
 | 1 | **Whole-app harness** | Every page of HMS and WackoPicko runs through Stages 1–5 with no crash; each page compiles or each failure is explained; pattern log written | C2 only | ✅ done 12 Oct (66 timelines, 0 crashes, 0 tsc errors, 9 new patterns) |
-| 1b | **Align with Member 01's real AST** | Harness reproduces the real `admin-panel1.php` AST **exactly** (all 602 nodes: id, kind, parent, children, fields, loc); harness and mocks use Member 01's ids, `loc` convention, `call` entries and `SELECT *` rule; loader reads the real AST | Real AST (arrived 12 Oct) | ⏳ next |
-| 2a | Echo-string parts, copy propagation, interpolated-SQL values, R-L3b, module fix | HMS one-echo rows generate as Lists/Items (no `no_rule` abstains for them); every generated file is a module; checker override removed | Phase 1b | ⬜ |
+| 1b | **Align with Member 01's real AST** | Harness reproduces the real `admin-panel1.php` AST **exactly** (all 602 nodes: id, kind, parent, children, fields, loc); harness and mocks use Member 01's ids, `loc` convention, `call` entries and `SELECT *` rule; loader reads the real AST | Real AST (arrived 12 Oct) | ✅ done 13 Oct (602/602, harness AST byte-identical to Member 01's; 706 tests) |
+| 2a | Echo-string parts, copy propagation, interpolated-SQL values, R-L3b, module fix | HMS one-echo rows generate as Lists/Items (no `no_rule` abstains for them); every generated file is a module; checker override removed | Phase 1b | ⏳ next |
 | 2b | Functions and shell (R-F1, R-F2) | Function output becomes components at the call site; WackoPicko header/footer becomes root layout + shell component; `document_shell` and the `html_functions` route clash disappear for WackoPicko | Phase 2a | ⬜ |
 | 3 | Rule saturation and **freeze** | phpBlog, then attendance, run through the harness; 2 consecutive apps add no new pattern → rules doc header says **Frozen** | Phases 1–2 | ⬜ |
 | 4 | Runtime rendering check (SO4, measured) | HMS runs in Docker (PHP + MySQL, its own `myhmsdb.sql`); the generated pages run with the same data; rendered DOM compared; every difference is explained by a flag. Unexplained difference = bug | Phase 2 | ⬜ |
@@ -58,3 +58,4 @@ means the swap later is a loader change only.
 | 12 Oct 2026 | v1.0 — roadmap created; 3 evaluation apps added and 2 discovery apps queued by random split (rules §7) |
 | 12 Oct 2026 | v1.1 — Phase 1 done; Phase 2 split into 2a (input normalisation from the pattern log) and 2b (R-F1/R-F2) |
 | 12 Oct 2026 | v1.2 — Member 01 answers + real AST arrived; Phase 1b (alignment) inserted before 2a |
+| 13 Oct 2026 | v1.3 — Phase 1b done |

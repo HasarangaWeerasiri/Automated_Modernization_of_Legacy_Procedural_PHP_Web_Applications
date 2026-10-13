@@ -15,6 +15,7 @@ Usage, from component2_frontend/ (after tools/harness/run_apps.py):
 
 import json
 import posixpath
+import re
 import sys
 from pathlib import Path
 
@@ -28,6 +29,7 @@ DEFAULT_MARKDOWN = ROOT / "docs" / "php-analysis" / "pattern-log.md"
 APPS = ("hms", "wackopicko")
 MAX_EXAMPLES = 6
 NEW = "**new**"
+COPIED = re.compile(r"\$[A-Za-z_]\w*")  # a computed read that is a plain variable: copy propagation
 
 # kind -> (group, title, mapping to boundary-rules section 8, what it is)
 CATALOGUE = {
@@ -46,21 +48,22 @@ CATALOGUE = {
         "A", "Loop with no determinable container", "existing: Malformed HTML",
         "No element is open at the loop start, or the loop's tags do not balance."),
     "abstain:no_rule@markup_in_string": (
-        "A", "Rows printed by one echo string", NEW,
-        "The loop body is one `echo` of a string that holds the whole row markup with variables in it "
-        "(`echo \"<tr><td>$x</td>…\"`). The harness gives such a string as one unresolved read, so Stage 2 sees a "
-        "loop that prints no element and abstains (`no_rule`). The rules doc names this only as a tool limit "
-        "(section 1)."),
+        "A", "Rows printed by one echo string", "existing: Rows printed by one echo string / concatenated echo with markup (rules v0.9 §1, §8)",
+        "The loop body is one `echo` of a string that holds the row markup, and the echo has no `parts` (it could "
+        "not be split exactly), so Stage 2 sees a loop whose elements it cannot place and abstains (`no_rule`)."),
     "abstain:no_rule@text_only": (
-        "A", "Loop that prints text only", NEW,
-        "The loop body prints a value and no element (e.g. a name inside a `<span>` opened outside). R-L1 needs an "
-        "item element; none exists."),
+        "A", "Loop whose elements are not at the body's own level", "existing: section 5 (no rule matches)",
+        "The loop body has elements but none opens at its own level. Stage 2 abstains (`no_rule`)."),
+    "abstain:markup_from_expression": (
+        "A", "Expression where a tag name or an attribute name is written", "existing: rules v0.9 §1",
+        "An echo part such as `\"<$tag>\"` or `\"<td $attr>\"`. It cannot be generated; that echo abstains."),
     "abstain:switch_case_enclosure": (
         "A", "Output inside a switch", "existing: section 5 (no rule yet)", "Stage 2 abstains."),
     "abstain:try_catch_enclosure": (
         "A", "Output inside try / catch", "existing: section 5 (no rule yet)", "Stage 2 abstains."),
     "fallback:container_shared": (
-        "B", "Page output inside the list's container, outside the loop", NEW,
+        "B", "Page output inside the list's container, outside the loop",
+        "existing: Page output inside a List's container outside the loop (rules v0.9 §8)",
         "R-L2a gives the List its container (`<table>`), but that element also holds output that belongs to the "
         "page: in HMS an error echo, `if(!$result){ echo mysqli_error($con); }`, just before the row loop. The List "
         "cannot own the container, so Stage 5 replaces the List with one C2Todo (`markup_not_generatable`); the "
@@ -68,32 +71,29 @@ CATALOGUE = {
     "fallback:markup_not_generatable": (
         "B", "Structure Stage 5 cannot generate", NEW, "Last-resort fallback for another reason (see the detail)."),
     "fallback:element_not_in_react_types": (
-        "B", "Element React has no type for", NEW,
+        "B", "Element React has no type for", "existing: Element with no React type (rules v0.9 §8)",
         "An obsolete or unknown element (e.g. `<frameset>`). The element becomes a C2Todo."),
     "fallback:expression_not_translatable": (
-        "B", "Echo of several pieces", NEW,
-        "One `echo` prints a concatenation (`'<option value=\"' . $x . '\">' . $x . '</option>'`). The timeline "
-        "gives one read per piece and Stage 2 counts the tags in the literal pieces, but Stage 5 has no single "
-        "value to write, so the echo is one C2Todo. Same family as markup inside echo strings."),
+        "B", "Echo of several pieces, without parts", "existing: Rows printed by one echo string / concatenated echo with markup (rules v0.9 §1, §8)",
+        "One `echo` prints several pieces and has no `parts` (one piece cannot be split exactly, e.g. a float), so "
+        "Stage 5 has no single value to write and the echo is one C2Todo."),
     "fallback:dynamic_raw_text": (
         "B", "Output inside a raw-text element", NEW, "PHP output inside `<style>` or `<title>` content."),
     "fallback:abstained_code_not_generated": (
         "B", "Abstained region whose code could not be written", NEW, "Only a flag is left."),
     "note:interpolated_string_output+markup": (
-        "C", "Markup inside an interpolated string", NEW,
-        "`echo \"<td>$x</td>\"`: text, tags and variables in one string. Not separate source expressions, so the "
-        "harness emits one unresolved read and nothing inside the string is seen by the tag tracker."),
+        "C", "Markup inside an interpolated string, not split", "existing: Rows printed by one echo string / concatenated echo with markup (rules v0.9 §1, §8)",
+        "`echo \"<td>$x</td>\"` that could not be given `parts`: one unresolved read, as before Phase 2a."),
     "note:interpolated_string_output": (
-        "C", "Interpolated string without markup", NEW,
-        "`echo \"Hello $name\"`: one unresolved read; the literal text around the variable is not generated."),
+        "C", "Interpolated string without markup, not split", "existing: Rows printed by one echo string / concatenated echo with markup (rules v0.9 §1, §8)",
+        "`echo \"Hello $name\"` that could not be given `parts`: one unresolved read."),
     "note:markup_in_concatenated_echo+markup": (
-        "C", "Markup inside a concatenated echo", NEW,
-        "`echo '<td>' . $x . '</td>'`: the literal pieces carry tags. Stage 2 sees them; Stage 5 does not (see "
-        "\"Echo of several pieces\")."),
-    "note:heredoc_output+markup": ("C", "Markup inside a heredoc", NEW, "One unresolved read."),
-    "note:heredoc_output": ("C", "Heredoc output", NEW, "One unresolved read."),
+        "C", "Markup inside a concatenated echo, not split", "existing: Rows printed by one echo string / concatenated echo with markup (rules v0.9 §1, §8)",
+        "`echo '<td>' . $x . '</td>'` that could not be given `parts` (see \"Echo of several pieces\")."),
+    "note:heredoc_output+markup": ("C", "Markup inside a heredoc, not split", "existing: Rows printed by one echo string / concatenated echo with markup (rules v0.9 §1, §8)", "One unresolved read."),
+    "note:heredoc_output": ("C", "Heredoc output, not split", "existing: Rows printed by one echo string / concatenated echo with markup (rules v0.9 §1, §8)", "One unresolved read."),
     "note:exit_with_output": (
-        "C", "`die()` / `exit()` with a message", NEW,
+        "C", "`die()` / `exit()` with a message", "existing: `die()` / `exit()` with a message (rules v0.9 §8)",
         "Prints its argument and stops. Schema 1.0 has no output kind for it, so the timeline does not contain it."),
     "note:output_function": (
         "C", "Output through a function (`printf`, `print_r`, …)", NEW,
@@ -101,9 +101,10 @@ CATALOGUE = {
     "note:output_buffering": (
         "C", "Output buffering (`ob_start`)", NEW, "Captured output may never be printed, or be printed elsewhere."),
     "note:row_read_not_traced": (
-        "C", "Row read not traced to literal SQL", "data, not a boundary pattern (Member 01 Q1, Q3)",
-        "`$row['x']` comes from a fetch, but the query's SQL is interpolated or built, or the result variable is not "
-        "certainly one query. The read stays `unresolved` (never guessed). The `detail` mock resolved these by hand."),
+        "C", "Row read not traced to its SQL", "data, not a boundary pattern (Member 01 Q1, Q3, Q17)",
+        "`$row['x']` comes from a fetch, but the query's SQL is built, or interpolates something that is not a "
+        "value (a table, a column list, ORDER BY, LIMIT), or the result variable is not certainly one query. The "
+        "read stays `unresolved` (never guessed)."),
     "flag:output_dropped": (
         "D", "PHP output inside a dropped element", NEW,
         "An echo inside `<script>` or `<head>`. Stage 5 drops the element (inline JS, document shell), so the value "
@@ -115,12 +116,33 @@ CATALOGUE = {
     "flag:duplicate_attribute_dropped": (
         "D", "Duplicate attribute", "existing: Malformed HTML", "The second one is dropped, as HTML does."),
     "flag:unsupported_style": ("D", "Style attribute Stage 5 cannot convert", NEW, "The attribute is omitted."),
+    "handled:echo_parts+markup": (
+        "E", "Echo string with markup, read piece by piece", "existing: Rows printed by one echo string / concatenated echo with markup (rules v0.9 §1, §8)",
+        "`echo \"<tr><td>$x</td>…\"`, a concatenation, a heredoc or several echo arguments. The timeline gives "
+        "`parts`: literal pieces go through the tag tracker like inline HTML, each expression is one read. Before "
+        "Phase 2a such an echo was one opaque node."),
+    "handled:echo_parts": (
+        "E", "Echo string without markup, read piece by piece", "existing: Rows printed by one echo string / concatenated echo with markup (rules v0.9 §1, §8)",
+        "The same, with no tag in the literal pieces: the text around the values is now generated."),
+    "handled:r_l3b": (
+        "E", "Text-only loop → inline map (R-L3b)", "existing: Text-only loop (rules v0.9 §2, §8)",
+        "The loop body prints text and values but no element: an inline `.map()` of keyed Fragments, no Item."),
+    "handled:copy_propagation": (
+        "E", "Read through a copied variable", "data (Member 01 Q17)",
+        "`$v = $row['k'];` then `$v` printed in the same block with nothing in between that could change either: "
+        "the read is `computed`, derived from `$row['k']`."),
+    "handled:sql_interpolated_values": (
+        "E", "Query with interpolated values", "data (Member 01 Q17)",
+        "Every interpolation in the SQL is a value (inside quotes, or a whole value after a comparison), so the "
+        "select list and the table are read from the fixed text. Flag `sql_interpolated_values` (info). Assumes the "
+        "query's structure is its template: a value carrying SQL could change it at run time."),
 }
 GROUPS = {
     "A": "Abstained by Stage 2",
     "B": "Last-resort fallback in Stage 5",
     "C": "Not modelled by the timeline (harness notes)",
     "D": "Dropped or changed by Stage 5",
+    "E": "Handled since Phase 2a (no longer a gap)",
 }
 
 
@@ -195,6 +217,8 @@ def collect(output: Path) -> dict:
                     checklist["r_i5"].append((where(app, entry, *first), node["elements"]))
                 if node["type"] == "List" and any(p["type"] == "Item" for p in parents):
                     checklist["nested"].append(where(app, entry, *first))
+                if node["type"] == "List" and "R-L3b" in node["rules"]:
+                    add("handled:r_l3b", where(app, entry, *first))
                 if node["rule"] == "R-L3":
                     checklist["r_l3"].append(where(app, entry, *first))
                 if node["type"] == "Page" and node["rule"] == "R-I1":
@@ -223,8 +247,16 @@ def collect(output: Path) -> dict:
                 elif f"flag:{flag['flag']}" in CATALOGUE:
                     add(f"flag:{flag['flag']}", place, flag["detail"])
 
+            for e in timeline["sequence"]:
+                for read in e.get("reads", []):
+                    if read["sourceKind"] == "computed" and COPIED.fullmatch(read["expr"]):
+                        add("handled:copy_propagation", where(app, entry, e["loc"]["startLine"],
+                                                              e["loc"]["startCol"] + 1),
+                            f"{read['expr']} = {read['derivedFrom'][0]['expr']}")
             for note in timeline["harnessNotes"]:
                 kind = f"note:{note['kind']}" + ("+markup" if note.get("markup") else "")
+                if note["kind"] in ("echo_parts", "sql_interpolated_values"):
+                    kind = f"handled:{note['kind']}" + ("+markup" if note.get("markup") else "")
                 add(kind, where(app, entry, note["line"], note["col"]), " ".join(note["detail"].split())[:70])
             for call in timeline["sequence"]:  # call sites (Member 01 Q4): callee id, outputsInside
                 if call["kind"] == "call" and call["outputsInside"] is not False:
@@ -280,10 +312,15 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
     for kind in ordered:
         group, title, mapping, _ = CATALOGUE.get(kind, ("B", kind, NEW, ""))
         lines.append(f"| {group}. {GROUPS[group]} | {title} | {len(found[kind])} | {mapping} |")
-    new = [CATALOGUE[k][1] for k in ordered if k in CATALOGUE and CATALOGUE[k][2] == NEW]
+    new = [CATALOGUE.get(k, ("B", k, NEW))[1] for k in ordered if CATALOGUE.get(k, ("B", k, NEW))[2] == NEW]
+    remaining = sum(len(found[k]) for k in ordered if CATALOGUE.get(k, ("B",))[0] != "E")
+    handled = sum(len(found[k]) for k in ordered if CATALOGUE.get(k, ("B",))[0] == "E")
     lines += [
         "",
-        f"**New patterns (not in §8): {len(new)}** — " + "; ".join(new) + ".",
+        f"**New patterns (not in §8): {len(new)}** — " + ("; ".join(new) if new else "none") + ".",
+        "",
+        f"Groups A–D are what remains ({remaining} places). Group E is what Phase 2a now handles ({handled} "
+        "places): it is listed for the record, not as a gap.",
         "",
         f"Crashes: {len(found.get('crash', []))}. Parse errors: "
         f"{sum(len(summary[app]['parseErrors']) for app in APPS)}.",
