@@ -133,6 +133,17 @@ class OutputNode:
 
 
 @dataclass(frozen=True)
+class Redirect:
+    """A `header("Location: <target>")` call with a literal target (harness extension, spec v0.10): no output,
+    reported to C1 as a `header_redirect` flag."""
+
+    node_id: str
+    target: str
+    enclosed_by: tuple[Enclosure, ...]  # outermost first
+    loc: Loc | None = None
+
+
+@dataclass(frozen=True)
 class CallEntry:
     """A call site in the timeline (Member 01 Q4, proposed): the callee's output is not inlined."""
 
@@ -241,6 +252,8 @@ class Timeline:
     order: tuple[str, ...] = ()  # the id of every entry (output statements and calls) in sequence order
     # Optional (harness extension): the media type of a literal header("Content-Type: ...") call, lower-cased.
     content_type: str | None = None
+    # Optional (harness extension, spec v0.10): every header("Location: ...") call with a literal target
+    redirects: tuple["Redirect", ...] = ()
 
 
 # ----------------------------------------------------------------------------- Stage 1 result

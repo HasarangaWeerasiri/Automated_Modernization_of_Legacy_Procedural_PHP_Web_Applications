@@ -113,18 +113,16 @@ def test_an_exit_arm_in_a_function_beside_another_arm_renders_only_the_other(tmp
     assert "<b>fine</b>" in component and "bad" not in component
 
 
-# ---------------------------------------------------------------- a) R-I8 scope (v0.14)
+# ---------------------------------------------------------------- a) R-I8 scope (v0.14; case 1 corrected in v0.15)
 
 
 @pytest.mark.parametrize("php", [
-    "<?php if ($a) { if (!$id) { echo '<meta http-equiv=\"refresh\" content=\"0; url=x\">'; exit; } } ?><p>r</p>",
-    "<?php if ($ok) { echo '<i>fine</i>'; } else { echo '<meta http-equiv=\"refresh\" content=\"0; url=x\">'; exit; }"
-    " ?><p>r</p>",
+    "<?php if ($a) { echo '<i>x</i>'; if ($b) { echo '<b>stop</b>'; exit; } } ?><p>r</p>",  # nested
+    "<?php if ($ok) { echo '<i>fine</i>'; } else { echo '<b>stop</b>'; exit; } ?><p>r</p>",  # an else arm
 ])
-def test_a_redirect_guard_that_is_not_a_then_arm_at_the_top_level_abstains(tmp_path, php):
+def test_an_exit_arm_with_other_output_that_is_not_a_top_level_then_arm_abstains(tmp_path, php):
     result = stages(tmp_path, php)
     assert "exit_arm_not_covered" in [n["reason"] for n in result["nodes"] if n["status"] == "abstain"]
-    assert not [f for f in result["stage5"]["flags"] if f["flag"] == "redirect_guard"]
 
 
 def test_a_redirect_guard_at_the_top_level_inside_a_shell_still_applies(tmp_path):
@@ -266,10 +264,10 @@ def test_attendance_runs_whole_without_a_crash_and_compiles(attendance):
     output, index = attendance
     assert index["files"] == 19 and index["parseErrors"] == {} and index["collisions"] == []
     assert [p["key"] for p in index["pages"] if p["crash"]] == []
-    assert len([p for p in index["pages"] if p["role"] == "page"]) == 14 and index["shells"] == []
+    # 14 pages and, since step 4, the four connect.php: their `or die` messages are output (rules v0.15 section 1)
+    assert len([p for p in index["pages"] if p["role"] == "page"]) == 18 and index["shells"] == []
     assert index["schemaFiles"] == ["database/attsystem.sql"]
-    assert set(index["silentFileNotes"]) == {"admin/connect.php", "connect.php", "student/connect.php",
-                                             "teacher/connect.php"}  # `mysql_connect(...) or die(...)`
+    assert index["silentFileRedirects"] == {"logout.php": [{"line": 4, "target": "index.php", "guarded": False}]}
     if compile_check.unavailable() is None:
         assert index["tscRan"] and index["tscUnattributed"] == 0, index["tscOutput"]
         assert [(p["key"], p["tsc"]) for p in index["pages"] if p["tsc"] != 0] == []
@@ -290,7 +288,7 @@ def test_an_abstained_try_region_gets_its_abstained_function(attendance):
     assert 'reason="try_catch_enclosure"' in page_text and "function Abstained_" in page_text
 
 
-def test_the_pattern_log_has_an_attendance_section_that_does_not_decide(attendance, tmp_path):
+def test_the_pattern_log_has_an_attendance_section_with_the_owners_verdict(attendance, tmp_path):
     output, _ = attendance
     apps = pattern_log.APPS
     pattern_log.APPS = ("attendance",)
@@ -299,6 +297,6 @@ def test_the_pattern_log_has_an_attendance_section_that_does_not_decide(attendan
     finally:
         pattern_log.APPS = apps
     assert "attendance: constructs against the §8 definition of a new pattern (Phase 3)" in log
-    assert "### (a) Candidate new patterns (the owner decides)" in log
+    assert "### (a) Candidates the owner judged (rules v0.15)" in log  # step 4: decided, counter 1 / 2
     assert "Loop whose whole body is one `if` (filter-in-loop) — **2**" in log
-    assert "`attendance/connect.php:3:41` — die('Cannot connect to server')" in log
+    assert "Output inside try / catch" in log and "Output buffering (`ob_start`)" in log

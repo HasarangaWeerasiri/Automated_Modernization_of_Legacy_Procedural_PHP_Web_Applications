@@ -231,6 +231,18 @@ CATALOGUE = {
     "flag:exit_output_not_generated": (
         "E", "Include / call site reaching an exit arm that is not generated (R-I8c)", "existing: R-I8c (rules v0.14)",
         "The flag (review) names the arm's file and line."),
+    "note:expression_exit": (
+        "E", "`X or die(m)` statement, read as `if (!X) { die(m); }`", "existing: R-I8 / R-I8c (rules v0.15 \u00a71)",
+        "Input normalisation (PHP short-circuit): R-I8 decides it in a page, R-I8c in an included file or a "
+        "function (flagged at every include / call site)."),
+    "note:builtin_mysqli_method": (
+        "E", "Method of PHP's own mysqli classes: not a call", "existing: call resolution (rules v0.15 \u00a74)",
+        "The receiver is certainly a mysqli connection, result or statement (`new mysqli` / `mysqli_connect`, "
+        "or its `query()` / `prepare()` / `mysqli_query`); such methods never print, so there is no call entry."),
+    "flag:header_redirect": (
+        "E", "`header(\"Location: \u2026\")` with a literal target", "existing: `header_redirect` (spec v0.10)",
+        "No output, no component; flagged (info) for C1 with the target and the guarding condition. A file that "
+        "prints nothing has no unit: its redirects are listed in `index.json` (`silentFileRedirects`)."),
     "seen:filter_in_loop": (
         "A", "Loop whose whole body is one `if` (filter-in-loop)",
         "\u00a78 \"not yet seen: filter-in-loop\" \u2192 **now seen**",
@@ -613,24 +625,22 @@ GAPS_FIXED = (
 )
 
 
-# Attendance (roadmap Phase 3, app 4): the decision input. Nothing here is decided; the owner judges.
+# Attendance (roadmap Phase 3, app 4): the owner's verdict (rules v0.15 section 8): no new pattern, counter 1 / 2.
 ATTENDANCE = {
-    "seen:filter_in_loop": ("a", "\u00a78 \"not yet seen: filter-in-loop\" \u2192 **now seen**",
+    "seen:filter_in_loop": ("a", "Not new (owner, v0.15): \u00a78 \"filter-in-loop\" \u2192 now seen",
         "`while (...) { $i++; ... if ($i <= 1) { <tbody><tr>\u2026</tr>\u2026 } }`: the body prints only on the first "
-        "pass (a header block from the first row). No rule; here Stage 2 abstains on these loops for another "
-        "reason (an unclosed `<tbody>`, `container_undetermined`), so the shape itself was not judged."),
-    "abstain:try_catch_enclosure": ("a", "\u00a78 \"not yet seen: try\" \u2192 **now seen**; \u00a75 abstain exists",
-        "Not new by (a): \u00a75 has the abstain. Listed because \u00a78 named it not yet seen. All 6 come from "
-        "`$e->getMessage()` in a `catch` block: a method call whose output cannot be followed (Q11). No echo stands "
-        "inside a `try` in this app."),
-    "note:exit_with_output": ("a", "Nearest: R-I8c (written for if arms) / `die()` with a message",
-        "`mysql_connect(...) or die('Cannot connect to server')` in the included `connect.php` files: an error stop "
-        "in an included file that is not an if arm. R-I8c does not cover it: nothing is generated and the include "
-        "sites carry no flag."),
-    "note:output_buffering": ("a", "No \u00a78 row (recorded as a note since Phase 1)",
-        "`ob_start()` at the top of 10 pages, so that `header('location: \u2026')` may follow output. The buffer is "
-        "flushed at the end, so the page prints the same; the app never discards it. Listed because \u00a78 has no "
-        "row: likely not a pattern by (a) or (b)."),
+        "pass. The loops abstain for an unclosed `<tbody>` opened in a branch; a rule would need loop-counter "
+        "semantics (a guess)."),
+    "abstain:try_catch_enclosure": ("a", "Not new (owner, v0.15): \u00a75 abstains; `try` now seen",
+        "All 6 come from `$e->getMessage()` in a `catch` block: a method call whose output cannot be followed (Q11)."),
+    "note:expression_exit": ("a", "Not new (owner, v0.15, a judgement call): normalised into R-I8c (rules \u00a71)",
+        "`mysql_connect(...) or die('Cannot connect to server')` in the four included `connect.php`: since step 4 "
+        "an R-I8c arm, flagged at every include (it was dropped silently before). A stricter reading would count "
+        "it as new (counter 0 / 2); the report states both."),
+    "note:output_buffering": ("a", "Not new (owner, v0.15): output identical",
+        "`ob_start()` at the top of 10 pages; the buffer is flushed at the end, so the page prints the same."),
+    "flag:header_redirect": ("a", "Not a boundary (owner, v0.15): `header_redirect` (info, spec v0.10)",
+        "`header('location: \u2026')` without `exit` (no output): flagged for C1."),
     "abstain:container_undetermined@page": ("b", "Malformed HTML (R-L6)",
         "The loop body opens `<tbody>` and never closes it (`student/report.php`, `teacher/report.php`)."),
     "abstain:guarded_loop_abstained": ("b", "R-I2 list guard whose loop abstained", "The same two loops."),
@@ -644,7 +654,7 @@ ATTENDANCE = {
     "note:row_read_not_traced": ("d", "data (Member 01 Q1, Q3, Q17)", "Unresolved reads; the DFG's job."),
 }
 ATTENDANCE_CLASSES = {
-    "a": "(a) Candidate new patterns (the owner decides)",
+    "a": "(a) Candidates the owner judged (rules v0.15)",
     "b": "(b) Existing patterns with new instances",
     "d": "(d) Unresolved reads, missing labels, no endpoint only",
 }
@@ -652,13 +662,22 @@ ATTENDANCE_GAPS = (
     "An abstained `try` / `switch` region gets its `Abstained_` function (spec section 7): the builder now reads "
     "the region's own content (it stopped with \"try_catch ... was not abstained\").",
     "Harness notes of a file that prints nothing (it has no timeline) are kept in `index.json` "
-    "(`silentFileNotes`), so `connect.php`'s `or die(...)` reaches this log.",
-    "Neither needed a rule change.",
+    "(`silentFileNotes`).",
+    "Step 4 (rules v0.15): `X or die(m)` read as an if (\u00a71), so `connect.php` prints its messages in R-I8c arms "
+    "and is a unit of its own (as phpBlog's `core.php`); built-in mysqli methods are not calls (\u00a74); "
+    "`header_redirect` flags (spec v0.10). These follow rule text the owner wrote for them.",
 )
 
 
+PHPBLOG_DECIDED = ("the owner did (rules v0.13: 4 new patterns, saturation counter 0 / 2). It shows what each "
+                   "construct is after the new rules were implemented.")
+ATTENDANCE_DECIDED = ("the owner did (rules v0.15: no new pattern, saturation counter 1 / 2; the `or die` "
+                      "normalisation is recorded as a judgement call). It shows what each construct is after the "
+                      "step-4 corrections.")
+
+
 def phase3_section(number: int, app: str, data: dict, ordered: list, verdicts: dict = None, classes: dict = None,
-                   gaps: tuple = GAPS_FIXED, decided: bool = True) -> list:
+                   gaps: tuple = GAPS_FIXED, decided: str | None = PHPBLOG_DECIDED) -> list:
     """One app's constructs against the section 8 definition of a new pattern (Phase 3)."""
     verdicts, classes = verdicts or PHASE3, classes or PHASE3_CLASSES
     found, todos = data["found"], data["todos"].get(app, {})
@@ -666,10 +685,8 @@ def phase3_section(number: int, app: str, data: dict, ordered: list, verdicts: d
              "boundary-rules §8 (v0.12): an app adds a new pattern if a construct (a) needs a rule or abstain reason "
              "that §2–§5 do not have, or (b) is handled by an existing rule wrongly. More instances of an existing "
              "row, an implementation gap for a written rule, and unresolved reads are not new. **This table does "
-             "not decide**: " + ("the owner did (rules v0.13: 4 new patterns, saturation counter 0 / 2). It shows "
-                                 "what each construct is after the new rules were implemented." if decided else
-                                 "where there is doubt the construct is listed as a candidate, with the reason; "
-                                 "the owner decides."), ""]
+             "not decide**: " + (decided or "where there is doubt the construct is listed as a candidate, with "
+                                 "the reason; the owner decides."), ""]
     for letter, heading in classes.items():
         rows = []
         for kind in ordered:
@@ -772,7 +789,7 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
     lines += phase3_section(number, "phpblog", data, ordered)
     number += 1
     lines += phase3_section(number, "attendance", data, ordered, ATTENDANCE, ATTENDANCE_CLASSES, ATTENDANCE_GAPS,
-                            decided=False)
+                            decided=ATTENDANCE_DECIDED)
     number += 1
 
     shells = [(app, s) for app in APPS for s in summary[app].get("shells", [])]

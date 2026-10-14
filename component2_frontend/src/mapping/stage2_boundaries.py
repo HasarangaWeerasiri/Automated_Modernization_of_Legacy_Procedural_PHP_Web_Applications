@@ -455,9 +455,10 @@ class _Builder:
         arm, or when the other rules judge it (its exiting arms then render nothing, Stage 5).
 
         R-I8c (v0.14): in a called function or an included file, an exit arm is not generated (its include and
-        call sites carry the flag). R-I8, scope v0.14: only the `then` arm of an if among a page's own top-level
-        statements, whose rest closes nothing opened before the if. Case 1, a redirect: not a component, nothing
-        rendered, the rest renders. Case 2, other output: `cond ? <arm> : <rest of the block>`; not inside a
+        call sites carry the flag). R-I8 case 1, a redirect guard, at any depth in a page (v0.15): not a
+        component, nothing rendered, the rest renders; beside arms with other output it renders nothing itself.
+        Case 2, other output: `cond ? <arm> : <rest of the block>`, only for the `then` arm of an if among a
+        page's own top-level statements whose rest closes nothing opened before the if, and not inside a
         shell's children (the footer after it would still render). Any other exit arm: abstain."""
         exiting = [b for b in region.branches if b.enclosure.exits and _flat(b.items)]
         if not exiting:
@@ -467,19 +468,17 @@ class _Builder:
             if all(b.enclosure.exits for b in region.branches if _flat(b.items)):
                 return self.node("Static", ("R-I8c",), "exit_output_not_generated", nodes, source)
             return None
+        if self.redirect_only(region):  # case 1
+            return self.node("Static", ("R-I8",), "redirect_guard", nodes, source, flags=("redirect_guard",))
+        plain = [b for b in exiting if not self.redirect_arm(b)]
+        if not plain:
+            return None  # case 1 beside other arms: those are judged by the usual rules
         f = self.facts(region)
         rest_nodes = _flat(rest)
-        arm = exiting[0]
-        at_top = (top and len(exiting) == 1 and arm is region.branches[0] and arm.enclosure.branch == "then"
-                  and not f["starts_in_tag"] and not f["crosses"]
-                  and (not rest_nodes or tagtrack.is_balanced(self.run(rest_nodes))))
-        if not at_top:
-            return self.abstain("exit_arm_not_covered", nodes, source, ("R-I8",), self.branch_children(region))
-        if self.redirect_arm(arm):
-            if len(region.branches) == 1:  # case 1
-                return self.node("Static", ("R-I8",), "redirect_guard", nodes, source, flags=("redirect_guard",))
-            return None  # case 1 beside other arms: those are judged by the usual rules
-        if in_shell:
+        covered = (top and not in_shell and len(exiting) == 1 and plain[0] is region.branches[0]
+                   and plain[0].enclosure.branch == "then" and not f["starts_in_tag"] and not f["crosses"]
+                   and (not rest_nodes or tagtrack.is_balanced(self.run(rest_nodes))))
+        if not covered:
             return self.abstain("exit_arm_not_covered", nodes, source, ("R-I8",), self.branch_children(region))
         return self.node("InlineConditional", ("R-I8",), "exit_arm", nodes, source, self.branch_children(region))
 
@@ -626,8 +625,9 @@ class _Builder:
         regions = [item for item in items if not isinstance(item, KeptNode)]
         others_blank = all(_blank(item) for item in items if isinstance(item, KeptNode))
         rules, reason, sources, inner = (), "page", (), items
-        if len(regions) == 1 and isinstance(regions[0], _If) and len(regions[0].branches) == 1 and others_blank:
-            # R-I1: the if wraps everything the page prints, so it is not a component.
+        if len(regions) == 1 and isinstance(regions[0], _If) and len(regions[0].branches) == 1 and others_blank                 and not regions[0].branches[0].enclosure.exits:
+            # R-I1: the if wraps everything the page prints, so it is not a component. An arm that always exits
+            # is an error stop or a redirect, not the page: R-I8 / R-I8c decide it (precedence chosen in step 4)
             guard = regions[0]
             inner = [x for item in items for x in (guard.branches[0].items if item is guard else [item])]
             rules, reason, sources = ("R-I1",), "page_guard", (guard.node_id,)

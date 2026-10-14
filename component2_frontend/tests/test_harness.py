@@ -602,10 +602,11 @@ def test_includes_are_recorded(tmp_path):
 
 def test_output_the_schema_cannot_express_is_noted(tmp_path):
     timeline = page(tmp_path, "<?php echo 'x'; printf('%d', 1); $q or die('stop'); ob_start(); die('end');")
+    # rules v0.15 section 1: the `or die` is `if (!$q) { die('stop'); }`, noted as such
     assert sorted(n["kind"] for n in timeline["harnessNotes"]) == [
-        "exit_with_output", "output_buffering", "output_function"]  # the `or die`: when it prints is not known
+        "expression_exit", "output_buffering", "output_function"]
     # since Phase 3 step 2 a die("msg") statement at a file's top level is an entry: it prints its message (R-I8)
-    assert [e["kind"] for e in timeline["sequence"]] == ["Stmt_Echo", "Expr_Exit"]
+    assert [e["kind"] for e in timeline["sequence"]] == ["Stmt_Echo", "Expr_Exit", "Expr_Exit"]
 
 
 def test_provenance_marks_the_harness_and_the_conventions(tmp_path):
@@ -688,7 +689,9 @@ def test_every_page_of_both_apps_runs_without_a_crash(apps_output):
     # (Phase 3 step 2: admin/header.php and admin/footer.php pair after implicit closes, a third shell; and
     # config.php is analysed from install/config.tpl, a 51st file)
     expected = {"hms": (29, (26, 2, 0, 5, 0)), "wackopicko": (49, (30, 2, 1, 0, 2)),
-                "phpblog": (51, (47, 1, 3, 0, 6)), "attendance": (19, (14, 0, 0, 0, 0))}
+                "phpblog": (51, (47, 1, 3, 0, 6)), "attendance": (19, (18, 0, 0, 0, 0))}
+    # (step 4: attendance's four connect.php print their `or die` messages (rules v0.15 section 1), so they
+    # are units, like phpBlog's core.php; their arms are R-I8c)
     assert {app: (index["files"], roles(index)) for app, index in indexes.items()} == {
         app: expected[app] for app in indexes}
     for index in indexes.values():
@@ -737,8 +740,12 @@ def test_whole_app_totals(apps_output):
     # Step 3 (rules v0.14): HMS unchanged. WackoPicko: three R-I8c flags (review) at the Users:: calls.
     # phpBlog: R-I8c (config.php, core.php, the shells) and R-I8's v0.14 scope (24 nested redirect guards
     # abstain). Attendance: first run.
-    expected = {"hms": (269, 68, 5, 174, 192, 391, 285), "wackopicko": (384, 58, 7, 307, 159, 299, 126),
-                "phpblog": (800, 185, 57, 829, 621, 987, 531), "attendance": (168, 30, 11, 87, 85, 151, 273)}
+    # Step 4 (rules v0.15): HMS: 7 header_redirect (info). WackoPicko: 2 more R-I8c flags (`or die` in
+    # Pictures). phpBlog: redirect guards at any depth (exit_arm_not_covered 24 -> 0), built-in mysqli methods
+    # (unresolved_call 20 -> 0), install/done.php's `or die` in a loop (2 abstains). Attendance: the connect.php
+    # units, R-I8c flags at 12 includes, 14 header_redirect.
+    expected = {"hms": (269, 68, 5, 174, 192, 391, 292), "wackopicko": (384, 58, 7, 307, 159, 301, 126),
+                "phpblog": (801, 186, 15, 832, 593, 1047, 464), "attendance": (176, 34, 11, 95, 89, 171, 287)}
     assert totals == {app: expected[app] for app in totals}
     hms = [apps_results_table.page_row(output / "hms", entry) for entry in indexes["hms"]["pages"]]
     assert (sum(r["review_unlabelled"] for r in hms), sum(r["review_other"] for r in hms)) == (171, 3)

@@ -60,6 +60,7 @@ class AppTimelines:
     docroot: str = ""  # the served folder, relative to the app root
     prefix: str = ""  # what an entrypoint starts with before the file's path, e.g. "legacy-apps/hms"
     silent_notes: dict = None  # file -> the harness notes of its top level, for files that print nothing
+    silent_redirects: dict = None  # file -> its literal header("Location: ...") calls, for files that print nothing
 
 
 def head_commit(root: Path) -> str:
@@ -119,6 +120,15 @@ def page_key(path: str, function: str | None) -> str:
 def safe_function_name(name: str) -> str:
     """Class::method -> Class.method: the name ends up in an entrypoint and in folder names."""
     return name.replace("::", ".")
+
+
+def silent_redirects(harnesses: dict, silent) -> dict:
+    """The literal header("Location: ...") calls of files that print nothing (they have no unit, so no Stage 5
+    flag): file -> [{line, target, guarded}] (generation-spec v0.10, header_redirect)."""
+    return {path: [{"line": r["loc"]["startLine"], "target": r["target"],
+                    "guarded": any(e["role"] == "branch" for e in r["enclosedBy"])}
+                   for r in harnesses[path].top.redirects]
+            for path in silent if harnesses[path].top.redirects}
 
 
 def build_timelines(file_harnesses: dict[str, FileHarness], provenance) -> tuple[list[Page], list[str]]:
@@ -188,7 +198,8 @@ def app_timelines(app: str) -> AppTimelines:
     silent_notes = {path: sorted(harnesses[path].top.notes, key=lambda n: (n["line"], n["col"], n["kind"]))
                     for path in silent if harnesses[path].top.notes}
     return AppTimelines(app, tuple(pages), tuple(silent), errors, len(files), tuple(schema_files),
-                        function_table(harnesses), config["docroot"], config["prefix"], silent_notes)
+                        function_table(harnesses), config["docroot"], config["prefix"], silent_notes,
+                        silent_redirects(harnesses, silent))
 
 
 def dump_timeline(timeline: dict) -> str:

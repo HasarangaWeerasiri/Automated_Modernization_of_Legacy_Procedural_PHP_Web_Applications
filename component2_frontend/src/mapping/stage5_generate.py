@@ -334,6 +334,7 @@ class Generator:
         # R-I8c: in a called function or an included file an arm that exits is not generated (flagged at its
         # include and call sites)
         self.r_i8c = {n.source_ids[0] for n in nodes if n.rule == "R-I8c"}
+        self.redirects = {r.node_id: r for r in self.timeline.redirects}  # spec v0.10: header_redirect
         self.exit_silent = self.timeline.function is not None or self.layout.mode == "shell" or (
             self.units is not None and self.timeline.entrypoint in self.units.functions)
         self.conds = {}
@@ -1631,6 +1632,12 @@ class Generator:
                         else "the exit arms at {} print and exit")
                 self.flag(ctx, "exit_output_not_generated", REVIEW, call.id,
                           f"{what}: {arms.format(where)}; that output is not generated (R-I8c)", mark=key)
+        for redirect in self.timeline.redirects:  # spec v0.10: no output, no component; the redirect is C1's
+            guard = next((e for e in reversed(redirect.enclosed_by) if e.role == "branch"), None)
+            self.flag(ctx, "header_redirect", INFO, redirect.node_id,
+                      f"header(\"Location: {redirect.target}\"): a redirect, nothing rendered; "
+                      + (f"guarded by condition {guard.cond_node_id}" if guard else "not guarded (always runs)")
+                      + "; the redirect belongs to C1", mark=key)
         self.stage2_reviews(page, key)
         for query in self.timeline.queries.values():  # reporting only: the query's shape came from its fixed text
             if query.values_interpolated:
@@ -1838,7 +1845,8 @@ class Generator:
             for e in file.entries:
                 line = marks.get(e.mark) or fallback.get(e.function, 1)
                 node = self.output_by_id.get(e.node_id) or self.part_owner.get(e.node_id) \
-                    or self.calls.get(e.node_id.split(",")[0])  # a call site (the first of a merged run)
+                    or self.calls.get(e.node_id.split(",")[0]) \
+                    or self.redirects.get(e.node_id)  # a call site (the first of a merged run); a redirect
                 part = self.parts_by_id.get(e.node_id)
                 if part is not None and part.loc is not None:  # an expression part: its own position
                     node = replace(node, loc=part.loc)

@@ -1,6 +1,6 @@
 # Component 2 — Agent Context (read this first, every task)
 
-_Version 19 — 14 Oct 2026 (Phase 3 step 2 accepted; step 3 = corrections + attendance app; saturation 0 / 2)._
+_Version 20 — 14 Oct 2026 (attendance judged: no new pattern, saturation 1 / 2; step 4 = corrections + reserve app; freeze if it adds nothing)._
 
 This file is the handoff between the research chat and the coding agent. It records decisions
 already made. **Do not change a decision recorded here.** If something here looks wrong or a task
@@ -105,7 +105,7 @@ harness, not Member 01's core** (`_provenance.generator = "c2-harness"`).
 |---|---|---|
 | Rule discovery (active) | HMS (`legacy-apps/hms`), WackoPicko (`legacy-apps/wackopicko`, MIT, PHP under `website/`), **phpBlog** (`legacy-apps/phpblog`, `codeplay-code/phpBlog-blogScript` @ `4ffe3c9`, GPL-3.0 — keep its LICENSE file with it; opened 13 Oct for Phase 3). Pinned commits and document roots are recorded in `legacy-apps/PINS.md` | Read, run the harness, test |
 | Rule discovery (active, opened 14 Oct) | **attendance** (`ihumaunkabir/online-attendance-management-system-1.0` @ `3178104`, MIT, `mysql_*`) → `legacy-apps/attendance`, git-ignored clone like the others | Read, run the harness, test |
-| Rule discovery (reserve) | warehouse-inventory-system @ `69fdd1c` | **Not yet.** Only if attendance adds a new pattern |
+| Rule discovery (active, opened 14 Oct) | **warehouse** (`siamon123/warehouse-inventory-system` @ `69fdd1c`, MIT; DB through a `MySqli_DB` wrapper class — many reads will stay `unresolved`, which is data flow, not a pattern) → `legacy-apps/warehouse`, git-ignored | Read, run the harness, test |
 | Evaluation | crud-php-mysqli, PHP-MySQL-CRUD-Application, College-Notes-Gallery @ `8c1cf3d`, ams-native @ `3c4d475`, School-Management-System (omd01) @ `1e5426d` | **Do not open, clone, read or build mocks from these.** Locked until the owner **freezes** the boundary rules (the rules doc header says *Frozen*) **and** the owner's gold standard is committed (roadmap Phase 5). Finishing a stage does not unlock them |
 
 ## 6. Repo state (as of 12 Oct 2026)
@@ -117,7 +117,8 @@ harness, not Member 01's core** (`_provenance.generator = "c2-harness"`).
 - WackoPicko mocks: `{timeline,labels}_wp_{guestbook,view,login,header,thumbnails}.json` (generated). Their **labels are generator placeholders**, not C1 output, and every WackoPicko read is `unresolved` (data comes through class methods in `include/*.php`). Use them for Stage 2 only.
 - Deliberate contract gap: field **`contact`** (flagged on list pages only). `sku` appears in no schema.
 - `undecided` nodes: edge_cases (1, `auth_or_display`), wp_login (1, placeholder `logic_or_display`), wp_thumbnails (1, placeholder `logic_or_display`).
-- Tests: 938 passing (after Phase 3 step 2). phpBlog: abstains 101 → 52, all 9 previously-lost units generated, admin header/footer pair (route group `(admin-header)`), `rss.php` / `sitemap.php` not generated (`non_html_response`). `config.php` analysed from `install/config.tpl` (PINS.md). Rules fired in phpBlog: R-I3b 58, R-I2b 1, R-I8 37 (all redirect guards).
+- Tests: 957 passing (after Phase 3 step 3). Attendance: 19 files, 14 pages, 0 shells, abstains 11 (`try_catch_enclosure` 6), 0 tsc errors, `next build` ok. R-I8c flags on WackoPicko login / register / similar; phpBlog `cross_file_output` 24 → 0.
+- Earlier: 938 passing (after Phase 3 step 2). phpBlog: abstains 101 → 52, all 9 previously-lost units generated, admin header/footer pair (route group `(admin-header)`), `rss.php` / `sitemap.php` not generated (`non_html_response`). `config.php` analysed from `install/config.tpl` (PINS.md). Rules fired in phpBlog: R-I3b 58, R-I2b 1, R-I8 37 (all redirect guards).
 - Earlier: 886 passing (after Phase 3 step 1). phpBlog: 52 units (49 pages, 1 function component, 2 shells), 0 crashes, 0 tsc errors, `next build` ok; abstains 101 (tag_crosses_function 48 — fixed by the R-F2 refinement; unresolved_call 23; cross_file_output 18; …). Includes are timeline entries (`{kind: "include", path, loc}`, harness extension pending Member 01 Q4). phpBlog's clone is git-ignored like the other apps; `PINS.md` records how to restore it.
 - Earlier: 826 passing (after Phase 2b). Each app is assembled and checked as **one Next.js app** (`tsc --noEmit` 0 errors, `next build` ok for HMS and WackoPicko; build project in `output/test-app/c2-build/<app>/`). R-F1 (HMS 2, WackoPicko 8 call sites), R-F1b 4, R-F2 (WackoPicko `our_header`/`our_footer`, 24 pages, route group `(our_header)`), R-I7 10, §5b repairs. Nesting flags WackoPicko 9 → 5. Harness extensions now include call `args`, `function.params[].readOnly`, loc on echo parts (Member 01 Q19).
 - Earlier: 779 passing (after Phase 2a). Echo `parts` from the AST, copy propagation (same block only — strict on purpose; the real DFG is Member 01's), interpolated-SQL values (`valuesInterpolated`, flag `sql_interpolated_values`), R-L3b, every generated file a module, checker uses the test app's own tsconfig. HMS: `no_rule` abstains 4 → 0, components 59 → 66, unresolved reads 75 → 27. Todo counts are now **per expression part** (finer than before) — compare flag rates only within the same counting unit. Harness file ids differ from Member 01's (`admin-panel1.php` = `f002` vs his `f001`) — Member 01 Q18.

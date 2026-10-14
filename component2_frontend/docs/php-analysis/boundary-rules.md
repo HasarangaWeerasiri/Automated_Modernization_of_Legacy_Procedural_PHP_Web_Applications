@@ -1,9 +1,9 @@
-# Component 2 — UI Boundary Rules (DRAFT v0.14)
+# Component 2 — UI Boundary Rules (DRAFT v0.15)
 
 | Item | Value |
 |---|---|
 | Status | **Draft** — not frozen. Freeze when 2 consecutive new rule-discovery apps add no new pattern (saturation) |
-| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note · v0.6, 10 Oct: Q2 note gives the exact condExpr form · v0.7, 11 Oct: R-L3 scope clarified; filter-in-loop added to the checklist as not yet seen · v0.8, 12 Oct: corpus extended — 2 discovery apps queued, 3 evaluation apps added by random split · v0.9, 12 Oct: after the Phase 1 whole-app run — echo-string parts (§1), R-L3b, R-F1/R-F2 written in full, R-I5 evidence re-opened, Q16 · v0.10, 12 Oct: Member 01's answers recorded in §9 · v0.11, 13 Oct: R-I5 hits classified, R-I7 added, R-F1/R-F2 completed for Phase 2b, record-guard candidate, Q18 · v0.12, 13 Oct: Phase 2b accepted; §8 defines "new pattern" for saturation; Q19; phpBlog opened for Phase 3 · v0.13, 13 Oct: phpBlog judged — 4 new patterns (R-I3b, R-I2b, R-I8, `non_html_response`), R-L4 and R-F2 refined, saturation counter 0 / 2 · v0.14, 14 Oct: step-2 corrections (R-F2 end-tag scope, R-I3b later attribute, R-I8 scope + R-I8c, R-L4 reads); attendance opened) |
+| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note · v0.6, 10 Oct: Q2 note gives the exact condExpr form · v0.7, 11 Oct: R-L3 scope clarified; filter-in-loop added to the checklist as not yet seen · v0.8, 12 Oct: corpus extended — 2 discovery apps queued, 3 evaluation apps added by random split · v0.9, 12 Oct: after the Phase 1 whole-app run — echo-string parts (§1), R-L3b, R-F1/R-F2 written in full, R-I5 evidence re-opened, Q16 · v0.10, 12 Oct: Member 01's answers recorded in §9 · v0.11, 13 Oct: R-I5 hits classified, R-I7 added, R-F1/R-F2 completed for Phase 2b, record-guard candidate, Q18 · v0.12, 13 Oct: Phase 2b accepted; §8 defines "new pattern" for saturation; Q19; phpBlog opened for Phase 3 · v0.13, 13 Oct: phpBlog judged — 4 new patterns (R-I3b, R-I2b, R-I8, `non_html_response`), R-L4 and R-F2 refined, saturation counter 0 / 2 · v0.14, 14 Oct: step-2 corrections (R-F2 end-tag scope, R-I3b later attribute, R-I8 scope + R-I8c, R-L4 reads); attendance opened · v0.15, 14 Oct: attendance judged — no new pattern, counter 1 / 2; R-I8 case (1) scope corrected; `or die` normalisation; built-in mysqli methods; reserve app opened) |
 | Owner | Jayawardhana R D L L (IT23213876) — Component 2, Frontend Migration |
 | Rule-discovery corpus | HMS (`kishan0725/Hospital-Management-System`, commit `777fda4`), WackoPicko (`adamdoupe/WackoPicko`, commit `cabc1b3`, MIT) |
 | Evaluation corpus | **Locked — do not open** (see §7) |
@@ -31,6 +31,11 @@ opening-brace line, so many are 1 line late). From v0.2, **ranges cite the keywo
 **Element counting (used by R-I4 / R-I5):** an `if`'s size = the opening-tag count of its **largest
 branch**; void elements (`<br>`, `<input>`, `<img>`) count; markup inside a literal `echo "<b>x</b>"`
 counts; an `echo` of a variable counts 0.
+
+**Expression-form exits (v0.15).** `X or die(m)`, `X || die(m)`, `X or exit(m)` are, in PHP, exactly
+`if (!X) { die(m); }` (short-circuit). They are normalised to that `if` before the rules run, so R-I8 / R-I8c
+decide them (e.g. attendance `connect.php` 3–4 `mysql_connect(...) or die('Cannot connect to server')` →
+R-I8c, flagged at every include). This is input normalisation like echo parts, not a new boundary rule.
 
 **Echo strings with markup (v0.9).** HMS prints many rows as one `echo "<tr><td>$username</td>…</tr>"`
 (e.g. `admin-panel1.php` 286, 339, 399). Such an echo is treated as a **sequence of parts**, in source order:
@@ -78,7 +83,7 @@ Loop kinds observed: `while`, `foreach`, C-style `for`. Item shapes observed: ta
 | **R-I5** Fallback | Content `if` with **≥ N = 4 elements** (i.e. above the R-I4 limit — no gap) that matches none of R-I1–R-I3 → own Conditional component | v0.8: "never triggered" (regex scan of `if`s). **v0.11: classified.** All 10 hits are in HMS and all are **request-handling** conditionals, not display conditionals: 2 × `admin-panel.php` 18/40 (POST booking handler; only output = `<script>alert()</script>` → now R-I7) and 4 search pages × 2 (`appsearch` 13/19, `doctorsearch` 12/18, `messearch` 11/17, `patientsearch` 11/17): an outer `if (isset($_POST['…_submit']))` that wraps the whole `<body>` content, and an inner found / not-found `if/else` (alert vs result table, one fetched row). Labels would not change this (R-I1/R-I2 do not read labels to fire). Condition → `needs_request_context` (Stage 5) |
 | **R-I6** Sibling chain | Consecutive sibling `if`s that output into the same parent element with mutually exclusive conditions → **one** conditional value. Exclusivity cannot be checked without condition text, so status is **`review`**, reason `exclusivity_not_verified`, until Member 01 Q2 is answered | HMS: 3 chains × 3 `if`s (status cell in `admin-panel.php`, `admin-panel1.php`, `doctor-panel.php`) |
 
-| **R-I8** Exit-terminated arm (v0.13) | An `if` arm that **always** ends with `exit` / `die` (a statement in the same `stmts` list, read from the AST) makes the rest of the enclosing block its implicit `else`. (1) If the arm's only output is a **redirect** (`<meta http-equiv="refresh">`, a `<script>` setting `location`) → **redirect guard**: not a component; the rest renders; flag `redirect_guard` (review — the redirect belongs to C1, like R-I1). (2) Otherwise → a conditional: `cond ? <arm output> : <rest>`. `die("msg")` / `exit("msg")` print their message: that message is the arm's output | phpBlog 45 (`admin/header.php` 12 `echo '<meta http-equiv="refresh" …>'; exit;`, `category.php` 16); WackoPicko `guestbook.php` 17 (`die()` with a message) **Scope (v0.14):** case (1) and (2) apply to an arm at a page's own top level whose rest closes nothing opened before the `if`; any other exit arm (nested `if`s, `else` arms) → abstain `exit_arm_not_covered`. Case (2) has **no real instance** yet (tests only); WackoPicko's `die()` is nested three `if`s deep → abstains. |
+| **R-I8** Exit-terminated arm (v0.13) | An `if` arm that **always** ends with `exit` / `die` (a statement in the same `stmts` list, read from the AST) makes the rest of the enclosing block its implicit `else`. (1) If the arm's only output is a **redirect** (`<meta http-equiv="refresh">`, a `<script>` setting `location`) → **redirect guard**: not a component; the rest renders; flag `redirect_guard` (review — the redirect belongs to C1, like R-I1). (2) Otherwise → a conditional: `cond ? <arm output> : <rest>`. `die("msg")` / `exit("msg")` print their message: that message is the arm's output | phpBlog 45 (`admin/header.php` 12 `echo '<meta http-equiv="refresh" …>'; exit;`, `category.php` 16); WackoPicko `guestbook.php` 17 (`die()` with a message) **Scope (v0.15, corrects v0.14):** case (1) — a **redirect guard** — applies at **any depth** in a page (the page renders as if not redirected; the redirect is C1's, flagged — the same simplification as at top level). Case (2) applies only to a `then` arm at a page's own top level whose rest closes nothing opened before the `if`; any other non-redirect exit arm (nested, `else` arms) → abstain `exit_arm_not_covered`. (v0.14 wrongly restricted case (1) too, which made 24 nested phpBlog redirect guards abstain.) Case (2) has **no real instance** yet (tests only); WackoPicko's `die()` is nested three `if`s deep → abstains. |
 | **R-I8c** Exit arm in an included file or function (v0.14) | An exit-terminated arm inside an **included file** or a **called function** (e.g. phpBlog `config.tpl` 10–13 `printf("Database connection failed…"); exit();`, WackoPicko `Users::check_login` `die(mysql_error())`) is **not generated**; for everything else that file / function counts as non-printing (so its include or call is not a gap). Flag `exit_output_not_generated` (review) **at every include / call site**, with the arm's file:line. Such arms are error stops; with C1 labels they are expected to be excluded as `data_access`, which C2 may not assume (hard rule 3) — hence the flag | phpBlog `config.tpl` (8 includes, 22 helper calls), WackoPicko `include/users.php` 108 |
 | **R-I7** No output left (v0.11) | An `if` (or loop) whose **only** output is inline JS (`<script>`, dropped by spec §5) has nothing to render → **not a UI boundary** (same as R-L5). The JS is still flagged `inline_js_dropped` | HMS `admin-panel.php` 18 / 40 (POST handler alerts); HMS uses `echo "<script>alert(…)</script>"` in every POST handler |
 
@@ -102,7 +107,11 @@ Without them, R-F1/R-F2 do not fire.
 **Call resolution (harness, v0.11):** a call whose name is defined in several files resolves only through
 the page's own **literal** includes (`include('newfunc.php')`), followed transitively; if exactly one
 reachable file defines it → that function; otherwise `callee: null`. (HMS `admin-panel.php:359`
-`display_docs()` → `newfunc.php`.) Method calls on objects stay unresolved (Q11).
+`display_docs()` → `newfunc.php`.) Method calls on objects stay unresolved (Q11), **except** (v0.15, the built-in subset of Member 01's
+proposed Q11 v1): a method of PHP's own `mysqli` / `mysqli_result` / `mysqli_stmt` classes, on a receiver whose
+only definition in the app is `new mysqli(...)` / `mysqli_connect(...)`, or which is assigned in the same block
+from such a receiver's `query()` / `prepare()` / `mysqli_query(...)` — these are documented PHP built-ins and
+never print → no call entry (like built-in functions). Everything else stays `unresolved_call`.
 
 | Call entry | Generated at the call site |
 |---|---|
@@ -251,7 +260,21 @@ more abstains for an existing reason, an implementation gap for a rule that is a
 included files), and unresolved reads (the DFG's job) are **not** new patterns. Saturation: two consecutive
 discovery apps add no new pattern → the rules are frozen.
 
-**Saturation counter: 0 / 2** (13 Oct 2026). phpBlog (app 3) added 4 new patterns: attribute-presence
+**Saturation counter: 1 / 2** (14 Oct 2026). **Attendance (app 4) added no new pattern.** Judged candidates:
+(1) `try/catch` around output (6) — §5 already abstains; `try` moves from "not yet seen" to seen; not new.
+(2) `X or die(m)` in included `connect.php` (8) — **judgement call, recorded**: semantically an exit arm
+(PHP short-circuit), so it is normalised into R-I8c (§1), not a new rule. Before the fix it was dropped
+**silently**; the fix makes it a flagged R-I8c case. A stricter reading would count it as new and set the
+counter to 0 / 2 — the report states both readings. (3) `ob_start()` (10) — output identical (buffer
+flushed at exit); not a structural pattern. (4) filter-in-loop / first-iteration-only `if ($i <= 1)`
+(student / teacher `report.php`) — now seen, inside loops that already abstain (unclosed `<tbody>` opened in
+a branch); the narrowed fallback abstains; a rule would need loop-counter semantics (a guess) → not new.
+Also seen: auth redirects by `header('location: …')` **without** `exit` (attendance, 8 pages) — no output, so
+not a boundary; now flagged `header_redirect` (info) for C1 (spec v0.10).
+Next: the reserve app (app 5). If it adds no new pattern → **freeze**. If it does → counter 0 / 2 and more
+discovery apps are needed.
+
+**Earlier — saturation counter 0 / 2** (13 Oct 2026). phpBlog (app 3) added 4 new patterns: attribute-presence
 conditional (R-I3b), multi-loop list guard (R-I2b), exit-terminated arm (R-I8), non-HTML response
 (`non_html_response`). **Not counted as new** (by the definition above): markup kept in a variable and
 echoed later (that is echo parts + data flow — Member 01's DFG; until then `unresolved`), nested loops (R-L4
@@ -287,7 +310,11 @@ rule fired as written). Next: attendance (app 4); if it adds a new pattern, the 
 | Malformed HTML | HMS, WackoPicko |
 | Cross-file output (function echoes `<option>` into a page's `<select>`) | HMS |
 | Escape wrapper on output (`h()` — 89 of 116 `<?= ?>` tags) | WackoPicko |
-| **Not yet seen:** switch; try; **filter-in-loop** (`if` wrapping the whole loop body, e.g. `while(...) { if ($row['n'] > 0) { echo '<option>…'; } }` — synthetic test only; until seen in a real app it abstains via the narrowed fallback) | — |
+| `try / catch` around output | attendance (6) — abstain (§5) |
+| `X or die(m)` error stop in an included file | attendance `connect.php` ×4 (8) → normalised into R-I8c |
+| Auth redirect by `header('location: …')` without `exit` | attendance (8 pages) → `header_redirect` (info) |
+| First-iteration-only `if ($i <= 1)` inside a loop | attendance `report.php` ×2 — abstains (fallback) |
+| **Not yet seen:** switch; **filter-in-loop** (`if` wrapping the whole loop body, e.g. `while(...) { if ($row['n'] > 0) { echo '<option>…'; } }` — synthetic test only; until seen in a real app it abstains via the narrowed fallback) | — |
 
 ---
 
@@ -347,5 +374,8 @@ the call site (`callee`, `outputsInside`), no inlining — R-F1/R-F2 will read c
 | 12 Oct 2026 | 5 new licensed procedural apps split at random: 3 evaluation, 2 discovery | Avoids picking easy evaluation apps; seed recorded so the split is reproducible |
 | 12 Oct 2026 | Saturation is judged on **whole apps** run through the harness, not on excerpts | Excerpts were chosen by us and hide patterns |
 | 13 Oct 2026 | phpBlog adds 4 new patterns → R-I3b, R-I2b, R-I8, `non_html_response`; counter 0 / 2 | Judged by the §8 definition fixed before the app was opened |
+| 14 Oct 2026 | Attendance: no new pattern → counter 1 / 2 | Judged by the §8 definition; the `or die` normalisation is recorded as a judgement call with both readings |
+| 14 Oct 2026 | R-I8 redirect guards at any depth (corrects v0.14) | Nesting does not change what a redirect guard means; restricting it made 24 sound cases abstain |
+| 14 Oct 2026 | Built-in mysqli methods are not calls | PHP built-ins never print; same treatment as built-in functions; matches Member 01's proposed Q11 v1 |
 | 13 Oct 2026 | R-F2 pairing checked after HTML5 implicit closes | phpBlog's admin shell leaves `<head>`/`<main>` to the browser; the tree is the same as an explicit pair |
 | 13 Oct 2026 | Markup in variables is not a boundary rule | It is data flow (Member 01's DFG); a C2 rule would guess values across branches |

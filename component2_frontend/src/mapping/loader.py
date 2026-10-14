@@ -27,6 +27,7 @@ from src.model import (
     Query,
     Read,
     ReadSource,
+    Redirect,
     ResponseShape,
     SchemaType,
     Timeline,
@@ -193,6 +194,39 @@ def _loc(d: dict | None) -> Loc | None:
     return Loc(d["startLine"], d["endLine"], d["startCol"], d["endCol"], d["startByte"], d["endByte"])
 
 
+def _check_enclosure(enc: dict, where: str, loops_seen: dict) -> None:
+    """One enclosedBy item (of a sequence entry or a redirect)."""
+    _check_node_id(enc.get("nodeId"), where)
+    if "loc" in enc and enc.get("role") in ("iteration", "branch"):
+        _check_loc(enc["loc"], f"{where} enclosure {enc['nodeId']}")  # optional (Member 01 Q15)
+    if enc.get("role") == "iteration":
+        if (not LOOP_KEYS <= set(enc) <= LOOP_KEYS | {"loc", "fetchNodeId"} or enc["kind"] not in LOOP_KINDS
+                or enc["iterSourceKind"] not in SOURCE_KINDS):
+            raise ValueError(f"{where}: malformed loop {enc}")
+        if "fetchNodeId" in enc:
+            _check_node_id(enc["fetchNodeId"], where)
+        # The loop object is repeated on every entry it encloses; copies must agree.
+        if loops_seen.setdefault(enc["nodeId"], enc) != enc:
+            raise ValueError(f"{where}: loop {enc['nodeId']} differs from its earlier copy")
+    elif enc.get("role") == "branch":
+        # condExpr is optional (agent extension, pending Member 01 Q2): the condition's PHP source.
+        if (not BRANCH_KEYS <= set(enc) <= BRANCH_KEYS | {"condExpr", "loc", "exits"}
+                or enc["kind"] != "Stmt_If" or enc["branch"] not in BRANCHES
+                or not isinstance(enc.get("exits", False), bool)):
+            raise ValueError(f"{where}: malformed branch {enc}")
+        _check_node_id(enc["condNodeId"], where)
+        if "condExpr" in enc and (enc["branch"] == "else" or not isinstance(enc["condExpr"], str)
+                                  or not enc["condExpr"].strip()):
+            raise ValueError(f"{where}: condExpr must be non-empty source text, and an else has none")
+    elif enc.get("role") in OTHER_ROLES:
+        # Only what every enclosure has is checked; any other field is carried through.
+        if not isinstance(enc.get("kind"), str):
+            raise ValueError(f"{where}: {enc['role']} enclosure {enc['nodeId']} has no kind")
+    else:
+        roles = ("iteration", "branch", *OTHER_ROLES)
+        raise ValueError(f"{where}: enclosedBy role {enc.get('role')!r}, expected one of {roles}")
+
+
 def load_timeline_json(path: Path) -> dict:
     """Read a timeline file and check it against schema 1.0; return the validated JSON.
 
@@ -274,35 +308,18 @@ def load_timeline_json(path: Path) -> dict:
             _check_parts(entry, where)
 
         for enc in entry["enclosedBy"]:
-            _check_node_id(enc.get("nodeId"), where)
-            if "loc" in enc and enc.get("role") in ("iteration", "branch"):
-                _check_loc(enc["loc"], f"{where} enclosure {enc['nodeId']}")  # optional (Member 01 Q15)
-            if enc.get("role") == "iteration":
-                if (not LOOP_KEYS <= set(enc) <= LOOP_KEYS | {"loc", "fetchNodeId"} or enc["kind"] not in LOOP_KINDS
-                        or enc["iterSourceKind"] not in SOURCE_KINDS):
-                    raise ValueError(f"{where}: malformed loop {enc}")
-                if "fetchNodeId" in enc:
-                    _check_node_id(enc["fetchNodeId"], where)
-                # The loop object is repeated on every entry it encloses; copies must agree.
-                if loops_seen.setdefault(enc["nodeId"], enc) != enc:
-                    raise ValueError(f"{where}: loop {enc['nodeId']} differs from its earlier copy")
-            elif enc.get("role") == "branch":
-                # condExpr is optional (agent extension, pending Member 01 Q2): the condition's PHP source.
-                if (not BRANCH_KEYS <= set(enc) <= BRANCH_KEYS | {"condExpr", "loc", "exits"}
-                        or enc["kind"] != "Stmt_If" or enc["branch"] not in BRANCHES
-                        or not isinstance(enc.get("exits", False), bool)):
-                    raise ValueError(f"{where}: malformed branch {enc}")
-                _check_node_id(enc["condNodeId"], where)
-                if "condExpr" in enc and (enc["branch"] == "else" or not isinstance(enc["condExpr"], str)
-                                          or not enc["condExpr"].strip()):
-                    raise ValueError(f"{where}: condExpr must be non-empty source text, and an else has none")
-            elif enc.get("role") in OTHER_ROLES:
-                # Only what every enclosure has is checked; any other field is carried through.
-                if not isinstance(enc.get("kind"), str):
-                    raise ValueError(f"{where}: {enc['role']} enclosure {enc['nodeId']} has no kind")
-            else:
-                roles = ("iteration", "branch", *OTHER_ROLES)
-                raise ValueError(f"{where}: enclosedBy role {enc.get('role')!r}, expected one of {roles}")
+            _check_enclosure(enc, where, loops_seen)
+
+    for redirect in timeline.get("redirects", []):  # harness extension (spec v0.10, header_redirect)
+        where = f"{path}: redirect {redirect.get('nodeId', '<no id>')}"
+        _check_node_id(redirect.get("nodeId"), where)
+        if not {"nodeId", "target", "enclosedBy"} <= set(redirect) <= {"nodeId", "target", "enclosedBy", "loc"}                 or not isinstance(redirect["target"], str):
+            raise ValueError(f"{where}: redirect keys {sorted(redirect)}; expected nodeId / target / enclosedBy "
+                             "and optionally loc")
+        if "loc" in redirect:
+            _check_loc(redirect["loc"], where)
+        for enc in redirect["enclosedBy"]:
+            _check_enclosure(enc, where, loops_seen)
 
     return timeline
 
@@ -392,10 +409,13 @@ def load_timeline(path: Path) -> Timeline:
                    values_interpolated=q.get("valuesInterpolated", False))
         for qid, q in doc.get("queries", {}).items()
     }
+    redirects = tuple(Redirect(node_id=r["nodeId"], target=r["target"], loc=_loc(r.get("loc")),
+                               enclosed_by=tuple(_enclosure(x) for x in r["enclosedBy"]))
+                      for r in doc.get("redirects", ()))
     return Timeline(entrypoint=doc["entrypoint"], schema_version=doc["schemaVersion"], sequence=sequence,
                     queries=queries, provenance=doc.get("_provenance", {}), calls=calls, function=function,
                     order=tuple(e["id"] for e in doc["sequence"]),
-                    content_type=doc.get("responseContentType"))
+                    content_type=doc.get("responseContentType"), redirects=redirects)
 
 
 def load_labels(path: Path) -> dict[str, Label]:

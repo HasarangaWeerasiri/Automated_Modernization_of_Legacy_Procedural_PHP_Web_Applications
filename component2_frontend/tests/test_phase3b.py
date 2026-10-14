@@ -189,16 +189,23 @@ def test_the_harness_marks_an_arm_that_exits_and_gives_a_die_message_as_output(t
           "mysqli_query($db, $q) or die('query failed');\nfunction f() { die('in a function'); }\necho 'end';"
     timeline = page(tmp_path, php)
     arms = {e["id"]: enc.get("exits", False) for e in timeline["sequence"] for enc in e["enclosedBy"]}
-    assert list(arms.values()) == [True, False, True]
+    # rules v0.15 section 1: `mysqli_query(...) or die('query failed')` is `if (!X) { die(...); }`
+    assert list(arms.values()) == [True, False, True, True]
     message = next(e for e in timeline["sequence"] if e["kind"] == "Expr_Exit")
     assert [p["value"] for p in message["parts"]] == ["<b>no</b>"] and message["enclosedBy"][0]["exits"] is True
-    # `... or die()` and a die inside a function are not sequence entries: what they end is not in the blocks
-    assert [(n["kind"], n["line"]) for n in timeline["harnessNotes"] if n["kind"] == "exit_with_output"] == [
-        ("exit_with_output", 2)]
+    # the `or die` is noted; a die inside a function is not in the page's timeline (R-I8c, at its calls)
+    assert [(n["kind"], n["line"]) for n in timeline["harnessNotes"]
+            if n["kind"] in ("expression_exit", "exit_with_output")] == [("expression_exit", 2)]
+    normalised = [e for e in timeline["sequence"] if e["kind"] == "Expr_Exit"][1]
+    (enclosure,) = normalised["enclosedBy"]
+    assert enclosure == {
+        "nodeId": enclosure["nodeId"], "kind": "Stmt_If", "role": "branch", "branch": "then",
+        "condNodeId": enclosure["condNodeId"], "condExpr": "!(mysqli_query($db, $q))", "loc": enclosure["loc"],
+        "exits": True}
     path = tmp_path / "timeline.json"
     path.write_text(json.dumps(timeline), encoding="utf-8")
     loaded = load_timeline(path)
-    assert [n.enclosed_by[0].exits for n in loaded.sequence if n.enclosed_by] == [True, False, True]
+    assert [n.enclosed_by[0].exits for n in loaded.sequence if n.enclosed_by] == [True, False, True, True]
     assert "exitExtension" in timeline["_provenance"]  # marked: pending Member 01 Q20
 
 
@@ -221,27 +228,27 @@ def test_a_script_that_sets_location_is_a_redirect_too(tmp_path):
         "redirect_guard", "inline_js_dropped")) == ["inline_js_dropped", "redirect_guard"]
 
 
-def test_nested_redirect_guards_abstain_since_v0_14(tmp_path):
-    """phpBlog admin/header.php 6-18 (as a page): R-I8's scope (v0.14) is the `then` arm of a top-level if; a
-    guard nested in another if, or an `else` arm that exits, abstains."""
+def test_nested_redirect_guards_are_one_guard(tmp_path):
+    """phpBlog admin/header.php 6-18: a guard inside the `then` arm and another as the `else` arm. R-I8 case 1
+    applies at any depth (v0.15, which corrects v0.14's scope)."""
     php = ("<?php if (isset($_SESSION['u'])) { if ($count <= 0) { echo '<meta http-equiv=\"refresh\" content=\"0; "
            "url=/\" />'; exit; } } else { echo '<meta http-equiv=\"refresh\" content=\"0; url=../login\" />'; exit; }"
            " ?><h1>Admin</h1>")
     result = stages(tmp_path, php)
-    # the outer if (its else arm exits) and, among its children, the nested guard
-    assert [(n["type"], n["reason"], n["rule"]) for n in result["nodes"] if n["status"] == "abstain"] == [
-        ("Abstain", "exit_arm_not_covered", "R-I8")] * 2
-    assert "<h1>Admin</h1>" in page_text(result)
+    assert [(n["type"], n["rule"]) for n in result["nodes"] if n["rule"]] == [("Static", "R-I8")]
+    assert [f["detail"].split(",")[0] for f in result["stage5"]["flags"] if f["flag"] == "redirect_guard"] == [
+        "redirect to /", "redirect to ../login"]
+    assert "<h1>Admin</h1>" in page_text(result) and conditions(result) == []
 
 
-def test_a_redirect_arm_that_is_an_else_arm_abstains_since_v0_14(tmp_path):
-    """R-I8's scope (v0.14) is the `then` arm of a top-level if: an `else` arm that exits is not a guard, and
-    the abstained code renders it as it stands (no redirect_guard flag)."""
+def test_a_redirect_arm_beside_an_arm_with_content_renders_nothing_itself(tmp_path):
+    """R-I8 case 1 in an `else` arm (v0.15: at any depth)."""
     php = "<div><?php if ($ok) { echo '<p>fine</p>'; } else { echo '<meta http-equiv=\"refresh\" content=\"0; url=x\">'; exit; } ?></div>"
     result = stages(tmp_path, php)
-    assert [(n["reason"], n["rule"]) for n in result["nodes"] if n["status"] == "abstain"] == [
-        ("exit_arm_not_covered", "R-I8")]
-    assert not [f for f in result["stage5"]["flags"] if f["flag"] == "redirect_guard"]
+    text = page_text(result)
+    assert "<p>fine</p>" in text and "meta" not in text
+    assert [f["flag"] for f in result["stage5"]["flags"] if f["flag"] == "redirect_guard"] == ["redirect_guard"]
+    assert not [n for n in result["nodes"] if n["status"] == "abstain"]
 
 
 @pytest.mark.parametrize("php", [

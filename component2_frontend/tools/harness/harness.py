@@ -72,6 +72,25 @@ SCOPE_BREAKERS = ("extract", "eval", "parse_str", "import_request_variables")  #
 DYNAMIC_CALLERS = ("call_user_func", "call_user_func_array")  # call a function chosen at run time
 LOOP_NODES = ("Stmt_While", "Stmt_Do", "Stmt_For", "Stmt_Foreach")
 CALL_NODES = ("Expr_FuncCall", "Expr_StaticCall", "Expr_MethodCall", "Expr_NullsafeMethodCall")
+OR_NODES = ("Expr_BinaryOp_LogicalOr", "Expr_BinaryOp_BooleanOr")  # `X or die(m)`: an if (rules v0.15 section 1)
+# boundary-rules v0.15 section 4: methods of PHP's own mysqli classes (php.net), which never print. fetch_object is
+# left out: it may construct an object of an app class
+MYSQLI_METHODS = {
+    "mysqli": frozenset((
+        "autocommit", "begin_transaction", "change_user", "character_set_name", "close", "commit", "connect",
+        "dump_debug_info", "escape_string", "execute_query", "get_charset", "get_client_info",
+        "get_connection_stats", "get_server_info", "get_warnings", "init", "kill", "more_results", "multi_query",
+        "next_result", "options", "ping", "prepare", "query", "real_connect", "real_escape_string", "real_query",
+        "reap_async_query", "refresh", "release_savepoint", "rollback", "savepoint", "select_db", "set_charset",
+        "set_opt", "ssl_set", "stat", "stmt_init", "store_result", "thread_id", "use_result")),
+    "result": frozenset((
+        "close", "data_seek", "fetch_all", "fetch_array", "fetch_assoc", "fetch_column", "fetch_field",
+        "fetch_field_direct", "fetch_fields", "fetch_row", "field_seek", "free", "free_result")),
+    "stmt": frozenset((
+        "attr_get", "attr_set", "bind_param", "bind_result", "close", "data_seek", "execute", "fetch",
+        "free_result", "get_result", "get_warnings", "more_results", "next_result", "prepare", "reset",
+        "result_metadata", "send_long_data", "store_result")),
+}
 INCLUDE_KINDS = {1: "include", 2: "include_once", 3: "require", 4: "require_once"}
 CONFIDENCE = ("resolved", "ambiguous", "unresolved")
 OUTPUTS_INSIDE = (False, "unknown", True)  # weakest first: what is known about a function's output
@@ -96,8 +115,11 @@ EXIT_NOTE = ("Harness extensions, pending Member 01 Q20 (boundary rule R-I8 read
              "enclosure whose arm has an `exit` / `die` statement directly in its own statement list (read from the "
              "AST); an `exit(\"msg\")` / `die(\"msg\")` that is a statement of its own is a sequence entry of kind "
              "\"Expr_Exit\" (it prints its message), with reads and parts like an echo, at a file's top level only. "
-             "An exit inside an expression (`... or die(\"msg\")`) or inside a function has no entry (a harness "
-             "note records it): when it prints, and what it ends, is not known from the block structure.")
+             "An exit inside a function has no entry (a harness note records it). A statement `X or die(m)`, "
+             "`X || die(m)` or `X or exit(m)` is, in PHP, `if (!X) { die(m); }` (short-circuit) and is written as "
+             "that if (boundary-rules v0.15 section 1): a branch enclosure on the `or` node (kind \"Stmt_If\", "
+             "branch \"then\", condNodeId = X, condExpr \"!(X)\", exits true). Any other exit inside an "
+             "expression has no entry (a note records it).")
 EXIT_OUTPUT_NOTE = ("Harness extension (boundary rule R-I8c, v0.14): output inside an arm that always exits does not "
                     "count as output of the file or function when it is included or called (it is an error stop that "
                     "is not generated). A call or include entry that reaches such an arm, directly or through what "
@@ -105,6 +127,14 @@ EXIT_OUTPUT_NOTE = ("Harness extension (boundary rule R-I8c, v0.14): output insi
 FETCH_NOTE = ("Harness extension (boundary rule R-L4, v0.14): `fetchNodeId` on a loop enclosure is the fetch call that "
               "gives the loop its row (`while ($row = mysqli_fetch_array(...))`, a foreach over a fetch_all result); "
               "a read's `source.fetchNodeId` names the loop whose row it reads.")
+REDIRECTS_NOTE = ("Harness extension (generation-spec v0.10, header_redirect): `redirects` lists every "
+                  "`header(\"Location: ...\")` call of this scope whose argument is a string literal: {nodeId, "
+                  "target, enclosedBy, loc}. It prints nothing; C1 owns the redirect.")
+BUILTIN_METHODS_NOTE = ("boundary-rules v0.15 section 4: a method of PHP's own mysqli / mysqli_result / mysqli_stmt "
+                        "classes is not a call site when its receiver is certainly of that class: a variable whose "
+                        "only definitions in the app are `new mysqli(...)` / `mysqli_connect(...)`, or one whose "
+                        "definition reaching the call (the same block or one enclosing it) is such a variable's "
+                        "`query()` / `prepare()` or `mysqli_query(<it>, ...)`. A harness note records each one.")
 CONTENT_TYPE_NOTE = ("Harness extension: `responseContentType` is the media type of the first `header(\"Content-Type: "
                      "...\")` call with a literal argument in this scope (boundary-rules section 5, non_html_response).")
 INCLUDES_NOTE = ("Harness extension, pending Member 01 Q4: an include / require is a sequence entry at its position, "
@@ -213,6 +243,7 @@ class _Scope:
     include_nodes: list = field(default_factory=list)  # (the Expr_Include node, its enclosures), as `includes`
     content_type: str | None = None  # the media type of the first literal header("Content-Type: ...")
     exit_arms: list = field(default_factory=list)  # lines of exit statements whose arm prints (R-I8c)
+    redirects: list = field(default_factory=list)  # header("Location: ...") with a literal target (spec v0.10)
     prints_by_function: bool = False  # printf / print_r ... outside every arm that exits
     notes: list = field(default_factory=list)
 
@@ -308,6 +339,10 @@ class FileHarness:
     def _walk_list(self, nodes, scope: _Scope, chain: tuple, enclosures: list) -> None:
         previous = None
         for node in nodes or []:
+            if _is(node, "Stmt_Expression") and _is(node.get("expr"), *OR_NODES)                     and _is(node.get("expr").get("right"), "Expr_Exit"):
+                self._or_exit(node.get("expr"), scope, chain, enclosures)
+                previous = node
+                continue
             # `echo ...; exit;` in one block: what follows the block is not printed when it runs. The timeline
             # cannot say so (it has no exit), so it is noted for the pattern log.
             if _is(node, "Stmt_Expression") and _is(node.get("expr"), "Expr_Exit") and not node.get("expr").get("expr") \
@@ -429,6 +464,11 @@ class FileHarness:
                 found = re.match(r"\s*content-type\s*:\s*([^;\s]+)", _args(node)[0].get("value") or "", re.I)
                 if found:
                     scope.content_type = found.group(1).lower()
+            if callee == "header" and _args(node) and _is(_args(node)[0], "Scalar_String"):
+                found = re.match(r"\s*location\s*:\s*(.*?)\s*$", _args(node)[0].get("value") or "", re.I | re.S)
+                if found:  # spec v0.10: no output; reported to C1 (header_redirect)
+                    scope.redirects.append({"nodeId": node.id, "target": found.group(1),
+                                            "enclosedBy": list(enclosures), "loc": loc_dict(node.loc)})
             if callee == "ob_start":
                 scope.notes.append({"kind": "output_buffering", "line": line, "col": col,
                                     "detail": "ob_start()"})
@@ -439,7 +479,9 @@ class FileHarness:
             scope.calls.append({"node": node, "name": callee, "enclosures": list(enclosures),
                                 "plain": kind == "Expr_FuncCall" and callee is not None
                                 and callee not in DYNAMIC_CALLERS,
-                                "args": [self.argument(a) for a in _args(node)]})
+                                "args": [self.argument(a) for a in _args(node)],
+                                "receiver": (_variable(node.get("var")), (_name(node.get("name")) or "").lower(),
+                                             chain) if kind == "Expr_MethodCall" else None})
 
     def _has_markup(self, node) -> bool:
         """Whether an expression holds a string literal with a tag or a written-out attribute in it."""
@@ -470,6 +512,45 @@ class FileHarness:
             for key in ("var", "items", "value"):
                 if key in target.fields:
                     self._define_all(scope, target.fields[key], node, chain)
+
+    def mysqli_kind(self, scope: _Scope, call: dict, connections: set) -> str | None:
+        """Which of PHP's mysqli classes the receiver of a method call certainly is (rules v0.15 section 4), or
+        None: "mysqli" for a variable whose only definitions in the app are `new mysqli(...)` /
+        `mysqli_connect(...)`; "result" / "stmt" for one whose definition reaching the call (the same block or
+        one enclosing it) is such a variable's `query()` / `prepare()`, or `mysqli_query(<it>, ...)`."""
+        variable, _, chain = call["receiver"]
+        if variable in connections:
+            return "mysqli"
+        found = self._reaching(scope, variable, call["node"].start, chain) if variable else None
+        rhs = found.node if found is not None and found.kind == "assign" else None
+        while _is(rhs, "Expr_ErrorSuppress"):
+            rhs = rhs.get("expr")
+        if _is(rhs, "Expr_MethodCall") and _variable(rhs.get("var")) in connections:
+            return {"query": "result", "prepare": "stmt"}.get((_name(rhs.get("name")) or "").lower())
+        if _is(rhs, "Expr_FuncCall") and _callee(rhs) == "mysqli_query" and _args(rhs)                 and _variable(_args(rhs)[0]) in connections:
+            return "result"
+        return None
+
+    def _or_exit(self, node: _N, scope: _Scope, chain: tuple, enclosures: list) -> None:
+        """`X or die(m)` as a statement: `if (!X) { die(m); }` (boundary-rules v0.15 section 1), so that R-I8 and
+        R-I8c decide it like the if it is."""
+        left, stop = node.get("left"), node.get("right")
+        scope.controls.append(node.start)
+        self._walk(left, scope, chain, enclosures)  # always runs
+        enclosure = {"nodeId": node.id, "kind": "Stmt_If", "role": "branch", "branch": "then",
+                     "condNodeId": left.id, "condExpr": f"!({self.node_text(left)})", "loc": loc_dict(node.loc),
+                     "exits": True}
+        inner_chain, inner = chain + ((node.id, "then0"),), enclosures + [enclosure]
+        message = stop.get("expr")
+        prints = message is not None and not _is(message, "Scalar_Int")
+        if prints and scope.name is None:  # as for `die("msg");` in an if arm: a sequence entry
+            scope.outputs.append((stop, "Expr_Exit", inner_chain, list(inner)))
+            self._printing_exits.add(stop.id)
+        self._walk(stop, scope, inner_chain, inner)
+        if prints:
+            scope.exit_arms.append(stop.line)  # R-I8c: an arm that prints and then exits
+        scope.notes.append({"kind": "expression_exit", "line": node.line, "col": node.loc.column,
+                            "detail": self.node_text(node)[:80]})
 
     def _if(self, node: _N, scope: _Scope, chain: tuple, enclosures: list) -> None:
         if_id, cond = node.id, node.get("cond")
@@ -964,6 +1045,9 @@ class FileHarness:
             **function,
             **({"responseContentType": scope.content_type} if scope.content_type else {}),
             "sequence": [entry for _, entry in sequence],
+            **({"redirects": [redirect | {"enclosedBy": [
+                self.loop_enclosure(e) if e["role"] == "iteration" else e for e in redirect["enclosedBy"]]}
+                for redirect in scope.redirects]} if scope.redirects else {}),
             "queries": dict(sorted(queries.items())),
             "callNames": dict(sorted(call_names.items())),
             "includes": sorted(scope.includes, key=lambda i: i["nodeId"]),
@@ -976,12 +1060,47 @@ class FileHarness:
                 "callResolution": RESOLUTION_NOTE, "includesExtension": INCLUDES_NOTE,
                 "exitExtension": EXIT_NOTE, "contentTypeExtension": CONTENT_TYPE_NOTE,
                 "exitOutputExtension": EXIT_OUTPUT_NOTE, "fetchExtension": FETCH_NOTE,
+                "redirectsExtension": REDIRECTS_NOTE, "builtinMethods": BUILTIN_METHODS_NOTE,
                 "selectStarConvention": SELECT_STAR_NOTE,
                 "partsExtension": PARTS_NOTE, "copyPropagationExtension": COPY_NOTE,
                 "sqlValuesExtension": SQL_VALUES_NOTE,
                 "queriesExtension": QUERIES_NOTE, "harnessNotesExtension": NOTES_NOTE,
             },
         }
+
+
+def _connection(rhs) -> bool:
+    while _is(rhs, "Expr_ErrorSuppress"):
+        rhs = rhs.get("expr")
+    return (_is(rhs, "Expr_New") and (_name(rhs.get("class")) or "").lower() in ("mysqli", "\mysqli")
+            or _is(rhs, "Expr_FuncCall") and _callee(rhs) == "mysqli_connect")
+
+
+def drop_builtin_methods(harnesses: dict) -> None:
+    """Calls of PHP's own mysqli methods are not call sites (boundary-rules v0.15 section 4): like a built-in
+    function, they never print. A variable is a connection when every definition of it in the app (a `global`
+    statement only binds it) is `new mysqli(...)` / `mysqli_connect(...)`. What is dropped is noted."""
+    found: dict[str, list] = {}
+    for harness in harnesses.values():
+        for scope in harness.scopes():
+            for name, defs in scope.defs.items():
+                found.setdefault(name, []).extend(d for d in defs if not _is(d.node, "Stmt_Global"))
+    connections = {name for name, defs in found.items()
+                   if defs and all(d.kind == "assign" and _connection(d.node) for d in defs)}
+    for harness in harnesses.values():
+        for scope in harness.scopes():
+            kept = []
+            for call in scope.calls:
+                kind = harness.mysqli_kind(scope, call, connections) if call.get("receiver") else None
+                if kind is not None and call["receiver"][1] in MYSQLI_METHODS[kind]:
+                    node = call["node"]
+                    note = {"kind": "builtin_mysqli_method", "line": node.line, "col": node.loc.column,
+                            "detail": f"{kind}::{call['receiver'][1]}"}
+                    if note not in scope.notes:
+                        scope.notes.append(note)
+                else:
+                    kept.append(call)
+            scope.calls[:] = kept
 
 
 def function_resolver(harnesses: dict):
@@ -999,6 +1118,7 @@ def function_resolver(harnesses: dict):
     `resolve.include(include, harness)` gives (the included file's entrypoint or None, outputsInside) for one
     entry of a scope's `includes` (see INCLUDES_NOTE).
     """
+    drop_builtin_methods(harnesses)
     definitions: dict[str, list] = {}  # lower-case name -> [(file key, harness, scope)]
     for key in sorted(harnesses):
         for name, scope in harnesses[key].functions.items():
