@@ -179,6 +179,14 @@ def _check_loc(loc, where: str) -> None:
         raise ValueError(f"{where}: loc ends before it starts")
 
 
+def _check_exit_output(found, where: str) -> None:
+    """exitOutput (harness extension, R-I8c): [{file, line}] of the exit arms a call or include reaches."""
+    if not isinstance(found, list) or not all(
+            isinstance(x, dict) and set(x) == {"file", "line"} and isinstance(x["file"], str)
+            and isinstance(x["line"], int) for x in found):
+        raise ValueError(f"{where}: exitOutput must be a list of {{file, line}}")
+
+
 def _loc(d: dict | None) -> Loc | None:
     if d is None:
         return None
@@ -227,9 +235,10 @@ def load_timeline_json(path: Path) -> dict:
         seen.add(eid)
         if entry.get("kind") == CALL_KIND:
             required = {"id", "kind", "enclosedBy", "callee", "outputsInside"}
-            if not required <= set(entry) <= required | {"loc", "args"}:
+            if not required <= set(entry) <= required | {"loc", "args", "exitOutput"}:
                 raise ValueError(f"{where}: call keys {sorted(entry)}; expected {sorted(required)} and optionally "
-                                 "loc / args")
+                                 "loc / args / exitOutput")
+            _check_exit_output(entry.get("exitOutput", []), where)
             for arg in entry.get("args", []):
                 _check_argument(arg, f"{where} argument")
             if entry["callee"] is not None:
@@ -239,9 +248,10 @@ def load_timeline_json(path: Path) -> dict:
                                  '"unknown"')
         elif entry.get("kind") == INCLUDE_KIND:
             required = {"id", "kind", "enclosedBy", "path", "outputsInside"}
-            if not required <= set(entry) <= required | {"loc"}:
+            if not required <= set(entry) <= required | {"loc", "exitOutput"}:
                 raise ValueError(f"{where}: include keys {sorted(entry)}; expected {sorted(required)} and "
-                                 "optionally loc")
+                                 "optionally loc / exitOutput")
+            _check_exit_output(entry.get("exitOutput", []), where)
             if entry["path"] is not None and (not isinstance(entry["path"], str) or not entry["path"]):
                 raise ValueError(f"{where}: include path {entry['path']!r}, expected a file's entrypoint or null")
             if not isinstance(entry["outputsInside"], bool) and entry["outputsInside"] != "unknown":
@@ -268,9 +278,11 @@ def load_timeline_json(path: Path) -> dict:
             if "loc" in enc and enc.get("role") in ("iteration", "branch"):
                 _check_loc(enc["loc"], f"{where} enclosure {enc['nodeId']}")  # optional (Member 01 Q15)
             if enc.get("role") == "iteration":
-                if (not LOOP_KEYS <= set(enc) <= LOOP_KEYS | {"loc"} or enc["kind"] not in LOOP_KINDS
+                if (not LOOP_KEYS <= set(enc) <= LOOP_KEYS | {"loc", "fetchNodeId"} or enc["kind"] not in LOOP_KINDS
                         or enc["iterSourceKind"] not in SOURCE_KINDS):
                     raise ValueError(f"{where}: malformed loop {enc}")
+                if "fetchNodeId" in enc:
+                    _check_node_id(enc["fetchNodeId"], where)
                 # The loop object is repeated on every entry it encloses; copies must agree.
                 if loops_seen.setdefault(enc["nodeId"], enc) != enc:
                     raise ValueError(f"{where}: loop {enc['nodeId']} differs from its earlier copy")
@@ -335,7 +347,7 @@ def _enclosure(d: dict) -> Enclosure:
     if d["role"] == "iteration":
         return Enclosure(node_id=d["nodeId"], kind=d["kind"], role="iteration", iter_expr=d["iterExpr"],
                          iter_source_kind=d["iterSourceKind"], value_var=d["valueVar"], key_var=d["keyVar"],
-                         loc=_loc(d.get("loc")))
+                         loc=_loc(d.get("loc")), fetch_node_id=d.get("fetchNodeId"))
     if d["role"] == "branch":
         return Enclosure(node_id=d["nodeId"], kind=d["kind"], role="branch", branch=d["branch"],
                          cond_node_id=d["condNodeId"], cond_expr=d.get("condExpr"), loc=_loc(d.get("loc")),
@@ -364,7 +376,8 @@ def load_timeline(path: Path) -> Timeline:
         CallEntry(id=e["id"], callee=e["callee"] if e["kind"] == CALL_KIND else e["path"],
                   outputs_inside=e["outputsInside"],
                   enclosed_by=tuple(_enclosure(x) for x in e["enclosedBy"]), loc=_loc(e.get("loc")),
-                  args=None if "args" not in e else tuple(_argument(a) for a in e["args"]), kind=e["kind"])
+                  args=None if "args" not in e else tuple(_argument(a) for a in e["args"]), kind=e["kind"],
+                  exit_output=tuple((x["file"], x["line"]) for x in e.get("exitOutput", ())))
         for e in doc["sequence"] if e["kind"] in SLOT_KINDS
     )
     function = doc.get("function")

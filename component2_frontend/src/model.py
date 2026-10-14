@@ -72,6 +72,8 @@ class Enclosure:
     # Optional (harness extension, pending Member 01 Q20): the arm has an `exit` / `die` statement directly in
     # its own statement list, so it always ends the script (boundary rule R-I8).
     exits: bool = False
+    # Optional (harness extension, R-L4): the fetch call that gives an iteration its row
+    fetch_node_id: str | None = None
     # roles "switch_case" / "try_catch": their fields are not specified yet, so whatever the
     # timeline gives is carried here as (key, value) pairs sorted by key. Opaque: never used in a decision.
     extra: tuple[tuple[str, object], ...] = ()
@@ -142,6 +144,8 @@ class CallEntry:
     enclosed_by: tuple[Enclosure, ...]  # outermost first
     loc: Loc | None = None
     args: tuple["CallArg", ...] | None = None  # optional (harness extension): the arguments, in order
+    # R-I8c (harness extension): exit arms that print, reached through this call / include: ((file, line), ...)
+    exit_output: tuple = ()
     # "call" | "include" (harness extension, pending Member 01 Q4: an include / require at its position) |
     # "children" for the place where a shell component puts its page (never from a file)
     kind: str = "call"

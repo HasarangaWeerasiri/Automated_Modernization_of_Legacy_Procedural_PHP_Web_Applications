@@ -553,7 +553,8 @@ def test_phpblog_admin_header_and_footer_files_pair_after_implicit_closes(phpblo
         for node in apps_results_table._walk(stage2["tree"]):
             if node["status"] == "abstain":
                 reasons[node["reason"]] = reasons.get(node["reason"], 0) + 1
-    assert "tag_crosses_function" not in reasons and reasons["cross_file_output"] == 24
+    # cross_file_output 24 (step 2) -> 0 (step 3): config.php and core.php print only in exit arms (R-I8c)
+    assert "tag_crosses_function" not in reasons and "cross_file_output" not in reasons
     shell = (output / "phpblog" / "next-app" / "components" / "HeadShell.tsx").read_text(encoding="utf-8")
     assert shell.count("\n") > 100 and "{children}" in shell  # the public shell is generated, not one C2Todo
 

@@ -419,7 +419,7 @@ def test_while_enclosure(tmp_path):
     (loop,) = enclosures(page(tmp_path, php))
     assert loop == {"nodeId": "t001#00001", "kind": "Stmt_While", "role": "iteration",
                     "iterExpr": "$row = mysqli_fetch_array($r)", "iterSourceKind": "db_row_field",
-                    "valueVar": "$row", "keyVar": None,
+                    "valueVar": "$row", "keyVar": None, "fetchNodeId": "t001#00004",  # R-L4 (v0.14): its fetch
                     "loc": {"startLine": 1, "endLine": 1, "startCol": 6, "endCol": len(php), "startByte": 6,
                             "endByte": len(php)}}  # the loop's own loc (Member 01 Q15)
 
@@ -688,7 +688,7 @@ def test_every_page_of_both_apps_runs_without_a_crash(apps_output):
     # (Phase 3 step 2: admin/header.php and admin/footer.php pair after implicit closes, a third shell; and
     # config.php is analysed from install/config.tpl, a 51st file)
     expected = {"hms": (29, (26, 2, 0, 5, 0)), "wackopicko": (49, (30, 2, 1, 0, 2)),
-                "phpblog": (51, (47, 1, 3, 0, 6))}
+                "phpblog": (51, (47, 1, 3, 0, 6)), "attendance": (19, (14, 0, 0, 0, 0))}
     assert {app: (index["files"], roles(index)) for app, index in indexes.items()} == {
         app: expected[app] for app in indexes}
     for index in indexes.values():
@@ -709,9 +709,9 @@ def test_every_page_of_both_apps_compiles(apps_output):
 
 def test_libraries_are_excluded_and_only_discovery_apps_are_configured(apps_output):
     _, indexes = apps_output
-    assert sorted(harness_app.APPS) == ["hms", "phpblog", "wackopicko"]  # CONTEXT v17 section 5: the active corpus
+    assert sorted(harness_app.APPS) == ["attendance", "hms", "phpblog", "wackopicko"]  # CONTEXT v19 section 5
     assert {app: config["docroot"] for app, config in harness_app.APPS.items()} == {
-        "hms": "", "wackopicko": "website", "phpblog": ""}  # legacy-apps/PINS.md
+        "hms": "", "wackopicko": "website", "phpblog": "", "attendance": ""}  # legacy-apps/PINS.md
     assert not any(p["path"].startswith(("TCPDF/", "vendor/")) for p in indexes["hms"]["pages"])
 
 
@@ -734,8 +734,11 @@ def test_whole_app_totals(apps_output):
     # exit_arm_not_covered) and tos.php's unclosed <li> is repaired. phpBlog: abstains 101 -> 52 (the admin
     # shell pairs: tag_crosses_function 48 -> 0); the nine units that were one C2Todo each are generated now, so
     # their own gaps are counted (todo 468 -> 635).
-    expected = {"hms": (269, 68, 5, 174, 192, 391, 285), "wackopicko": (384, 58, 7, 307, 159, 296, 126),
-                "phpblog": (800, 186, 52, 834, 635, 936, 454)}
+    # Step 3 (rules v0.14): HMS unchanged. WackoPicko: three R-I8c flags (review) at the Users:: calls.
+    # phpBlog: R-I8c (config.php, core.php, the shells) and R-I8's v0.14 scope (24 nested redirect guards
+    # abstain). Attendance: first run.
+    expected = {"hms": (269, 68, 5, 174, 192, 391, 285), "wackopicko": (384, 58, 7, 307, 159, 299, 126),
+                "phpblog": (800, 185, 57, 829, 621, 987, 531), "attendance": (168, 30, 11, 87, 85, 151, 273)}
     assert totals == {app: expected[app] for app in totals}
     hms = [apps_results_table.page_row(output / "hms", entry) for entry in indexes["hms"]["pages"]]
     assert (sum(r["review_unlabelled"] for r in hms), sum(r["review_other"] for r in hms)) == (171, 3)

@@ -33,7 +33,7 @@ from src.mapping.stage2_boundaries import _regions  # noqa: E402
 
 OUTPUT = ROOT / "output" / "apps"
 DEFAULT_MARKDOWN = ROOT / "docs" / "php-analysis" / "pattern-log.md"
-APPS = ("hms", "wackopicko", "phpblog")
+APPS = ("hms", "wackopicko", "phpblog", "attendance")
 MAX_EXAMPLES = 6
 NEW = "**new**"
 CANDIDATE = "**candidate new** (owner decides)"  # Phase 3: judged by the definition in boundary-rules section 8
@@ -224,6 +224,18 @@ CATALOGUE = {
     "handled:r_i8_guard": (
         "E", "Redirect guard (R-I8, case 1)", "existing: R-I8 (rules v0.13)",
         "An arm that prints only a redirect and exits: not a component, nothing rendered, flag `redirect_guard`."),
+    "handled:r_i8c": (
+        "E", "Exit arm in a called function or an included file (R-I8c)", "existing: R-I8c (rules v0.14)",
+        "Not generated; the function / file counts as non-printing otherwise; every include / call site that "
+        "reaches it is flagged `exit_output_not_generated`."),
+    "flag:exit_output_not_generated": (
+        "E", "Include / call site reaching an exit arm that is not generated (R-I8c)", "existing: R-I8c (rules v0.14)",
+        "The flag (review) names the arm's file and line."),
+    "seen:filter_in_loop": (
+        "A", "Loop whose whole body is one `if` (filter-in-loop)",
+        "\u00a78 \"not yet seen: filter-in-loop\" \u2192 **now seen**",
+        "Every output of the loop is inside the `then` arm of one `if` at the loop body's own level. The detail is "
+        "the condition. How Stage 2 judged the loop is in the abstain rows (if any) at the same line."),
     "handled:r_i8_exit": (
         "E", "Exit arm with other output (R-I8, case 2)", "existing: R-I8 (rules v0.13)",
         "`cond ? <arm> : <rest of the block>`."),
@@ -441,6 +453,8 @@ def collect(output: Path) -> dict:
                     add("handled:r_i8_guard", where(app, entry, *first))
                 if node["rule"] == "R-I8" and node["type"] == "InlineConditional":
                     add("handled:r_i8_exit", where(app, entry, *first))
+                if node["rule"] == "R-I8c":
+                    add("handled:r_i8c", where(app, entry, *first))
                 if node["type"] == "List" and "R-L3b" in node["rules"]:
                     add("handled:r_l3b", where(app, entry, *first))
                 if node["rule"] == "R-L3":
@@ -479,6 +493,8 @@ def collect(output: Path) -> dict:
                         add("handled:copy_propagation", where(app, entry, e["loc"]["startLine"],
                                                               e["loc"]["startCol"] + 1),
                             f"{read['expr']} = {read['derivedFrom'][0]['expr']}")
+            for loop_line, condition in filters_in_loops(timeline):
+                add("seen:filter_in_loop", where(app, entry, loop_line), f"`{condition}`")
             for note in timeline["harnessNotes"]:
                 kind = f"note:{note['kind']}" + ("+markup" if note.get("markup") else "")
                 if note["kind"] in ("echo_parts", "sql_interpolated_values"):
@@ -500,8 +516,32 @@ def collect(output: Path) -> dict:
                     resolved = next((c for c in candidates if c in printing_pages), None)
                 key = (app, target if target is not None else include["expr"], resolved is not None)
                 includes.setdefault(key, []).append(where(app, entry, include["line"], include["col"]))
+        for path, notes in sorted(index.get("silentFileNotes", {}).items()):  # files that print nothing
+            for note in notes:
+                add(f"note:{note['kind']}", where(app, {"path": path, "function": None}, note["line"], note["col"]),
+                    " ".join(note["detail"].split())[:70])
     return {"found": found, "rules": rules, "calls": calls, "includes": includes, "conditions": conditions,
             "checklist": checklist, "summary": summary, "todos": todo_reasons}
+
+
+def filters_in_loops(timeline: dict) -> list:
+    """[(loop line, condition)] for every loop whose outputs all stand in the `then` arm of one if at the loop
+    body's own level (boundary-rules section 8, filter-in-loop)."""
+    by_loop: dict[str, list] = {}
+    for entry in timeline["sequence"]:
+        chain = entry["enclosedBy"]
+        for depth, enclosure in enumerate(chain):
+            if enclosure["role"] == "iteration":
+                by_loop.setdefault(enclosure["nodeId"], []).append((enclosure, chain[depth + 1:]))
+    out = []
+    for loop_id, entries in by_loop.items():
+        inner = [rest[0] if rest else None for _, rest in entries]
+        if any(e is None or e["role"] != "branch" or e["branch"] != "then" for e in inner):
+            continue
+        if len({e["nodeId"] for e in inner}) == 1:
+            loop = entries[0][0]
+            out.append((loop.get("loc", {}).get("startLine"), " ".join(inner[0].get("condExpr", "?").split())[:60]))
+    return sorted(out, key=lambda x: (x[0] or 0, x[1]))
 
 
 def per_app(places: list, app: str) -> int:
@@ -536,8 +576,10 @@ PHASE3 = {
     "seen:r_i5_request": ("b", "Request-handling `if` (existing row, HMS)",
         "Same shape as HMS: `isset($_POST['...'])` / `isset($_GET['edit-id'])` around a form or a handler."),
     "abstain:unresolved_call": ("b", "Call whose output cannot be followed (call-entry table)",
-        "Same reason as HMS's TCPDF calls. Causes here: helper functions that include `config.php`, which is "
-        "not in the repository (the installer writes it), mysqli method calls, includes of that file."),
+        "Same reason as HMS's TCPDF calls. Causes since rules v0.14: mysqli method calls, and `include "
+        "\"core.php\"`, whose top level, once its redirect guard counts as an exit arm (R-I8c), still makes a "
+        "mysqli method call (`$querych->fetch_array()`) whose output is not known."),
+    "handled:r_i8c": ("b", "R-I8c (v0.14)", "Exit arms in `head()`, `admin/header.php`, `core.php`, `config.php`."),
     "abstain:tag_crosses_branch": ("b", "Malformed HTML (R-L6, per-branch balance)", "More instances."),
     "abstain:markup_from_expression": ("b", "Echo strings with markup, rules §1",
         "`echo '<option ... ' . $selected . '>'`: an expression where an attribute name is written."),
@@ -571,16 +613,64 @@ GAPS_FIXED = (
 )
 
 
-def phase3_section(number: int, app: str, data: dict, ordered: list) -> list:
+# Attendance (roadmap Phase 3, app 4): the decision input. Nothing here is decided; the owner judges.
+ATTENDANCE = {
+    "seen:filter_in_loop": ("a", "\u00a78 \"not yet seen: filter-in-loop\" \u2192 **now seen**",
+        "`while (...) { $i++; ... if ($i <= 1) { <tbody><tr>\u2026</tr>\u2026 } }`: the body prints only on the first "
+        "pass (a header block from the first row). No rule; here Stage 2 abstains on these loops for another "
+        "reason (an unclosed `<tbody>`, `container_undetermined`), so the shape itself was not judged."),
+    "abstain:try_catch_enclosure": ("a", "\u00a78 \"not yet seen: try\" \u2192 **now seen**; \u00a75 abstain exists",
+        "Not new by (a): \u00a75 has the abstain. Listed because \u00a78 named it not yet seen. All 6 come from "
+        "`$e->getMessage()` in a `catch` block: a method call whose output cannot be followed (Q11). No echo stands "
+        "inside a `try` in this app."),
+    "note:exit_with_output": ("a", "Nearest: R-I8c (written for if arms) / `die()` with a message",
+        "`mysql_connect(...) or die('Cannot connect to server')` in the included `connect.php` files: an error stop "
+        "in an included file that is not an if arm. R-I8c does not cover it: nothing is generated and the include "
+        "sites carry no flag."),
+    "note:output_buffering": ("a", "No \u00a78 row (recorded as a note since Phase 1)",
+        "`ob_start()` at the top of 10 pages, so that `header('location: \u2026')` may follow output. The buffer is "
+        "flushed at the end, so the page prints the same; the app never discards it. Listed because \u00a78 has no "
+        "row: likely not a pattern by (a) or (b)."),
+    "abstain:container_undetermined@page": ("b", "Malformed HTML (R-L6)",
+        "The loop body opens `<tbody>` and never closes it (`student/report.php`, `teacher/report.php`)."),
+    "abstain:guarded_loop_abstained": ("b", "R-I2 list guard whose loop abstained", "The same two loops."),
+    "abstain:tag_crosses_branch": ("b", "Malformed HTML (R-L6, per-branch balance)",
+        "`if (isset($_POST['sr_date'])) { ?><table>\u2026<?php } ?></table>`: the table opens in the arm, closes after."),
+    "seen:r_i5_request": ("b", "Request-handling `if` (existing row, HMS)", "`isset($_POST['reset'])`."),
+    "fallback:container_shared": ("b", "Page output inside a List's container outside the loop", "More instances."),
+    "flag:html_nesting_changed": ("b", "Invalid nesting the browser repairs",
+        "Rows after a `<thead>` from a loop inside an `if` (not repaired across a branch), and rows outside any "
+        "table in abstained code."),
+    "note:row_read_not_traced": ("d", "data (Member 01 Q1, Q3, Q17)", "Unresolved reads; the DFG's job."),
+}
+ATTENDANCE_CLASSES = {
+    "a": "(a) Candidate new patterns (the owner decides)",
+    "b": "(b) Existing patterns with new instances",
+    "d": "(d) Unresolved reads, missing labels, no endpoint only",
+}
+ATTENDANCE_GAPS = (
+    "An abstained `try` / `switch` region gets its `Abstained_` function (spec section 7): the builder now reads "
+    "the region's own content (it stopped with \"try_catch ... was not abstained\").",
+    "Harness notes of a file that prints nothing (it has no timeline) are kept in `index.json` "
+    "(`silentFileNotes`), so `connect.php`'s `or die(...)` reaches this log.",
+    "Neither needed a rule change.",
+)
+
+
+def phase3_section(number: int, app: str, data: dict, ordered: list, verdicts: dict = None, classes: dict = None,
+                   gaps: tuple = GAPS_FIXED, decided: bool = True) -> list:
     """One app's constructs against the section 8 definition of a new pattern (Phase 3)."""
+    verdicts, classes = verdicts or PHASE3, classes or PHASE3_CLASSES
     found, todos = data["found"], data["todos"].get(app, {})
     lines = [f"## {number}. {app}: constructs against the §8 definition of a new pattern (Phase 3)", "",
-             "boundary-rules v0.12 §8: an app adds a new pattern if a construct (a) needs a rule or abstain reason "
+             "boundary-rules §8 (v0.12): an app adds a new pattern if a construct (a) needs a rule or abstain reason "
              "that §2–§5 do not have, or (b) is handled by an existing rule wrongly. More instances of an existing "
              "row, an implementation gap for a written rule, and unresolved reads are not new. **This table does "
-             "not decide**: the owner did (rules v0.13: 4 new patterns, saturation counter 0 / 2). It shows what "
-             "each construct is after the new rules were implemented.", ""]
-    for letter, heading in PHASE3_CLASSES.items():
+             "not decide**: " + ("the owner did (rules v0.13: 4 new patterns, saturation counter 0 / 2). It shows "
+                                 "what each construct is after the new rules were implemented." if decided else
+                                 "where there is doubt the construct is listed as a candidate, with the reason; "
+                                 "the owner decides."), ""]
+    for letter, heading in classes.items():
         rows = []
         for kind in ordered:
             places = [(p, d) for p, d in found[kind] if p.startswith(f"`{app}/")]
@@ -588,8 +678,9 @@ def phase3_section(number: int, app: str, data: dict, ordered: list) -> list:
                 continue
             _, title, mapping, _ = CATALOGUE.get(kind, ("B", kind, CANDIDATE, ""))
             default = "d" if mapping.startswith("data") else "b" if mapping.startswith("existing") else "a"
-            cls, row, why = PHASE3.get(kind, (default, mapping, ""))
-            if kind.startswith(("handled:", "flag:implicit", "flag:duplicate", "flag:stray")) and kind not in PHASE3:
+            cls, row, why = verdicts.get(kind, (default, mapping, ""))
+            if kind.startswith(("handled:", "flag:implicit", "flag:duplicate", "flag:stray", "flag:implied",
+                                "flag:exit_output")) and kind not in verdicts:
                 continue  # handled by a rule or repair: counted in section 1
             if cls == letter:
                 rows.append(f"| {title} — **{len(places)}**<br>{examples(places[:3])} | {row} | {why} |")
@@ -605,7 +696,7 @@ def phase3_section(number: int, app: str, data: dict, ordered: list) -> list:
         elif letter != "d":
             lines += ["None.", ""]
     lines += ["### (c) Implementation gaps fixed for this app (not new patterns)", ""]
-    lines += [f"- {text}" for text in GAPS_FIXED] + [""]
+    lines += [f"- {text}" for text in gaps] + [""]
     return lines
 
 
@@ -679,6 +770,9 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
                       f"- Examples: {examples(found[kind])}", ""]
 
     lines += phase3_section(number, "phpblog", data, ordered)
+    number += 1
+    lines += phase3_section(number, "attendance", data, ordered, ATTENDANCE, ATTENDANCE_CLASSES, ATTENDANCE_GAPS,
+                            decided=False)
     number += 1
 
     shells = [(app, s) for app in APPS for s in summary[app].get("shells", [])]

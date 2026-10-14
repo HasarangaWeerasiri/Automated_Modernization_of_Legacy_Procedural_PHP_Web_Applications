@@ -1,6 +1,6 @@
 """Whole-app side of the Component 2 test harness: every PHP file of an app -> timelines.
 
-For each app (rule-discovery corpus only: HMS, WackoPicko and phpBlog) this produces an AST for every PHP
+For each app (rule-discovery corpus only: HMS, WackoPicko, phpBlog and attendance) this produces an AST for every PHP
 file that is not a library (ast_producer.py), and returns one timeline per page (a file's top-level
 output) and per function that prints (harness.py). Call sites carry the called function's node id
 and whether it prints, directly or through a function it calls.
@@ -34,6 +34,9 @@ APPS = {
     "phpblog": {"root": ROOT / "legacy-apps" / "phpblog", "prefix": "legacy-apps/phpblog",
                 "commit": "4ffe3c9641a42b99829cf4b8e4185093793a3abc", "docroot": "", "exclude": (),
                 "substitutions": {"config.php": "install/config.tpl"}},
+    # roadmap Phase 3, app 4 (opened 14 Oct 2026): PHP 5 (mysql_*), parsed only, never run
+    "attendance": {"root": ROOT / "legacy-apps" / "attendance", "prefix": "legacy-apps/attendance",
+                   "commit": "31781040c50f2be20514ef18c1b0d4ae7b2bf76e", "docroot": "", "exclude": ()},
 }
 
 
@@ -56,6 +59,7 @@ class AppTimelines:
     functions: dict = None  # function node id -> {"name", "path"}, for reports
     docroot: str = ""  # the served folder, relative to the app root
     prefix: str = ""  # what an entrypoint starts with before the file's path, e.g. "legacy-apps/hms"
+    silent_notes: dict = None  # file -> the harness notes of its top level, for files that print nothing
 
 
 def head_commit(root: Path) -> str:
@@ -179,8 +183,12 @@ def app_timelines(app: str) -> AppTimelines:
                 "note": "Test harness output, not Member 01's core (docs/c2-roadmap.md Phases 1 and 1b)."}
 
     pages, silent = build_timelines(harnesses, provenance)
+    # A file that prints nothing has no timeline, so its notes (e.g. `mysql_connect(...) or die("msg")`) would be
+    # lost: they are kept for the pattern log.
+    silent_notes = {path: sorted(harnesses[path].top.notes, key=lambda n: (n["line"], n["col"], n["kind"]))
+                    for path in silent if harnesses[path].top.notes}
     return AppTimelines(app, tuple(pages), tuple(silent), errors, len(files), tuple(schema_files),
-                        function_table(harnesses), config["docroot"], config["prefix"])
+                        function_table(harnesses), config["docroot"], config["prefix"], silent_notes)
 
 
 def dump_timeline(timeline: dict) -> str:

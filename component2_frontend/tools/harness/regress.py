@@ -28,6 +28,8 @@ MOCKS = {  # mock -> (app, file, function, the mock's file id)
     "wp_thumbnails": ("wackopicko", "website/include/html_functions.php", "thumbnail_pic_list", "f009"),
 }
 FIELDS = ("kind", "raw", "loc", "enclosedBy", "reads")
+# Harness extensions on enclosures that the hand-made mocks predate (R-I8 `exits`, R-L4 `fetchNodeId`)
+ENCLOSURE_EXTENSIONS = ("exits", "fetchNodeId")
 
 
 def source_bytes(app: str, path: str) -> bytes:
@@ -59,7 +61,10 @@ def compare(mock_doc: dict, harness_doc: dict) -> list[dict]:
             differences.append({"id": entry["id"], "field": "(entry)", "mock": entry["kind"], "harness": "missing"})
             continue
         for name in FIELDS:
-            if entry.get(name) != other.get(name):
+            value = other.get(name)
+            if name == "enclosedBy" and value is not None:
+                value = [{k: v for k, v in e.items() if k not in ENCLOSURE_EXTENSIONS} for e in value]
+            if entry.get(name) != value:
                 differences.append({"id": entry["id"], "field": name, "mock": entry.get(name),
                                     "harness": other.get(name)})
     lines = [entry["loc"]["startLine"] for entry in mock_doc["sequence"]]

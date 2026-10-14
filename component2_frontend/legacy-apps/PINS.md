@@ -7,6 +7,7 @@ commit each one must be checked out at; mock timelines are byte-exact against th
 |---|---|---|---|---|---|---|
 | HMS | `legacy-apps/hms` | `kishan0725/Hospital-Management-System` | `777fda46b77a820977a5ba616283dbfbc40bf7e1` | — | the repository root | Rule-discovery app. Libraries `TCPDF/`, `vendor/` are not read |
 | WackoPicko | `legacy-apps/wackopicko` | `adamdoupe/WackoPicko` | `cabc1b3a06beda7df98e839fa2d84db9a4bdfee7` | MIT | `website/` | Rule-discovery app. All its PHP is under `website/` |
+| attendance | `legacy-apps/attendance` | `ihumaunkabir/online-attendance-management-system-1.0` | `31781040c50f2be20514ef18c1b0d4ae7b2bf76e` | MIT (its `LICENSE` file stays with it) | the repository root | Rule-discovery app, opened 14 Oct 2026 (roadmap Phase 3, app 4). PHP 5 (`mysql_*`): parsed only, never run. Schema: `database/attsystem.sql` |
 | phpBlog | `legacy-apps/phpblog` | `codeplay-code/phpBlog-blogScript` | `4ffe3c9641a42b99829cf4b8e4185093793a3abc` | GPL-3.0 (its `LICENSE` file stays with it) | the repository root | Rule-discovery app, opened 13 Oct 2026 (roadmap Phase 3, app 1). Schema: `install/database.sql`. `config.php` is not in the repository: the installer (`install/`) writes it from `install/config.tpl`. The installer is parsed like any other page and never run |
 
 ## Analysis substitutions (owner decision, 13 Oct 2026)
@@ -48,6 +49,6 @@ committed (unlike the app clones).
 `tests/test_real_ast.py` loads it, checks every `loc` against the source bytes and compares the
 harness's AST with it node by node and byte by byte; those tests skip if the file is absent.
 
-Clone WackoPicko and phpBlog with `--config core.autocrlf=false` so the working files stay
+Clone WackoPicko, phpBlog and attendance with `--config core.autocrlf=false` so the working files stay
 byte-identical to upstream. Do not modify an app's files. The HMS working copy has its database connection strings edited for Docker; read
 the upstream bytes with `git -C legacy-apps/hms show HEAD:<file>`.

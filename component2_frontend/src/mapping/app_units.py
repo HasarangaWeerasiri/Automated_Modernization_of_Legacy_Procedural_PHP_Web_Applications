@@ -110,21 +110,43 @@ def _tag_facts(timeline: Timeline, config: BoundaryConfig) -> tuple[bool, tuple,
     return balanced, open_tags, unmatched
 
 
+# HTML5 "in body": the end tags that close the nearest open element of their name, and every element open
+# inside it, when that element is in scope (boundary-rules v0.14, R-F2 condition 2 (b)).
+BLOCK_END_TAGS = frozenset((
+    "address", "article", "aside", "blockquote", "center", "details", "dialog", "dir", "div", "dl", "fieldset",
+    "figcaption", "figure", "footer", "header", "hgroup", "listing", "main", "menu", "nav", "ol", "pre", "section",
+    "summary", "ul"))
+# Elements that end the "default scope" of that search (HTML5 "has an element in scope").
+SCOPE_LIMITS = frozenset(("applet", "caption", "html", "table", "td", "th", "marquee", "object", "template"))
+
+
 def closes(open_tags: tuple, unmatched: tuple) -> bool:
-    """R-F2 condition 2 as refined in boundary-rules v0.13: the footer's closing tags close the header's open
+    """R-F2 condition 2 as made exact in boundary-rules v0.14: the footer's closing tags close the header's open
     elements once the implicit closes every browser applies are counted.
 
-    `<head>` is closed by the `<body>` tag. An end tag closes the nearest open element of its name and whatever
-    is still open inside it (so `</div>` also ends an unclosed `<main>`, and `</body>` / `</html>` end everything
-    in them). `<body>` and `<html>` may be left to the end of the file (their end tags are optional). A closing
-    tag that matches nothing the header opened, or any other element left open, is no pair."""
+    (a) `<head>` is closed by the `<body>` tag. (b) An end tag of the HTML5 block group closes the nearest open
+    element of its name, if it is in scope, and every element open inside it (`</div>` ends an unclosed `<main>`).
+    (c) `</body>` and `</html>` close everything still open inside them; `<body>` and `<html>` themselves may be
+    left to the end of the file. Any other end tag (`</span>`, `</a>`, `</form>`, `</p>` ...) must close the
+    element open last: it does not close what is open inside it. Anything else left open is no pair."""
     stack = list(open_tags)
     if "head" in stack and "body" in stack[stack.index("head") + 1:]:
         stack.remove("head")
     for tag in unmatched:
-        if tag not in stack:
+        if tag in ("body", "html"):
+            if tag not in stack:
+                return False
+            del stack[stack.index(tag):]
+        elif tag in BLOCK_END_TAGS:
+            index = next((i for i in range(len(stack) - 1, -1, -1) if stack[i] == tag or stack[i] in SCOPE_LIMITS),
+                         None)
+            if index is None or stack[index] != tag:
+                return False  # not open, or not in scope
+            del stack[index:]
+        elif stack and stack[-1] == tag:
+            stack.pop()
+        else:
             return False
-        del stack[len(stack) - 1 - stack[::-1].index(tag):]
     return all(tag in ("html", "body") for tag in stack)
 
 

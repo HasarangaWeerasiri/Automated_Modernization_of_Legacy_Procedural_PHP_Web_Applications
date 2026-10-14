@@ -328,7 +328,14 @@ class Generator:
         # `then` arm exits after other output (`cond ? arm : rest`)
         self.r_i8_guard = {n.source_ids[0] for n in nodes if n.rule == "R-I8" and n.type == "Static"}
         self.r_i8_exit = {n.source_ids[0] for n in nodes if n.rule == "R-I8" and n.type == "InlineConditional"}
+        # outside R-I8's scope (v0.14): its redirect arms are not treated as guards in the abstained code
+        self.r_i8_out = {n.source_ids[0] for n in nodes if n.reason == "exit_arm_not_covered"}
         self.r_i2b = {n.source_ids[0]: n for n in nodes if n.rule == "R-I2b" and n.type == "InlineConditional"}
+        # R-I8c: in a called function or an included file an arm that exits is not generated (flagged at its
+        # include and call sites)
+        self.r_i8c = {n.source_ids[0] for n in nodes if n.rule == "R-I8c"}
+        self.exit_silent = self.timeline.function is not None or self.layout.mode == "shell" or (
+            self.units is not None and self.timeline.entrypoint in self.units.functions)
         self.conds = {}
         for n in nodes:
             if n.type in ("InlineConditional", "ConditionalComponent"):
@@ -677,10 +684,14 @@ class Generator:
             return _Value(todo=result.reason, wrappers=tuple(wrappers))
         column = result.need.column
         if result.need.row_of is not None:
-            if ctx.row is None or ctx.row.list_id != result.need.row_of or ctx.row.fields is None:
+            if ctx.row is not None and ctx.row.list_id == result.need.row_of and ctx.row.fields is not None:
+                schema, code = dict(ctx.row.fields)[column], prop_access("row", column)
+                ctx.uses.add("row")
+            elif ctx.outer is not None and ctx.outer.list_id == result.need.row_of and ctx.outer.fields is not None:
+                schema, code = dict(ctx.outer.fields)[column], prop_access("outer", column)  # R-L4 (v0.14)
+                ctx.uses.add("outer")
+            else:
                 raise GenerationError("markup_not_generatable", f"{output.id}: row field outside its Item")
-            schema, code = dict(ctx.row.fields)[column], prop_access("row", column)
-            ctx.uses.add("row")
         else:
             schema = dict(self.schema.properties)[column]
             code = prop_access("data", column)
@@ -860,45 +871,94 @@ class Generator:
         return name if "-" in name else None
 
     def attributes(self, el: MElement, ctx: _Ctx, marks: list) -> list:
-        out, seen = [], set()
-        # R-I3b says what a conditional attribute does when the same attribute stands *earlier* in the tag (it has
-        # no effect). One that stands *later* (static, or in a second if) is not covered: which of the two a
-        # browser takes depends on the condition. Both are left out and flagged (start-tag fallback).
-        conditional, uncovered = set(), set()
+        """The JSX props of an element. Each attribute name is settled at its first occurrence in the tag, with
+        every later occurrence of the same name (boundary-rules R-I3b; spec section 5b, duplicate attribute)."""
+        occurrences: dict[str, list] = {}
         for a in el.attrs:
-            names = {m.name for _, found in a.branches for m in found} if isinstance(a, MAttrPresence) else {a.name}
-            uncovered |= names & conditional
-            if isinstance(a, MAttrPresence):
-                conditional |= names
+            if not isinstance(a, MAttrGap):
+                for name in _attribute_names(a):
+                    occurrences.setdefault(name, []).append(a)
+        out, settled, conditions = [], set(), {}
         for a in el.attrs:
             if isinstance(a, MAttrGap):  # spec v0.8 section 5b: only this tag's attribute is lost
                 marks.append(self.flag(ctx, "attribute_omitted", REVIEW, a.node_id, f"an attribute of <{el.tag}>",
                                        reason=a.reason))
                 continue
-            if isinstance(a, MAttrPresence):
-                out += self.presence(a, el, ctx, marks, seen, uncovered)
-                continue
-            if a.name in uncovered:
-                marks.append(self.flag(ctx, "attribute_omitted", REVIEW, a.node_id,
-                                       f"{a.name} on <{el.tag}>: also printed by an if earlier in the tag",
-                                       reason="partial_attribute_output"))
-                continue
-            if a.name in seen and not _EVENT_ATTRIBUTE.fullmatch(a.name):
-                marks.append(self.flag(ctx, "duplicate_attribute", INFO, a.node_id,
-                                       f"second {a.name} on <{el.tag}> dropped: a browser keeps the first"))
-                continue
-            attr = self.static_attribute(a, el, ctx, marks, seen)
-            if attr is not None:
-                out.append(attr)
+            for name in _attribute_names(a):
+                if name not in settled:
+                    settled.add(name)
+                    out += self.settle(name, occurrences[name], el, ctx, marks, conditions)
         return out
 
-    def static_attribute(self, a, el: MElement, ctx: _Ctx, marks: list, seen: set):
-        """One attribute as a JSX prop, or None when it is dropped or omitted (flagged)."""
+    def settle(self, name: str, found: list, el: MElement, ctx: _Ctx, marks: list, conditions: dict) -> list:
+        """All occurrences of one attribute name in a tag, in order. A browser keeps the first one that is
+        there: a written attribute ends the search; an if (R-I3b) applies when its condition holds, and the
+        next occurrence otherwise (v0.14: `cond ? "conditional" : "later"`)."""
+        chain = []
+        for occurrence in found:
+            chain.append(occurrence)
+            if not isinstance(occurrence, MAttrPresence):
+                break
+        for later in found[len(chain):]:  # after a written one: no effect in a browser
+            node_id = later.node_id if not isinstance(later, MAttrPresence) else _presence_attr(later, name).node_id
+            what = "conditional" if isinstance(later, MAttrPresence) else "second"
+            marks.append(self.flag(ctx, "duplicate_attribute", INFO, node_id,
+                                   f"{what} {name} on <{el.tag}> has no effect: a browser keeps the first"))
+        if len(chain) == 1 and not isinstance(chain[0], MAttrPresence):
+            attr = self.static_attribute(chain[0], el, ctx, marks)
+            return [attr] if attr is not None else []
+        if _EVENT_ATTRIBUTE.fullmatch(name):
+            marks.append(self.flag(ctx, "inline_js_dropped", REVIEW, _presence_attr(chain[0], name).node_id,
+                                   f"{name} on <{el.tag}>"))
+            return []
+        prop, values = None, []  # per occurrence: [value code per arm] for an if, the value code for a written one
+        for occurrence in chain:
+            written = [_presence_attr(occurrence, name, arm) for arm in range(len(occurrence.branches))] \
+                if isinstance(occurrence, MAttrPresence) else [occurrence]
+            codes = []
+            for attribute in written:
+                attr = self.static_attribute(attribute, el, ctx, marks) if attribute is not None else None
+                if attribute is not None and attr is None:
+                    return []  # dropped or omitted for its own reason (flagged), e.g. `selected` on <option>
+                if attr is not None:
+                    prop = attr.name
+                codes.append(None if attr is None else _value_code(attr))
+            values.append(codes)
+        code = "undefined"
+        for occurrence, codes in reversed(list(zip(chain, values))):
+            if not isinstance(occurrence, MAttrPresence):
+                code = codes[0]
+                continue
+            if id(occurrence) not in conditions:
+                conditions[id(occurrence)] = self.presence_conditions(occurrence, ctx, marks)
+            code = _presence_code(conditions[id(occurrence)], codes, code)
+        return [jsx.Attr(prop, code=code)] if prop is not None else []
+
+    def presence_conditions(self, a: MAttrPresence, ctx: _Ctx, marks: list) -> tuple:
+        """(the condition of each arm, None for an `else`; the condition of a `then` arm that prints nothing)."""
+        conditions = []
+        for enclosure, _ in a.branches:
+            if enclosure.branch == "else":
+                conditions.append(None)
+                continue
+            node_id = a.if_id if enclosure.branch == "then" else enclosure.cond_node_id
+            translation = translate(enclosure.cond_expr, self.scope(ctx), self.config.condition_context_reasons)
+            if translation.code is not None:
+                self.translated(translation, node_id, ctx, marks)
+                conditions.append(translation.code)
+            else:
+                conditions.append(self.unresolved(node_id, translation.reason, ctx, marks))
+        silent_then = None  # the if's `then` arm prints nothing: its condition is not in the timeline
+        if a.branches[0][0].branch != "then":
+            silent_then = self.unresolved(a.if_id, "condition_unavailable", ctx, marks)
+        return conditions, silent_then
+
+    def static_attribute(self, a, el: MElement, ctx: _Ctx, marks: list):
+        """One written attribute as a JSX prop, or None when it is dropped or omitted (flagged)."""
         name = a.name
         if _EVENT_ATTRIBUTE.fullmatch(name):
             marks.append(self.flag(ctx, "inline_js_dropped", REVIEW, a.node_id, f"{name} on <{el.tag}>"))
             return None
-        seen.add(name)
         omitted = self.config.omitted_attributes.get(el.tag, {}).get(name)
         if omitted:
             marks.append(self.flag(ctx, omitted, REVIEW, a.node_id, f"{name} on <{el.tag}> omitted"))
@@ -914,67 +974,6 @@ class Generator:
                                    f"{name} is not in React's types for <{el.tag}>"))
             return None
         return self.attribute(a, el, prop, kinds, ctx, marks)
-
-    def presence(self, a: MAttrPresence, el: MElement, ctx: _Ctx, marks: list, seen: set, uncovered: set) -> list:
-        """R-I3b (spec v0.8 section 6a): each attribute an if prints between attributes is a conditional prop,
-        `attr={cond ? "v" : undefined}`, a boolean one `attr={cond}`."""
-        plans = []  # (prop, the value code each arm of the if prints for it, or None where the arm does not)
-        for name in dict.fromkeys(m.name for _, found in a.branches for m in found):
-            first = next(m for _, found in a.branches for m in found if m.name == name)
-            if name in uncovered:
-                marks.append(self.flag(ctx, "attribute_omitted", REVIEW, first.node_id,
-                                       f"{name} on <{el.tag}>: printed by an if and again later in the tag",
-                                       reason="partial_attribute_output"))
-                continue
-            if name in seen:  # R-I3b: it stands earlier in the tag, and a browser keeps the first
-                marks.append(self.flag(ctx, "duplicate_attribute", INFO, first.node_id,
-                                       f"conditional {name} on <{el.tag}> has no effect: a browser keeps the first"))
-                continue
-            seen.add(name)
-            prop, values = None, []
-            for _, found in a.branches:
-                written = next((m for m in found if m.name == name), None)
-                attr = self.static_attribute(written, el, ctx, marks, set()) if written is not None else None
-                if written is not None and attr is None:
-                    prop = None  # dropped or omitted for its own reason (flagged), e.g. `selected` on <option>
-                    break
-                if attr is not None:
-                    prop = attr.name
-                values.append(None if attr is None else attr.code if attr.code is not None else (
-                    jsx.js_string(attr.value) if attr.value is not None else "true"))
-            if prop is not None:
-                plans.append((prop, values))
-        if not plans:
-            return []  # nothing is written: the conditions are not needed either
-        conditions = []  # per arm; None for the else arm
-        for enclosure, _ in a.branches:
-            if enclosure.branch == "else":
-                conditions.append(None)
-                continue
-            node_id = a.if_id if enclosure.branch == "then" else enclosure.cond_node_id
-            translation = translate(enclosure.cond_expr, self.scope(ctx), self.config.condition_context_reasons)
-            if translation.code is not None:
-                self.translated(translation, node_id, ctx, marks)
-                conditions.append(translation.code)
-            else:
-                conditions.append(self.unresolved(node_id, translation.reason, ctx, marks))
-        silent_then = None  # the if's `then` arm prints nothing: its condition is not in the timeline
-        if a.branches[0][0].branch != "then":
-            silent_then = self.unresolved(a.if_id, "condition_unavailable", ctx, marks)
-        out = []
-        for prop, values in plans:
-            code = "undefined"
-            for condition, value in reversed(list(zip(conditions, values))):
-                if condition is None:
-                    code = value if value is not None else "undefined"
-                elif value is not None or code != "undefined":
-                    code = f"{condition} ? {value if value is not None else 'undefined'} : {code}"
-            if silent_then is not None:
-                code = f"{silent_then} ? undefined : {code}"
-            elif len(conditions) == 1 and values == ["true"]:
-                code = conditions[0]  # a boolean attribute under one condition
-            out.append(jsx.Attr(prop, code=code))
-        return out
 
     def attribute(self, a, el: MElement, prop: str, kinds: str, ctx: _Ctx, marks: list):
         letters, _, literal_text = kinds.partition(":")
@@ -1163,7 +1162,9 @@ class Generator:
             return self.page_body(mif.branches[0].children, ctx)
         if mif.if_id in self.r_i8_guard and not ctx.silent:  # R-I8: a redirect guard is not a component
             return self.redirect_guard(mif, ctx)
-        if mif.if_id in self.r_i7 or ctx.silent:  # R-I7: only inline JS inside; its flags are placed, nothing more
+        if mif.if_id in self.r_i7 or mif.if_id in self.r_i8c or ctx.silent:
+            # R-I7: only inline JS inside; R-I8c: an exit arm of a function or an included file. Its flags are
+            # placed, nothing more
             silent = ctx.child(silent=True, row=None)
             for branch in mif.branches:
                 self.place_markup_flags(branch, silent, [])
@@ -1184,7 +1185,10 @@ class Generator:
         empties = [c for c in guard.children if c.type == "Empty"] if guard is not None else []
         for branch in mif.branches:
             self.place_markup_flags(branch, ctx, marks)
-            if branch.enclosure.exits and self.redirect_arm(mif, branch):
+            if branch.enclosure.exits and self.exit_silent:  # R-I8c: not generated, flagged at its sites
+                self.nodes(branch.children, ctx.child(silent=True, row=None))
+                contents.append([])
+            elif branch.enclosure.exits and mif.if_id not in self.r_i8_out and self.redirect_arm(mif, branch):
                 # R-I8 beside arms that print something else: this arm renders nothing
                 self.redirect_flag(mif, branch, ctx)
                 self.nodes(branch.children, ctx.child(silent=True, row=None))
@@ -1619,6 +1623,14 @@ class Generator:
             for f in flags:
                 self.flag(ctx, f.flag, f.status, f.node_id, f.detail, mark=key)
         self.pending_flags.clear()
+        for call in self.timeline.calls:  # R-I8c: what an exit arm reached from here prints is not generated
+            if call.exit_output:
+                where = ", ".join(f"{re.sub(r'^legacy-apps/[^/]+/', '', file)}:{line}" for file, line in call.exit_output)
+                what = "include" if call.kind == app_units.INCLUDE else "call"
+                arms = ("the exit arm at {} prints and exits" if len(call.exit_output) == 1
+                        else "the exit arms at {} print and exit")
+                self.flag(ctx, "exit_output_not_generated", REVIEW, call.id,
+                          f"{what}: {arms.format(where)}; that output is not generated (R-I8c)", mark=key)
         self.stage2_reviews(page, key)
         for query in self.timeline.queries.values():  # reporting only: the query's shape came from its fixed text
             if query.values_interpolated:
@@ -1858,6 +1870,39 @@ class Generator:
         return GenerationResult(entrypoint=self.timeline.entrypoint, route=self.route, files=tuple(files),
                                 components=tuple(components), todos=tuple(sorted(todos, key=order)),
                                 flags=tuple(sorted(flags, key=order)))
+
+
+def _attribute_names(a) -> list:
+    """The attribute names an attribute entry of a start tag writes: one, or every name an if prints (R-I3b)."""
+    if isinstance(a, MAttrPresence):
+        return list(dict.fromkeys(m.name for _, found in a.branches for m in found))
+    return [a.name]
+
+
+def _presence_attr(a: MAttrPresence, name: str, arm: int | None = None):
+    """The attribute `name` as an arm of an if prints it (the first arm that does when `arm` is None)."""
+    arms = a.branches if arm is None else [a.branches[arm]]
+    return next((m for _, found in arms for m in found if m.name == name), None)
+
+
+def _value_code(attr: jsx.Attr) -> str:
+    return attr.code if attr.code is not None else jsx.js_string(attr.value) if attr.value is not None else "true"
+
+
+def _presence_code(conditions: tuple, codes: list, fallback: str) -> str:
+    """`cond ? value : (next arm, or what the browser takes when no arm prints the attribute)`."""
+    arms, silent_then = conditions
+    code = fallback
+    for condition, value in reversed(list(zip(arms, codes))):
+        if condition is None:  # the else arm
+            code = value if value is not None else fallback
+        elif value is not None or code != fallback:
+            code = f"{condition} ? {value if value is not None else fallback} : {code}"
+    if silent_then is not None:
+        code = f"{silent_then} ? {fallback} : {code}"
+    elif len(arms) == 1 and codes == ["true"] and fallback == "undefined":
+        code = arms[0]  # a boolean attribute under one condition
+    return code
 
 
 def _is_static(node) -> bool:

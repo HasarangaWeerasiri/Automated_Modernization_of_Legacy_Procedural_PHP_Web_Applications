@@ -103,8 +103,16 @@ def recover_requirements(component_tree: ComponentTree, timeline: Timeline) -> R
     components: list[_Component] = []
     collections: dict[str, dict] = {}  # List component id -> its collection need, filled as rows are read
 
+    def fetched_by(base, ancestors: tuple, row_of: str | None) -> str | None:
+        """R-L4 (v0.14): a read whose fetch is an outer loop's belongs to that loop's List, not the inner one."""
+        fetch = base.source.fetch_node_id if base.source is not None else None
+        if fetch is None:
+            return row_of
+        return next((lid for lid, loop in reversed(ancestors) if loop is not None and loop.fetch_node_id == fetch),
+                    row_of)
+
     def visit(node: ComponentNode, component_id: str, owner: _Component | None, row_of: str | None,
-              parent_list: str | None, abstained: bool) -> None:
+              parent_list: str | None, abstained: bool, ancestors: tuple = ()) -> None:
         abstained = abstained or node.type == "Abstain"
         if node.type in COMPONENT_TYPES:
             if node.type == "Item":
@@ -120,6 +128,7 @@ def recover_requirements(component_tree: ComponentTree, timeline: Timeline) -> R
                                                expr=loop.iter_expr if loop else "", file=timeline.entrypoint,
                                                from_abstained=abstained)}
                 parent_list = component_id
+                ancestors = (*ancestors, (component_id, loop))
         if node.type == "Static" and node.rule in ("R-L3", "R-L3b"):  # an inline map's body is the List's row
             row_of = parent_list
         if not node.children:
@@ -137,14 +146,15 @@ def recover_requirements(component_tree: ComponentTree, timeline: Timeline) -> R
                             node_id=node_id, line=loc.start_line if loc else None, expr=base.expr,
                             wrappers=wrappers, file=timeline.entrypoint, from_abstained=abstained,
                             col=loc.column if loc else None)
-                        owner.add(key, fields, reference, row_of)
-                        collection = collections.get(row_of)
+                        read_row_of = fetched_by(base, ancestors, row_of)
+                        owner.add(key, fields, reference, read_row_of)
+                        collection = collections.get(read_row_of)
                         if (collection and collection["loop"] and base.var == collection["loop"].value_var
                                 and base.source is not None
                                 and base.source.query_node_id not in collection["queries"]):
                             collection["queries"].append(base.source.query_node_id)
         for index, child in enumerate(node.children):
-            visit(child, f"{component_id}.{index}", owner, row_of, parent_list, abstained)
+            visit(child, f"{component_id}.{index}", owner, row_of, parent_list, abstained, ancestors)
 
     visit(component_tree.root, "0", None, None, None, False)
 

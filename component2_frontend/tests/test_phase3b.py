@@ -98,11 +98,13 @@ def test_a_conditional_attribute_that_stands_earlier_in_the_tag_has_no_effect(tm
     assert conditions(result) == []
 
 
-def test_a_conditional_attribute_that_also_stands_later_in_the_tag_is_not_covered(tmp_path):
-    """Which of the two a browser takes depends on the condition; R-I3b does not say. Both are left out."""
+def test_a_conditional_attribute_that_also_stands_later_in_the_tag_falls_back_to_it(tmp_path):
+    """R-I3b (v0.14): the conditional one wins when its condition holds; the later one otherwise."""
     result = stages(tmp_path, "<li <?php if ($x) { echo 'class=\"b\"'; } ?> class=\"a\" id=\"i\">t</li>")
-    assert '<li id="i">t</li>' in page_text(result)
-    assert flags(result, "attribute_omitted") == [("attribute_omitted", "partial_attribute_output", "todo")] * 2
+    (todo,) = [t for t in result["stage5"]["c2todos"] if t["kind"] == "unresolvedCondition"]
+    assert (f'<li className={{unresolvedCondition("{todo["nodeId"]}", "condition_not_translatable") ? "b" : "a"}} '
+            'id="i">t</li>') in page_text(result)
+    assert not flags(result, "attribute_omitted", "duplicate_attribute")
 
 
 @pytest.mark.parametrize("arm", ["echo $cls;", "echo 'class=\"a';", "echo 'class=\"a\"' . $more;"])
@@ -219,24 +221,27 @@ def test_a_script_that_sets_location_is_a_redirect_too(tmp_path):
         "redirect_guard", "inline_js_dropped")) == ["inline_js_dropped", "redirect_guard"]
 
 
-def test_nested_redirect_guards_are_one_guard(tmp_path):
-    """phpBlog admin/header.php 6-18: a guard inside the `then` arm and another as the `else` arm."""
+def test_nested_redirect_guards_abstain_since_v0_14(tmp_path):
+    """phpBlog admin/header.php 6-18 (as a page): R-I8's scope (v0.14) is the `then` arm of a top-level if; a
+    guard nested in another if, or an `else` arm that exits, abstains."""
     php = ("<?php if (isset($_SESSION['u'])) { if ($count <= 0) { echo '<meta http-equiv=\"refresh\" content=\"0; "
            "url=/\" />'; exit; } } else { echo '<meta http-equiv=\"refresh\" content=\"0; url=../login\" />'; exit; }"
            " ?><h1>Admin</h1>")
     result = stages(tmp_path, php)
-    assert [(n["type"], n["rule"]) for n in result["nodes"] if n["rule"]] == [("Static", "R-I8")]
-    assert [f["detail"].split(",")[0] for f in result["stage5"]["flags"] if f["flag"] == "redirect_guard"] == [
-        "redirect to /", "redirect to ../login"]
-    assert "<h1>Admin</h1>" in page_text(result) and conditions(result) == []
+    # the outer if (its else arm exits) and, among its children, the nested guard
+    assert [(n["type"], n["reason"], n["rule"]) for n in result["nodes"] if n["status"] == "abstain"] == [
+        ("Abstain", "exit_arm_not_covered", "R-I8")] * 2
+    assert "<h1>Admin</h1>" in page_text(result)
 
 
-def test_a_redirect_arm_beside_an_arm_with_content_renders_nothing_itself(tmp_path):
+def test_a_redirect_arm_that_is_an_else_arm_abstains_since_v0_14(tmp_path):
+    """R-I8's scope (v0.14) is the `then` arm of a top-level if: an `else` arm that exits is not a guard, and
+    the abstained code renders it as it stands (no redirect_guard flag)."""
     php = "<div><?php if ($ok) { echo '<p>fine</p>'; } else { echo '<meta http-equiv=\"refresh\" content=\"0; url=x\">'; exit; } ?></div>"
     result = stages(tmp_path, php)
-    text = page_text(result)
-    assert "<p>fine</p>" in text and "meta" not in text
-    assert [f["flag"] for f in result["stage5"]["flags"] if f["flag"] == "redirect_guard"] == ["redirect_guard"]
+    assert [(n["reason"], n["rule"]) for n in result["nodes"] if n["status"] == "abstain"] == [
+        ("exit_arm_not_covered", "R-I8")]
+    assert not [f for f in result["stage5"]["flags"] if f["flag"] == "redirect_guard"]
 
 
 @pytest.mark.parametrize("php", [
@@ -283,12 +288,14 @@ def test_an_exit_arm_the_written_rule_does_not_fit_abstains(tmp_path, php):
     assert 'reason="exit_arm_not_covered"' in result["files"]["app/page/page.tsx"]
 
 
-def test_an_exit_arm_in_an_included_file_abstains(tmp_path):
-    """Its exit ends the including page too."""
+def test_an_exit_arm_in_an_included_file_is_r_i8c(tmp_path):
+    """R-I8c (v0.14): not generated in the file; its include is flagged (tests/test_phase3c.py has the rest)."""
     files = {"guard.php": "<?php if ($banned) { echo '<b>Banned</b>'; exit; } ?><i>ok</i>",
              "page.php": "<?php include 'guard.php'; ?><p>page</p>"}
     result = run(tmp_path, files)
-    assert abstains(result, "guard.php") == [("exit_arm_not_covered", "R-I8", 1)]
+    assert [(n["type"], n["rule"]) for n in result["nodes"]("guard.php") if n["rule"] == "R-I8c"] == [
+        ("Static", "R-I8c")]
+    assert abstains(result, "guard.php") == []
 
 
 def test_redirect_text():
@@ -460,8 +467,10 @@ def test_config_php_is_analysed_from_the_installers_template(phpblog_timelines):
     assert phpblog_timelines.files == 51 and "config.php" in phpblog_timelines.silent  # no echo of its own
     core = next(p.timeline for p in phpblog_timelines.pages if p.key == "core.php")
     include = next(e for e in core["sequence"] if e["kind"] == "include")
-    # the file is known now; it may print: install/config.tpl 11 is a printf on a failed connection
-    assert (include["path"], include["outputsInside"]) == ("legacy-apps/phpblog/config.php", True)
+    # the file is known now. Its only output is the printf of an arm that exits (config.tpl 10-13): R-I8c
+    # (v0.14) counts it as non-printing and lists the arm on the include
+    assert (include["path"], include["outputsInside"]) == ("legacy-apps/phpblog/config.php", False)
+    assert include["exitOutput"] == [{"file": "legacy-apps/phpblog/config.php", "line": 12}]
     assert "config_settings.php" in phpblog_timelines.silent  # in the repository: a no-output include
     pins = (ROOT / "legacy-apps" / "PINS.md").read_text(encoding="utf-8")
     assert "Analysis substitutions" in pins and "`install/done.php` 49–53" in pins and "`install/done.php` 22" in pins
@@ -469,4 +478,4 @@ def test_config_php_is_analysed_from_the_installers_template(phpblog_timelines):
 
 def test_no_other_app_has_a_substitution():
     assert {app: config.get("substitutions", {}) for app, config in harness_app.APPS.items()} == {
-        "hms": {}, "wackopicko": {}, "phpblog": {"config.php": "install/config.tpl"}}
+        "hms": {}, "wackopicko": {}, "phpblog": {"config.php": "install/config.tpl"}, "attendance": {}}

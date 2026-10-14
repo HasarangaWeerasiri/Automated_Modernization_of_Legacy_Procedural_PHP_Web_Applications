@@ -257,7 +257,8 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, bu
     index = {
         "app": timelines.app, "sourceCommit": APPS.get(timelines.app, {}).get("commit", ""),
         "docroot": timelines.docroot, "files": timelines.files,
-        "pages": pages, "silentFiles": list(timelines.silent), "parseErrors": timelines.parse_errors,
+        "pages": pages, "silentFiles": list(timelines.silent), "silentFileNotes": timelines.silent_notes or {},
+        "parseErrors": timelines.parse_errors,
         "schemaFiles": list(timelines.schema_files), "functions": timelines.functions or {},
         "shells": [{"name": s.name, "group": s.group, "header": s.header, "footer": s.footer,
                     "props": [list(p) for p in s.props]} for s in units.shells.values()],

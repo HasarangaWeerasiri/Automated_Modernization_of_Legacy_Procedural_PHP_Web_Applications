@@ -190,6 +190,8 @@ class _Builder:
         # A file that other files include is not certainly the whole response: an `exit` in it ends the
         # including page too, so R-I8's "rest of the enclosing block" is not all that stops.
         self.included = bool(timeline is not None and units is not None and timeline.entrypoint in units.functions)
+        # A shell's header and footer are called functions or included files (R-I8c)
+        self.included = self.included or bool(timeline is not None and "shell" in timeline.provenance)
 
     def run(self, nodes: list[KeptNode]) -> list[tagtrack.NodeTags]:
         return [self.tags[k.node_id] for k in nodes]
@@ -216,8 +218,9 @@ class _Builder:
 
     # ---- sequences of items
 
-    def items(self, items: list, top: bool = False) -> list[ComponentNode]:
-        """`top`: these are the statements of a page's own top level (see exit_if)."""
+    def items(self, items: list, top: bool = False, in_shell: bool = False) -> list[ComponentNode]:
+        """`top`: these are the statements of a page's own top level; `in_shell`: they are a shell's children
+        (see exit_if)."""
         out, i = [], 0
         while i < len(items):
             item = items[i]
@@ -227,7 +230,7 @@ class _Builder:
                     j += 1
                 out += self.leaves(items[i:j])
                 i = j
-            elif isinstance(item, _If) and (exiting := self.exit_if(item, items[i + 1:], top)) is not None:
+            elif isinstance(item, _If) and (exiting := self.exit_if(item, items[i + 1:], top, in_shell)) is not None:
                 out.append(exiting)
                 i += 1
             elif isinstance(item, _If):
@@ -345,7 +348,7 @@ class _Builder:
         children = []
         for group, outside in ((items[:h], True), (items[h + 1:f], False), (items[f + 1:], True)):
             if not outside:
-                children += self.items(group)
+                children += self.items(group, top=self.top_level, in_shell=True)
                 continue
             i = 0
             while i < len(group):
@@ -367,7 +370,8 @@ class _Builder:
                     children += self.leaves([item])
                 elif isinstance(item, KeptNode):
                     children.append(self.abstain("output_outside_shell", [item], (item.node_id,), ("R-F2",)))
-                elif isinstance(item, _If) and (exiting := self.exit_if(item, items[position + 1:], True)) is not None:
+                elif isinstance(item, _If) and (
+                        exiting := self.exit_if(item, items[position + 1:], self.top_level)) is not None:
                     children.append(exiting)  # R-I8: a redirect guard renders nothing; an exit arm ends the page
                 elif isinstance(item, _If) and self.exits_inside(item):
                     # an exit arm nested in this if: R-I8's "rest of the enclosing block" is not all it ends
@@ -446,31 +450,36 @@ class _Builder:
         return any(b.enclosure.exits and _flat(b.items) or any(
             isinstance(i, _If) and self.exits_inside(i) for i in b.items) for b in region.branches)
 
-    def exit_if(self, region: _If, rest: list, top: bool) -> ComponentNode | None:
-        """R-I8 for an if with an arm that always ends in `exit` / `die`; None when the if has no such arm, or
-        when its exiting arms are all redirects beside arms the other rules judge.
+    def exit_if(self, region: _If, rest: list, top: bool, in_shell: bool = False) -> ComponentNode | None:
+        """R-I8 / R-I8c for an if with an arm that always ends in `exit` / `die`; None when the if has no such
+        arm, or when the other rules judge it (its exiting arms then render nothing, Stage 5).
 
-        Case 1, redirect guard: not a component, nothing rendered, the rest renders.
-        Case 2, any other output: `cond ? <arm> : <rest of the enclosing block>`. Written only where that is the
-        whole truth: the `then` arm of an if among a page's own top-level statements, with a rest that closes
-        nothing opened before the if. Nested in another if or loop, in a function or in an included file, the
-        `exit` also ends what encloses the block, which a conditional here cannot say: abstain."""
+        R-I8c (v0.14): in a called function or an included file, an exit arm is not generated (its include and
+        call sites carry the flag). R-I8, scope v0.14: only the `then` arm of an if among a page's own top-level
+        statements, whose rest closes nothing opened before the if. Case 1, a redirect: not a component, nothing
+        rendered, the rest renders. Case 2, other output: `cond ? <arm> : <rest of the block>`; not inside a
+        shell's children (the footer after it would still render). Any other exit arm: abstain."""
         exiting = [b for b in region.branches if b.enclosure.exits and _flat(b.items)]
         if not exiting:
             return None
         nodes, source = _flat([region]), (region.node_id,)
-        if self.redirect_only(region):
-            return self.node("Static", ("R-I8",), "redirect_guard", nodes, source, flags=("redirect_guard",))
-        plain = [b for b in exiting if not self.redirect_arm(b)]
-        if not plain:
+        if self.in_function or self.included:  # R-I8c
+            if all(b.enclosure.exits for b in region.branches if _flat(b.items)):
+                return self.node("Static", ("R-I8c",), "exit_output_not_generated", nodes, source)
             return None
         f = self.facts(region)
         rest_nodes = _flat(rest)
-        covered = (top and not self.in_function and not self.included and len(exiting) == 1
-                   and plain[0] is region.branches[0] and plain[0].enclosure.branch == "then"
-                   and not f["starts_in_tag"] and not f["crosses"]
-                   and (not rest_nodes or tagtrack.is_balanced(self.run(rest_nodes))))
-        if not covered:
+        arm = exiting[0]
+        at_top = (top and len(exiting) == 1 and arm is region.branches[0] and arm.enclosure.branch == "then"
+                  and not f["starts_in_tag"] and not f["crosses"]
+                  and (not rest_nodes or tagtrack.is_balanced(self.run(rest_nodes))))
+        if not at_top:
+            return self.abstain("exit_arm_not_covered", nodes, source, ("R-I8",), self.branch_children(region))
+        if self.redirect_arm(arm):
+            if len(region.branches) == 1:  # case 1
+                return self.node("Static", ("R-I8",), "redirect_guard", nodes, source, flags=("redirect_guard",))
+            return None  # case 1 beside other arms: those are judged by the usual rules
+        if in_shell:
             return self.abstain("exit_arm_not_covered", nodes, source, ("R-I8",), self.branch_children(region))
         return self.node("InlineConditional", ("R-I8",), "exit_arm", nodes, source, self.branch_children(region))
 
@@ -622,6 +631,7 @@ class _Builder:
             guard = regions[0]
             inner = [x for item in items for x in (guard.branches[0].items if item is guard else [item])]
             rules, reason, sources = ("R-I1",), "page_guard", (guard.node_id,)
+        self.top_level = not rules  # inside an R-I1 page guard is not the page's own top level (R-I8)
         shell, children = self.shell(inner) if self.units is not None else (None, None)
         if shell is None:
             return self.node("Page", rules, reason, self.outputs, sources, self.items(inner, top=not rules))

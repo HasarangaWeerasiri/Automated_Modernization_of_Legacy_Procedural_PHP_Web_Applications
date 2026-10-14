@@ -98,6 +98,13 @@ EXIT_NOTE = ("Harness extensions, pending Member 01 Q20 (boundary rule R-I8 read
              "\"Expr_Exit\" (it prints its message), with reads and parts like an echo, at a file's top level only. "
              "An exit inside an expression (`... or die(\"msg\")`) or inside a function has no entry (a harness "
              "note records it): when it prints, and what it ends, is not known from the block structure.")
+EXIT_OUTPUT_NOTE = ("Harness extension (boundary rule R-I8c, v0.14): output inside an arm that always exits does not "
+                    "count as output of the file or function when it is included or called (it is an error stop that "
+                    "is not generated). A call or include entry that reaches such an arm, directly or through what "
+                    "it includes and calls, lists it in `exitOutput`: [{file, line}] (the exit statement).")
+FETCH_NOTE = ("Harness extension (boundary rule R-L4, v0.14): `fetchNodeId` on a loop enclosure is the fetch call that "
+              "gives the loop its row (`while ($row = mysqli_fetch_array(...))`, a foreach over a fetch_all result); "
+              "a read's `source.fetchNodeId` names the loop whose row it reads.")
 CONTENT_TYPE_NOTE = ("Harness extension: `responseContentType` is the media type of the first `header(\"Content-Type: "
                      "...\")` call with a literal argument in this scope (boundary-rules section 5, non_html_response).")
 INCLUDES_NOTE = ("Harness extension, pending Member 01 Q4: an include / require is a sequence entry at its position, "
@@ -205,6 +212,8 @@ class _Scope:
     includes: list = field(default_factory=list)
     include_nodes: list = field(default_factory=list)  # (the Expr_Include node, its enclosures), as `includes`
     content_type: str | None = None  # the media type of the first literal header("Content-Type: ...")
+    exit_arms: list = field(default_factory=list)  # lines of exit statements whose arm prints (R-I8c)
+    prints_by_function: bool = False  # printf / print_r ... outside every arm that exits
     notes: list = field(default_factory=list)
 
 
@@ -411,6 +420,8 @@ class FileHarness:
                 scope.breakers.append(pos)
             returns = callee in RETURNING_FUNCTIONS and len(_args(node)) > 1 and _is(
                 _args(node)[1], "Expr_ConstFetch") and (_name(_args(node)[1].get("name")) or "").lower() == "true"
+            if callee in OUTPUT_FUNCTIONS and not returns and not any(e.get("exits") for e in enclosures):
+                scope.prints_by_function = True
             if callee in OUTPUT_FUNCTIONS and not returns:
                 scope.notes.append({"kind": "output_function", "line": line, "col": col, "detail": callee})
             if callee == "header" and scope.content_type is None and _args(node) \
@@ -477,11 +488,19 @@ class FileHarness:
             if branch != "else":
                 enclosure["condExpr"] = self.node_text(branch_cond)
             enclosure["loc"] = loc_dict(node.loc)
-            if any(_is(s, "Stmt_Expression") and _is(s.get("expr"), "Expr_Exit") for s in stmts or []):
+            exit_stmt = next((s for s in stmts or [] if _is(s, "Stmt_Expression") and _is(s.get("expr"), "Expr_Exit")),
+                             None)
+            if exit_stmt is not None:
                 enclosure["exits"] = True  # R-I8: the arm always ends the script (Member 01 Q20)
             before = len(scope.outputs)
+            notes_before = sum(n["kind"] in ("output_function", "exit_with_output") for n in scope.notes)
             self._walk_list(stmts, scope, chain + ((if_id, f"{branch}{index}"),), enclosures + [enclosure])
             printed.append(len(scope.outputs) > before)
+            message = exit_stmt.get("expr").get("expr") if exit_stmt is not None else None
+            if exit_stmt is not None and (
+                    len(scope.outputs) > before or (message is not None and not _is(message, "Scalar_Int"))
+                    or sum(n["kind"] in ("output_function", "exit_with_output") for n in scope.notes) > notes_before):
+                scope.exit_arms.append(exit_stmt.line)  # R-I8c: an arm that prints and then exits
         # An `elseif` arm that prints nothing, before an arm that prints, is invisible in the timeline (only
         # arms with output are in it): the later arm then looks as if it followed the earlier ones directly.
         if any(not p and arms[i][0] == "elseif" and any(printed[i + 1:]) for i, p in enumerate(printed)):
@@ -500,6 +519,7 @@ class FileHarness:
                 enclosure["valueVar"] = self.node_text(cond.get("var"))
                 if _callee(cond.get("expr")) in FETCH_ROW:
                     enclosure["iterSourceKind"] = "db_row_field"
+                    enclosure["fetchNodeId"] = cond.get("expr").id  # R-L4: the fetch this loop's row comes from
             self._walk(cond, scope, inner, enclosures)  # the header runs once per iteration
         elif kind == "Stmt_Foreach":
             enclosure["iterExpr"] = self.node_text(node.get("expr"))
@@ -859,15 +879,19 @@ class FileHarness:
         source = node.get("expr")
         if _callee(source) in FETCH_ALL:
             enclosure["iterSourceKind"] = "db_row_field"
+            enclosure["fetchNodeId"] = source.id
         elif _variable(source):
             filled = self._reaching(scope, _variable(source), node.start, chain)
             if filled and filled.kind == "assign" and _callee(filled.node) in FETCH_ALL:
                 enclosure["iterSourceKind"] = "db_row_field"
+                enclosure["fetchNodeId"] = filled.node.id
         return enclosure
 
     def direct_output(self, scope: _Scope) -> bool:
-        """Whether a scope prints by itself (what it includes and calls is followed by function_resolver)."""
-        return bool(scope.outputs) or any(n["kind"] == "output_function" for n in scope.notes)
+        """Whether a scope prints by itself (what it includes and calls is followed by function_resolver).
+        Output inside an arm that always exits does not count (R-I8c): it is an error stop."""
+        return scope.prints_by_function or any(
+            not any(e.get("exits") for e in enclosures) for _, _, _, enclosures in scope.outputs)
 
     def slots_print(self, scope: _Scope, resolve) -> bool:
         """Whether a scope has a timeline: it prints itself, or it is a file's top level whose calls or includes
@@ -914,18 +938,20 @@ class FileHarness:
                 continue  # PHP's own function (or one the app does not define): not a call site of the app
             callee, outputs_inside = found if found is not None else (None, "unknown")
             node = call["node"]
+            exits = own_resolve.exits(call["name"], self) if call["name"] else []
             sequence.append((node.start, {
                 "id": node.id, "kind": "call", "callee": callee, "outputsInside": outputs_inside,
                 "enclosedBy": [self.loop_enclosure(e) if e["role"] == "iteration" else e for e in call["enclosures"]],
-                "loc": loc_dict(node.loc), "args": call["args"]}))
+                "loc": loc_dict(node.loc), "args": call["args"], **({"exitOutput": exits} if exits else {})}))
             if call["name"]:
                 call_names[node.id] = call["name"]
         for include, (node, enclosures) in zip(scope.includes, scope.include_nodes):
             target, outputs_inside = own_resolve.include(include, self)
+            exits = own_resolve.include_exits(include, self)
             sequence.append((node.start, {
                 "id": node.id, "kind": "include", "path": target, "outputsInside": outputs_inside,
                 "enclosedBy": [self.loop_enclosure(e) if e["role"] == "iteration" else e for e in enclosures],
-                "loc": loc_dict(node.loc)}))
+                "loc": loc_dict(node.loc), **({"exitOutput": exits} if exits else {})}))
         sequence.sort(key=lambda item: (item[0], item[1]["id"]))
         entrypoint = self.entrypoint if scope.name is None else f"{self.entrypoint}#{scope.name}"
         notes = [dict(items) for items in dict.fromkeys(tuple(n.items()) for n in notes)]  # a read made twice
@@ -949,6 +975,7 @@ class FileHarness:
                 "locConvention": LOC_NOTE, "condExprConvention": COND_EXPR_NOTE, "callsConvention": CALLS_NOTE,
                 "callResolution": RESOLUTION_NOTE, "includesExtension": INCLUDES_NOTE,
                 "exitExtension": EXIT_NOTE, "contentTypeExtension": CONTENT_TYPE_NOTE,
+                "exitOutputExtension": EXIT_OUTPUT_NOTE, "fetchExtension": FETCH_NOTE,
                 "selectStarConvention": SELECT_STAR_NOTE,
                 "partsExtension": PARTS_NOTE, "copyPropagationExtension": COPY_NOTE,
                 "sqlValuesExtension": SQL_VALUES_NOTE,
@@ -1028,6 +1055,26 @@ def function_resolver(harnesses: dict):
         target = include_target(include, key)
         return "unknown" if target is None else state[id(harnesses[target].top)]
 
+    # R-I8c: the exit arms that print, reached by a scope directly or through what it calls and includes
+    exits = {id(scope): {(harness.entrypoint, line) for line in scope.exit_arms} for _, harness, scope in scopes}
+    grown = True
+    while grown:
+        grown = False
+        for key, _, scope in scopes:
+            reached = set(exits[id(scope)])
+            for call in scope.calls:
+                for _, _, target in (targets(call["name"], key) if call["name"] else []):
+                    reached |= exits[id(target)]
+            for include in scope.includes:
+                target = include_target(include, key)
+                if target is not None:
+                    reached |= exits[id(harnesses[target].top)]
+            if reached != exits[id(scope)]:
+                exits[id(scope)], grown = reached, True
+
+    def listed(found: set) -> list:
+        return [{"file": file, "line": line} for file, line in sorted(found)]
+
     changed = True
     while changed:
         changed = False
@@ -1049,7 +1096,17 @@ def function_resolver(harnesses: dict):
         target = include_target(include, key)
         return (None if target is None else harnesses[target].entrypoint), included(include, key)
 
+    def resolve_exits(name: str, harness) -> list:
+        found = targets(name, key_of[id(harness)])
+        return listed(set().union(*(exits[id(scope)] for _, _, scope in found))) if found else []
+
+    def resolve_include_exits(include: dict, harness) -> list:
+        target = include_target(include, key_of[id(harness)])
+        return [] if target is None else listed(exits[id(harnesses[target].top)])
+
     resolve.include = resolve_include
+    resolve.exits = resolve_exits
+    resolve.include_exits = resolve_include_exits
     return resolve
 
 

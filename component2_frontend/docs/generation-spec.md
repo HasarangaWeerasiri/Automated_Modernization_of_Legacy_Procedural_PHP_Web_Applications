@@ -1,8 +1,8 @@
-# Component 2 — Stage 5 Generation Specification (v0.8)
+# Component 2 — Stage 5 Generation Specification (v0.9)
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. v0.5 adds what the Phase 1 whole-app run needed (§5a, §8, §8a). v0.6: browser-equivalent markup (§5b), per-part ids, route groups. v0.7: corrections after Phase 2b (§5 form state, §5b stray end tags and loop rows, §8a routes and calls). v0.8: phpBlog rules (§6a), implied end tags, start-tag fallback. Evaluation apps stay locked |
+| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. v0.5 adds what the Phase 1 whole-app run needed (§5a, §8, §8a). v0.6: browser-equivalent markup (§5b), per-part ids, route groups. v0.7: corrections after Phase 2b (§5 form state, §5b stray end tags and loop rows, §8a routes and calls). v0.8: phpBlog rules (§6a), implied end tags, start-tag fallback. v0.9: step-2 corrections (§6a). Evaluation apps stay locked |
 | Date | 10 October 2026 |
 | Owner | Jayawardhana R D L L (IT23213876) |
 | Input | Stage 2 tree, Stage 3 needs, Stage 4 report, contract, endpoint map, timeline |
@@ -141,7 +141,9 @@ content elsewhere in the tree → stays `html_nesting_changed` (review).
 | R-I2b multi-loop guard | `{cond ? <>{ListA}{ListB}</> : <XEmpty />}` |
 | R-I8 redirect guard | Nothing rendered for the arm; the rest renders; flag `redirect_guard` (review) with the redirect target if literal |
 | R-I8 other exit arm | `{cond ? <ArmOutput /> : <Rest />}` — `<Rest>` is everything after the `if` to the end of the enclosing block |
-| R-L4 nested loop | Inner Item gets `outer` (the outer row) as a prop when needed |
+| R-L4 nested loop | Inner Item gets `outer` (the outer row) as a prop when needed; a read from the outer loop's fetch → `{outer.<field>}` (v0.9) |
+| R-I3b, same attribute later in the tag (v0.9) | `attr={cond ? "conditional" : "later"}` |
+| R-I8c exit arm in an include / function (v0.9) | Not generated; the include / call is not a gap; flag `exit_output_not_generated` (review) at each site |
 | `non_html_response` unit | No page generated; listed in `stage5_<app>.json` under `notGenerated` with the reason (C1: Route Handler) |
 
 ## 6. Conditions (InlineConditional, ConditionalComponent, AttributeExpression, Empty)

@@ -33,7 +33,7 @@ import re
 from dataclasses import dataclass, field, replace
 
 from src.mapping import tags as tagtrack
-from src.mapping.stage2_boundaries import _If, _Loop, _regions
+from src.mapping.stage2_boundaries import _If, _Loop, _Other, _regions
 from src.model import BoundaryConfig, ComponentNode, Enclosure, OutputNode
 
 RAWTEXT_TAGS = tagtrack.RAWTEXT_TAGS
@@ -801,4 +801,6 @@ def build_region(region, outputs: list[OutputNode], config: BoundaryConfig,
                  abstain: dict[str, ComponentNode]) -> Markup:
     """The markup tree of one abstained region on its own (for its Abstained_ function)."""
     inner = {k: v for k, v in abstain.items() if k != region_id(region)}
+    if isinstance(region, _Other):  # a switch case / try block: no structure of its own, only what it holds
+        return Builder(outputs, config, inner, strict=False).build(region.items)
     return Builder(outputs, config, inner, strict=False).build([region])
