@@ -1,0 +1,125 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\01_like_search.php",
+        "source_line": 9,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT id, name, email FROM users WHERE name LIKE '%{{q}}%'",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [
+            "id",
+            "name",
+            "email"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "name"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_users_q001",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\02_dynamic_order.php",
+        "source_line": 9,
+        "executor": "mysqli_query",
+        "recovery_status": "UNRESOLVED",
+        "recovered_sql": "SELECT id, name, email FROM users ORDER BY {{column}}",
+        "operation": null,
+        "analysis_status": "UNRESOLVED",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": "Dynamic value occurs in a structural ORDER BY position.",
+        "action": "manual_review_required",
+        "conversion_status": "UNRESOLVED",
+        "conversion_rule": null,
+        "conversion_reason": "Dynamic value occurs in a structural ORDER BY position.",
+        "generated_function": "unresolved_query_q002",
+        "generated_function_kind": "unresolved_stub"
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\03_dynamic_in.php",
+        "source_line": 9,
+        "executor": "mysqli_query",
+        "recovery_status": "UNRESOLVED",
+        "recovered_sql": "SELECT id, title, price FROM products WHERE id IN ({{ids}})",
+        "operation": null,
+        "analysis_status": "UNRESOLVED",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": "Dynamic value represents an SQL IN-list fragment rather than a scalar value.",
+        "action": "manual_review_required",
+        "conversion_status": "UNRESOLVED",
+        "conversion_rule": null,
+        "conversion_reason": "Dynamic value represents an SQL IN-list fragment rather than a scalar value.",
+        "generated_function": "unresolved_query_q003",
+        "generated_function_kind": "unresolved_stub"
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\04_conditional_append.php",
+        "source_line": 11,
+        "executor": "mysqli_query",
+        "recovery_status": "UNRESOLVED",
+        "recovered_sql": "SELECT id, name, email, status FROM users WHERE status = '{{status}}'",
+        "operation": null,
+        "analysis_status": "UNRESOLVED",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": "SQL construction depends on conditional control flow.",
+        "action": "manual_review_required",
+        "conversion_status": "UNRESOLVED",
+        "conversion_rule": null,
+        "conversion_reason": "SQL construction depends on conditional control flow.",
+        "generated_function": "unresolved_query_q004",
+        "generated_function_kind": "unresolved_stub"
+    },
+    {
+        "query_id": "Q005",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\05_join.php",
+        "source_line": 13,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT orders.id, orders.total, orders.status, users.name FROM orders JOIN users ON orders.user_id = users.id WHERE users.id = {{userId}}",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "orders",
+            "users"
+        ],
+        "read_columns": [
+            "id",
+            "total",
+            "status",
+            "name"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_orders_q005",
+        "generated_function_kind": "data_access"
+    }
+]

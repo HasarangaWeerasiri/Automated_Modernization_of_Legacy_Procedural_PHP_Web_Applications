@@ -233,3 +233,53 @@ def test_traceability_report_file_is_generated(
         saved[0]["action"]
         == "ready_for_conversion"
     )
+
+def test_pipeline_traceability_links_every_site_to_code_or_review(tmp_path):
+    """S12: every execution point maps to a generated function or a stub."""
+
+    import json as _json
+
+    from c3.pipeline import run_pipeline
+
+    php = tmp_path / "php"
+    php.mkdir()
+    (php / "factory.php").write_text(
+        "<?php\nfunction itemQuery($id) {\n"
+        "    return \"SELECT id, name FROM items WHERE id = \" . $id;\n}\n",
+        encoding="utf-8",
+    )
+    (php / "page.php").write_text(
+        "<?php\nrequire_once __DIR__ . '/factory.php';\n"
+        "$sql = itemQuery($_GET['id'] ?? '1');\n"
+        "$r = mysqli_query($conn, $sql);\n"
+        "$t = $_GET['t'];\n"
+        "$r2 = mysqli_query($conn, \"SELECT id FROM $t\");\n",
+        encoding="utf-8",
+    )
+    schema = tmp_path / "schema.sql"
+    schema.write_text(
+        "CREATE TABLE items (id INT NOT NULL PRIMARY KEY, name VARCHAR(20));",
+        encoding="utf-8",
+    )
+    out = tmp_path / "out"
+
+    run_pipeline(php, schema, out)
+
+    records = _json.loads((out / "traceability_report.json").read_text(encoding="utf-8"))
+    by_line = {r["source_line"]: r for r in records}
+
+    assert len(records) == 2
+    for record in records:
+        assert record["generated_function"]
+        assert record["source_file"].endswith("page.php")
+
+    converted = by_line[4]
+    assert converted["action"] == "use_generated_function"
+    assert converted["generated_function_kind"] == "data_access"
+    assert converted["sql_built_in"]["function"] == "itemQuery"
+    assert converted["sql_built_in"]["source_file"].endswith("factory.php")
+    assert converted["sql_built_in"]["source_line"] == 2
+
+    abstained = by_line[6]
+    assert abstained["action"] == "manual_review_required"
+    assert abstained["generated_function_kind"] == "unresolved_stub"

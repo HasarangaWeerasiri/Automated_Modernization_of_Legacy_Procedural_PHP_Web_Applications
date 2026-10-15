@@ -17,6 +17,7 @@ from c3.conversion.query_converter import (
 from c3.generation.emitter import generate_data_access
 from c3.analysis.column_usage_generator import generate_column_usage
 from c3.analysis.unresolved_report import generate_unresolved_report
+from c3.analysis.traceability import generate_traceability_report
 
 
 # The proposal defines three primary outputs; every other file is a
@@ -142,7 +143,14 @@ def run_pipeline(
     print("[5/7] Generating column-use report...")
     generate_column_usage(queries_file, column_usage_file)
 
-    print("[6/7] Generating unresolved-query and security reports...")
+    print("[6/7] Generating unresolved-query, traceability and security reports...")
+    generate_traceability_report(
+        queries_file,
+        column_usage_file,
+        output_dir / "traceability_report.json",
+        converted_file=converted_file,
+        data_access_file=data_access_file,
+    )
     generate_unresolved_report(
         queries_file,
         unresolved_file,

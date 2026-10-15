@@ -918,6 +918,7 @@ def _collect_cross_file_diagnostics(
     return {
         "function_name": function_name,
         "function_source_file": function.get("source_file"),
+        "function_source_line": function.get("source_line"),
         "resolution_status": "DIAGNOSTIC_ONLY",
         "binding_plan": binding_plan,
         "sql_template": _normalize_sql(template),

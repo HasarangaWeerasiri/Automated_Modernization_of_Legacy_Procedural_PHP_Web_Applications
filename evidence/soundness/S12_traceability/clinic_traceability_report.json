@@ -1,0 +1,586 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\01_list_patients.php",
+        "source_line": 4,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT id, full_name, email FROM patients",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "patients"
+        ],
+        "read_columns": [
+            "id",
+            "full_name",
+            "email"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_patients_q001",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\02_find_patient.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT id, full_name, email FROM patients WHERE id = '{{id}}'",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "patients"
+        ],
+        "read_columns": [
+            "id",
+            "full_name",
+            "email"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_patients_q002",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\03_add_patient.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "INSERT INTO patients (department_id, full_name, email, created_at) VALUES ({{department}}, '{{name}}', '{{email}}', '2026-02-10 09:00:00')",
+        "operation": "INSERT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "patients"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "department_id",
+            "full_name",
+            "email",
+            "created_at"
+        ],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "insert_patient_q003",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\04_update_contact.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "UPDATE patients SET phone = '{{phone}}' WHERE id = {{id}}",
+        "operation": "UPDATE",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "patients"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "phone"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "update_patient_q004",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q005",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\05_delete_payment.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "DELETE FROM payments WHERE id = {{id}}",
+        "operation": "DELETE",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "payments"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "delete_payment_q005",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q006",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\06_search_like.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT id, full_name FROM patients WHERE full_name LIKE '%{{q}}%'",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "patients"
+        ],
+        "read_columns": [
+            "id",
+            "full_name"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "full_name"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_patients_q006",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q007",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\07_literal_predicate.php",
+        "source_line": 4,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT id, booked_at FROM appointments WHERE status = 'confirmed'",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointments"
+        ],
+        "read_columns": [
+            "id",
+            "booked_at"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "status"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_appointments_q007",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q008",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\08_join_appointments.php",
+        "source_line": 6,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT a.id, p.full_name, d.full_name AS doctor_name FROM appointments a JOIN patients p ON p.id = a.patient_id JOIN doctors d ON d.id = a.doctor_id WHERE p.id = {{patient}}",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointments",
+            "patients",
+            "doctors"
+        ],
+        "read_columns": [
+            "id",
+            "full_name"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_appointments_q008",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q009",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\09_group_totals.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT doctor_id, COUNT(*) AS total, SUM(fee) AS fees FROM appointments GROUP BY doctor_id HAVING COUNT(*) >= 1",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointments"
+        ],
+        "read_columns": [
+            "doctor_id",
+            "fee"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_appointments_q009",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q010",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\10_subquery.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT id, full_name FROM patients WHERE id IN (SELECT patient_id FROM appointments WHERE status = 'confirmed')",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "patients",
+            "appointments"
+        ],
+        "read_columns": [
+            "id",
+            "full_name"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id",
+            "patient_id",
+            "status"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "query_specific_template",
+        "conversion_reason": null,
+        "generated_function": "select_patients_q010",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q011",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\11_in_values.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "recovery_status": "UNRESOLVED",
+        "recovered_sql": "SELECT id, full_name FROM patients WHERE id IN ({{ids}})",
+        "operation": null,
+        "analysis_status": "UNRESOLVED",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": "Dynamic value represents an SQL IN-list fragment rather than a scalar value.",
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "query_specific_template",
+        "conversion_reason": null,
+        "generated_function": "select_patients_q011",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q012",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\12_order_by.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "recovery_status": "UNRESOLVED",
+        "recovered_sql": "SELECT id, full_name FROM patients ORDER BY {{sort}}",
+        "operation": null,
+        "analysis_status": "UNRESOLVED",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": "Dynamic value occurs in a structural ORDER BY position.",
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "query_specific_template",
+        "conversion_reason": null,
+        "generated_function": "select_patients_q012",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q013",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\13_dynamic_table.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "recovery_status": "UNRESOLVED",
+        "recovered_sql": "SELECT id FROM {{table}} WHERE id = 1",
+        "operation": null,
+        "analysis_status": "UNRESOLVED",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": "Dynamic table identifier cannot be parameterized safely.",
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "query_specific_template",
+        "conversion_reason": null,
+        "generated_function": "select_q013",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q014",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\14_branch_query.php",
+        "source_line": 10,
+        "executor": "mysqli_query",
+        "recovery_status": "UNRESOLVED",
+        "recovered_sql": "SELECT id, full_name FROM doctors",
+        "operation": null,
+        "analysis_status": "UNRESOLVED",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": "SQL construction depends on conditional control flow.",
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "query_specific_template",
+        "conversion_reason": null,
+        "generated_function": "select_doctors_q014",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q015",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\15_cross_file.php",
+        "source_line": 6,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT id, full_name FROM doctors WHERE department_id = {{departmentId}}",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctors"
+        ],
+        "read_columns": [
+            "id",
+            "full_name"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "department_id"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_doctors_q015",
+        "generated_function_kind": "data_access",
+        "sql_built_in": {
+            "function": "makeDoctorQuery",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\query_factory.php",
+            "source_line": 2
+        }
+    },
+    {
+        "query_id": "Q016",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\16_conditional_concat.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "recovery_status": "UNRESOLVED",
+        "recovered_sql": "SELECT id, full_name FROM patients WHERE 1=1 AND department_id = {{UNRESOLVED:$_GET['department_id']}}",
+        "operation": null,
+        "analysis_status": "UNRESOLVED",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": "SQL construction depends on conditional control flow.",
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "query_specific_template",
+        "conversion_reason": null,
+        "generated_function": "select_patients_q016",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q017",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\17_update_arithmetic.php",
+        "source_line": 6,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "UPDATE appointments SET fee = fee + {{delta}} WHERE id = {{id}}",
+        "operation": "UPDATE",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointments"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "fee"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "update_appointment_q017",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q018",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\18_multi_condition.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT id, full_name, hourly_rate FROM doctors WHERE active = 1 AND hourly_rate >= {{minimum}}",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctors"
+        ],
+        "read_columns": [
+            "id",
+            "full_name",
+            "hourly_rate"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "active",
+            "hourly_rate"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_doctors_q018",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q019",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\19_limit_offset.php",
+        "source_line": 6,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT id, full_name FROM patients LIMIT {{limit}} OFFSET {{offset}}",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "patients"
+        ],
+        "read_columns": [
+            "id",
+            "full_name"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_patients_q019",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q020",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\20_cross_table_update.php",
+        "source_line": 6,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "UPDATE appointments a JOIN doctors d ON d.id = a.doctor_id SET a.fee = d.hourly_rate WHERE a.id = {{id}}",
+        "operation": "UPDATE",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointments",
+            "doctors"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "fee"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "query_specific_template",
+        "conversion_reason": null,
+        "generated_function": "update_appointment_q020",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q021",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\21_quoted_literal.php",
+        "source_line": 4,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT id, full_name FROM patients WHERE full_name = 'O''Brien'",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "patients"
+        ],
+        "read_columns": [
+            "id",
+            "full_name"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "full_name"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_patients_q021",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q022",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\22_prepared_statement.php",
+        "source_line": 5,
+        "executor": "mysqli_prepare",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "SELECT id, full_name FROM patients WHERE id = ?",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "patients"
+        ],
+        "read_columns": [
+            "id",
+            "full_name"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "reason": null,
+        "action": "manual_review_required",
+        "conversion_status": "UNRESOLVED",
+        "conversion_rule": null,
+        "conversion_reason": "Dynamic placeholder occurs in an unsupported structural SQL position.",
+        "generated_function": "unresolved_query_q022",
+        "generated_function_kind": "unresolved_stub"
+    }
+]

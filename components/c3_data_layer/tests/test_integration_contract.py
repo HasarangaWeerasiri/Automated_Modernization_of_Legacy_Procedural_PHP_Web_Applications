@@ -27,9 +27,12 @@ def test_c3_integration_contract(tmp_path):
     )
 
     for filename in contract["outputs"]:
-        assert (output / filename).is_file(), (
-            f"Missing promised output: {filename}"
-        )
+        path = output / filename
+        present = path.is_dir() if filename.endswith("/") else path.is_file()
+        assert present, f"Missing promised output: {filename}"
+
+    for filename in contract["primary_outputs"]:
+        assert (output / filename).is_file(), f"Missing primary output: {filename}"
 
     assert summary["total_queries"] == 4
     assert summary["recovered_queries"] == 4
