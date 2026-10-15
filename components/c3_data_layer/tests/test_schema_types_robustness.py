@@ -24,18 +24,24 @@ from c3.pipeline import run_pipeline
         ("int(4) unsigned", "Integer().with_variant(mysql.INTEGER(unsigned=True), 'mysql')"),
         ("BIGINT(20) UNSIGNED", "BigInteger().with_variant(mysql.BIGINT(unsigned=True), 'mysql')"),
         ("SMALLINT(6)", "SmallInteger"),
-        ("TINYINT(4)", "Integer"),
+        ("TINYINT(4)", "Integer().with_variant(mysql.TINYINT(), 'mysql')"),
         ("TINYINT(1)", "Boolean"),
         ("ENUM('active','Blocked')", "Enum('active', 'Blocked')"),
         ("ENUM('it''s','x')", "Enum(\"it's\", 'x')"),
         ("SET('Read','write')", "SET('Read', 'write')"),
         ("DECIMAL(10, 2)", "Numeric(10, 2)"),
         ("DECIMAL", "Numeric"),
-        ("DATETIME(6)", "DateTime"),
-        ("DOUBLE(8,2)", "Float"),
-        ("CHAR", "String(1)"),
+        ("DATETIME(6)", "DateTime().with_variant(mysql.DATETIME(fsp=6), 'mysql')"),
+        ("DOUBLE(8,2)", "Float().with_variant(mysql.DOUBLE(), 'mysql')"),
+        ("CHAR", "String(1).with_variant(mysql.CHAR(1), 'mysql')"),
         ("JSON", "JSON"),
-        ("YEAR", "Integer"),
+        ("DATETIME", "DateTime"),
+        ("DATETIME(0)", "DateTime"),
+        ("TIMESTAMP", "DateTime().with_variant(mysql.TIMESTAMP(), 'mysql')"),
+        ("MEDIUMTEXT", "Text().with_variant(mysql.MEDIUMTEXT(), 'mysql')"),
+        ("LONGBLOB", "LargeBinary().with_variant(mysql.LONGBLOB(), 'mysql')"),
+        ("VARBINARY(16)", "LargeBinary(16).with_variant(mysql.VARBINARY(16), 'mysql')"),
+        ("YEAR", "Integer().with_variant(mysql.YEAR(), 'mysql')"),
     ],
 )
 def test_supported_types(mysql_type, expected):
@@ -125,3 +131,19 @@ def test_migration_notes_without_unsupported_types(tmp_path):
 
     notes = (tmp_path / "out" / "migration_notes.md").read_text(encoding="utf-8")
     assert "None. Every column type has a SQLAlchemy mapping." in notes
+
+
+def test_exact_mysql_types_render_as_the_original_on_mysql():
+    """E2: generic types that would change the MySQL type keep the exact one."""
+
+    from sqlalchemy import DateTime, Float, Integer, LargeBinary, String, Text  # noqa: F401
+    from sqlalchemy.dialects import mysql
+
+    expected = {
+        "TIMESTAMP": "TIMESTAMP", "DATETIME(6)": "DATETIME(6)", "TINYINT(4)": "TINYINT",
+        "MEDIUMINT": "MEDIUMINT", "DOUBLE": "DOUBLE", "CHAR(2)": "CHAR(2)", "YEAR": "YEAR",
+        "LONGTEXT": "LONGTEXT", "MEDIUMBLOB": "MEDIUMBLOB", "BINARY(4)": "BINARY(4)",
+    }
+    for mysql_type, rendered in expected.items():
+        sa_type = eval(mysql_to_sqlalchemy(mysql_type))  # generated-code expression
+        assert sa_type.compile(dialect=mysql.dialect()) == rendered, mysql_type

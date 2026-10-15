@@ -16,7 +16,7 @@ def test_varchar_preserves_length():
 
 
 def test_char_preserves_length():
-    assert mysql_to_sqlalchemy("CHAR(10)") == "String(10)"
+    assert mysql_to_sqlalchemy("CHAR(10)") == "String(10).with_variant(mysql.CHAR(10), 'mysql')"
 
 
 def test_decimal_preserves_precision_and_scale():

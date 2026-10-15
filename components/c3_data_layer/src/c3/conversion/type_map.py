@@ -88,6 +88,26 @@ def _enum_values(arguments: str, mysql_type: str) -> list[str]:
     return values
 
 
+# Generic types that would render as a DIFFERENT MySQL type are emitted as
+# Generic().with_variant(<exact MySQL type>, 'mysql'): portable elsewhere,
+# exact on MySQL (found by the E2 schema comparison, e.g. TIMESTAMP).
+MYSQL_EXACT_TYPES = {
+    "DOUBLE": "DOUBLE", "REAL": "DOUBLE", "TIMESTAMP": "TIMESTAMP", "YEAR": "YEAR",
+    "TINYTEXT": "TINYTEXT", "MEDIUMTEXT": "MEDIUMTEXT", "LONGTEXT": "LONGTEXT",
+    "TINYBLOB": "TINYBLOB", "MEDIUMBLOB": "MEDIUMBLOB", "LONGBLOB": "LONGBLOB",
+}
+FRACTIONAL_SECONDS_TYPES = {"DATETIME", "TIMESTAMP", "TIME"}
+
+
+def _mysql_exact_type(base: str, numbers: list[str]) -> str | None:
+    fsp = numbers[0] if base in FRACTIONAL_SECONDS_TYPES and numbers and numbers[0] != "0" else None
+    if fsp:
+        return f"mysql.{base}(fsp={fsp})"
+    if base in MYSQL_EXACT_TYPES:
+        return f"mysql.{MYSQL_EXACT_TYPES[base]}()"
+    return None
+
+
 def mysql_to_sqlalchemy(mysql_type: str) -> str:
     """
     Convert a MySQL data type into a SQLAlchemy
@@ -134,11 +154,13 @@ def mysql_to_sqlalchemy(mysql_type: str) -> str:
     if arguments is not None and not all(n.isdigit() for n in numbers):
         raise ValueError(f"Unsupported MySQL type: {mysql_type}")
 
-    if base in ("VARCHAR", "CHAR") and len(numbers) <= 1:
-        if numbers:
-            return f"String({numbers[0]})"
-        if base == "CHAR":
-            return "String(1)"
+    if base == "VARCHAR" and len(numbers) == 1:
+        return f"String({numbers[0]})"
+
+    if base == "CHAR" and len(numbers) <= 1:
+        # Fixed-length CHAR stays CHAR on MySQL (String alone renders VARCHAR).
+        length = numbers[0] if numbers else "1"
+        return f"String({length}).with_variant(mysql.CHAR({length}), 'mysql')"
 
     if base in ("DECIMAL", "NUMERIC", "DEC", "FIXED") and len(numbers) <= 2:
         generic = f"Numeric({', '.join(numbers)})" if numbers else "Numeric()"
@@ -162,14 +184,20 @@ def mysql_to_sqlalchemy(mysql_type: str) -> str:
                 f"{INTEGER_TYPES[base]}().with_variant("
                 f"mysql.{mysql_name}(unsigned=True), 'mysql')"
             )
+        if base in ("TINYINT", "MEDIUMINT"):
+            # No generic type of this size: keep the exact MySQL type (E2).
+            return f"Integer().with_variant(mysql.{base}(), 'mysql')"
         return INTEGER_TYPES[base]
 
 
     if base in ("BINARY", "VARBINARY") and len(numbers) == 1:
-        return f"LargeBinary({numbers[0]})"
+        return f"LargeBinary({numbers[0]}).with_variant(mysql.{base}({numbers[0]}), 'mysql')"
 
     if base in SIMPLE_TYPES:
         if arguments is None or (base in IGNORED_ARGUMENT_TYPES and len(numbers) <= 2):
+            exact = _mysql_exact_type(base, numbers)
+            if exact:
+                return f"{SIMPLE_TYPES[base]}().with_variant({exact}, 'mysql')"
             return SIMPLE_TYPES[base]
 
     raise ValueError(
