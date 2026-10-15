@@ -19,8 +19,9 @@
      For -IncludeCrudScripts you also need c3_php_validation, c3_python_validation,
      c3_mixed_php, c3_mixed_python, c3_hard_php and c3_hard_python, set up the same way as on 2026-10-08.
 
-  3. -ResetClinicDatabases re-imports the Clinic schema.sql + seed.sql into both Clinic databases
-     (DROP + CREATE TABLE). Use it on the first run, or whenever the seed data may have changed.
+  3. -ResetClinicDatabases drops and recreates both Clinic databases, then imports schema.sql +
+     seed.sql. It is idempotent and safe to repeat. It only touches the two c3_clinic_*_test
+     databases (c3_tester has rights on nothing else).
 
   The script stops on the first failing step, and it never prints the password.
 
@@ -56,6 +57,26 @@ $env:PYTHONPATH = Join-Path $Component "src"
 $env:PYTHONDONTWRITEBYTECODE = "1"
 
 # MYSQL_PWD keeps the password off the command line; it only lives in this process.
+function Invoke-MySqlStatement([string]$Statement) {
+    $env:MYSQL_PWD = $env:C3_DB_PASSWORD
+    try {
+        & $MySql -u c3_tester -h 127.0.0.1 -e $Statement
+        if ($LASTEXITCODE -ne 0) { throw "mysql statement failed: $Statement" }
+    } finally {
+        Remove-Item Env:\MYSQL_PWD -ErrorAction SilentlyContinue
+    }
+}
+
+# Append native command output to a UTF-8 log and echo it to the console.
+# (Tee-Object in Windows PowerShell 5.1 writes UTF-16, which made logs unreadable.)
+function Write-Log([string]$Path) {
+    process {
+        $line = "$_"
+        Write-Host $line
+        Add-Content -Encoding utf8 -Path $Path -Value $line
+    }
+}
+
 function Invoke-MySqlFile([string]$Database, [string]$SqlFile) {
     $env:MYSQL_PWD = $env:C3_DB_PASSWORD
     try {
@@ -68,7 +89,8 @@ function Invoke-MySqlFile([string]$Database, [string]$SqlFile) {
 
 if ($ResetClinicDatabases) {
     foreach ($db in "c3_clinic_legacy_test", "c3_clinic_migrated_test") {
-        Write-Host "Resetting $db from schema.sql + seed.sql"
+        Write-Host "Dropping and recreating $db, then importing schema.sql + seed.sql"
+        Invoke-MySqlStatement "DROP DATABASE IF EXISTS $db; CREATE DATABASE $db CHARACTER SET utf8mb4;"
         Invoke-MySqlFile $db (Join-Path $Clinic "database\schema.sql")
         Invoke-MySqlFile $db (Join-Path $Clinic "database\seed.sql")
     }
@@ -96,14 +118,15 @@ $Version = & $Python -c "import os,pymysql; c=pymysql.connect(host='127.0.0.1',u
 
 Push-Location $Component
 try {
-    & $Python -m pytest tests/benchmarks/clinic_hard -v -rs -p no:cacheprovider 2>&1 | Tee-Object -FilePath $Log -Append
+    & $Python -m pytest tests/benchmarks/clinic_hard -v -rs -p no:cacheprovider 2>&1 | Write-Log $Log
     $PytestExit = $LASTEXITCODE
     "# pytest exit code: $PytestExit" | Add-Content -Encoding utf8 $Log
 
-    # Full suite with MySQL enabled (expected: 575 collected, no MySQL skips).
+    # Full suite with MySQL enabled (2026-10-15: 642 passed, no MySQL skips).
     $FullLog = Join-Path $EvidenceDir "full_suite_with_mysql_log.txt"
     "# date: $(Get-Date -Format o)`n# git HEAD: $Head`n# MySQL server: $Version" | Set-Content -Encoding utf8 $FullLog
-    & $Python -m pytest -q -rs -p no:cacheprovider 2>&1 | Tee-Object -FilePath $FullLog -Append
+    & $Python -m pytest -q -rs -p no:cacheprovider 2>&1 | Write-Log $FullLog
+    "# pytest exit code: $LASTEXITCODE" | Add-Content -Encoding utf8 $FullLog
 
     if ($IncludeCrudScripts) {
         $V = "tests\mysql_validation"
