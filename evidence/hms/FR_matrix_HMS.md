@@ -17,4 +17,4 @@ HMS results are **post-adaptation**: the H1 rule was found on HMS. It is a gener
 | FR9 | Alembic migration | **PASS** | MySQL 8: upgrade → live schema = models → `alembic check` → downgrade, PASS at `a791cd8`. The later env.py fix `a4ed6b2` touches only SQLite URLs | `evidence/mysql_runs/2026-10-15_173218/e3/hms_kishan0725.json` |
 | FR10 | Traceability | **PASS** | `traceability_report.json`: 44/44 sites → generated function. The handoff lists PHP file:line per function; docstrings name each parameter's PHP value | `output/hms_kishan0725/traceability_report.json`, `HMS_HANDOFF.md` |
 
-**Open for HMS:** FR6 E1 on MySQL (student values, then `.\scripts\run_e1_mysql.ps1 -Apps hms_kishan0725`). H2 decision (recommended: option A, keep as is).
+**Open for HMS:** re-run E1 on MySQL with the fixed harness (`26402af`) so the 5 FAILs get recorded verdicts (`.\scripts\run_e1_mysql.ps1 -Apps hms_kishan0725`). H2 decision (recommended: option A, keep as is).
