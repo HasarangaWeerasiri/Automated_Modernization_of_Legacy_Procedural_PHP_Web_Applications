@@ -1,0 +1,41 @@
+{
+    "implementation": "migrated_python",
+    "benchmark": "hard_crud",
+    "query_id": "Q001",
+    "search_results": {
+        "Ali": [
+            {
+                "id": 1,
+                "name": "Alice Johnson",
+                "email": "alice@example.com"
+            },
+            {
+                "id": 3,
+                "name": "Alicia Brown",
+                "email": "alicia@example.com"
+            }
+        ],
+        "Alex": [
+            {
+                "id": 5,
+                "name": "Alex Wilson",
+                "email": "alex@example.com"
+            }
+        ],
+        "Bob": [
+            {
+                "id": 2,
+                "name": "Bob Smith",
+                "email": "bob@example.com"
+            }
+        ],
+        "Charlie": [
+            {
+                "id": 4,
+                "name": "Charlie Davis",
+                "email": "charlie@example.com"
+            }
+        ],
+        "xyz": []
+    }
+}

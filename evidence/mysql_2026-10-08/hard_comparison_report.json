@@ -1,0 +1,16 @@
+{
+    "benchmark": "hard_crud",
+    "database": "MySQL 8.0",
+    "tested_query": "Q001",
+    "search_cases": 5,
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "recorded_results_match": true,
+    "unresolved_queries": [
+        "Q002",
+        "Q003",
+        "Q004",
+        "Q005"
+    ]
+}

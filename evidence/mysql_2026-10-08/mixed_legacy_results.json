@@ -1,0 +1,64 @@
+{
+    "implementation": "legacy_php",
+    "benchmark": "mixed_crud",
+    "q001": [
+        {
+            "id": 1,
+            "title": "Laptop",
+            "price": "150000.00"
+        },
+        {
+            "id": 2,
+            "title": "Mouse",
+            "price": "2500.00"
+        },
+        {
+            "id": 3,
+            "title": "Keyboard",
+            "price": "7500.00"
+        }
+    ],
+    "q002": [
+        {
+            "id": 1,
+            "title": "Laptop",
+            "price": "150000.00"
+        }
+    ],
+    "q004_state": [
+        {
+            "id": 1,
+            "title": "Laptop",
+            "price": "150000.00"
+        },
+        {
+            "id": 2,
+            "title": "Mouse",
+            "price": "2500.00"
+        },
+        {
+            "id": 3,
+            "title": "Keyboard",
+            "price": "7500.00"
+        }
+    ],
+    "q005": {
+        "id": 1,
+        "title": "Laptop Updated",
+        "price": "155000.00"
+    },
+    "q003_deleted": true,
+    "final_state": [
+        {
+            "id": 1,
+            "title": "Laptop Updated",
+            "price": "155000.00"
+        },
+        {
+            "id": 3,
+            "title": "Keyboard",
+            "price": "7500.00"
+        }
+    ],
+    "q006": "manual_review_required"
+}

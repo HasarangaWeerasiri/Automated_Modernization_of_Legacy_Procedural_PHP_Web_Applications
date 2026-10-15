@@ -1,0 +1,8 @@
+{
+    "benchmark": "simple_crud",
+    "database": "MySQL 8.0",
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "behaviorally_equivalent_for_recorded_stages": true
+}

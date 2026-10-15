@@ -1,0 +1,10 @@
+{
+    "benchmark": "mixed_crud",
+    "database": "MySQL 8.0",
+    "passed": 7,
+    "failed": 0,
+    "total": 7,
+    "recorded_results_match": true,
+    "unsupported_query": "Q006",
+    "unsupported_query_executed": false
+}

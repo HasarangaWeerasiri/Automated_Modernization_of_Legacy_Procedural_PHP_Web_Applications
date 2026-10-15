@@ -1,0 +1,20 @@
+{
+    "implementation": "migrated_python",
+    "create": {
+        "name": "Alice",
+        "email": "alice@example.com",
+        "status": "active"
+    },
+    "read": {
+        "name": "Alice",
+        "email": "alice@example.com",
+        "status": "active"
+    },
+    "update": {
+        "name": "Alice Updated",
+        "email": "alice@example.com",
+        "status": "active"
+    },
+    "delete": true,
+    "final_state": []
+}
