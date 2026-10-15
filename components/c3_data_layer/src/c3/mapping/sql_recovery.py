@@ -550,6 +550,86 @@ def _detect_branching_assignment(
 
     return None, None
 
+
+LOOP_KIND_PREFIXES = ("FOR@", "FOREACH@", "WHILE@", "DO@")
+
+LOOP_OR_SWITCH_REASON = (
+    "LOOP_OR_SWITCH_CONTROL_FLOW",
+    "SQL construction depends on loop iterations or on "
+    "which switch case ran.",
+)
+
+
+def _loop_ids(context: set[str]) -> set[str]:
+    """Keep only loop entries (not SWITCH/CASE) of a loop context."""
+
+    return {
+        entry
+        for entry in context
+        if entry.startswith(LOOP_KIND_PREFIXES)
+    }
+
+
+def _detect_loop_or_switch_dependency(
+    sql_call: dict,
+    assignment_chain: list[dict],
+    assignments: list[dict],
+) -> tuple[str | None, str | None]:
+    """
+    Detect SQL values that depend on loop iterations or switch cases.
+
+    The assignment chain is chosen by source line, which is only
+    sound for straight-line code. Abstain when:
+
+    1. a chain assignment sits in a loop or switch case that does
+       not also enclose the execution point (zero, one or many
+       iterations, or a case that may not have run);
+    2. an append sits in a loop that its base assignment is not
+       in (the SQL accumulates across iterations);
+    3. a later assignment to the SQL variable sits in a loop that
+       encloses the execution point but not the base assignment
+       (its value flows back to the call on the next iteration).
+
+    Loop contexts come from the PHP extractor ("KIND@offset").
+    Records without one are treated as straight-line code.
+    """
+
+    if not assignment_chain:
+        return None, None
+
+    call_context = set(sql_call.get("loop_context") or [])
+    base_context = set(assignment_chain[0].get("loop_context") or [])
+
+    for position, assignment in enumerate(assignment_chain):
+        context = set(assignment.get("loop_context") or [])
+
+        if context - call_context:
+            return LOOP_OR_SWITCH_REASON
+
+        if position > 0 and _loop_ids(context - base_context):
+            return LOOP_OR_SWITCH_REASON
+
+    loops_not_resetting_sql = _loop_ids(call_context) - base_context
+
+    if not loops_not_resetting_sql:
+        return None, None
+
+    for assignment in assignments:
+        if (
+            assignment.get("source_file") != sql_call.get("source_file")
+            or assignment.get("variable") != sql_call.get("sql_argument")
+            or (assignment.get("source_line") or 0)
+            < (sql_call.get("source_line") or 0)
+        ):
+            continue
+
+        context = set(assignment.get("loop_context") or [])
+
+        if _loop_ids(context) & loops_not_resetting_sql:
+            return LOOP_OR_SWITCH_REASON
+
+    return None, None
+
 def _detect_structural_placeholder(
     sql: str,
 ) -> tuple[str | None, str | None]:
@@ -1036,6 +1116,7 @@ def recover_queries_from_ast(
                     "assignment_type": "ASSIGN",
                     "expression": sql_argument_text,
                     "control_flow": sql_call.get("control_flow", []),
+                    "loop_context": sql_call.get("loop_context", []),
                 }
             ]
         else:
@@ -1098,6 +1179,17 @@ def recover_queries_from_ast(
         ) = _detect_branching_assignment(
             assignment_chain
         )
+
+        loop_reason_code, loop_reason = _detect_loop_or_switch_dependency(
+            sql_call,
+            assignment_chain,
+            assignments,
+        )
+
+        # Loop/switch dependence is the more specific abstention reason.
+        if loop_reason_code is not None:
+            branching_reason_code = loop_reason_code
+            branching_reason = loop_reason
 
         sql_fragments = []
         dynamic_variables = []

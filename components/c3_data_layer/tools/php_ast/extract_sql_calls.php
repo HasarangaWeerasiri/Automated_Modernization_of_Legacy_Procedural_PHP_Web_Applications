@@ -186,6 +186,50 @@ function getControlFlowContext(
 
 
 /**
+ * Return the loops and switch cases enclosing an AST node,
+ * innermost first.
+ *
+ * Each entry is "<KIND>@<start file offset>", so two nodes inside
+ * the same loop or the same switch case get the same entry. Recovery
+ * uses this to abstain when a SQL value can depend on loop iterations
+ * or on which switch case ran.
+ */
+function getLoopContext(
+    Node $node
+): array {
+    $contexts = [];
+
+    $parent = $node->getAttribute('parent');
+
+    while ($parent instanceof Node) {
+        $kind = null;
+
+        if ($parent instanceof Node\Stmt\For_) {
+            $kind = 'FOR';
+        } elseif ($parent instanceof Node\Stmt\Foreach_) {
+            $kind = 'FOREACH';
+        } elseif ($parent instanceof Node\Stmt\While_) {
+            $kind = 'WHILE';
+        } elseif ($parent instanceof Node\Stmt\Do_) {
+            $kind = 'DO';
+        } elseif ($parent instanceof Node\Stmt\Switch_) {
+            $kind = 'SWITCH';
+        } elseif ($parent instanceof Node\Stmt\Case_) {
+            $kind = 'CASE';
+        }
+
+        if ($kind !== null) {
+            $contexts[] = $kind . '@' . $parent->getStartFilePos();
+        }
+
+        $parent = $parent->getAttribute('parent');
+    }
+
+    return $contexts;
+}
+
+
+/**
  * Collect conditions controlling an AST node.
  *
  * Preserve the containing branch type and its condition.
@@ -597,6 +641,7 @@ foreach ($phpFiles as $phpFile) {
                 $assignment,
                 $prettyPrinter
             ),
+            'loop_context' => getLoopContext($assignment),
             'function_call' => $functionCallMetadata,
         ];
     }
@@ -654,6 +699,7 @@ foreach ($phpFiles as $phpFile) {
             $results[] = [
                 'source_file' => $phpFile,
                 'source_line' => $call->getStartLine(),
+                'loop_context' => getLoopContext($call),
                 'executor' => $functionName,
                 'sql_argument' => null,
                 'status' => 'UNRESOLVED',
@@ -671,6 +717,7 @@ foreach ($phpFiles as $phpFile) {
         $results[] = [
             'source_file' => $phpFile,
             'source_line' => $call->getStartLine(),
+            'loop_context' => getLoopContext($call),
             'executor' => $functionName,
             'sql_argument' => expressionToString(
                 $sqlNode,
@@ -728,6 +775,7 @@ foreach ($phpFiles as $phpFile) {
             $results[] = [
                 'source_file' => $phpFile,
                 'source_line' => $call->getStartLine(),
+                'loop_context' => getLoopContext($call),
                 'executor' => $normalizedMethod,
                 'sql_argument' => null,
                 'status' => 'UNRESOLVED',
@@ -745,6 +793,7 @@ foreach ($phpFiles as $phpFile) {
         $results[] = [
             'source_file' => $phpFile,
             'source_line' => $call->getStartLine(),
+            'loop_context' => getLoopContext($call),
             'executor' => $normalizedMethod,
             'sql_argument' => expressionToString(
                 $sqlNode,
