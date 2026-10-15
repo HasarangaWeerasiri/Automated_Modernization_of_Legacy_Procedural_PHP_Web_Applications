@@ -69,5 +69,5 @@ def test_generated_clinic_functions_are_all_safe(tmp_path):
 
     verdicts = {name: e4.check_function(f)["verdict"] for _, name, f, _ in e4.generated_functions(module, converted)}
 
-    assert len(verdicts) == 21
+    assert len(verdicts) == 22
     assert set(verdicts.values()) == {"SAFE"}

@@ -83,9 +83,9 @@ def test_clinic_template_conversions_are_counted_separately(outputs):
     s = outputs["clinic"]["summary"]
 
     assert s["total_queries"] == 22
-    assert s["converted_by_general_rules"] == 14
+    assert s["converted_by_general_rules"] == 15  # +Q022 prepared statement (S14)
     assert s["converted_by_query_specific_template"] == 7
-    assert s["recovered_not_converted"] == 1
+    assert s["recovered_not_converted"] == 0
 
 
 def test_no_template_conversions_outside_clinic(outputs):

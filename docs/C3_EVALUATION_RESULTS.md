@@ -26,7 +26,7 @@ Columns are total SQL sites / recovered / converted.
 | simple_crud | — | 4 / 4 / 4 |
 | mixed_crud | — | 6 / 5 / 5 (Q006 `buildQuery` unresolved) |
 | hard_crud | — | 5 / 2 / 2 (dynamic ORDER BY, dynamic IN, conditional append unresolved) |
-| Clinic | — | 22 / 17 / 21: **14 by general rules + 7 by guarded templates**; S22 (`mysqli_prepare`) is detected but not converted |
+| Clinic | — | 22 / 17 / 22: **15 by general rules + 7 by guarded templates**. S22 (`mysqli_prepare`) has been converted by the general prepared-statement rule since S14 (2026-10-15). Its MySQL equivalence has not been run yet; the 61 Clinic MySQL tests predate it |
 | Helpdesk | **9 / 7 / 6** (frozen baseline) | 9 / 9 / 8 (Q007 LEFT JOIN + GROUP BY not converted) |
 | HMS | 44 / 19 / 19, crashed at stage 3/6 | 44 / 40 / 40 |
 | NEWS-BUZZ | 32 / 4 / 4, crashed at stage 3/6 | 32 / 30 / 29 |

@@ -93,7 +93,7 @@ Current results (2026-10-15; see `docs/C3_EVALUATION_RESULTS.md` and `evidence/e
 - simple_crud: 4 / 4 / 4
 - mixed_crud: 6 / 5 / 5
 - hard_crud: 5 / 2 / 2
-- Clinic (development): 22 / 17 / 21. 14 are converted by general rules and 7 by guarded query-specific templates.
+- Clinic (development): 22 / 17 / 22. 15 are converted by general rules (incl. the Q022 prepared statement, S14) and 7 by guarded query-specific templates.
 - Helpdesk holdout: 9 / 7 / 6 pre-adaptation (frozen); 9 / 9 / 8 post-adaptation
 - Unseen third-party apps, post-adaptation: HMS 44 / 40 / 40, NEWS-BUZZ 32 / 30 / 29, Fee-Rainbow 22 / 20 / 19
 

@@ -1,0 +1,12 @@
+== simple_crud: total 4, recovered 4, converted 4
+== mixed_crud: total 6, recovered 5, converted 5
+== hard_crud: total 5, recovered 2, converted 2
+== clinic: total 22, recovered 17, converted 22
+   CHANGED Q022 22_prepared_statement.php:5: ('RECOVERED', None, 'UNRESOLVED') -> ('RECOVERED', None, 'CONVERTED')
+== helpdesk: total 9, recovered 9, converted 8
+== hms_kishan0725: total 44, recovered 40, converted 40
+== news_buzz: total 32, recovered 30, converted 29
+== fee_rainbow: total 22, recovered 20, converted 19
+== dignity_dev_hms: total 14, recovered 7, converted 4
+
+Total changed queries: 1

@@ -20,7 +20,7 @@ def test_generated_output_is_fresh_and_complete():
 
     summary = json.loads((output_dir / "summary.json").read_text(encoding="utf-8"))
     assert summary["total_queries"] == 22
-    assert summary["converted_queries"] == 21
+    assert summary["converted_queries"] == 22  # Q022 prepared statement converts since S14
 
 
 def test_generated_data_access_module_loads():

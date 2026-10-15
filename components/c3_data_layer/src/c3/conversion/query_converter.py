@@ -31,6 +31,42 @@ LIKE_WILDCARD_PATTERN = re.compile(
     r"(?i)\bLIKE\s+(['\"])%\{\{([A-Za-z_][A-Za-z0-9_]*)\}\}%\1"
 )
 
+# S14: executors whose SQL argument is a prepared statement.
+PREPARE_EXECUTORS = {"mysqli_prepare", "mysqli_stmt_prepare", "prepare"}
+
+
+def _name_prepared_placeholders(sql: str, recovered_names: set[str]):
+    """Give prepared-statement placeholders bind-parameter names.
+
+    `?` placeholders become :param_1, :param_2 ... in textual order (the
+    order the caller binds them); PDO named placeholders (:name) keep their
+    names. Placeholders inside string literals are not tokens and are left
+    alone. Mixing `?` and named placeholders (invalid in PDO) returns None.
+    """
+
+    from sqlglot.dialects.mysql import MySQL
+    from sqlglot.tokens import TokenType
+
+    tokens = MySQL().tokenize(sql)
+    positional = [t for t in tokens if t.token_type == TokenType.PLACEHOLDER and t.text == "?"]
+    named = []
+    for previous, token in zip(tokens, tokens[1:]):
+        if (previous.token_type == TokenType.COLON and token.token_type == TokenType.VAR
+                and previous.end + 1 == token.start and token.text not in recovered_names):
+            named.append(token.text)
+
+    if positional and named:
+        return None, []
+
+    if not positional:
+        return sql, list(dict.fromkeys(named))
+
+    names = [f"param_{index}" for index in range(1, len(positional) + 1)]
+    for token, name in reversed(list(zip(positional, names))):
+        sql = sql[:token.start] + ":" + name + sql[token.end + 1:]
+    return sql, names
+
+
 def _parameterize_sql(sql: str) -> str:
     """
     Convert recovered placeholders into SQLAlchemy
@@ -286,6 +322,21 @@ def _convert_query(query: dict, schema: dict | None = None) -> dict:
         recovered_sql
     )
 
+    prepared_parameters = []
+
+    if query.get("executor") in PREPARE_EXECUTORS:
+        parameterized_sql, prepared_parameters = _name_prepared_placeholders(
+            parameterized_sql,
+            set(PLACEHOLDER_PATTERN.findall(recovered_sql)),
+        )
+
+        if parameterized_sql is None:
+            return {
+                **base_result,
+                "status": "UNRESOLVED",
+                "reason": "Prepared statement mixes positional (?) and named placeholders.",
+            }
+
     try:
         tree = parse_one(
             parameterized_sql,
@@ -350,6 +401,7 @@ def _convert_query(query: dict, schema: dict | None = None) -> dict:
         PLACEHOLDER_PATTERN.findall(
             recovered_sql
         )
+        + prepared_parameters
     )
 
     if _has_unsafe_placeholder_position(tree, parameters):
@@ -426,6 +478,11 @@ def _convert_query(query: dict, schema: dict | None = None) -> dict:
         "parameters": parameters,
         "like_wildcard_parameters": like_wildcard_parameters,
         "parameterized_sql": parameterized_sql,
+        **(
+            {"prepared_statement_parameters": prepared_parameters}
+            if prepared_parameters
+            else {}
+        ),
         **(
             {"binding_plan": binding_plan}
             if binding_plan is not None

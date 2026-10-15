@@ -47,7 +47,7 @@ def generated_q013():
     converted = convert_queries(recovered, schema=clinic_schema())
 
     assert len(converted) == 22  # 22 Clinic sites (S22 mysqli_prepare detected since S2)
-    assert sum(q["status"] == "CONVERTED" for q in converted) == 21
+    assert sum(q["status"] == "CONVERTED" for q in converted) == 22  # +Q022 (S14)
 
     q013 = next(q for q in converted if q["query_id"] == "Q013")
 

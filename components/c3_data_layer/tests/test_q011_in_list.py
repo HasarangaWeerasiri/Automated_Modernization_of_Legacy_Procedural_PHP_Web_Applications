@@ -35,7 +35,7 @@ def generated_q011():
     converted = convert_queries(recovered)
 
     assert len(converted) == 22  # 22 Clinic sites (S22 mysqli_prepare detected since S2)
-    assert sum(q["status"] == "CONVERTED" for q in converted) == 21
+    assert sum(q["status"] == "CONVERTED" for q in converted) == 22  # +Q022 (S14)
 
     source = generate_data_access_source(converted)
     compile(source, "<generated_q011>", "exec")
