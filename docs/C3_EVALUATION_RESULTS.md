@@ -48,7 +48,7 @@ See `evidence/soundness/`.
 | Scope | Date / code | Result | Evidence |
 |---|---|---|---|
 | simple/mixed/hard CRUD (legacy PHP vs generated SQLAlchemy, recorded stages) | 2026-10-08, code before the audit | 18/18 checks (5 + 7 + 6) | `evidence/mysql_2026-10-08/` |
-| Clinic fixtures (61 equivalence tests incl. write/rollback and injection) | 2026-10-15, `e77f854`, MySQL 8.0.39 | 61 passed | `evidence/mysql_2026-10-15/clinic_mysql_equivalence_log.txt` |
+| Clinic fixtures (61 equivalence tests incl. write/rollback and injection) | 2026-10-15, `71cfe98`, MySQL 8.0.39 | 61 passed | `evidence/mysql_2026-10-15/clinic_mysql_equivalence_log.txt` |
 | Helpdesk and the 3 unseen apps | — | **not yet run** | planned as E1 (`docs/E1_equivalence_plan.md`) |
 
 ## 5. Unresolved query handling

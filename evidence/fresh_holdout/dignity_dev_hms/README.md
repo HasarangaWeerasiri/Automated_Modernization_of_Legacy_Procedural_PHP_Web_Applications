@@ -1,6 +1,6 @@
 # Fresh holdout (current rules, post-S13): Dignity-Dev Hospital-Management-System
 
-**This is the first and only run of this app; nothing was tuned on it.** It ran on the current converter (`src/` identical to `89d14a9`, i.e. after S1–S6 and S13) before any further code change. Unlike Helpdesk and the three earlier unseen apps, it was not inspected before the rules were written, so it is the only genuinely independent generalisation result so far.
+**This is the first and only run of this app; nothing was tuned on it.** It ran on the current converter (`src/` identical to `17b3e51`, i.e. after S1–S6 and S13) before any further code change. Unlike Helpdesk and the three earlier unseen apps, it was not inspected before the rules were written, so it is the only genuinely independent generalisation result so far.
 
 - **Source:** https://github.com/Dignity-Dev/Hospital-Management-System @ `b9e939d64e06ae5adedb51b91329784a645b74e9`, MIT (Copyright (c) 2022 DATA - Dignity Technology). Not committed; see the manifest.
 - **Input:** 18 app PHP files (`app_only_file_list.json`, nothing excluded) and schema `127_0_0_1.sql`.

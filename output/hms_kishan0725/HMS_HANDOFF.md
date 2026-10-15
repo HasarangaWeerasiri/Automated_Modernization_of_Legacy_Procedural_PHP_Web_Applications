@@ -1,6 +1,6 @@
 # HMS (kishan0725): C3 data-layer handoff
 
-Generated 2026-10-15 from code `01f427e` by `scripts/make_handoff.py`. Regenerate rather than edit. **Function signatures are frozen at tag `hms-handoff-v1`.**
+Generated 2026-10-15 from code `d96987c` by `scripts/make_handoff.py`. Regenerate rather than edit. **Function signatures are frozen at tag `hms-handoff-v1`.**
 
 ## Files
 

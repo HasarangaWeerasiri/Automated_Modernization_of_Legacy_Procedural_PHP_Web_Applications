@@ -1,4 +1,4 @@
-# HMS E1 triage: run `evidence/mysql_runs/2026-10-15_181758/e1/` (HEAD `10c98f8`)
+# HMS E1 triage: run `evidence/mysql_runs/2026-10-15_181758/e1/` (HEAD `eea6a6e`)
 
 Result: 44 sites: **27 PASS, 5 FAIL, 12 INCONCLUSIVE**. Every non-PASS case was checked against the case data in the report. The legacy SQL was rebuilt locally in build mode (not committed: no HMS licence), and the column definitions in `myhmsdb.sql` were checked. The MySQL server runs in its default strict mode (STRICT_TRANS_TABLES).
 

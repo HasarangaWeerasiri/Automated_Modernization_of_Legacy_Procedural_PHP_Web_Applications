@@ -51,7 +51,7 @@ Values come from a hand-written case file per app (`benchmarks/equivalence_cases
 | NEWS-BUZZ | `db/NEWSBUZZ.sql` | 2 INSERT blocks | 4 (+28 INCONCLUSIVE) | |
 | Fee-Rainbow | `database/db.sql` | 1 INSERT block | 18 (+4 INCONCLUSIVE) | |
 
-The "converted" counts are those of code `e77f854`. They will be re-measured after S13, and E1 runs on whatever code is frozen at that time.
+The "converted" counts are those of code `71cfe98`. They will be re-measured after S13, and E1 runs on whatever code is frozen at that time.
 
 **Databases (16, explicit names, no wildcards):** `c3_e1_<app>_legacy` and `c3_e1_<app>_migrated` for the 8 apps (simple_crud, mixed_crud, hard_crud, helpdesk, hms_kishan0725, news_buzz, fee_rainbow, dignity_dev_hms; Clinic already has its own). Statements to run once in MySQL Workbench: `scripts/e1_create_databases.sql` (it also creates the 9 empty `c3_e3_<app>` databases for the E3 Alembic round trip). The runner resets each database with DROP/CREATE before every run; `c3_tester` has rights on exactly these databases. The password stays session-only.
 

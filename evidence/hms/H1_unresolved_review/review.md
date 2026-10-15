@@ -1,6 +1,6 @@
 # H1: review of the 4 HMS sites C3 did not recover (2026-10-15)
 
-Before H1 (HEAD `18d12d2`), HMS was 44 / 40 / 40. All 4 sites failed with `UNKNOWN_EXPR`. Each was reviewed against the PHP (the source is not quoted here because HMS has no licence) and against the verified ground truth (`benchmarks/ground truth/hms_kishan0725/queries.json`).
+Before H1 (HEAD `56ff575`), HMS was 44 / 40 / 40. All 4 sites failed with `UNKNOWN_EXPR`. Each was reviewed against the PHP (the source is not quoted here because HMS has no licence) and against the verified ground truth (`benchmarks/ground truth/hms_kishan0725/queries.json`).
 
 | Site | Shape | Ground truth | Verdict | Why |
 |---|---|---|---|---|

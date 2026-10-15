@@ -4,7 +4,7 @@ Ground truth: `benchmarks/ground truth/hms_kishan0725/queries.json`. It has 52 e
 
 `python -m c3.cli evaluate --php benchmarks/apps/_app_only/hms_kishan0725 --output <c3 out> --ground-truth "benchmarks/ground truth/hms_kishan0725/queries.json" --report <file>`
 
-| Metric | Before H1 (`b20f1d1`) | After H1 (current) |
+| Metric | Before H1 (`9b25bc1`) | After H1 (current) |
 |---|---|---|
 | Detection of live sites | 44/44 (100%) | 44/44 (100%) |
 | False detections (commented-out lines reported) | 0 | 0 |
