@@ -78,3 +78,21 @@ def test_compare_reports_type_and_key_differences():
     kinds = {d["kind"] for d in e2.compare(reference, candidate)}
 
     assert kinds == {"type", "primary_key", "unique"}
+
+
+def test_query_schema_drift_reports_missing_tables_and_columns():
+    schema = {"tables": [{"name": "t", "columns": [{"name": "id"}, {"name": "a"}]}]}
+    usage = [
+        {"query_id": "Q1", "status": "ANALYZED", "source_file": "x.php", "source_line": 3, "tables": ["t"],
+         "qualified_columns": {"write": ["t.payment"], "filter": ["t.id"], "read": ["t.*"]}},
+        {"query_id": "Q2", "status": "ANALYZED", "source_file": "y.php", "source_line": 5, "tables": ["users"],
+         "qualified_columns": {"read": ["users.fullName"]}},
+        {"query_id": "Q3", "status": "UNRESOLVED", "tables": ["nope"], "qualified_columns": {}},
+    ]
+
+    drift = e2.query_schema_drift(usage, schema)
+
+    assert [(d["query_id"], d["kind"], d.get("column")) for d in drift] == [
+        ("Q1", "column_not_in_schema", "payment"),
+        ("Q2", "table_not_in_schema", None),
+    ]

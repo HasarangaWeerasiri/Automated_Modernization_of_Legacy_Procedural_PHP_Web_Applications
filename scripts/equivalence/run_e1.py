@@ -115,6 +115,7 @@ def c3_records(out: Path, app: str) -> dict:
             "conversion_status": conversion.get("status"),
             "conversion_rule": conversion.get("conversion_rule"),
             "conversion_reason": conversion.get("reason"),
+            "dynamic_variable_sources": query.get("dynamic_variable_sources") or {},
         }
     return records
 
@@ -285,6 +286,7 @@ def evaluate_app(app: str, out_dir: Path, execute: bool) -> dict:
             elif not cases:
                 site.update(verdict="INCONCLUSIVE", reason="no complete input case in the case file")
             else:
+                entry = {**entry, "_sources": record.get("dynamic_variable_sources", {})}
                 for name, inputs in cases.items():
                     site["cases"].append(run_case(app, entry, name, inputs, function, engines, execute, redact))
                 site["verdict"] = (
@@ -310,7 +312,8 @@ def run_case(app, entry, name, inputs, function, engines, execute, redact) -> di
     raw = legacy(app, entry, inputs, "raw", execute=False)
     if raw.get("status") != "built":
         return {"case": name, "verdict": "INCONCLUSIVE", "reason": f"raw build: {raw.get('status')} {raw.get('error', '')}".strip()}
-    arguments, missing = migrated_runner.bind(function, raw["variables"])
+    sources = entry.get("_sources", {})
+    arguments, missing = migrated_runner.bind(function, raw["variables"], sources, raw.get("arrays"))
 
     if not execute:
         built = legacy(app, entry, inputs, "legacy", execute=False)
@@ -327,7 +330,7 @@ def run_case(app, entry, name, inputs, function, engines, execute, redact) -> di
 
     legacy_result = legacy(app, entry, inputs, "legacy", execute=True, database=f"c3_e1_{app}_legacy")
     legacy_result["checksums_after"] = checksums(legacy_engine)
-    migrated_result = migrated_runner.call(function, migrated_engine, raw["variables"])
+    migrated_result = migrated_runner.call(function, migrated_engine, raw["variables"], sources, raw.get("arrays"))
     migrated_result["checksums_after"] = checksums(migrated_engine)
 
     record = compare.compare_case(name, legacy_result, migrated_result, inputs)

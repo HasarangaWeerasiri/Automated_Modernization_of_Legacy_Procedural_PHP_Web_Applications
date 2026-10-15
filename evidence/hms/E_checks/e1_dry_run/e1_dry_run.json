@@ -1,0 +1,14 @@
+{
+  "experiment": "E1 PHP vs generated SQLAlchemy equivalence (dry run: no database)",
+  "date_utc": "2026-10-15T11:59:45.145440+00:00",
+  "git_head": "65e807d0af383bf91d8b438aed0e75f34d36cbf9",
+  "mysql": null,
+  "apps": {
+    "hms_kishan0725": {
+      "sites": 44,
+      "verdicts": {
+        "READY": 44
+      }
+    }
+  }
+}

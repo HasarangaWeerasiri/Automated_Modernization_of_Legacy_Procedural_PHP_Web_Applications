@@ -509,12 +509,22 @@ function run(array $spec): array
     $sql = $variables['__c3e1_sql'];
     unset($variables['__c3e1_sql']);
     $plain = [];
+    $arrays = [];
     foreach ($variables as $name => $value) {
         if (is_scalar($value) || $value === null) {
             $plain[$name] = $value;
+        } elseif (is_array($value)) {
+            $arrays[$name] = array_filter($value, fn ($item) => is_scalar($item) || $item === null);
         }
     }
-    $output = ['slice' => $sliced, 'status' => 'built', 'sql' => $sql, 'variables' => $plain];
+    // Superglobals are not in get_defined_vars(); array elements such as
+    // $_GET['ID'] may be generated parameters (GET_ID).
+    foreach (SUPERGLOBALS as $name) {
+        if (isset($GLOBALS[$name]) && is_array($GLOBALS[$name])) {
+            $arrays[$name] = array_filter($GLOBALS[$name], fn ($item) => is_scalar($item) || $item === null);
+        }
+    }
+    $output = ['slice' => $sliced, 'status' => 'built', 'sql' => $sql, 'variables' => $plain, 'arrays' => $arrays];
 
     if ($conn !== null) {
         $result = mysqli_query($conn, (string) $sql);

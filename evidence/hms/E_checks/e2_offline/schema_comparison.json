@@ -1,0 +1,109 @@
+{
+  "experiment": "E2 schema fidelity",
+  "date_utc": "2026-10-15T12:00:39.692683+00:00",
+  "git_head": "65e807d0af383bf91d8b438aed0e75f34d36cbf9",
+  "views": {
+    "A": "schema.sql parsed with sqlglot (independent of C3)",
+    "B": "C3 schema.json",
+    "C": "generated models.py metadata rendered for MySQL",
+    "D": "not run (no --mysql)"
+  },
+  "apps": {
+    "hms_kishan0725": {
+      "A": {
+        "tables": 6,
+        "columns": 42,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "B": {
+        "tables": 6,
+        "columns": 42,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "C": {
+        "tables": 6,
+        "columns": 42,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "query_schema_drift": [
+        {
+          "query_id": "Q024",
+          "source_file": "func.php",
+          "source_line": 34,
+          "kind": "column_not_in_schema",
+          "table": "appointmenttb",
+          "column": "payment",
+          "role": "write"
+        },
+        {
+          "query_id": "Q030",
+          "source_file": "func2.php",
+          "source_line": 41,
+          "kind": "column_not_in_schema",
+          "table": "appointmenttb",
+          "column": "payment",
+          "role": "write"
+        },
+        {
+          "query_id": "Q031",
+          "source_file": "func2.php",
+          "source_line": 66,
+          "kind": "column_not_in_schema",
+          "table": "doctb",
+          "column": "name",
+          "role": "write"
+        },
+        {
+          "query_id": "Q033",
+          "source_file": "func3.php",
+          "source_line": 24,
+          "kind": "column_not_in_schema",
+          "table": "appointmenttb",
+          "column": "payment",
+          "role": "write"
+        },
+        {
+          "query_id": "Q035",
+          "source_file": "func3.php",
+          "source_line": 49,
+          "kind": "column_not_in_schema",
+          "table": "doctb",
+          "column": "name",
+          "role": "write"
+        },
+        {
+          "query_id": "Q036",
+          "source_file": "header.php",
+          "source_line": 35,
+          "kind": "table_not_in_schema",
+          "table": "users"
+        },
+        {
+          "query_id": "Q038",
+          "source_file": "newfunc.php",
+          "source_line": 23,
+          "kind": "column_not_in_schema",
+          "table": "appointmenttb",
+          "column": "payment",
+          "role": "write"
+        }
+      ],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH",
+        "query_schema_drift": "7 site-columns"
+      }
+    }
+  }
+}

@@ -233,7 +233,7 @@
       "file": "admin-panel.php",
       "line": 71,
       "call": "mysqli_query",
-      "c3_conversion_status (information only)": "UNRESOLVED",
+      "c3_conversion_status (information only)": "CONVERTED",
       "legacy_slice_status": "ok",
       "inputs": [
         {
@@ -242,14 +242,39 @@
           "note": ""
         }
       ],
-      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+      "cases": {
+        "normal": {
+          "$_GET['ID']": null
+        },
+        "empty_result": {
+          "$_GET['ID']": null
+        },
+        "boundary": {
+          "$_GET['ID']": null
+        },
+        "hostile_quote": {
+          "$_GET['ID']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['ID']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['ID']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['ID']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['ID']": "abc"
+        }
+      }
     },
     {
       "site_id": "S004",
       "file": "admin-panel.php",
       "line": 86,
       "call": "mysqli_query",
-      "c3_conversion_status (information only)": "UNRESOLVED",
+      "c3_conversion_status (information only)": "CONVERTED",
       "legacy_slice_status": "ok",
       "inputs": [
         {
@@ -263,7 +288,40 @@
           "note": ""
         }
       ],
-      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+      "cases": {
+        "normal": {
+          "$_GET['ID']": null,
+          "$_SESSION['pid']": null
+        },
+        "empty_result": {
+          "$_GET['ID']": null,
+          "$_SESSION['pid']": null
+        },
+        "boundary": {
+          "$_GET['ID']": null,
+          "$_SESSION['pid']": null
+        },
+        "hostile_quote": {
+          "$_GET['ID']": "' OR '1'='1",
+          "$_SESSION['pid']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['ID']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_SESSION['pid']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['ID']": "%_",
+          "$_SESSION['pid']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['ID']": "’ OR 1=1 -- é",
+          "$_SESSION['pid']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['ID']": "abc",
+          "$_SESSION['pid']": "abc"
+        }
+      }
     },
     {
       "site_id": "S005",
@@ -707,7 +765,7 @@
       "file": "doctor-panel.php",
       "line": 8,
       "call": "mysqli_query",
-      "c3_conversion_status (information only)": "UNRESOLVED",
+      "c3_conversion_status (information only)": "CONVERTED",
       "legacy_slice_status": "ok",
       "inputs": [
         {
@@ -716,7 +774,32 @@
           "note": ""
         }
       ],
-      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+      "cases": {
+        "normal": {
+          "$_GET['ID']": null
+        },
+        "empty_result": {
+          "$_GET['ID']": null
+        },
+        "boundary": {
+          "$_GET['ID']": null
+        },
+        "hostile_quote": {
+          "$_GET['ID']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['ID']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['ID']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['ID']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['ID']": "abc"
+        }
+      }
     },
     {
       "site_id": "S020",
@@ -1499,7 +1582,7 @@
       "file": "include/header.php",
       "line": 35,
       "call": "mysqli_query",
-      "c3_conversion_status (information only)": "UNRESOLVED",
+      "c3_conversion_status (information only)": "CONVERTED",
       "legacy_slice_status": "ok",
       "inputs": [
         {
@@ -1508,7 +1591,32 @@
           "note": ""
         }
       ],
-      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+      "cases": {
+        "normal": {
+          "$_SESSION['id']": null
+        },
+        "empty_result": {
+          "$_SESSION['id']": null
+        },
+        "boundary": {
+          "$_SESSION['id']": null
+        },
+        "hostile_quote": {
+          "$_SESSION['id']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_SESSION['id']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_SESSION['id']": "%_"
+        },
+        "hostile_unicode": {
+          "$_SESSION['id']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_SESSION['id']": "abc"
+        }
+      }
     },
     {
       "site_id": "S042",

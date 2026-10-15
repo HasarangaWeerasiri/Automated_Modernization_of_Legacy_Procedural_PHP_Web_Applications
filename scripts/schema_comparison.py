@@ -337,6 +337,32 @@ def compare(reference: dict, candidate: dict, ignore_fk_indexes: bool = False) -
     return diffs
 
 
+def query_schema_drift(column_usage: list[dict], schema: dict) -> list[dict]:
+    """Tables/columns the recovered SQL uses that the schema does not define."""
+
+    columns = {t["name"].lower(): {c["name"].lower() for c in t["columns"]} for t in schema["tables"]}
+    drift = []
+    for usage in column_usage:
+        if usage.get("status") != "ANALYZED":
+            continue
+        site = {"query_id": usage["query_id"], "source_file": Path(usage.get("source_file") or "").name,
+                "source_line": usage.get("source_line")}
+        for table in usage.get("tables", []):
+            if table.lower() not in columns:
+                drift.append({**site, "kind": "table_not_in_schema", "table": table})
+        for role, items in (usage.get("qualified_columns") or {}).items():
+            for item in items:
+                table, _, column = item.rpartition(".")
+                if column == "*" or table.lower() not in columns and table != "?":
+                    continue
+                candidates = [table.lower()] if table != "?" else [t.lower() for t in usage.get("tables", [])]
+                if not any(column.lower() in columns.get(t, set()) for t in candidates):
+                    entry = {**site, "kind": "column_not_in_schema", "table": table, "column": column, "role": role}
+                    if entry not in drift:
+                        drift.append(entry)
+    return drift
+
+
 def summarise(tables: dict) -> dict:
     return {
         "tables": len(tables),
@@ -376,6 +402,10 @@ def main() -> int:
             run_pipeline(APPS_DIR / php, APPS_DIR / schema, c3_out)
             a = sqlglot_schema(APPS_DIR / schema)
             b = json_schema(c3_out / "schema.json")
+            drift = query_schema_drift(
+                json.loads((c3_out / "column_usage.json").read_text(encoding="utf-8")),
+                json.loads((c3_out / "schema.json").read_text(encoding="utf-8")),
+            )
             try:
                 c = orm_schema(c3_out / "models.py")
                 log.append(f"{app}: models.py imported, configure_mappers() OK, {len(c)} tables")
@@ -392,6 +422,9 @@ def main() -> int:
             entry["D_vs_C"] = compare(d, c, ignore_fk_indexes=True)
             entry["mysql_database"] = database
         verdicts = {k: ("MATCH" if not entry[k] else f"{len(entry[k])} DIFF") for k in entry if "_vs_" in k}
+        # Reported separately: a fact about the legacy app, not a C3 schema error.
+        entry["query_schema_drift"] = drift
+        verdicts["query_schema_drift"] = f"{len(drift)} site-columns"
         entry["verdicts"] = verdicts
         report["apps"][app] = entry
         line = f"{app}: " + ", ".join(f"{k} {v}" for k, v in verdicts.items())

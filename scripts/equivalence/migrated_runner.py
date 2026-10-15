@@ -9,6 +9,7 @@ with no PHP variable of that name is reported, never guessed.
 
 import importlib.util
 import inspect
+import re
 from pathlib import Path
 
 from sqlalchemy.orm import Session
@@ -37,14 +38,34 @@ def parameters(function) -> list[str]:
     ]
 
 
-def bind(function, raw_variables: dict) -> tuple[dict, list[str]]:
-    names = parameters(function)
-    missing = [name for name in names if name not in raw_variables]
-    return {name: raw_variables[name] for name in names if name in raw_variables}, missing
+ELEMENT = re.compile(r"^\$([A-Za-z_][A-Za-z0-9_]*)\[\s*(?:'([^']*)'|\"([^\"]*)\"|([0-9]+))\s*\]$")
 
 
-def call(function, engine, raw_variables: dict) -> dict:
-    arguments, missing = bind(function, raw_variables)
+def bind(function, raw_variables: dict, sources: dict | None = None, arrays: dict | None = None) -> tuple[dict, list[str]]:
+    """Bind parameters by name; array-element parameters (GET_ID) through
+    C3's dynamic_variable_sources ($_GET['ID']) to the PHP array value."""
+
+    arguments, missing = {}, []
+    for name in parameters(function):
+        if name in raw_variables:
+            arguments[name] = raw_variables[name]
+            continue
+        match = ELEMENT.match((sources or {}).get(name, ""))
+        if match:
+            container = (arrays or {}).get(match.group(1))
+            key = match.group(2) if match.group(2) is not None else match.group(3) if match.group(3) is not None else match.group(4)
+            if isinstance(container, dict) and str(key) in {str(k) for k in container}:
+                arguments[name] = next(v for k, v in container.items() if str(k) == str(key))
+                continue
+            if isinstance(container, list) and key.isdigit() and int(key) < len(container):
+                arguments[name] = container[int(key)]
+                continue
+        missing.append(name)
+    return arguments, missing
+
+
+def call(function, engine, raw_variables: dict, sources: dict | None = None, arrays: dict | None = None) -> dict:
+    arguments, missing = bind(function, raw_variables, sources, arrays)
     if missing:
         return {"status": "unbound_parameter", "missing": missing}
 

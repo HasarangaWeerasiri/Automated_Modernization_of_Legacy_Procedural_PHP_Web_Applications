@@ -14,6 +14,8 @@
   .\scripts\run_e2_mysql.ps1
 #>
 
+param([string]$Apps = "")
+
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 $Component = Join-Path $Root "components\c3_data_layer"
@@ -35,7 +37,8 @@ $Log = Join-Path $EvidenceDir "run_e2.log"
 $previous = $ErrorActionPreference
 $ErrorActionPreference = "Continue"
 try {
-    & $Python (Join-Path $Root "scripts\schema_comparison.py") --mysql --out $EvidenceDir 2>&1 |
+    $AppArgs = @(); if ($Apps) { $AppArgs = @("--apps", $Apps) }
+    & $Python (Join-Path $Root "scripts\schema_comparison.py") --mysql --out $EvidenceDir @AppArgs 2>&1 |
         ForEach-Object { "$_" } | Out-File -Encoding utf8 $Log
     $code = $LASTEXITCODE
 } finally { $ErrorActionPreference = $previous }

@@ -1,0 +1,4164 @@
+{
+  "experiment": "E4 injection negatives (recording session, no database)",
+  "date_utc": "2026-10-15T11:59:34.099419+00:00",
+  "git_head": "65e807d0af383bf91d8b438aed0e75f34d36cbf9",
+  "payloads": [
+    "' OR '1'='1",
+    "' OR 1=1 -- ",
+    "\" OR \"\"=\"",
+    "1; DROP TABLE users;-- ",
+    "1 UNION SELECT NULL, NULL -- ",
+    "\\' OR 1=1 #",
+    "%' OR '%'='",
+    "’ OR 1=1 -- ",
+    "id DESC, (SELECT SLEEP(5))",
+    "patients WHERE 1=1 -- ",
+    "0x27206f7220313d31",
+    "abc\u0000' OR '1'='1"
+  ],
+  "apps": {
+    "hms_kishan0725": {
+      "functions": 44,
+      "safe": 44,
+      "unsafe": 0,
+      "detail": {
+        "delete_doctb_q010": {
+          "query_id": "Q010",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "insert_appointmenttb_q002": {
+          "query_id": "Q002",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "insert_contact_q017": {
+          "query_id": "Q017",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "insert_doctb_q009": {
+          "query_id": "Q009",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "insert_doctb_q025": {
+          "query_id": "Q025",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "insert_doctb_q031": {
+          "query_id": "Q031",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "insert_doctb_q035": {
+          "query_id": "Q035",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "insert_doctb_q041": {
+          "query_id": "Q041",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "insert_patreg_q028": {
+          "query_id": "Q028",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "insert_prestb_q043": {
+          "query_id": "Q043",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_admintb_q032": {
+          "query_id": "Q032",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_appointmenttb_q001": {
+          "query_id": "Q001",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_appointmenttb_q007": {
+          "query_id": "Q007",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_appointmenttb_q014": {
+          "query_id": "Q014",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 0,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_appointmenttb_q016": {
+          "query_id": "Q016",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_appointmenttb_q019": {
+          "query_id": "Q019",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_appointmenttb_q021": {
+          "query_id": "Q021",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 0,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_appointmenttb_q044": {
+          "query_id": "Q044",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_contact_q015": {
+          "query_id": "Q015",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 0,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_contact_q037": {
+          "query_id": "Q037",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_doctb_q005": {
+          "query_id": "Q005",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 0,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_doctb_q006": {
+          "query_id": "Q006",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 0,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_doctb_q011": {
+          "query_id": "Q011",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 0,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_doctb_q022": {
+          "query_id": "Q022",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_doctb_q026": {
+          "query_id": "Q026",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_doctb_q027": {
+          "query_id": "Q027",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 0,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_doctb_q034": {
+          "query_id": "Q034",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 0,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_doctb_q039": {
+          "query_id": "Q039",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 0,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_doctb_q040": {
+          "query_id": "Q040",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 0,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_patreg_q012": {
+          "query_id": "Q012",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 0,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_patreg_q023": {
+          "query_id": "Q023",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_patreg_q029": {
+          "query_id": "Q029",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 0,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_patreg_q042": {
+          "query_id": "Q042",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_prestb_q004": {
+          "query_id": "Q004",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_prestb_q008": {
+          "query_id": "Q008",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_prestb_q013": {
+          "query_id": "Q013",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 0,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": false,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_prestb_q020": {
+          "query_id": "Q020",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "select_users_q036": {
+          "query_id": "Q036",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "update_appointmenttb_q003": {
+          "query_id": "Q003",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "update_appointmenttb_q018": {
+          "query_id": "Q018",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "update_appointmenttb_q024": {
+          "query_id": "Q024",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "update_appointmenttb_q030": {
+          "query_id": "Q030",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "update_appointmenttb_q033": {
+          "query_id": "Q033",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        },
+        "update_appointmenttb_q038": {
+          "query_id": "Q038",
+          "conversion_rule": "general",
+          "verdict": "SAFE",
+          "rejected": 0,
+          "bound": 12,
+          "sql_variants_for_benign_values": 1,
+          "cases": [
+            {
+              "payload": "' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "' OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\" OR \"\"=\"",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1; DROP TABLE users;-- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "1 UNION SELECT NULL, NULL -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "\\' OR 1=1 #",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "%' OR '%'='",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "’ OR 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "id DESC, (SELECT SLEEP(5))",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "patients WHERE 1=1 -- ",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "0x27206f7220313d31",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            },
+            {
+              "payload": "abc\u0000' OR '1'='1",
+              "outcome": "EXECUTED",
+              "bound_as_parameter": true,
+              "safe": true,
+              "problems": []
+            }
+          ]
+        }
+      }
+    }
+  }
+}
