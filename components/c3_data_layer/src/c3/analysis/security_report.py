@@ -210,10 +210,15 @@ def build_query_records(
             # expression is one candidate value reaching the SQL.
             candidates = [(name, f"${name}") for name in VARIABLE_PATTERN.findall(expression)
                           if not name.startswith("_") and name != "this"]
-            candidates += [
-                (m.group(3) or m.group(1), m.group(0))
-                for m in SUPERGLOBAL_PATTERN.finditer(expression)
-            ]
+            placeholders = set(PLACEHOLDER_PATTERN.findall(template))
+            aliases = {}
+            for m in SUPERGLOBAL_PATTERN.finditer(expression):
+                # Since H1 a direct element ($_GET['ID']) is the placeholder GET_ID.
+                element = f"{m.group(1).lstrip('_')}_{m.group(3)}" if m.group(3) else None
+                name = element if element in placeholders else (m.group(3) or m.group(1))
+                if m.group(3):
+                    aliases[name] = m.group(3)  # templates may bind the bare key
+                candidates.append((name, m.group(0)))
 
             for name, text in candidates:
                 sources, sanitizers = _trace(text, assignments, query.get("source_file"), line + 1)
@@ -226,9 +231,9 @@ def build_query_records(
 
                 if not is_converted:
                     handling = "not_converted"
-                elif name in allowlisted:
+                elif name in allowlisted or aliases.get(name) in allowlisted:
                     handling = "schema_allowlisted_identifier"
-                elif name in bound:
+                elif name in bound or aliases.get(name) in bound:
                     handling = "bound_parameter"
                 else:
                     handling = "UNHANDLED_IN_CONVERTED_CODE"

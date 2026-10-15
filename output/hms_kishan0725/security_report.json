@@ -3,11 +3,11 @@
         "total_queries": 44,
         "queries_with_user_input": 26,
         "legacy_injection_sites": 26,
-        "legacy_injection_sites_remediated": 23,
+        "legacy_injection_sites_remediated": 26,
         "legacy_injection_sites_not_converted": 0,
         "user_controlled_values_in_converted_queries": 62,
-        "bound_or_allowlisted": 59,
-        "injection_safety_coverage_percent": 95.16,
+        "bound_or_allowlisted": 62,
+        "injection_safety_coverage_percent": 100.0,
         "generated_code_text_calls_not_literal": 0,
         "generated_code_violations": 0
     },
@@ -210,23 +210,25 @@
             "conversion_status": "CONVERTED",
             "conversion_rule": "general",
             "placeholders": {
-                "value_positions": [],
+                "value_positions": [
+                    "GET_ID"
+                ],
                 "structural_positions": []
             },
             "user_inputs": [
                 {
-                    "variable": "ID",
+                    "variable": "GET_ID",
                     "sources": [
                         "_GET.ID"
                     ],
                     "user_controlled": true,
                     "sanitizers": [],
                     "legacy_risk": "injectable_unsanitized",
-                    "generated_handling": "UNHANDLED_IN_CONVERTED_CODE"
+                    "generated_handling": "bound_parameter"
                 }
             ],
             "legacy_injection_site": true,
-            "remediated": false
+            "remediated": true
         },
         {
             "query_id": "Q004",
@@ -237,6 +239,7 @@
             "conversion_rule": "general",
             "placeholders": {
                 "value_positions": [
+                    "GET_ID",
                     "pid"
                 ],
                 "structural_positions": []
@@ -253,18 +256,18 @@
                     "generated_handling": "bound_parameter"
                 },
                 {
-                    "variable": "ID",
+                    "variable": "GET_ID",
                     "sources": [
                         "_GET.ID"
                     ],
                     "user_controlled": true,
                     "sanitizers": [],
                     "legacy_risk": "injectable_unsanitized",
-                    "generated_handling": "UNHANDLED_IN_CONVERTED_CODE"
+                    "generated_handling": "bound_parameter"
                 }
             ],
             "legacy_injection_site": true,
-            "remediated": false
+            "remediated": true
         },
         {
             "query_id": "Q005",
@@ -635,23 +638,25 @@
             "conversion_status": "CONVERTED",
             "conversion_rule": "general",
             "placeholders": {
-                "value_positions": [],
+                "value_positions": [
+                    "GET_ID"
+                ],
                 "structural_positions": []
             },
             "user_inputs": [
                 {
-                    "variable": "ID",
+                    "variable": "GET_ID",
                     "sources": [
                         "_GET.ID"
                     ],
                     "user_controlled": true,
                     "sanitizers": [],
                     "legacy_risk": "injectable_unsanitized",
-                    "generated_handling": "UNHANDLED_IN_CONVERTED_CODE"
+                    "generated_handling": "bound_parameter"
                 }
             ],
             "legacy_injection_site": true,
-            "remediated": false
+            "remediated": true
         },
         {
             "query_id": "Q019",
@@ -1250,19 +1255,21 @@
             "conversion_status": "CONVERTED",
             "conversion_rule": "general",
             "placeholders": {
-                "value_positions": [],
+                "value_positions": [
+                    "SESSION_id"
+                ],
                 "structural_positions": []
             },
             "user_inputs": [
                 {
-                    "variable": "id",
+                    "variable": "SESSION_id",
                     "sources": [
                         "_SESSION.id"
                     ],
                     "user_controlled": false,
                     "sanitizers": [],
                     "legacy_risk": "injectable_unsanitized",
-                    "generated_handling": "UNHANDLED_IN_CONVERTED_CODE"
+                    "generated_handling": "bound_parameter"
                 }
             ],
             "legacy_injection_site": false,

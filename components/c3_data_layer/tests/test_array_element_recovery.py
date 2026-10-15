@@ -59,3 +59,23 @@ def test_single_quoted_php_string_is_not_interpolated(tmp_path):
 
     assert query["dynamic_variables"] == []
     assert query["recovered_sql"] == 'SELECT a FROM t WHERE note = "$x"'
+
+
+def test_security_report_credits_array_element_parameters(tmp_path):
+    import json
+
+    from c3.pipeline import run_pipeline
+
+    php = tmp_path / "php"
+    php.mkdir()
+    (php / "cancel.php").write_text(
+        """<?php\nmysqli_query($c, "UPDATE t SET s='0' WHERE id = '".$_GET['ID']."'");\n""", encoding="utf-8")
+    (tmp_path / "schema.sql").write_text("CREATE TABLE t (id INT PRIMARY KEY, s VARCHAR(2));", encoding="utf-8")
+    run_pipeline(php, tmp_path / "schema.sql", tmp_path / "out")
+
+    report = json.loads((tmp_path / "out" / "security_report.json").read_text(encoding="utf-8"))
+    entry = report["queries"][0]
+
+    assert entry["user_inputs"][0]["variable"] == "GET_ID"
+    assert entry["user_inputs"][0]["generated_handling"] == "bound_parameter"
+    assert entry["remediated"] is True

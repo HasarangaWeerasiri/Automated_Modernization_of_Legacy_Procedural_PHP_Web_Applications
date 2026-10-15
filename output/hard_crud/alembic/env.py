@@ -34,7 +34,12 @@ def _database_url():
 
     parsed = make_url(url)
 
-    if parsed.password is None and os.environ.get("C3_DB_PASSWORD"):
+    # SQLite URLs take no password (setting one makes the URL invalid).
+    if (
+        parsed.password is None
+        and os.environ.get("C3_DB_PASSWORD")
+        and parsed.get_backend_name() != "sqlite"
+    ):
         parsed = parsed.set(password=os.environ["C3_DB_PASSWORD"])
 
     return parsed
