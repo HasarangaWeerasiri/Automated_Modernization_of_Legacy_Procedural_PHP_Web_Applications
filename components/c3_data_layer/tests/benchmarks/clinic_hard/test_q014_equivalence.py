@@ -153,7 +153,7 @@ def main_pipeline_q014_function():
         if q["query_id"] == "Q014"
     )
 
-    assert len(converted) == 21
+    assert len(converted) == 22  # 22 Clinic sites (S22 mysqli_prepare detected since S2)
     assert q014["status"] == "CONVERTED"
     assert q014["query_shape"] == "CONDITIONAL_SELECT"
 

@@ -59,8 +59,9 @@ def test_q020_php_sqlalchemy_equivalence():
     recovered = recover_queries_from_ast(analyze_php_ast(LEGACY_DIR))
     converted = convert_queries(recovered)
 
-    assert len(converted) == 21
-    assert all(q["status"] == "CONVERTED" for q in converted)
+    assert len(converted) == 22  # 22 Clinic sites (S22 mysqli_prepare detected since S2)
+    # Every site except the prepared statement (S22, detected since S2) converts.
+    assert sum(q["status"] == "CONVERTED" for q in converted) == 21
 
     namespace = {}
     source = generate_data_access_source(converted)

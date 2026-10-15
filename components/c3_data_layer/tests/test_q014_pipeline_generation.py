@@ -52,8 +52,8 @@ class RecordingSession:
 def test_q014_generated_in_full_pipeline():
     recovered, converted, source = build_pipeline()
 
-    assert len(recovered) == 21
-    assert len(converted) == 21
+    assert len(recovered) == 22  # 22 Clinic sites (S22 mysqli_prepare detected since S2)
+    assert len(converted) == 22  # 22 Clinic sites (S22 mysqli_prepare detected since S2)
     assert sum(q["status"] == "CONVERTED" for q in converted) == 21
 
     q014 = next(q for q in converted if q["query_id"] == "Q014")

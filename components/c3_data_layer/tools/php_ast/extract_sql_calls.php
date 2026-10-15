@@ -108,6 +108,83 @@ function expressionToString(
 
 
 /**
+ * Procedural functions that execute or prepare SQL, mapped to the
+ * zero-based position of their SQL argument.
+ */
+const SQL_FUNCTION_ARGUMENT_POSITIONS = [
+    'mysqli_query' => 1,
+    'mysqli_real_query' => 1,
+    'mysqli_multi_query' => 1,
+    'mysqli_prepare' => 1,
+    'mysqli_execute_query' => 1,
+    'mysqli_stmt_prepare' => 1,
+    'mysql_query' => 0,
+    'mysql_unbuffered_query' => 0,
+    'mysql_db_query' => 1,
+];
+
+/**
+ * Object methods that execute or prepare SQL (mysqli and PDO).
+ * The SQL is always the first argument.
+ */
+const SQL_METHOD_NAMES = [
+    'query',
+    'prepare',
+    'exec',
+    'real_query',
+    'multi_query',
+    'execute_query',
+];
+
+/**
+ * Database APIs of other DBMSs. C3 targets MySQL only, so these are
+ * reported as UNSUPPORTED_EXECUTOR rows instead of being ignored.
+ */
+const UNSUPPORTED_DB_FUNCTIONS = [
+    'pg_query', 'pg_query_params', 'pg_prepare', 'pg_send_query',
+    'pg_send_query_params', 'pg_send_prepare',
+    'sqlite_query', 'sqlite_exec', 'sqlite_unbuffered_query',
+    'sqlsrv_query', 'sqlsrv_prepare', 'mssql_query',
+    'odbc_exec', 'odbc_prepare', 'odbc_do',
+    'oci_parse', 'db2_exec', 'db2_prepare',
+    'ibase_query', 'ibase_prepare', 'sybase_query',
+];
+
+/**
+ * Return the SQL argument expression of a call, or null.
+ *
+ * A PHP 8 named argument "query:" wins; otherwise the positional
+ * argument at $position is used, provided no named arguments precede
+ * it (named arguments make positions unreliable).
+ */
+function findSqlArgument(Node $call, int $position): ?Node
+{
+    foreach ($call->args as $argument) {
+        if (
+            $argument instanceof Node\Arg
+            && $argument->name instanceof Node\Identifier
+            && strtolower($argument->name->toString()) === 'query'
+        ) {
+            return $argument->value;
+        }
+    }
+
+    for ($index = 0; $index <= $position; $index++) {
+        $argument = $call->args[$index] ?? null;
+
+        if (!$argument instanceof Node\Arg || $argument->unpack) {
+            return null;
+        }
+
+        if ($argument->name !== null && $index < $position) {
+            return null;
+        }
+    }
+
+    return $call->args[$position]->value;
+}
+
+/**
  * Extract a readable method name.
  */
 function getMethodName(Node $name): ?string
@@ -667,34 +744,40 @@ foreach ($phpFiles as $phpFile) {
             $call->name->toString()
         );
 
-        if (!in_array(
-            $functionName,
-            [
-                'mysqli_query',
-                'mysql_query',
-            ],
-            true
-        )) {
+        /*
+         * Database calls that are recognised but not supported
+         * (other DBMS APIs). They are reported, never dropped.
+         */
+        if (in_array($functionName, UNSUPPORTED_DB_FUNCTIONS, true)) {
+            $results[] = [
+                'source_file' => $phpFile,
+                'source_line' => $call->getStartLine(),
+                'loop_context' => getLoopContext($call),
+                'executor' => $functionName,
+                'sql_argument' => null,
+                'status' => 'UNSUPPORTED_EXECUTOR',
+                'reason' => 'unsupported_executor',
+            ];
+
             continue;
         }
 
+        if (!array_key_exists($functionName, SQL_FUNCTION_ARGUMENT_POSITIONS)) {
+            continue;
+        }
 
         /*
-         * mysqli_query:
-         * argument 0 = connection
-         * argument 1 = SQL
-         *
-         * mysql_query:
-         * argument 0 = SQL
+         * Position of the SQL argument, e.g.
+         * mysqli_query($conn, $sql) -> 1, mysql_query($sql) -> 0.
+         * PHP 8 named arguments (query: $sql) take precedence.
          */
+        $sqlArgument = findSqlArgument(
+            $call,
+            SQL_FUNCTION_ARGUMENT_POSITIONS[$functionName]
+        );
 
-        $sqlArgumentIndex =
-            $functionName === 'mysqli_query'
-                ? 1
-                : 0;
 
-
-        if (!isset($call->args[$sqlArgumentIndex])) {
+        if ($sqlArgument === null) {
 
             $results[] = [
                 'source_file' => $phpFile,
@@ -710,8 +793,7 @@ foreach ($phpFiles as $phpFile) {
         }
 
 
-        $sqlNode =
-            $call->args[$sqlArgumentIndex]->value;
+        $sqlNode = $sqlArgument;
 
 
         $results[] = [
@@ -759,18 +841,16 @@ foreach ($phpFiles as $phpFile) {
 
         if (!in_array(
             $normalizedMethod,
-            [
-                'query',
-                'prepare',
-                'exec',
-            ],
+            SQL_METHOD_NAMES,
             true
         )) {
             continue;
         }
 
+        $sqlArgument = findSqlArgument($call, 0);
 
-        if (!isset($call->args[0])) {
+
+        if ($sqlArgument === null) {
 
             $results[] = [
                 'source_file' => $phpFile,
@@ -786,8 +866,7 @@ foreach ($phpFiles as $phpFile) {
         }
 
 
-        $sqlNode =
-            $call->args[0]->value;
+        $sqlNode = $sqlArgument;
 
 
         $results[] = [

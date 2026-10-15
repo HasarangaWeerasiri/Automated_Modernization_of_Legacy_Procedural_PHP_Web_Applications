@@ -1062,6 +1062,41 @@ def _resolve_isset_branch_condition(
     }
 
 
+MULTI_STATEMENT_EXECUTORS = frozenset({
+    "mysqli_multi_query",
+    "multi_query",
+})
+
+
+def _unanalysable_call_reason(
+    sql_call: dict,
+) -> tuple[str, str] | None:
+    """Return (reason_code, reason) for calls that cannot be recovered."""
+
+    if sql_call.get("status") == "UNSUPPORTED_EXECUTOR":
+        return (
+            "UNSUPPORTED_EXECUTOR",
+            f"Database API '{sql_call.get('executor')}' is not supported "
+            "(C3 targets MySQL via mysqli, mysql_* and PDO).",
+        )
+
+    if sql_call.get("sql_argument") is None:
+        return (
+            "MISSING_SQL_ARGUMENT",
+            "The SQL argument of the execution call could not be "
+            "identified.",
+        )
+
+    if sql_call.get("executor") in MULTI_STATEMENT_EXECUTORS:
+        return (
+            "MULTI_STATEMENT_EXECUTOR",
+            "Multi-statement execution cannot be converted into a single "
+            "parameterized statement.",
+        )
+
+    return None
+
+
 def recover_queries_from_ast(
     ast_data: dict,
 ) -> list[dict]:
@@ -1093,6 +1128,29 @@ def recover_queries_from_ast(
         sql_argument = sql_call.get(
             "sql_argument"
         )
+
+        # Every located execution point yields a row; calls that
+        # cannot be analysed are reported with an explicit reason.
+        early_reason = _unanalysable_call_reason(sql_call)
+
+        if early_reason is not None:
+            reason_code, reason = early_reason
+            recovered_queries.append(
+                {
+                    "query_id": query_id,
+                    "source_file": sql_call.get("source_file"),
+                    "source_line": sql_call.get("source_line"),
+                    "executor": sql_call.get("executor"),
+                    "sql_argument": sql_argument,
+                    "recovered_sql": None,
+                    "operation": None,
+                    "dynamic_variables": [],
+                    "status": "UNRESOLVED",
+                    "reason_code": reason_code,
+                    "reason": reason,
+                }
+            )
+            continue
 
         # Determine whether SQL is passed directly or through a variable.
         sql_argument_text = (sql_argument or "").strip()

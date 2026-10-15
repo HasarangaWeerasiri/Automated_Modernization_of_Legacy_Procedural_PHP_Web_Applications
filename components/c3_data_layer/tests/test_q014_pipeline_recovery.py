@@ -20,7 +20,7 @@ def test_q014_diagnostic_candidate_in_main_recovery():
     ast_data = analyze_php_ast(LEGACY_DIR)
     queries = recover_queries_from_ast(ast_data)
 
-    assert len(queries) == 21
+    assert len(queries) == 22  # 22 Clinic sites (S22 mysqli_prepare detected since S2)
 
     q014 = next(
         q for q in queries
@@ -54,7 +54,7 @@ def test_q014_guarded_conversion_in_main_pipeline():
     queries = recover_queries_from_ast(ast_data)
     converted = convert_queries(queries)
 
-    assert len(converted) == 21
+    assert len(converted) == 22  # 22 Clinic sites (S22 mysqli_prepare detected since S2)
 
     q014 = next(
         q for q in converted

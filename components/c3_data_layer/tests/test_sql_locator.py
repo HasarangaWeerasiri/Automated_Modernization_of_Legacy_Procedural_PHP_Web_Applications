@@ -63,7 +63,7 @@ def test_cross_file_function_metadata_is_extracted():
 
     data = analyze_php_ast(php_directory)
 
-    assert len(data["sql_calls"]) == 21
+    assert len(data["sql_calls"]) == 22  # 22 Clinic sites (S22 mysqli_prepare detected since S2)
     assert len(data["functions"]) == 1
 
     function = data["functions"][0]

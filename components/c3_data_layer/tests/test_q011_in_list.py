@@ -34,7 +34,7 @@ def generated_q011():
     recovered = recover_queries_from_ast(analyze_php_ast(LEGACY_DIR))
     converted = convert_queries(recovered)
 
-    assert len(converted) == 21
+    assert len(converted) == 22  # 22 Clinic sites (S22 mysqli_prepare detected since S2)
     assert sum(q["status"] == "CONVERTED" for q in converted) == 21
 
     source = generate_data_access_source(converted)
