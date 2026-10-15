@@ -1,0 +1,16 @@
+{
+  "experiment": "E1 PHP vs generated SQLAlchemy equivalence",
+  "date_utc": "2026-10-15T12:47:58.650315+00:00",
+  "git_head": "10c98f8dac7240495d935685d1927968e0b65105",
+  "mysql": "c3_e1_<app>_legacy / c3_e1_<app>_migrated, rebuilt before every case",
+  "apps": {
+    "hms_kishan0725": {
+      "sites": 44,
+      "verdicts": {
+        "INCONCLUSIVE": 12,
+        "FAIL": 5,
+        "PASS": 27
+      }
+    }
+  }
+}
