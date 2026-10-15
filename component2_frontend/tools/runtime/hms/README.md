@@ -44,17 +44,33 @@ API_BASE_URL=http://127.0.0.1:18090 node output/test-app/node_modules/next/dist/
 ```
 
 The replay API is a **test fixture standing in for Component 1**, never part of C2's output: one endpoint per
-query the harness resolved with literal SQL that is a plain `SELECT` with no request input, and one per page
-holding those queries; everything is marked `"substitute": "c2-replay"`. Which array a List reads is Stage 4's
-decision (reconciliation-spec §2.2, frozen): a page with several Lists gets `list_not_mapped_to_array`.
+query (of a page or a function component) the harness resolved with literal SQL that is a plain `SELECT` with no
+request input, and an endpoint-map entry per such query, keyed by its `queryNodeId` (reconciliation-spec v0.3,
+post-freeze): a List whose loop reads that query maps to it exactly. Everything is marked
+`"substitute": "c2-replay"`. Phase 4a used one page-level entry per page instead (commit `2c35b2b`), which Stage 4's
+one-List rule could not map.
 
-## Capture and compare
+## Capture, compare, classify
 
 ```
 venv/Scripts/python.exe tools/runtime/capture.py hms           # Chromium, JavaScript off, plain GET only
-venv/Scripts/python.exe tools/runtime/compare.py hms           # raw DOM comparison (no classification)
+venv/Scripts/python.exe tools/runtime/compare.py hms           # DOM comparison
+venv/Scripts/python.exe tools/runtime/classify.py hms          # one class per difference -> classified.json
+venv/Scripts/python.exe tools/runtime/simulate_css.py hms      # SIMULATION: generated + legacy stylesheets
 venv/Scripts/python.exe tools/runtime/side_by_side.py hms admin-panel1.php
 ```
+
+`classify.py` gives every difference one class: `flag:<kind>` only when the pipeline emitted that flag **at the
+node that printed the differing element** (or in the function component called inside it), `env:`, `norm:`, or
+`UNEXPLAINED`. Reviewed root causes of UNEXPLAINED items are in `findings.json` (they stay UNEXPLAINED).
+
+The "before data wiring" side (Phase 4a) is kept in `output/runtime/hms-4a/` (its captures), re-compared with the
+same `compare.py` and classified with `classify.py hms --folder hms-4a`; its pipeline is reproduced with the 4a
+generator of commit `2c35b2b` (page-level entries).
+
+Comparison fixes in Phase 4b (the comparison itself, not the pipeline): `style` values are compared in a canonical
+form (React writes `margin-top:50px` where PHP wrote `margin-top: 50px;`), and HTML boolean attributes are valued
+`""` (`required="required"` = `required=""`).
 
 Tool versions: `tools/runtime/requirements.txt` (Playwright 1.62.0, which pins Chromium build 1234, the build
 already installed; PyMySQL 1.2.3). The pipeline's own tests do not need them.

@@ -58,6 +58,7 @@ def test_an_empty_page_against_a_page_with_content():
     result = compare.compare("", "<html><body><p>x</p></body></html>")
     assert (result["legacyElements"], result["generatedElements"], result["matched"]) == (0, 1, 0)
     assert kinds(result) == [("extra", "body>p[0]")]
+    assert result["differences"][0]["generatedPath"] == "body>p[0]"
 
 
 def test_the_comparison_is_deterministic():
@@ -115,20 +116,20 @@ def test_only_a_plain_literal_select_is_replayable(q, reason):
 def test_the_generator_writes_endpoints_a_contract_and_a_map():
     types = generate.column_types(SCHEMA)
     pages = [
-        {"entrypoint": "legacy-apps/x/list.php", "route": "list", "queries": {
+        {"entrypoint": "legacy-apps/x/list.php", "queries": {
             "f001#00010": query('"select * from doctb"', ["username", "spec", "docFees", "note"], ["doctb"]),
             "f001#00020": query('"select * from doctb where spec=\'$s\'"', ["username"], ["doctb"], True)}},
-        {"entrypoint": "legacy-apps/x/join.php", "route": "join", "queries": {
+        {"entrypoint": "legacy-apps/x/join.php", "queries": {
             "f002#00010": query('"select username from doctb, appointmenttb"', ["username"],
                                 ["doctb", "appointmenttb"])}},
-        {"entrypoint": "legacy-apps/x/form.php", "route": "form", "queries": {
+        {"entrypoint": "legacy-apps/x/form.php", "queries": {
             "f003#00010": query('"select * from doctb where x=\'$x\'"', ["username"], ["doctb"], True)}}]
     result = generate.build(pages, types)
-    assert result["endpoint_map"]["endpoints"] == {"legacy-apps/x/list.php": {
-        "method": "get", "path": "/api/c2-replay/page/list", "status": "200", "mediaType": "application/json"}}
-    assert result["replay"]["queries"] == {"/api/c2-replay/f001-00010": {
-        "queryNodeId": "f001#00010", "sql": "select * from doctb", "columns": ["username", "spec", "docFees", "note"]}}
-    assert result["replay"]["pages"] == {"/api/c2-replay/page/list": {"q_f001_00010": "/api/c2-replay/f001-00010"}}
+    # Phase 4b (reconciliation-spec v0.3): one map entry per replayable query, keyed by its queryNodeId
+    assert result["endpoint_map"]["endpoints"] == {"f001#00010": {
+        "method": "get", "path": "/api/c2-replay/f001-00010", "status": "200", "mediaType": "application/json"}}
+    assert result["replay"] == {"substitute": "c2-replay", "queries": {"/api/c2-replay/f001-00010": {
+        "queryNodeId": "f001#00010", "sql": "select * from doctb", "columns": ["username", "spec", "docFees", "note"]}}}
     item = result["contract"]["paths"]["/api/c2-replay/f001-00010"]["get"]["responses"]["200"]["content"][
         "application/json"]["schema"]["properties"]["rows"]["items"]
     assert item == {"type": "object", "required": ["username", "spec", "docFees"], "properties": {
@@ -144,14 +145,14 @@ def test_the_generator_writes_endpoints_a_contract_and_a_map():
 def test_the_substitute_contract_and_map_load_and_reconcile(tmp_path):
     import json
     from src.mapping.loader import load_contract, load_endpoint_map
-    result = generate.build([{"entrypoint": "legacy-apps/x/list.php", "route": "list", "queries": {
+    result = generate.build([{"entrypoint": "legacy-apps/x/list.php", "queries": {
         "f001#00010": query('"select * from doctb"', ["username", "spec"], ["doctb"])}}],
         generate.column_types(SCHEMA))
     (tmp_path / "c.json").write_text(json.dumps(result["contract"]), encoding="utf-8")
     (tmp_path / "m.json").write_text(json.dumps(result["endpoint_map"]), encoding="utf-8")
     contract, endpoints = load_contract(tmp_path / "c.json"), load_endpoint_map(tmp_path / "m.json")
-    ref = endpoints["legacy-apps/x/list.php"]
-    assert (ref.method, ref.path) == ("get", "/api/c2-replay/page/list")
+    ref = endpoints["f001#00010"]
+    assert (ref.method, ref.path) == ("get", "/api/c2-replay/f001-00010")
     assert (ref.method, ref.path, ref.status, ref.media_type) in contract.endpoints
 
 

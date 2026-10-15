@@ -5,7 +5,12 @@ Both captures are parsed with html5lib (the parser the nesting check already use
   - comments are dropped; `<script>` elements are dropped with their content (inline JS is out of scope; Next.js
     adds its own runtime scripts, which do not run with JavaScript disabled either);
   - text: whitespace runs collapse to one space, ends trimmed; a text that is only whitespace is no text;
-  - attributes: sorted by name, values with whitespace collapsed and trimmed;
+  - attributes: sorted by name, values with whitespace collapsed and trimmed; a `style` value is written in a
+    canonical form (each declaration `property:value` with the spaces around `:` and `;` removed, property names
+    lower-cased as CSS reads them, empty declarations and the trailing `;` dropped, order kept), because React
+    serialises the same declarations as `margin-top:50px` where the PHP page wrote `margin-top: 50px;`; the value
+    of an HTML boolean attribute (`required`, `readonly`, `selected`, ...) is written "" (its presence is its
+    meaning: `required="required"` and React's `required=""` are the same);
   - generated side only: the empty `<div hidden>` that Next.js puts first in every `<body>` (a streaming boundary
     holding two comments) is dropped; it is framework scaffolding, not page content, and would otherwise be
     aligned with the legacy page's first `<div>`.
@@ -33,11 +38,26 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]  # component2_frontend/
 OUTPUT = ROOT / "output" / "runtime"
 DROPPED = ("script",)
+# HTML Living Standard boolean attributes: only presence matters
+BOOLEAN = frozenset(("allowfullscreen", "async", "autofocus", "autoplay", "checked", "controls", "default", "defer",
+                     "disabled", "formnovalidate", "hidden", "inert", "ismap", "itemscope", "loop", "multiple",
+                     "muted", "nomodule", "novalidate", "open", "playsinline", "readonly", "required", "reversed",
+                     "selected"))
 _SPACE = re.compile(r"[ \t\n\f\r]+")
 
 
 def _text(value: str | None) -> str:
     return _SPACE.sub(" ", value or "").strip()
+
+
+def _style(value: str) -> str:
+    """A style attribute's declarations in a canonical form (same declarations, same order)."""
+    declarations = []
+    for declaration in value.split(";"):
+        name, colon, rest = declaration.partition(":")
+        if name.strip() or rest.strip():
+            declarations.append(f"{name.strip().lower()}{colon}{_text(rest)}")
+    return ";".join(declarations)
 
 
 class Node:
@@ -63,7 +83,8 @@ def _normalise(element) -> Node:
             continue
         children.append(_normalise(child))
         pieces.append(child.tail or "")
-    attrs = tuple(sorted((name, _text(value)) for name, value in element.attrib.items()))
+    attrs = tuple(sorted((name, _style(value) if name == "style" else "" if name in BOOLEAN else _text(value))
+                         for name, value in element.attrib.items()))
     return Node(element.tag, attrs, _text(" ".join(pieces)), children)
 
 
@@ -102,9 +123,13 @@ def _step(path: str, siblings: list, index: int) -> str:
     return f"{path}>{tag}[{sum(s.tag == tag for s in siblings[:index])}]"
 
 
-def align(legacy: Node, generated: Node, path: str = "body") -> tuple[int, list]:
-    """(matched element pairs under and including this pair, differences)."""
+def align(legacy: Node, generated: Node, path: str = "body", gpath: str = "body",
+          matches: list | None = None) -> tuple[int, list]:
+    """(matched element pairs under and including this pair, differences). `path` is the legacy element's path,
+    `gpath` the generated one's; `matches`, when given, collects every matched (legacy path, generated path)."""
     matched, differences = 1, []
+    if matches is not None:
+        matches.append((path, gpath))
     if legacy.attrs != generated.attrs:
         names = sorted({n for n, _ in legacy.attrs} ^ {n for n, _ in generated.attrs}
                        | {n for (n, v) in legacy.attrs if (n, v) not in generated.attrs and n in dict(generated.attrs)})
@@ -120,18 +145,30 @@ def align(legacy: Node, generated: Node, path: str = "body") -> tuple[int, list]
     for j, child in enumerate(generated.children):
         if j not in paired_g:
             differences.append({"kind": "extra", "path": _step(path, generated.children, j),
-                                "elements": child.size()})
+                                "generatedPath": _step(gpath, generated.children, j), "elements": child.size()})
     for i, j in pairs:
         sub_matched, sub_differences = align(legacy.children[i], generated.children[j],
-                                             _step(path, legacy.children, i))
+                                             _step(path, legacy.children, i), _step(gpath, generated.children, j),
+                                             matches)
         matched += sub_matched
         differences += sub_differences
     return matched, differences
 
 
-def compare(legacy_html: str, generated_html: str) -> dict:
+def find(node: Node, path: str) -> Node | None:
+    """The element at a path such as body>div[0]>p[1] (as align writes it), or None."""
+    for step in path.split(">")[1:]:
+        tag, index = step[:-1].split("[")
+        same = [c for c in node.children if c.tag == tag]
+        if int(index) >= len(same):
+            return None
+        node = same[int(index)]
+    return node
+
+
+def compare(legacy_html: str, generated_html: str, matches: list | None = None) -> dict:
     legacy, generated = body(legacy_html), body(generated_html, generated=True)
-    matched, differences = align(legacy, generated)
+    matched, differences = align(legacy, generated, matches=matches)
     order = {"missing": 0, "extra": 1, "attributes": 2, "text": 3}
     differences.sort(key=lambda d: (d["path"], order[d["kind"]]))
     return {"legacyElements": legacy.size() - 1, "generatedElements": generated.size() - 1,
@@ -156,6 +193,8 @@ def main(argv: list[str]) -> int:
     report = {"app": argv[0], "normalisation": {
         "comments": "dropped", "script": "elements dropped with their content",
         "text": "whitespace collapsed, trimmed", "attributes": "sorted, values whitespace-collapsed",
+        "style": "declarations in a canonical form (spaces around : and ; removed, trailing ; dropped, order kept)",
+        "boolean": "HTML boolean attributes valued \"\" (presence is their meaning)",
         "nextjs": "the empty <div hidden> first in the generated <body> (streaming boundary) dropped",
         "alignment": "body element trees; children matched by LCS of tag names, recursively"},
         "totals": totals, "pages": pages}

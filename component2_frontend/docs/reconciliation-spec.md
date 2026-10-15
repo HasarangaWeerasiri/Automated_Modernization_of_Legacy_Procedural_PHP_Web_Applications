@@ -1,9 +1,9 @@
-# Component 2 — Stage 3 and Stage 4 Specification (v0.2)
+# Component 2 — Stage 3 and Stage 4 Specification (v0.3)
 
 | Item | Value |
 |---|---|
 | Status | Draft, owner-approved for implementation on mocks |
-| Date | 8 October 2026 (v0.2: decisions after the first Stage 3–4 run) |
+| Date | 8 October 2026 (v0.2: decisions after the first Stage 3–4 run · v0.3, 15 Oct: **post-freeze** data-wiring change for Phase 4 — per-query endpoints; logged in `docs/post-freeze-log.md`) |
 | Owner | Jayawardhana R D L L (IT23213876) |
 | Covers | Stage 3 (data requirement recovery) and Stage 4 (contract reconciliation) |
 | Novelty link | Stage 4 is the core contribution: it checks two **independently derived** artefacts (C2's recovered needs, C1's synthesised contract) against each other **before** the app is assembled |
@@ -85,6 +85,12 @@ For each field need, look for a property with the **same name** as the column in
 **Collection (List) result.** Each List's collection need gets its own result: `mapped` (to exactly one
 array in the response schema) or `cannot_reconcile`. Reported as a separate count, not mixed with field needs.
 
+**Per-query endpoints (v0.3, post-freeze).** If the endpoint map has an entry keyed by the List's loop
+`queryNodeId` (the query whose rows the loop fetches), that endpoint's array is the List's collection — an
+**exact** mapping, not a guess, so the "exactly one List and one array" condition does not apply to it. Page-level
+entries keep the v0.2 rule. With **no** contract / endpoint map, Stage 4's output is unchanged (this is what keeps
+the Phase 5 evaluation, which has no contracts, unaffected).
+
 **Extra `cannot_reconcile` reasons (approved):**
 
 | Reason | When |
@@ -146,6 +152,7 @@ Only when both types are known (contract type and source column type from C3's s
 
 | Date | Decision | Reason |
 |---|---|---|
+| 15 Oct 2026 | **Post-freeze:** per-query endpoint mapping | The one-List rule left all 16 HMS Lists without data in Phase 4; a per-query entry names the exact query, so no guess is involved. Proven to leave outputs unchanged when there is no contract |
 | 8 Oct 2026 | Accept the agent's 4 extra `cannot_reconcile` reasons | Each names a distinct, checkable condition; none occurs on the mocks |
 | 8 Oct 2026 | Collection needs get their own result (`mapped` / `cannot_reconcile`) | They are needs, but not field needs; mixing them would distort the field counts |
 | 8 Oct 2026 | Needs from abstained content are kept, marked `fromAbstained` | The data is still rendered; hiding it would under-report needs |

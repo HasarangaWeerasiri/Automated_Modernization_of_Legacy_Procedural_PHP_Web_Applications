@@ -6,15 +6,15 @@ SELECT with no request input** (no interpolated value, nothing but the literal t
 known, and writes, under tools/runtime/replay/build/<app>/ (git-ignored):
 
   replay.json        what the server (server.py) answers: one endpoint per query, GET /api/c2-replay/<id>
-                     (the query node id with "#" written "-"), returning {"rows": [...]}, and one per page that has
-                     such queries, GET /api/c2-replay/page/<route>, returning one array per query
+                     (the query node id with "#" written "-"), returning {"rows": [...]}
   contract.json      an OpenAPI 3.1 contract for those endpoints, column types from the app's schema (.sql)
-  endpoint_map.json  page entrypoint -> its page endpoint, so Stages 4-5 run with it
+  endpoint_map.json  queryNodeId -> its endpoint (reconciliation-spec v0.3, per-query entries), so Stages 4-5 run
+                     with it: a List whose loop reads that query maps to it exactly
   report.json        every query, replayable or not, and why
 
+Queries are taken from the app's pages and function components (spec v0.13: a function component may fetch).
 Everything is marked "substitute": "c2-replay". No input is invented: a query with request input stays out, and
-its page keeps whatever Stage 4 decides (no_endpoint when the page has no replayable query). Which array a List
-reads is Stage 4's decision (reconciliation-spec section 2.2), not this file's.
+the List that reads it keeps whatever Stage 4 decides (no_endpoint).
 
 Usage, from component2_frontend/ (after tools/harness/run_apps.py has written output/apps/<app>/):
     venv/Scripts/python.exe tools/runtime/replay/generate.py hms
@@ -30,7 +30,6 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]  # component2_frontend/
 sys.path.insert(0, str(ROOT / "tools" / "harness"))
 from app import APPS  # noqa: E402
-from run_apps import route_of  # noqa: E402
 
 SUBSTITUTE = "c2-replay"
 PREFIX = "/api/c2-replay"
@@ -98,8 +97,9 @@ def item_schema(query: dict, types: dict) -> dict | None:
 
 
 def build(pages: list[dict], types: dict) -> dict:
-    """pages: [{entrypoint, route, queries: {id: query}}] -> {replay, contract, endpoint_map, report}."""
-    replay = {"substitute": SUBSTITUTE, "queries": {}, "pages": {}}
+    """pages: [{entrypoint, queries: {id: query}}] (pages and function components) ->
+    {replay, contract, endpoint_map, report}."""
+    replay = {"substitute": SUBSTITUTE, "queries": {}}
     paths, endpoints, report = {}, {}, []
 
     def operation(name: str, schema: dict, summary: str) -> dict:
@@ -108,7 +108,6 @@ def build(pages: list[dict], types: dict) -> dict:
                             "schema": schema}}}}}}
 
     for page in sorted(pages, key=lambda p: p["entrypoint"]):
-        arrays = {}
         for query_id, query in sorted(page["queries"].items()):
             reason = plain_select(query)
             item = item_schema(query, types) if reason is None else None
@@ -124,16 +123,7 @@ def build(pages: list[dict], types: dict) -> dict:
             paths[path] = operation(f"replay_{safe(query_id).replace('-', '_')}", {
                 "type": "object", "required": ["rows"], "properties": {"rows": {"type": "array", "items": item}}},
                 f"rows of {query_id} (substitute: {SUBSTITUTE})")
-            arrays["q_" + safe(query_id).replace("-", "_")] = (path, item)
-        if arrays:
-            path = f"{PREFIX}/page/{page['route']}"
-            replay["pages"][path] = {name: query_path for name, (query_path, _) in sorted(arrays.items())}
-            paths[path] = operation(f"replay_page_{page['route'].replace('/', '_').replace('-', '_')}", {
-                "type": "object", "required": sorted(arrays),
-                "properties": {name: {"type": "array", "items": item} for name, (_, item) in sorted(arrays.items())}},
-                f"the replayable queries of {page['entrypoint']} (substitute: {SUBSTITUTE})")
-            endpoints[page["entrypoint"]] = {"method": "get", "path": path, "status": "200",
-                                             "mediaType": "application/json"}
+            endpoints[query_id] = {"method": "get", "path": path, "status": "200", "mediaType": "application/json"}
     contract = {"openapi": "3.1.0", "info": {
         "title": "C2 replay substitute", "version": "1", "x-c2-substitute": SUBSTITUTE,
         "description": "Test fixture for the Phase 4 runtime check, standing in for Component 1. Not C2 output."},
@@ -144,17 +134,17 @@ def build(pages: list[dict], types: dict) -> dict:
 
 
 def app_pages(app: str) -> list[dict]:
-    """The page units of an app's last harness run (output/apps/<app>/) with their queries."""
+    """The pages and function components of an app's last harness run (output/apps/<app>/) with their queries.
+    Shells and functions not in the app are left out (they render no List of their own here)."""
     folder = ROOT / "output" / "apps" / app
     index = json.loads((folder / "index.json").read_text(encoding="utf-8"))
     pages = []
     for entry in index["pages"]:
-        if entry["role"] != "page" or entry.get("notGenerated"):
-            continue  # function components and shells do not fetch (spec section 8a)
+        if entry["role"] not in ("page", "component") or entry.get("notGenerated"):
+            continue
         timeline = json.loads((folder / entry["key"] / "timeline.json").read_text(encoding="utf-8"))
         if timeline.get("queries"):
-            pages.append({"entrypoint": timeline["entrypoint"], "route": route_of(entry["path"], index["docroot"])[0]
-                          or "index", "queries": timeline["queries"]})
+            pages.append({"entrypoint": timeline["entrypoint"], "queries": timeline["queries"]})
     return pages
 
 
@@ -186,8 +176,8 @@ def main(argv: list[str]) -> int:
         (out / f"{name}.json").write_text(json.dumps(doc, indent=2, sort_keys=False) + "\n", encoding="utf-8",
                                           newline="\n")
     replayable = sum(r["replayable"] for r in result["report"])
-    print(f"{app}: {len(result['report'])} queries in pages, {replayable} replayable, "
-          f"{len(result['endpoint_map']['endpoints'])} pages mapped -> {out}")
+    print(f"{app}: {len(result['report'])} queries in pages and function components, {replayable} replayable "
+          f"(per-query endpoint-map entries) -> {out}")
     return 0
 
 

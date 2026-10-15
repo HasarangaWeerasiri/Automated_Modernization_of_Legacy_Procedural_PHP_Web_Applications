@@ -1,4 +1,5 @@
-"""One image with a page's two captures next to each other (legacy left, generated right), for the report.
+"""One image with a page's captures next to each other (legacy, generated and, when simulate_css.py has run, the
+generated page with the legacy stylesheets: a SIMULATION), for the report.
 
 Usage, from component2_frontend/ (after tools/runtime/capture.py <app>):
     venv/Scripts/python.exe tools/runtime/side_by_side.py hms admin-panel1.php
@@ -20,7 +21,9 @@ figcaption {{ font-weight: bold; margin-bottom: 6px; }}
 </style><div class="row">
 <figure><figcaption>legacy: {legacy}</figcaption><img src="legacy/{page}.png"></figure>
 <figure><figcaption>generated: {generated}</figcaption><img src="generated/{page}.png"></figure>
-</div>"""
+{third}</div>"""
+THIRD = ("<figure><figcaption>SIMULATION: generated + legacy stylesheets</figcaption>"
+         '<img src="generated-with-legacy-css/{page}.png"></figure>')
 
 
 def main(argv: list[str]) -> int:
@@ -31,10 +34,11 @@ def main(argv: list[str]) -> int:
     out = OUTPUT / app
     route = page.removesuffix(".php")
     sheet = out / f"{page}.side-by-side.html"
-    sheet.write_text(PAGE.format(page=page, legacy=f"/{page}", generated=f"/{route}"), encoding="utf-8")
+    third = THIRD.format(page=page) if (out / "generated-with-legacy-css" / f"{page}.png").exists() else ""
+    sheet.write_text(PAGE.format(page=page, legacy=f"/{page}", generated=f"/{route}", third=third), encoding="utf-8")
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch()
-        view = browser.new_page(viewport={"width": 1344, "height": 800})
+        view = browser.new_page(viewport={"width": 2000 if third else 1344, "height": 800})
         view.goto(sheet.as_uri(), wait_until="load")
         view.screenshot(path=str(out / f"{page}.side-by-side.png"), full_page=True)
         browser.close()

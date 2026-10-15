@@ -1,7 +1,7 @@
 """The substitute replay API (a test fixture standing in for Component 1, Phase 4 runtime check only).
 
 Serves what generate.py wrote in build/<app>/replay.json: GET /api/c2-replay/<id> runs that query's exact SQL
-and answers {"rows": [...]}; GET /api/c2-replay/page/<route> answers one array per replayable query of the page.
+and answers {"rows": [...]}.
 Read-only: it connects as the SELECT-only user c2replay (tools/runtime/hms/initdb/02-replay-user.sql) and runs
 nothing but the recorded SQL. Values are converted for JSON only (DECIMAL -> number, dates -> ISO text).
 
@@ -52,8 +52,6 @@ def handler(replay: dict):
             path = self.path.split("?", 1)[0].rstrip("/")
             if path in replay["queries"]:
                 body = {"rows": rows(replay["queries"][path]["sql"])}
-            elif path in replay["pages"]:
-                body = {name: rows(replay["queries"][query]["sql"]) for name, query in replay["pages"][path].items()}
             else:
                 self.send_error(404, "not a replay endpoint")
                 return
@@ -77,8 +75,7 @@ def main(argv: list[str]) -> int:
     port = int(argv[argv.index("--port") + 1]) if "--port" in argv else 18090
     replay = json.loads((HERE / "build" / argv[0] / "replay.json").read_text(encoding="utf-8"))
     server = ThreadingHTTPServer(("127.0.0.1", port), handler(replay))
-    print(f"replay API for {argv[0]} on http://127.0.0.1:{port} ({len(replay['queries'])} queries, "
-          f"{len(replay['pages'])} pages)", flush=True)
+    print(f"replay API for {argv[0]} on http://127.0.0.1:{port} ({len(replay['queries'])} queries)", flush=True)
     server.serve_forever()
     return 0
 

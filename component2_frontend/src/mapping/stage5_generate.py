@@ -66,6 +66,7 @@ from src.model import (
     ComponentNode,
     ComponentTree,
     Contract,
+    EndpointRef,
     GeneratedComponent,
     GeneratedFile,
     GenerationConfig,
@@ -230,6 +231,18 @@ class _Row:
     type_code: str  # the row's TypeScript type
 
 
+@dataclass(frozen=True)
+class _Query:
+    """A List's own endpoint (reconciliation-spec v0.3, spec v0.13): what the function rendering it fetches."""
+
+    ref: EndpointRef
+    schema: SchemaType
+    fetch_name: str  # e.g. getApiC2ReplayF00200138
+    response_type: str
+    local: str  # the awaited result, e.g. apiC2ReplayF00200138
+    array: str  # the response's array property that holds the rows
+
+
 @dataclass
 class _Ctx:
     file: _File
@@ -245,6 +258,7 @@ class _Ctx:
     in_abstained: bool = False
     silent: bool = False  # inside an R-I7 region: nothing is rendered, only its flags are collected
     uses: set = field(default_factory=set)  # props the function reads: items, row, data
+    fetches: set = field(default_factory=set)  # spec v0.13: ids of Lists whose own endpoint this function fetches
     locals: list = field(default_factory=list)
     pending: list = field(default_factory=list)  # abstained functions to write after this one
 
@@ -365,6 +379,18 @@ class Generator:
         stem = pascal(ref.path) if ref else ""
         self.fetch_name = f"get{stem}"
         self.response_type = (self.schema.ref or f"{stem}Response") if self.schema else None
+        # reconciliation-spec v0.3 / spec v0.13 (post-freeze): a List mapped to its loop query's own endpoint
+        self.query_data = {}
+        for list_id, list_ref in self.report.list_endpoints:
+            mapped = self.collections.get(list_id)
+            found = contract.endpoints.get((list_ref.method, list_ref.path, list_ref.status, list_ref.media_type))
+            if mapped is None or mapped.result != "mapped" or found is None or found.method != "get" \
+                    or "{" in list_ref.path:
+                continue
+            list_stem = pascal(list_ref.path)
+            self.query_data[list_id] = _Query(list_ref, found.schema, f"get{list_stem}",
+                                              found.schema.ref or f"{list_stem}Response",
+                                              list_stem[:1].lower() + list_stem[1:], mapped.schema_property)
 
     def _names(self) -> None:
         self.names, used, lists, sections = {}, set(), 0, 0
@@ -382,7 +408,9 @@ class Generator:
             if node.type == "List":
                 lists += 1
                 mapped = self.collections.get(self.ids[id(node)])
-                if mapped is not None and mapped.result == "mapped":  # AppointmentsList / Item / Empty
+                # (a List with its own endpoint (spec v0.13) keeps the route-based name: every such endpoint's
+                # array is `rows`, so the array's name would give two pages' different Lists one file name)
+                if mapped is not None and mapped.result == "mapped" and self.ids[id(node)] not in self.query_data:
                     stem = pascal(mapped.schema_property)
                     self.names[id(node)] = unique(stem + "List")
                 else:  # ViewList1 / ViewList1Item / ViewList1Empty
@@ -404,7 +432,14 @@ class Generator:
         loop = next((e for n in self.outputs for e in n.enclosed_by if e.node_id == list_node.source_ids[0]), None)
         mapped = self.collections.get(list_id)
         fields, type_code = None, "Record<string, unknown>"
-        if mapped is not None and mapped.result == "mapped" and self.schema is not None:
+        query = self.query_data.get(list_id)
+        if query is not None:  # spec v0.13: the rows come from the List's own endpoint
+            array = dict(query.schema.properties).get(query.array)
+            if array is not None and array.kind == "array" and array.items is not None \
+                    and array.items.kind == "object":
+                fields = array.items.properties
+                type_code = array.items.ref or f"{query.response_type}[{jsx.js_string(query.array)}][number]"
+        elif mapped is not None and mapped.result == "mapped" and self.schema is not None:
             array = dict(self.schema.properties).get(mapped.schema_property)
             if array is not None and array.kind == "array" and array.items is not None \
                     and array.items.kind == "object":
@@ -1373,8 +1408,9 @@ class Generator:
             self.flag(ctx, "abstained_code_not_generated", INFO, source, e.detail, mark=ctx.function_key)
             return
         self.place_markup_flags(None, inner, [])
-        slot.header = f"function {name}({self.signature(inner.uses, inner.row, required=())}) {{"
-        slot.locals, slot.body = inner.locals, body
+        fetches = self.fetch_locals(inner)
+        slot.header = f"{'async ' if fetches else ''}function {name}({self.signature(inner.uses, inner.row, required=())}) {{"
+        slot.locals, slot.body = fetches + inner.locals, body
         for pending in inner.pending:
             self.abstained_function(pending, inner)
 
@@ -1440,7 +1476,11 @@ class Generator:
         attrs = []
         if component.type == "List":
             collection = self.collections.get(self.ids[id(component)])
-            if collection is not None and collection.result == "mapped" and self.schema is not None:
+            query = self.query_data.get(self.ids[id(component)])
+            if query is not None:  # spec v0.13: the function rendering the List fetches its own endpoint
+                attrs.append(jsx.Attr("items", code=prop_access(query.local, query.array)))
+                ctx.fetches.add(self.ids[id(component)])
+            elif collection is not None and collection.result == "mapped" and self.schema is not None:
                 attrs.append(jsx.Attr("items", code=prop_access("data", collection.schema_property)))
                 ctx.uses.add("data")
             else:
@@ -1485,10 +1525,12 @@ class Generator:
             body = self.nodes(root.children if component.type in ("Item", "Empty") else [root], ctx)
         except GenerationError as e:
             body = self.component_fallback(component, name, ctx, e, files, generated, pending_flags)
-        slot = _Function(name, "", ctx.locals, body, key)
+        fetches = self.fetch_locals(ctx)
+        slot = _Function(name, "", fetches + ctx.locals, body, key)
         file.functions.insert(0, slot)
         props = set(ctx.uses) | set(required)
-        slot.header = f"export function {name}({self.signature(props, ctx.row, required, component, ctx.outer)}) {{"
+        slot.header = (f"export {'async ' if fetches else ''}function {name}("
+                       f"{self.signature(props, ctx.row, required, component, ctx.outer)}) {{")
         for pending in ctx.pending:
             self.abstained_function(pending, ctx)
         self.generated[id(component)] = (name, props)
@@ -1508,6 +1550,7 @@ class Generator:
         for state in (file.entries, file.functions, file.imports, file.type_imports):
             state.clear()
         ctx.uses.clear()
+        ctx.fetches.clear()
         ctx.locals.clear()
         ctx.pending.clear()
         self.pending_flags = pending_flags
@@ -1555,6 +1598,16 @@ class Generator:
         if not names:
             return ""
         return "{ " + ", ".join(names) + " }: { " + "; ".join(types) + " }"
+
+    def fetch_locals(self, ctx: _Ctx) -> list:
+        """Spec v0.13: `const <local> = await <fetch>();` for each List endpoint the function's Lists read (once per
+        endpoint, by name), importing the fetch functions. Empty without per-query endpoints."""
+        lines = {}
+        for list_id in ctx.fetches:
+            query = self.query_data[list_id]
+            ctx.file.use(self.lib(ctx.file, "api"), query.fetch_name)
+            lines[query.local] = f"const {query.local} = await {query.fetch_name}();"
+        return [lines[local] for local in sorted(lines)]
 
     def file(self, path: str) -> _File:
         if path not in self.files:
@@ -1640,12 +1693,13 @@ class Generator:
         if self.page_gap is not None and not unit:
             body.insert(0, self.todo("page", self.page_gap, ctx))
         fetch = "data" in ctx.uses and not unit
+        fetches = self.fetch_locals(ctx)  # spec v0.13: a function component fetches its Lists' own endpoints too
         if unit:
-            header = f"export function {self.root_name}({self.unit_signature(page)}) {{"
+            header = f"export {'async ' if fetches else ''}function {self.root_name}({self.unit_signature(page)}) {{"
         else:
-            header = f"export default {'async ' if fetch else ''}function Page() {{"
+            header = f"export default {'async ' if fetch or fetches else ''}function Page() {{"
         page.functions.insert(0, _Function(self.root_name, header, (
-            [f"const data = await {self.fetch_name}();"] if fetch else []) + ctx.locals, body, key))
+            [f"const data = await {self.fetch_name}();"] if fetch else []) + fetches + ctx.locals, body, key))
         if self.layout.mode == "shell":
             self.write_layout()
         if fetch:
@@ -1710,12 +1764,22 @@ class Generator:
         files = {"lib/c2-todo.tsx": C2TODO_SOURCE}
         types = self.api_types()
         files["lib/api-types.ts"] = types
-        if self.schema is not None:
+        if self.schema is not None or self.query_data:
             files["lib/api.ts"] = self.api_module()
         return files
 
+    def responses(self) -> list:
+        """(response type, schema, path, fetch name) of every endpoint this unit fetches: the page's, then the
+        Lists' own (spec v0.13), each once."""
+        found = {}
+        if self.schema is not None:
+            found[self.response_type] = (self.response_type, self.schema, self.report.endpoint.path, self.fetch_name)
+        for query in sorted(self.query_data.values(), key=lambda q: q.fetch_name):
+            found.setdefault(query.response_type, (query.response_type, query.schema, query.ref.path, query.fetch_name))
+        return list(found.values())
+
     def api_types(self) -> str:
-        if self.schema is None:
+        if self.schema is None and not self.query_data:
             return "// No mapped endpoint: this page uses no response types.\nexport {};\n"
         named: dict[str, str] = {}
 
@@ -1740,25 +1804,25 @@ class Generator:
                     schema.kind, "unknown")
             return f"{code} | null" if schema.nullable and not top else code
 
-        response = ts(self.schema, 0, top=True)
-        blocks = [f"export type {name} = {body};" for name, body in named.items() if name != self.response_type]
-        if self.response_type not in named:
-            blocks.append(f"export type {self.response_type} = {response};")
-        else:
-            blocks.insert(0, f"export type {self.response_type} = {named[self.response_type]};")
+        bodies = {name: ts(schema, 0, top=True) for name, schema, _, _ in self.responses()}
+        blocks = [f"export type {name} = {body};" for name, body in named.items() if name not in bodies]
+        blocks += [f"export type {name} = {body};" for name, body in bodies.items() if name not in named]
+        blocks[:0] = [f"export type {name} = {named[name]};" for name in bodies if name in named]
         header = ("// Response types for this page, from Component 1's contract (docs/generation-spec.md section 8).\n"
                   "// Fields not in the contract do not appear: a missing field is a C2Todo, never row.<field>.\n")
         return header + "\n" + "\n\n".join(blocks) + "\n"
 
     def api_module(self) -> str:
         """lib/api.ts for a page with a mapped endpoint: the typed fetch function, and authHeaders (exported)."""
-        path = self.report.endpoint.path
-        lines = [f'import type {{ {self.response_type} }} from "./api-types";', "",
+        responses = self.responses()
+        lines = [f'import type {{ {", ".join(sorted(r[0] for r in responses))} }} from "./api-types";', "",
                  "// TODO(C2): token forwarding is Component 1's design (docs/generation-spec.md section 8).",
-                 "export function authHeaders(): Record<string, string> {", "  return {};", "}",
-                 "", f"export async function {self.fetch_name}(): Promise<{self.response_type}> {{",
-                 f"  const response = await fetch(`${{process.env.{self.config.api_base_url_env}}}{path}`, {{",
-                 '    cache: "no-store",', "    headers: authHeaders(),", "  });", "  return response.json();", "}"]
+                 "export function authHeaders(): Record<string, string> {", "  return {};", "}"]
+        for response_type, _, path, fetch_name in responses:
+            lines += ["", f"export async function {fetch_name}(): Promise<{response_type}> {{",
+                      f"  const response = await fetch(`${{process.env.{self.config.api_base_url_env}}}{path}`, {{",
+                      '    cache: "no-store",', "    headers: authHeaders(),", "  });", "  return response.json();",
+                      "}"]
         return "\n".join(lines) + "\n"
 
     def render(self, file: _File) -> tuple[str, dict]:
@@ -1809,6 +1873,9 @@ class Generator:
             collect(schema.items)
 
         collect(self.schema)
+        for query in self.query_data.values():  # spec v0.13: the Lists' own endpoints
+            names.add(query.response_type)
+            collect(query.schema)
         return names
 
     def nesting_check(self) -> None:

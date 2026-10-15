@@ -1,8 +1,8 @@
-# Component 2 — Stage 5 Generation Specification (v0.12)
+# Component 2 — Stage 5 Generation Specification (v0.13)
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. v0.5 adds what the Phase 1 whole-app run needed (§5a, §8, §8a). v0.6: browser-equivalent markup (§5b), per-part ids, route groups. v0.7: corrections after Phase 2b (§5 form state, §5b stray end tags and loop rows, §8a routes and calls). v0.8: phpBlog rules (§6a), implied end tags, start-tag fallback. v0.9: step-2 corrections (§6a). v0.10: `header_redirect` flag. v0.11: error-output-only files are not pages. v0.12: AJAX endpoints, whitespace-only includes; frozen together with the rules (v1.0). Evaluation apps stay locked until the gold standard is committed |
+| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. v0.5 adds what the Phase 1 whole-app run needed (§5a, §8, §8a). v0.6: browser-equivalent markup (§5b), per-part ids, route groups. v0.7: corrections after Phase 2b (§5 form state, §5b stray end tags and loop rows, §8a routes and calls). v0.8: phpBlog rules (§6a), implied end tags, start-tag fallback. v0.9: step-2 corrections (§6a). v0.10: `header_redirect` flag. v0.11: error-output-only files are not pages. v0.12: AJAX endpoints, whitespace-only includes; frozen together with the rules (v1.0). v0.13 (**post-freeze**, data wiring only, logged): function components may fetch. Evaluation apps stay locked until the gold standard is committed |
 | Date | 10 October 2026 |
 | Owner | Jayawardhana R D L L (IT23213876) |
 | Input | Stage 2 tree, Stage 3 needs, Stage 4 report, contract, endpoint map, timeline |
@@ -209,7 +209,7 @@ has the code — but it is not rendered.
 
 | Unit | Generated |
 |---|---|
-| R-F1 function | `components/<Name>.tsx`, `export function <Name>(props)`; props typed from literal arguments; `<Name … />` at each call site |
+| R-F1 function | `components/<Name>.tsx`, `export function <Name>(props)`; props typed from literal arguments; `<Name … />` at each call site. **v0.13 (post-freeze):** if a List inside the function has a per-query endpoint (reconciliation-spec v0.3), the function component is an `async` Server Component that fetches it itself; otherwise unchanged. With no endpoint map, output is byte-identical to v0.12 |
 | R-F2 shell | `app/(<h>)/layout.tsx` — a root layout per shell (literal `<html>/<head>/<body>`, `{children}`); `components/<H>Shell.tsx` with `{children}`; each page using it is generated under `app/(<h>)/<route>/page.tsx`, its content wrapped in `<…Shell>`; `document_shell` removed for those pages. Every other page → `app/(plain)/<route>/page.tsx` with a minimal root layout (boundary-rules R-F2 "Route groups") |
 | Unresolved call / unknown output at a call site | `<C2Todo reason="unresolved_call" />` (todo). **v0.7:** consecutive unresolved calls in one straight-line block with no output between them → **one** C2Todo listing all their ids (one gap, counted once) |
 | Routes (v0.7) | Path **relative to the app's document root** (WackoPicko `website/`, HMS repo root — recorded per app in `legacy-apps/PINS.md`), `.php` removed, `index.php` → its directory. E.g. `website/users/login.php` → `app/(our_header)/users/login/page.tsx` |

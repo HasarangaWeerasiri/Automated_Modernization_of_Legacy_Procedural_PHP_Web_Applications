@@ -1,6 +1,6 @@
 # Component 2 — Agent Context (read this first, every task)
 
-_Version 23 — 15 Oct 2026 (rules frozen at the owner's step-5 commit; Phase 4 — runtime rendering check on HMS — next; owner writes the gold standard in parallel)._
+_Version 24 — 15 Oct 2026 (Phase 4a accepted; 4b = data wiring (post-freeze, guarded) + classify every difference)._
 
 This file is the handoff between the research chat and the coding agent. It records decisions
 already made. **Do not change a decision recorded here.** If something here looks wrong or a task
@@ -117,6 +117,8 @@ harness, not Member 01's core** (`_provenance.generator = "c2-harness"`).
 - WackoPicko mocks: `{timeline,labels}_wp_{guestbook,view,login,header,thumbnails}.json` (generated). Their **labels are generator placeholders**, not C1 output, and every WackoPicko read is `unresolved` (data comes through class methods in `include/*.php`). Use them for Stage 2 only.
 - Deliberate contract gap: field **`contact`** (flagged on list pages only). `sku` appears in no schema.
 - `undecided` nodes: edge_cases (1, `auth_or_display`), wp_login (1, placeholder `logic_or_display`), wp_thumbnails (1, placeholder `logic_or_display`).
+- **What the freeze covers (made explicit 15 Oct):** boundary rules (Stage 2), Stage 1–3 decisions and Stage 5 **markup** generation — everything Phase 5 measures. **Data wiring** (Stage 4 mapping to a contract, where fetches happen) is not measured in Phase 5 (the evaluation apps have no contracts) and may change only as a logged post-freeze change **with a proof that, with no contract / endpoint map, every output of the five discovery apps and the mocks is byte-identical**.
+- Phase 4a: HMS runs unmodified in Docker (`tools/runtime/hms/`, MariaDB 10.1.48, shared socket, `display_errors=Off`); replay API `tools/runtime/replay/` (SELECT-only user `c2replay`) on :18090; generated app `next start` on :18100. Raw result (no data wired): 26 pages, 1386 legacy / 836 generated elements, 815 matched, 202 differences.
 - **Rules frozen** (boundary-rules v1.0, spec v0.12) by the owner's commit of Phase 3 step 5 — write its hash here after committing: `27c380e`. No rule or spec change after it without a *post-freeze* entry in boundary-rules §10.
 - Tests: 988 passing, 0 skipped (after step 4 part B). Warehouse: 48 PHP files, 41 pages, 1 shell (`layouts/header.php` + `footer.php`), 138 abstains (`unresolved_call` 76 — the wrapper, Q11; `cross_file_output` 40 — mostly the whitespace-only `load.php`), 0 tsc errors, `next build` ok. Manifest `legacy-apps/warehouse-69fdd1c.sha256` committed; the harness verifies it before reading.
 - Earlier: 981 passing, 2 skipped (after step 4 part A). phpBlog abstains 57 → 15, `unresolved_call` 20 → 0, `exit_arm_not_covered` 24 → 0; `header_redirect` HMS 13, attendance 15 (files that print nothing → `index.json` `silentFileRedirects`); R-I8c flags at attendance's 12 `connect.php` includes.

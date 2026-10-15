@@ -542,6 +542,9 @@ class ReconciliationReport:
     collection_results: tuple[NeedResult, ...]  # one per List: mapped or cannot_reconcile
     unused: tuple[str, ...]  # contract properties no output read references (a lower bound, see UNUSED_NOTE)
     counts: ReconciliationCounts
+    # reconciliation-spec v0.3 (post-freeze): Lists whose loop query has its own endpoint-map entry, in List order:
+    # ((list component id, that endpoint), ...). Empty without such entries.
+    list_endpoints: tuple = ()
 
 
 # ----------------------------------------------------------------------------- Stage 5 result

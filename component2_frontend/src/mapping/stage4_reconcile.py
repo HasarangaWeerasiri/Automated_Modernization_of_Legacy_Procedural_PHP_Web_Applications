@@ -17,6 +17,12 @@ Each List's collection need gets its own result: mapped (to the response's
 one array, when the page has exactly one List and the response one array) or
 cannot_reconcile. Collections are counted apart from field needs.
 
+Per-query endpoints (v0.3, post-freeze): a List whose loop query (its collection
+need's queryNodeId) has its own entry in the endpoint map reads that endpoint's
+one array: an exact mapping, so the one-List condition does not apply to it, and
+its rows' field needs are matched against that array's items. Without such
+entries nothing here changes.
+
 Matched needs carry type "unverified": the source column types come from
 C3's schema, which is not available yet. Contract properties no output read
 references are listed as unused: information only, and a lower bound (see
@@ -61,16 +67,23 @@ def reconcile(requirements: RequirementsResult, contract: Contract,
     # i.e. the page has exactly one (not nested) List and the response exactly one array.
     lists = [c for c in requirements.components if c.type == "List"]
     nested = {c.component_id for c in lists for n in c.needs if n.kind == "collection" and n.row_of is not None}
-    top_lists = [c.component_id for c in lists if c.component_id not in nested]
+    per_query = _per_query(lists, nested, contract, endpoint_map)  # v0.3: list id -> (ref, endpoint, shape)
+    top_lists = [c.component_id for c in lists if c.component_id not in nested and c.component_id not in per_query]
     arrays = {}
     if shape is not None and len(shape.arrays) == 1 and len(top_lists) == 1:
         arrays[top_lists[0]] = shape.arrays[0]
+    page_arrays = dict(arrays)  # the page response's own arrays (for the unused list)
+    for list_id, (_, _, list_shape) in per_query.items():
+        if list_shape is not None and len(list_shape.arrays) == 1:
+            arrays[list_id] = list_shape.arrays[0]
 
     collection_results = []
     for component in lists:
         for need in component.needs:
             if need.kind == "collection":
-                result, reason, prop = _map_collection(component.component_id, ref, endpoint, shape, arrays, nested)
+                found = per_query.get(component.component_id)
+                result, reason, prop = _map_collection(component.component_id, *(found or (ref, endpoint, shape)),
+                                                       arrays, nested)
                 collection_results.append(NeedResult(
                     component_id=component.component_id, component_type=component.type, need=need, result=result,
                     reason=reason, schema_property=prop))
@@ -80,12 +93,13 @@ def reconcile(requirements: RequirementsResult, contract: Contract,
         for need in component.needs:
             if need.kind == "collection":
                 continue
-            outcome = _decide(need, ref, endpoint, shape, arrays, nested)
+            found = per_query.get(need.row_of) if need.row_of is not None else None
+            outcome = _decide(need, *(found or (ref, endpoint, shape)), arrays, nested)
             result, reason, prop, hint = outcome
             if result == "matched":
                 if need.row_of is None:
                     used_top.add(need.column)
-                else:
+                elif need.row_of in page_arrays:
                     used_items.setdefault(arrays[need.row_of][0], set()).add(need.column)
             results.append(NeedResult(
                 component_id=component.component_id, component_type=component.type, need=need, result=result,
@@ -93,7 +107,7 @@ def reconcile(requirements: RequirementsResult, contract: Contract,
 
     unused = []
     if shape is not None:
-        mapped = {array for array, _ in arrays.values()}
+        mapped = {array for array, _ in page_arrays.values()}
         unused += [p for p in shape.properties if p not in used_top and p not in mapped]
         for array, items in shape.arrays:
             if array in mapped:
@@ -106,7 +120,23 @@ def reconcile(requirements: RequirementsResult, contract: Contract,
         collections_mapped=sum(r.result == "mapped" for r in collection_results),
         collections_cannot_reconcile=sum(r.result == "cannot_reconcile" for r in collection_results))
     return ReconciliationReport(entrypoint=requirements.entrypoint, endpoint=ref, results=tuple(results),
-                                collection_results=tuple(collection_results), unused=tuple(unused), counts=counts)
+                                collection_results=tuple(collection_results), unused=tuple(unused), counts=counts,
+                                list_endpoints=tuple((list_id, found[0]) for list_id, found in per_query.items()))
+
+
+def _per_query(lists, nested, contract: Contract, endpoint_map: dict) -> dict:
+    """List id -> (endpoint ref, contract endpoint or None, its response or None) for every List (not nested) whose
+    collection need's queryNodeId is a key of the endpoint map (reconciliation-spec v0.3), in List order."""
+    found = {}
+    for component in lists:
+        if component.component_id in nested:
+            continue  # a nested List's rows depend on the outer row: not one query's whole result
+        for need in component.needs:
+            if need.kind == "collection" and need.query_node_id in endpoint_map:
+                ref = endpoint_map[need.query_node_id]
+                endpoint = contract.endpoints.get((ref.method, ref.path, ref.status, ref.media_type))
+                found[component.component_id] = (ref, endpoint, endpoint.response if endpoint else None)
+    return found
 
 
 def _map_collection(list_id, ref, endpoint, shape, arrays, nested):
@@ -160,6 +190,9 @@ def report_to_dict(report: ReconciliationReport) -> dict:
         "collections": [_result_dict(r) for r in report.collection_results],
         "unused": list(report.unused),
         "unusedNote": UNUSED_NOTE,
+        **({"listEndpoints": [{"componentId": list_id, "method": e.method, "path": e.path, "status": e.status,
+                               "mediaType": e.media_type} for list_id, e in report.list_endpoints]}
+           if report.list_endpoints else {}),
     }
 
 
