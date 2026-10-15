@@ -136,13 +136,23 @@ def _find_foreign_key(
     return None
 
 
+def has_primary_key(table: dict) -> bool:
+    """True when at least one column of the table is a primary key."""
+
+    return any(
+        column.get("primary_key", False)
+        for column in table.get("columns", [])
+    )
+
+
 def _build_column(
     table: dict,
     column: dict,
+    core: bool = False,
 ) -> str:
     """
-    Generate one SQLAlchemy mapped_column
-    declaration.
+    Generate one SQLAlchemy mapped_column declaration, or a Core
+    Column(...) entry when core is True (tables without primary key).
     """
 
     column_name = column["name"]
@@ -203,11 +213,18 @@ def _build_column(
         + keyword_arguments
     )
 
-    declaration = (
-        f"    {column_name} = mapped_column("
-        + ", ".join(all_arguments)
-        + ")"
-    )
+    if core:
+        declaration = (
+            f'    Column("{column_name}", '
+            + ", ".join(all_arguments)
+            + "),"
+        )
+    else:
+        declaration = (
+            f"    {column_name} = mapped_column("
+            + ", ".join(all_arguments)
+            + ")"
+        )
 
     if sqlalchemy_type.startswith("UnmappedMySQLType("):
         declaration += (
@@ -278,6 +295,25 @@ def build_migration_notes(
     else:
         lines.append("None. Every column type has a SQLAlchemy mapping.")
 
+    lines.extend(["", "## Tables without a primary key", ""])
+
+    keyless = [
+        table.get("name")
+        for table in schema.get("tables", [])
+        if not has_primary_key(table)
+    ]
+
+    if keyless:
+        lines.append(
+            "Generated as SQLAlchemy Core `Table` objects (not ORM classes); "
+            "no relationships are generated for them. A primary key was "
+            "not invented."
+        )
+        lines.append("")
+        lines.extend(f"- `{name}`" for name in keyless)
+    else:
+        lines.append("None.")
+
     lines.append("")
 
     return "\n".join(lines)
@@ -315,10 +351,20 @@ def _build_relationships(
             table["name"]
         ] = []
 
+    mapped_tables = {
+        table["name"]
+        for table in tables
+        if has_primary_key(table)
+    }
+
     for child_table in tables:
         child_table_name = (
             child_table["name"]
         )
+
+        # Relationships need mapped classes on both sides.
+        if child_table_name not in mapped_tables:
+            continue
 
         child_class = (
             table_to_class_name(
@@ -339,6 +385,9 @@ def _build_relationships(
                     "referenced_table"
                 ]
             )
+
+            if parent_table_name not in mapped_tables:
+                continue
 
             parent_class = (
                 table_to_class_name(
@@ -423,6 +472,8 @@ def generate_models_source(
         "    Time,",
         "    Enum,",
         "    JSON,",
+        "    Column,",
+        "    Table,",
         ")",
         "from sqlalchemy.dialects.mysql import SET",
         "from sqlalchemy.types import UserDefinedType",
@@ -470,6 +521,27 @@ def generate_models_source(
         tables
     ):
         table_name = table["name"]
+
+        if not has_primary_key(table):
+            lines.extend(
+                [
+                    "# No primary key in the schema: generated as a Core table,",
+                    "# not ORM-mapped. See migration_notes.md.",
+                    f"{table_name}_table = Table(",
+                    f'    "{table_name}",',
+                    "    Base.metadata,",
+                ]
+            )
+            lines.extend(
+                _build_column(table, column, core=True)
+                for column in table.get("columns", [])
+            )
+            lines.append(")")
+
+            if index < len(tables) - 1:
+                lines.extend(["", ""])
+
+            continue
 
         class_name = (
             table_to_class_name(

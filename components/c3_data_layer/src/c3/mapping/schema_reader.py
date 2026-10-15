@@ -299,9 +299,137 @@ def read_schema(
 
         tables.append(table)
 
+    apply_alter_table_statements(sql_text, tables)
+
     return DatabaseSchema(
         tables=tables
     )
+
+
+ALTER_TABLE_PATTERN = re.compile(
+    r"ALTER\s+TABLE\s+(?:ONLY\s+)?`?([A-Za-z_][A-Za-z0-9_]*)`?\s+(.*?);",
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def _find_table(tables: list[Table], name: str) -> Table | None:
+    for table in tables:
+        if table.name == name:
+            return table
+
+    for table in tables:
+        if table.name.lower() == name.lower():
+            return table
+
+    return None
+
+
+def _find_column(table: Table, name: str) -> Column | None:
+    # MySQL column names are case-insensitive.
+    for column in table.columns:
+        if column.name.lower() == name.lower():
+            return column
+
+    return None
+
+
+def apply_alter_table_statements(
+    sql_text: str,
+    tables: list[Table],
+) -> None:
+    """
+    Apply key and column changes made by ALTER TABLE statements.
+
+    phpMyAdmin/mysqldump-style dumps often create tables without keys
+    and add them afterwards:
+
+        ALTER TABLE `t` ADD PRIMARY KEY (`id`), ADD UNIQUE KEY ...;
+        ALTER TABLE `t` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,
+          AUTO_INCREMENT=14;
+        ALTER TABLE `c` ADD CONSTRAINT `fk` FOREIGN KEY (`p_id`)
+          REFERENCES `p` (`id`);
+
+    Supported clauses: ADD PRIMARY KEY, ADD [CONSTRAINT] FOREIGN KEY,
+    MODIFY [COLUMN], CHANGE [COLUMN]. Other clauses (indexes, unique
+    keys, table options) do not change the recovered IR yet.
+    """
+
+    for match in ALTER_TABLE_PATTERN.finditer(sql_text):
+        table = _find_table(tables, match.group(1))
+
+        if table is None:
+            continue
+
+        for clause in split_table_definitions(match.group(2)):
+            _apply_alter_clause(table, clause.strip())
+
+
+def _apply_alter_clause(table: Table, clause: str) -> None:
+    primary_key = re.match(
+        r"ADD\s+(?:CONSTRAINT\s+`?\w+`?\s+)?PRIMARY\s+KEY\s*\((.*)\)",
+        clause,
+        re.IGNORECASE | re.DOTALL,
+    )
+
+    if primary_key:
+        for name in primary_key.group(1).split(","):
+            column = _find_column(table, name.strip().strip("`"))
+
+            if column is not None:
+                column.primary_key = True
+                column.nullable = False
+        return
+
+    foreign_key = FOREIGN_KEY_PATTERN.search(clause)
+
+    if foreign_key and re.match(r"ADD\b", clause, re.IGNORECASE):
+        table.foreign_keys.append(
+            ForeignKey(
+                column=foreign_key.group(1),
+                referenced_table=foreign_key.group(2),
+                referenced_column=foreign_key.group(3),
+            )
+        )
+        return
+
+    modify = re.match(
+        r"(?:MODIFY|CHANGE)\s+(?:COLUMN\s+)?(.*)",
+        clause,
+        re.IGNORECASE | re.DOTALL,
+    )
+
+    if not modify:
+        return
+
+    definition = modify.group(1)
+
+    if re.match(r"CHANGE\b", clause, re.IGNORECASE):
+        # CHANGE old_name new_name definition
+        old_name, _, definition = definition.partition(" ")
+        target = _find_column(table, old_name.strip().strip("`"))
+    else:
+        target = None
+
+    new_column = parse_column(definition)
+
+    if new_column is None:
+        return
+
+    if target is None:
+        target = _find_column(table, new_column.name)
+
+    if target is None:
+        return
+
+    target.name = new_column.name
+    target.data_type = new_column.data_type
+    target.auto_increment = new_column.auto_increment
+    target.default = new_column.default
+    target.nullable = False if target.primary_key else new_column.nullable
+
+    if new_column.primary_key:
+        target.primary_key = True
+        target.nullable = False
 
 def write_schema_json(
     schema: DatabaseSchema,
