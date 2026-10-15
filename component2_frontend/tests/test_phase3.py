@@ -530,7 +530,8 @@ def test_phpblog_runs_whole_without_a_crash_and_compiles(phpblog):
     assert {"app/(head)/page.tsx", "app/(head)/layout.tsx", "app/(head)/post/page.tsx", "components/Sidebar.tsx",
             "app/(head-2)/install/page.tsx", "app/(plain)/admin/page.tsx", "components/AdminHeaderShell.tsx",
             "app/(admin-header)/layout.tsx", "app/(admin-header)/admin/dashboard/page.tsx"} <= set(index["appFiles"])
-    assert [(n["path"], n["reason"]) for n in index["notGenerated"]] == [
+    assert [(n["path"], n["reason"]) for n in index["notGenerated"]] == [  # (core.php: spec v0.11)
+        ("core.php", "error_output_only"), ("install/core.php", "error_output_only"),
         ("rss.php", "non_html_response"), ("sitemap.php", "non_html_response")]
     assert not [f for f in index["appFiles"] if "rss" in f or "sitemap" in f]
     if compile_check.unavailable() is None:

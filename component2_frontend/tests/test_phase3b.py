@@ -485,4 +485,5 @@ def test_config_php_is_analysed_from_the_installers_template(phpblog_timelines):
 
 def test_no_other_app_has_a_substitution():
     assert {app: config.get("substitutions", {}) for app, config in harness_app.APPS.items()} == {
-        "hms": {}, "wackopicko": {}, "phpblog": {"config.php": "install/config.tpl"}, "attendance": {}}
+        "hms": {}, "wackopicko": {}, "phpblog": {"config.php": "install/config.tpl"}, "attendance": {},
+        "warehouse": {}}

@@ -8,6 +8,7 @@ commit each one must be checked out at; mock timelines are byte-exact against th
 | HMS | `legacy-apps/hms` | `kishan0725/Hospital-Management-System` | `777fda46b77a820977a5ba616283dbfbc40bf7e1` | — | the repository root | Rule-discovery app. Libraries `TCPDF/`, `vendor/` are not read |
 | WackoPicko | `legacy-apps/wackopicko` | `adamdoupe/WackoPicko` | `cabc1b3a06beda7df98e839fa2d84db9a4bdfee7` | MIT | `website/` | Rule-discovery app. All its PHP is under `website/` |
 | attendance | `legacy-apps/attendance` | `ihumaunkabir/online-attendance-management-system-1.0` | `31781040c50f2be20514ef18c1b0d4ae7b2bf76e` | MIT (its `LICENSE` file stays with it) | the repository root | Rule-discovery app, opened 14 Oct 2026 (roadmap Phase 3, app 4). PHP 5 (`mysql_*`): parsed only, never run. Schema: `database/attsystem.sql` |
+| warehouse | `legacy-apps/warehouse` | `siamon123/warehouse-inventory-system` | `69fdd1ca1364a37e6dfbc7d90ded693964d87efe` | MIT (its `LICENSE` file stays with it) | the repository root | Rule-discovery app, the reserve app, opened 14 Oct 2026 (roadmap Phase 3, app 5). **Supplied as archive + manifest (agent had no network)**: the owner's `git archive` of the commit (63 files, no `.git`) and `legacy-apps/warehouse-69fdd1c.sha256`, which is committed. The harness checks every file against it before reading the folder. Parsed only, never run. Schema: `oswa_inv.sql` |
 | phpBlog | `legacy-apps/phpblog` | `codeplay-code/phpBlog-blogScript` | `4ffe3c9641a42b99829cf4b8e4185093793a3abc` | GPL-3.0 (its `LICENSE` file stays with it) | the repository root | Rule-discovery app, opened 13 Oct 2026 (roadmap Phase 3, app 1). Schema: `install/database.sql`. `config.php` is not in the repository: the installer (`install/`) writes it from `install/config.tpl`. The installer is parsed like any other page and never run |
 
 ## Analysis substitutions (owner decision, 13 Oct 2026)
@@ -36,6 +37,11 @@ To restore a clone:
 git clone https://github.com/<repository>.git legacy-apps/<folder>
 git -C legacy-apps/<folder> checkout <commit>
 ```
+
+warehouse has no clone: unpack the owner's archive so that its files are directly under `legacy-apps/warehouse/`
+(`git -C <a clone> archive 69fdd1ca1364a37e6dfbc7d90ded693964d87efe` gives the same 63 files), then check them:
+`cd legacy-apps/warehouse && sha256sum -c ../warehouse-69fdd1c.sha256` (the harness does the same check, and
+refuses a missing, extra or changed file).
 
 ## Real analysis outputs (from Member 01)
 

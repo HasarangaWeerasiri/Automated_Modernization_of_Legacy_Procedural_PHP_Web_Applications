@@ -1,8 +1,8 @@
-# Component 2 — Stage 5 Generation Specification (v0.10)
+# Component 2 — Stage 5 Generation Specification (v0.11)
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. v0.5 adds what the Phase 1 whole-app run needed (§5a, §8, §8a). v0.6: browser-equivalent markup (§5b), per-part ids, route groups. v0.7: corrections after Phase 2b (§5 form state, §5b stray end tags and loop rows, §8a routes and calls). v0.8: phpBlog rules (§6a), implied end tags, start-tag fallback. v0.9: step-2 corrections (§6a). v0.10: `header_redirect` flag. Evaluation apps stay locked |
+| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. v0.5 adds what the Phase 1 whole-app run needed (§5a, §8, §8a). v0.6: browser-equivalent markup (§5b), per-part ids, route groups. v0.7: corrections after Phase 2b (§5 form state, §5b stray end tags and loop rows, §8a routes and calls). v0.8: phpBlog rules (§6a), implied end tags, start-tag fallback. v0.9: step-2 corrections (§6a). v0.10: `header_redirect` flag. v0.11: error-output-only files are not pages. Evaluation apps stay locked |
 | Date | 10 October 2026 |
 | Owner | Jayawardhana R D L L (IT23213876) |
 | Input | Stage 2 tree, Stage 3 needs, Stage 4 report, contract, endpoint map, timeline |
@@ -143,6 +143,7 @@ content elsewhere in the tree → stays `html_nesting_changed` (review).
 | R-I8 other exit arm | `{cond ? <ArmOutput /> : <Rest />}` — `<Rest>` is everything after the `if` to the end of the enclosing block |
 | R-L4 nested loop | Inner Item gets `outer` (the outer row) as a prop when needed; a read from the outer loop's fetch → `{outer.<field>}` (v0.9) |
 | R-I3b, same attribute later in the tag (v0.9) | `attr={cond ? "conditional" : "later"}` |
+| A file whose **only** output is R-I8 / R-I8c exit arms (attendance `connect.php` ×4, phpBlog `core.php`) (v0.11) | Not generated as a page; listed under `notGenerated` with reason `error_output_only`; its include sites keep their `exit_output_not_generated` flags |
 | `header('location: …')` with a literal target, in a page or an included file (v0.10) | No output, no component. Flag `header_redirect` (info) with the target and the guarding condition's node id, so C1 sees every redirect (with or without `exit`) |
 | R-I8c exit arm in an include / function (v0.9) | Not generated; the include / call is not a gap; flag `exit_output_not_generated` (review) at each site |
 | `non_html_response` unit | No page generated; listed in `stage5_<app>.json` under `notGenerated` with the reason (C1: Route Handler) |

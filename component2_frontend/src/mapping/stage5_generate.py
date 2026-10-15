@@ -1567,6 +1567,33 @@ class Generator:
 
     # ---- the page
 
+    def error_output_arms(self) -> list | None:
+        """Spec v0.11 section 6a: the source lines of a file's top level whose only output is exit arms that
+        R-I8 / R-I8c decide (attendance `connect.php`, phpBlog `core.php`), or None. Not a page: what it prints
+        is an error stop or a redirect, and its include sites carry the R-I8c flags."""
+        if self.timeline.function is not None or self.layout.mode != "page" or not self.timeline.sequence:
+            return None
+        decided = {i for n in _walk(self.tree.root) if n.rule in ("R-I8", "R-I8c") and n.status != "abstain"
+                   for i in n.node_ids}
+        if any(n.id not in decided for n in self.timeline.sequence):
+            return None
+        if any(c.outputs_inside is not False and not any(e.exits for e in c.enclosed_by)
+               for c in self.timeline.calls):
+            return None  # something it calls or includes may print outside the arms
+        return sorted({n.loc.start_line for n in self.timeline.sequence if n.loc is not None})
+
+    def error_output_only(self, lines: list) -> GenerationResult:
+        detail = ("the file prints only in arms that exit (R-I8 / R-I8c" + (", lines " + ", ".join(
+            map(str, lines)) if lines else "") + "): an error stop or a redirect, not a page. Its include and "
+            "call sites carry exit_output_not_generated")
+        entry = GenerationEntry(
+            kind="flag", flag="error_output_only", reason="error_output_only", status=REVIEW, file="", line=0,
+            node_id="page", detail=detail, function="", in_abstained=False, source_line=lines[0] if lines else None,
+            severity="review", severity_if_rendered="review")
+        return GenerationResult(entrypoint=self.timeline.entrypoint, route=self.route, files=(), components=(),
+                                todos=(), flags=(entry,), not_generated={"reason": "error_output_only",
+                                                                         "lines": lines})
+
     def not_generated(self) -> GenerationResult:
         """Section 5 / spec v0.8 section 6a: a unit that is not an HTML response is no page. Nothing is written
         for it; it is listed under notGenerated, with one entry that counts as a gap."""
@@ -1585,6 +1612,8 @@ class Generator:
     def run(self) -> GenerationResult:
         if self.tree.root.status == "abstain" and self.tree.root.reason == "non_html_response":
             return self.not_generated()
+        if (lines := self.error_output_arms()) is not None:
+            return self.error_output_only(lines)
         page = self.file(self.root_path)
         key = page.mark()
         try:

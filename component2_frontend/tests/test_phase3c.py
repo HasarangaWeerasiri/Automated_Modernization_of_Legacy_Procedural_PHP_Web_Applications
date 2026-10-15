@@ -268,9 +268,12 @@ def test_attendance_runs_whole_without_a_crash_and_compiles(attendance):
     assert len([p for p in index["pages"] if p["role"] == "page"]) == 18 and index["shells"] == []
     assert index["schemaFiles"] == ["database/attsystem.sql"]
     assert index["silentFileRedirects"] == {"logout.php": [{"line": 4, "target": "index.php", "guarded": False}]}
+    # spec v0.11: they are units, but not pages: their only output is R-I8c arms
+    assert [(n["path"], n["reason"]) for n in index["notGenerated"]] == [
+        (f"{folder}connect.php", "error_output_only") for folder in ("admin/", "", "student/", "teacher/")]
     if compile_check.unavailable() is None:
         assert index["tscRan"] and index["tscUnattributed"] == 0, index["tscOutput"]
-        assert [(p["key"], p["tsc"]) for p in index["pages"] if p["tsc"] != 0] == []
+        assert [(p["key"], p["tsc"]) for p in index["pages"] if p["tsc"] not in (0, None)] == []
     rows = [apps_results_table.page_row(output / "attendance", e) for e in index["pages"]]
     reasons = {}
     for row in rows:

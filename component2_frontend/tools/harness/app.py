@@ -1,11 +1,12 @@
 """Whole-app side of the Component 2 test harness: every PHP file of an app -> timelines.
 
-For each app (rule-discovery corpus only: HMS, WackoPicko, phpBlog and attendance) this produces an AST for every PHP
+For each app (rule-discovery corpus only: HMS, WackoPicko, phpBlog, attendance and warehouse) this produces an AST for every PHP
 file that is not a library (ast_producer.py), and returns one timeline per page (a file's top-level
 output) and per function that prints (harness.py). Call sites carry the called function's node id
 and whether it prints, directly or through a function it calls.
 """
 
+import hashlib
 import json
 import shutil
 import subprocess
@@ -37,6 +38,12 @@ APPS = {
     # roadmap Phase 3, app 4 (opened 14 Oct 2026): PHP 5 (mysql_*), parsed only, never run
     "attendance": {"root": ROOT / "legacy-apps" / "attendance", "prefix": "legacy-apps/attendance",
                    "commit": "31781040c50f2be20514ef18c1b0d4ae7b2bf76e", "docroot": "", "exclude": ()},
+    # roadmap Phase 3, app 5, the reserve app (opened 14 Oct 2026). Supplied by the owner as a `git archive` of the
+    # commit and its manifest (the agent had no network): no .git, so the folder is read directly, after every
+    # file is checked against `manifest` (CONTEXT v21 section 5)
+    "warehouse": {"root": ROOT / "legacy-apps" / "warehouse", "prefix": "legacy-apps/warehouse",
+                  "commit": "69fdd1ca1364a37e6dfbc7d90ded693964d87efe", "docroot": "", "exclude": (),
+                  "manifest": ROOT / "legacy-apps" / "warehouse-69fdd1c.sha256"},
 }
 
 
@@ -66,6 +73,34 @@ class AppTimelines:
 def head_commit(root: Path) -> str:
     return subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True, text=True,
                           check=True).stdout.strip()
+
+
+def verify_manifest(root: Path, manifest: Path) -> int:
+    """Every file under `root` against a `sha256  path` manifest: same set of files, same bytes. Raises on the
+    first difference (nothing may run on an app that is not exactly the pinned commit); returns the count."""
+    expected = {}
+    for line in manifest.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            digest, path = line.split(None, 1)
+            expected[path.strip().lstrip("*")] = digest.lower()
+    found = sorted(p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file())
+    missing, extra = sorted(set(expected) - set(found)), sorted(set(found) - set(expected))
+    if missing or extra:
+        raise RuntimeError(f"{root.name}: not the archived commit: missing {missing}, not in the manifest {extra}")
+    changed = [path for path in found if hashlib.sha256((root / path).read_bytes()).hexdigest() != expected[path]]
+    if changed:
+        raise RuntimeError(f"{root.name}: files differ from the manifest: {changed}")
+    return len(found)
+
+
+def source_commit(app: str) -> str:
+    """The commit the app's folder holds: its git HEAD, or, for an archived app, the recorded commit once every
+    file matches the manifest."""
+    config = APPS[app]
+    if "manifest" in config:
+        verify_manifest(config["root"], config["manifest"])
+        return config["commit"]
+    return head_commit(config["root"])
 
 
 def export_commit(root: Path, commit: str, destination: Path) -> None:
@@ -159,13 +194,16 @@ def function_table(file_harnesses: dict[str, FileHarness]) -> dict:
 def app_timelines(app: str) -> AppTimelines:
     config = APPS[app]
     root = config["root"]
-    commit = head_commit(root)
+    commit = source_commit(app)
     if commit != config["commit"]:
         raise RuntimeError(f"legacy-apps/{root.name} is at {commit}, expected {config['commit']}")
     harnesses, errors = {}, {}
     with tempfile.TemporaryDirectory() as work:
         tree = Path(work) / "tree"
-        export_commit(root, commit, tree)
+        if "manifest" in config:  # verified above: the folder is the commit
+            shutil.copytree(root, tree)
+        else:
+            export_commit(root, commit, tree)
         substitutions = config.get("substitutions", {})
         for missing, source in sorted(substitutions.items()):
             if (tree / missing).exists():

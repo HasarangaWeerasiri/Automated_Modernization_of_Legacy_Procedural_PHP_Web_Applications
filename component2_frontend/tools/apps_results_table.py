@@ -19,7 +19,7 @@ from results_table import review_split, source  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "output" / "apps"
 DEFAULT_MARKDOWN = ROOT / "docs" / "c2-apps-results.md"
-APPS = ("hms", "wackopicko", "phpblog", "attendance")
+APPS = ("hms", "wackopicko", "phpblog", "attendance", "warehouse")
 ROLES = {"page": "page", "component": "function component (R-F1)", "shell": "shell (R-F2)",
          "not_called": "function, not in the app"}
 

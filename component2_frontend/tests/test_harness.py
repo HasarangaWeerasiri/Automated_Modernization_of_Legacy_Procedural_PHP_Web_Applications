@@ -689,7 +689,8 @@ def test_every_page_of_both_apps_runs_without_a_crash(apps_output):
     # (Phase 3 step 2: admin/header.php and admin/footer.php pair after implicit closes, a third shell; and
     # config.php is analysed from install/config.tpl, a 51st file)
     expected = {"hms": (29, (26, 2, 0, 5, 0)), "wackopicko": (49, (30, 2, 1, 0, 2)),
-                "phpblog": (51, (47, 1, 3, 0, 6)), "attendance": (19, (18, 0, 0, 0, 0))}
+                "phpblog": (51, (47, 1, 3, 0, 6)), "attendance": (19, (18, 0, 0, 0, 0)),
+                "warehouse": (48, (41, 0, 1, 0, 2))}  # step 4 part B: the reserve app
     # (step 4: attendance's four connect.php print their `or die` messages (rules v0.15 section 1), so they
     # are units, like phpBlog's core.php; their arms are R-I8c)
     assert {app: (index["files"], roles(index)) for app, index in indexes.items()} == {
@@ -712,9 +713,9 @@ def test_every_page_of_both_apps_compiles(apps_output):
 
 def test_libraries_are_excluded_and_only_discovery_apps_are_configured(apps_output):
     _, indexes = apps_output
-    assert sorted(harness_app.APPS) == ["attendance", "hms", "phpblog", "wackopicko"]  # CONTEXT v19 section 5
+    assert sorted(harness_app.APPS) == ["attendance", "hms", "phpblog", "wackopicko", "warehouse"]  # CONTEXT v21 §5
     assert {app: config["docroot"] for app, config in harness_app.APPS.items()} == {
-        "hms": "", "wackopicko": "website", "phpblog": "", "attendance": ""}  # legacy-apps/PINS.md
+        "hms": "", "wackopicko": "website", "phpblog": "", "attendance": "", "warehouse": ""}  # legacy-apps/PINS.md
     assert not any(p["path"].startswith(("TCPDF/", "vendor/")) for p in indexes["hms"]["pages"])
 
 
@@ -744,8 +745,12 @@ def test_whole_app_totals(apps_output):
     # Pictures). phpBlog: redirect guards at any depth (exit_arm_not_covered 24 -> 0), built-in mysqli methods
     # (unresolved_call 20 -> 0), install/done.php's `or die` in a loop (2 abstains). Attendance: the connect.php
     # units, R-I8c flags at 12 includes, 14 header_redirect.
+    # Step 4 part B (spec v0.11): error_output_only units are not generated (phpBlog core.php, install/core.php;
+    # attendance's four connect.php): their own C2Todos and reviews go, one error_output_only review each comes.
+    # Warehouse: first run.
     expected = {"hms": (269, 68, 5, 174, 192, 391, 292), "wackopicko": (384, 58, 7, 307, 159, 301, 126),
-                "phpblog": (801, 186, 15, 832, 593, 1047, 464), "attendance": (176, 34, 11, 95, 89, 171, 287)}
+                "phpblog": (801, 186, 15, 832, 591, 1046, 464), "attendance": (176, 34, 11, 95, 85, 167, 287),
+                "warehouse": (419, 75, 138, 250, 377, 277, 380)}
     assert totals == {app: expected[app] for app in totals}
     hms = [apps_results_table.page_row(output / "hms", entry) for entry in indexes["hms"]["pages"]]
     assert (sum(r["review_unlabelled"] for r in hms), sum(r["review_other"] for r in hms)) == (171, 3)

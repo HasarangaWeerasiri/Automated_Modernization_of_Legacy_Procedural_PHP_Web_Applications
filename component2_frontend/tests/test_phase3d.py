@@ -5,6 +5,7 @@ a) R-I8 case 1, a redirect guard, at any depth in a page; b) `X or die(m)` norma
 `header_redirect` flag for every literal `header("Location: ...")`. Then the reserve app, warehouse.
 """
 
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -14,6 +15,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(ROOT / "tools" / "harness"))
+import apps_results_table  # noqa: E402
 import compile_check  # noqa: E402
 import run_apps  # noqa: E402
 
@@ -225,35 +227,100 @@ def test_silent_redirects_are_collected_from_the_harness(tmp_path):
         "logout.php": [{"line": 2, "target": "index.php", "guarded": True}]}
 
 
+# ---------------------------------------------------------------- spec v0.11: error_output_only
+
+
+def test_a_file_that_prints_only_in_exit_arms_is_not_a_page(tmp_path):
+    """attendance connect.php: `mysql_connect(...) or die(...)`; phpBlog core.php 6-9: a redirect guard."""
+    files = {"connect.php": "<?php\nmysql_connect('h') or die('Cannot connect');\nmysql_select_db('d') or die('No db');\n",
+             "guard.php": "<?php if (!file_exists('c')) {\n  echo '<meta http-equiv=\"refresh\" content=\"0; url=i\">';"
+                          "\n  exit();\n}\nfunction head() { echo '<p>h</p>'; }",
+             "page.php": "<?php include 'connect.php'; include 'guard.php'; ?><p>p</p>"}
+    result = run(tmp_path, files)
+    not_generated = {n["path"]: n for n in result["index"]["notGenerated"]}
+    assert not_generated == {
+        "connect.php": {"key": "connect.php", "path": "connect.php", "reason": "error_output_only", "lines": [2, 3]},
+        "guard.php": {"key": "guard.php", "path": "guard.php", "reason": "error_output_only", "lines": [2]}}
+    (flag,) = result["stage"]("connect.php", 5)["flags"]
+    assert (flag["flag"], flag["severity"], flag["sourceLine"]) == ("error_output_only", "review", 2)
+    assert "lines 2, 3" in flag["detail"]
+    assert not (result["folder"] / run_apps.NEXT_APP / "app" / "(plain)" / "connect").exists()
+    # the including page keeps its flags (one per include)
+    assert len(flags(result, "page.php", "exit_output_not_generated")) == 2
+
+
+@pytest.mark.parametrize("php", [
+    "<?php if (!$c) { die('stop'); } ?><p>rest</p>",  # other output too
+    "<?php include 'other.php'; if (!$c) { die('stop'); }",  # an include that prints, outside the arms
+    "<?php if ($a) { if (!$c) { echo '<b>x</b>'; exit; } }",  # an arm R-I8 does not cover (abstains)
+])
+def test_a_file_with_anything_else_is_still_a_page(tmp_path, php):
+    result = run(tmp_path, {"page.php": php, "other.php": "<i>other</i>"})
+    assert "page.php" not in {n["path"] for n in result["index"]["notGenerated"]}
+
+
 # ---------------------------------------------------------------- warehouse (Phase 3, app 5: the reserve app)
 
 
-warehouse_config = harness_app.APPS.get("warehouse")
-warehouse_clone = warehouse_config is not None and (warehouse_config["root"] / ".git").exists()
+warehouse_config = harness_app.APPS["warehouse"]
+warehouse_present = (warehouse_config["root"] / "index.php").exists()
+
+
+def test_the_manifest_check_refuses_a_missing_an_extra_or_a_changed_file(tmp_path):
+    root = tmp_path / "app"
+    (root / "inc").mkdir(parents=True)
+    (root / "a.php").write_bytes(b"<?php echo 1;")
+    (root / "inc" / "b.php").write_bytes(b"<p>b</p>")
+    manifest = tmp_path / "m.sha256"
+    manifest.write_text("".join(f"{hashlib.sha256((root / n).read_bytes()).hexdigest()}  {n}\n"
+                                for n in ("a.php", "inc/b.php")), encoding="utf-8")
+    assert harness_app.verify_manifest(root, manifest) == 2
+    (root / "inc" / "b.php").write_bytes(b"<p>B</p>")
+    with pytest.raises(RuntimeError, match="differ from the manifest: \\['inc/b.php'\\]"):
+        harness_app.verify_manifest(root, manifest)
+    (root / "inc" / "b.php").unlink()
+    (root / "c.php").write_bytes(b"")
+    with pytest.raises(RuntimeError, match="missing \\['inc/b.php'\\], not in the manifest \\['c.php'\\]"):
+        harness_app.verify_manifest(root, manifest)
 
 
 @pytest.fixture(scope="module")
 def warehouse(tmp_path_factory):
-    if not warehouse_clone:
-        pytest.skip("warehouse clone not present (legacy-apps/PINS.md)")
+    if not warehouse_present:
+        pytest.skip("warehouse archive not unpacked (legacy-apps/PINS.md)")
     output = tmp_path_factory.mktemp("warehouse")
     tsc = compile_check.unavailable() is None
     return output, run_apps.run_app(harness_app.app_timelines("warehouse"), output, tsc=tsc)
 
 
 def test_warehouse_is_pinned_and_keeps_its_licence():
-    if not warehouse_clone:
-        pytest.skip("warehouse clone not present (legacy-apps/PINS.md)")
-    assert harness_app.head_commit(warehouse_config["root"]) == warehouse_config["commit"]
-    assert warehouse_config["commit"].startswith("69fdd1c")
-    assert "MIT" in (warehouse_config["root"] / "LICENSE").read_text(encoding="utf-8")
-    assert warehouse_config["commit"] in (ROOT / "legacy-apps" / "PINS.md").read_text(encoding="utf-8")
+    if not warehouse_present:
+        pytest.skip("warehouse archive not unpacked (legacy-apps/PINS.md)")
+    # supplied as a git archive + manifest (no .git): every file is checked against the committed manifest
+    assert harness_app.verify_manifest(warehouse_config["root"], warehouse_config["manifest"]) == 63
+    assert harness_app.source_commit("warehouse") == warehouse_config["commit"] == \
+        "69fdd1ca1364a37e6dfbc7d90ded693964d87efe"
+    assert "The MIT License" in (warehouse_config["root"] / "LICENSE").read_text(encoding="utf-8")
+    pins = (ROOT / "legacy-apps" / "PINS.md").read_text(encoding="utf-8")
+    assert warehouse_config["commit"] in pins and "oswa_inv.sql" in pins and "archive + manifest" in pins
+    assert warehouse_config["docroot"] == ""
 
 
 def test_warehouse_runs_whole_without_a_crash_and_compiles(warehouse):
-    _, index = warehouse
-    assert index["parseErrors"] == {} and index["collisions"] == []
+    output, index = warehouse
+    assert index["files"] == 48 and index["parseErrors"] == {} and index["collisions"] == []
     assert [p["key"] for p in index["pages"] if p["crash"]] == []
+    assert len([p for p in index["pages"] if p["role"] == "page"]) == 41
+    assert [s["name"] for s in index["shells"]] == ["LayoutsHeaderShell"]
+    assert index["schemaFiles"] == ["oswa_inv.sql"] and index["notGenerated"] == []
     if compile_check.unavailable() is None:
         assert index["tscRan"] and index["tscUnattributed"] == 0, index["tscOutput"]
-        assert [(p["key"], p["tsc"]) for p in index["pages"] if p["tsc"] != 0] == []
+        # (shell parts have no result of their own: they are checked in their shell)
+        assert [(p["key"], p["tsc"]) for p in index["pages"] if p["tsc"] not in (0, None)] == []
+    rows = [apps_results_table.page_row(output / "warehouse", e) for e in index["pages"] if e["role"] != "shell_part"]
+    reasons = {}
+    for row in rows:
+        for reason, n in row["abstains"].items():
+            reasons[reason] = reasons.get(reason, 0) + n
+    assert reasons == {"unresolved_call": 76, "cross_file_output": 40, "output_outside_shell": 21,
+                       "tag_crosses_function": 1}
