@@ -1,0 +1,19 @@
+# E2 2026-10-15T12:02:48.830532+00:00 HEAD 4a909c59c0df312c07e5bd9c145cfa7186a83557
+simple_crud: models.py imported, configure_mappers() OK, 2 tables
+simple_crud: A_vs_B MATCH, A_vs_C MATCH, D_vs_C MATCH, query_schema_drift 0 site-columns
+mixed_crud: models.py imported, configure_mappers() OK, 1 tables
+mixed_crud: A_vs_B MATCH, A_vs_C MATCH, D_vs_C MATCH, query_schema_drift 0 site-columns
+hard_crud: models.py imported, configure_mappers() OK, 5 tables
+hard_crud: A_vs_B MATCH, A_vs_C MATCH, D_vs_C MATCH, query_schema_drift 0 site-columns
+clinic: models.py imported, configure_mappers() OK, 5 tables
+clinic: A_vs_B MATCH, A_vs_C MATCH, D_vs_C MATCH, query_schema_drift 0 site-columns
+helpdesk: models.py imported, configure_mappers() OK, 3 tables
+helpdesk: A_vs_B MATCH, A_vs_C MATCH, D_vs_C MATCH, query_schema_drift 0 site-columns
+hms_kishan0725: models.py imported, configure_mappers() OK, 6 tables
+hms_kishan0725: A_vs_B MATCH, A_vs_C MATCH, D_vs_C MATCH, query_schema_drift 7 site-columns
+news_buzz: models.py imported, configure_mappers() OK, 2 tables
+news_buzz: A_vs_B MATCH, A_vs_C MATCH, D_vs_C MATCH, query_schema_drift 0 site-columns
+fee_rainbow: models.py imported, configure_mappers() OK, 1 tables
+fee_rainbow: A_vs_B MATCH, A_vs_C MATCH, D_vs_C MATCH, query_schema_drift 17 site-columns
+dignity_dev_hms: models.py imported, configure_mappers() OK, 6 tables
+dignity_dev_hms: A_vs_B MATCH, A_vs_C MATCH, D_vs_C MATCH, query_schema_drift 0 site-columns

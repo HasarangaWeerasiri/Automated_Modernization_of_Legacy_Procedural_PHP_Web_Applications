@@ -1,0 +1,600 @@
+{
+  "experiment": "E2 schema fidelity",
+  "date_utc": "2026-10-15T12:02:48.830532+00:00",
+  "git_head": "4a909c59c0df312c07e5bd9c145cfa7186a83557",
+  "views": {
+    "A": "schema.sql parsed with sqlglot (independent of C3)",
+    "B": "C3 schema.json",
+    "C": "generated models.py metadata rendered for MySQL",
+    "D": "original schema.sql loaded into MySQL and reflected"
+  },
+  "apps": {
+    "simple_crud": {
+      "A": {
+        "tables": 2,
+        "columns": 8,
+        "foreign_keys": 1,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "B": {
+        "tables": 2,
+        "columns": 8,
+        "foreign_keys": 1,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "C": {
+        "tables": 2,
+        "columns": 8,
+        "foreign_keys": 1,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "D": {
+        "tables": 2,
+        "columns": 8,
+        "foreign_keys": 1,
+        "unique": 0,
+        "indexes": 1,
+        "tables_with_pk": 2
+      },
+      "D_vs_C": [],
+      "mysql_database": "c3_e3_simple_crud",
+      "query_schema_drift": [],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH",
+        "D_vs_C": "MATCH",
+        "query_schema_drift": "0 site-columns"
+      }
+    },
+    "mixed_crud": {
+      "A": {
+        "tables": 1,
+        "columns": 3,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 1
+      },
+      "B": {
+        "tables": 1,
+        "columns": 3,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 1
+      },
+      "C": {
+        "tables": 1,
+        "columns": 3,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 1
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "D": {
+        "tables": 1,
+        "columns": 3,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 1
+      },
+      "D_vs_C": [],
+      "mysql_database": "c3_e3_mixed_crud",
+      "query_schema_drift": [],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH",
+        "D_vs_C": "MATCH",
+        "query_schema_drift": "0 site-columns"
+      }
+    },
+    "hard_crud": {
+      "A": {
+        "tables": 5,
+        "columns": 25,
+        "foreign_keys": 4,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 5
+      },
+      "B": {
+        "tables": 5,
+        "columns": 25,
+        "foreign_keys": 4,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 5
+      },
+      "C": {
+        "tables": 5,
+        "columns": 25,
+        "foreign_keys": 4,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 5
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "D": {
+        "tables": 5,
+        "columns": 25,
+        "foreign_keys": 4,
+        "unique": 0,
+        "indexes": 4,
+        "tables_with_pk": 5
+      },
+      "D_vs_C": [],
+      "mysql_database": "c3_e3_hard_crud",
+      "query_schema_drift": [],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH",
+        "D_vs_C": "MATCH",
+        "query_schema_drift": "0 site-columns"
+      }
+    },
+    "clinic": {
+      "A": {
+        "tables": 5,
+        "columns": 25,
+        "foreign_keys": 5,
+        "unique": 1,
+        "indexes": 2,
+        "tables_with_pk": 5
+      },
+      "B": {
+        "tables": 5,
+        "columns": 25,
+        "foreign_keys": 5,
+        "unique": 1,
+        "indexes": 2,
+        "tables_with_pk": 5
+      },
+      "C": {
+        "tables": 5,
+        "columns": 25,
+        "foreign_keys": 5,
+        "unique": 1,
+        "indexes": 2,
+        "tables_with_pk": 5
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "D": {
+        "tables": 5,
+        "columns": 25,
+        "foreign_keys": 5,
+        "unique": 1,
+        "indexes": 5,
+        "tables_with_pk": 5
+      },
+      "D_vs_C": [],
+      "mysql_database": "c3_e3_clinic",
+      "query_schema_drift": [],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH",
+        "D_vs_C": "MATCH",
+        "query_schema_drift": "0 site-columns"
+      }
+    },
+    "helpdesk": {
+      "A": {
+        "tables": 3,
+        "columns": 12,
+        "foreign_keys": 2,
+        "unique": 1,
+        "indexes": 0,
+        "tables_with_pk": 3
+      },
+      "B": {
+        "tables": 3,
+        "columns": 12,
+        "foreign_keys": 2,
+        "unique": 1,
+        "indexes": 0,
+        "tables_with_pk": 3
+      },
+      "C": {
+        "tables": 3,
+        "columns": 12,
+        "foreign_keys": 2,
+        "unique": 2,
+        "indexes": 0,
+        "tables_with_pk": 3
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "D": {
+        "tables": 3,
+        "columns": 12,
+        "foreign_keys": 2,
+        "unique": 1,
+        "indexes": 2,
+        "tables_with_pk": 3
+      },
+      "D_vs_C": [],
+      "mysql_database": "c3_e3_helpdesk",
+      "query_schema_drift": [],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH",
+        "D_vs_C": "MATCH",
+        "query_schema_drift": "0 site-columns"
+      }
+    },
+    "hms_kishan0725": {
+      "A": {
+        "tables": 6,
+        "columns": 42,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "B": {
+        "tables": 6,
+        "columns": 42,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "C": {
+        "tables": 6,
+        "columns": 42,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "D": {
+        "tables": 6,
+        "columns": 42,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "D_vs_C": [],
+      "mysql_database": "c3_e3_hms_kishan0725",
+      "query_schema_drift": [
+        {
+          "query_id": "Q024",
+          "source_file": "func.php",
+          "source_line": 34,
+          "kind": "column_not_in_schema",
+          "table": "appointmenttb",
+          "column": "payment",
+          "role": "write"
+        },
+        {
+          "query_id": "Q030",
+          "source_file": "func2.php",
+          "source_line": 41,
+          "kind": "column_not_in_schema",
+          "table": "appointmenttb",
+          "column": "payment",
+          "role": "write"
+        },
+        {
+          "query_id": "Q031",
+          "source_file": "func2.php",
+          "source_line": 66,
+          "kind": "column_not_in_schema",
+          "table": "doctb",
+          "column": "name",
+          "role": "write"
+        },
+        {
+          "query_id": "Q033",
+          "source_file": "func3.php",
+          "source_line": 24,
+          "kind": "column_not_in_schema",
+          "table": "appointmenttb",
+          "column": "payment",
+          "role": "write"
+        },
+        {
+          "query_id": "Q035",
+          "source_file": "func3.php",
+          "source_line": 49,
+          "kind": "column_not_in_schema",
+          "table": "doctb",
+          "column": "name",
+          "role": "write"
+        },
+        {
+          "query_id": "Q036",
+          "source_file": "header.php",
+          "source_line": 35,
+          "kind": "table_not_in_schema",
+          "table": "users"
+        },
+        {
+          "query_id": "Q038",
+          "source_file": "newfunc.php",
+          "source_line": 23,
+          "kind": "column_not_in_schema",
+          "table": "appointmenttb",
+          "column": "payment",
+          "role": "write"
+        }
+      ],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH",
+        "D_vs_C": "MATCH",
+        "query_schema_drift": "7 site-columns"
+      }
+    },
+    "news_buzz": {
+      "A": {
+        "tables": 2,
+        "columns": 16,
+        "foreign_keys": 0,
+        "unique": 1,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "B": {
+        "tables": 2,
+        "columns": 16,
+        "foreign_keys": 0,
+        "unique": 1,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "C": {
+        "tables": 2,
+        "columns": 16,
+        "foreign_keys": 0,
+        "unique": 1,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "D": {
+        "tables": 2,
+        "columns": 16,
+        "foreign_keys": 0,
+        "unique": 1,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "D_vs_C": [],
+      "mysql_database": "c3_e3_news_buzz",
+      "query_schema_drift": [],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH",
+        "D_vs_C": "MATCH",
+        "query_schema_drift": "0 site-columns"
+      }
+    },
+    "fee_rainbow": {
+      "A": {
+        "tables": 1,
+        "columns": 5,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 1
+      },
+      "B": {
+        "tables": 1,
+        "columns": 5,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 1
+      },
+      "C": {
+        "tables": 1,
+        "columns": 5,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 1
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "D": {
+        "tables": 1,
+        "columns": 5,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 1
+      },
+      "D_vs_C": [],
+      "mysql_database": "c3_e3_fee_rainbow",
+      "query_schema_drift": [
+        {
+          "query_id": "Q003",
+          "source_file": "categories.php",
+          "source_line": 34,
+          "kind": "table_not_in_schema",
+          "table": "categories"
+        },
+        {
+          "query_id": "Q004",
+          "source_file": "categories.php",
+          "source_line": 57,
+          "kind": "table_not_in_schema",
+          "table": "categories"
+        },
+        {
+          "query_id": "Q005",
+          "source_file": "categories.php",
+          "source_line": 76,
+          "kind": "table_not_in_schema",
+          "table": "subcategories"
+        },
+        {
+          "query_id": "Q006",
+          "source_file": "categories.php",
+          "source_line": 80,
+          "kind": "table_not_in_schema",
+          "table": "categories"
+        },
+        {
+          "query_id": "Q007",
+          "source_file": "categories.php",
+          "source_line": 100,
+          "kind": "table_not_in_schema",
+          "table": "categories"
+        },
+        {
+          "query_id": "Q007",
+          "source_file": "categories.php",
+          "source_line": 100,
+          "kind": "table_not_in_schema",
+          "table": "subcategories"
+        },
+        {
+          "query_id": "Q008",
+          "source_file": "occasions.php",
+          "source_line": 27,
+          "kind": "table_not_in_schema",
+          "table": "occasions"
+        },
+        {
+          "query_id": "Q009",
+          "source_file": "occasions.php",
+          "source_line": 52,
+          "kind": "table_not_in_schema",
+          "table": "occasions"
+        },
+        {
+          "query_id": "Q010",
+          "source_file": "occasions.php",
+          "source_line": 72,
+          "kind": "table_not_in_schema",
+          "table": "occasions"
+        },
+        {
+          "query_id": "Q011",
+          "source_file": "occasions.php",
+          "source_line": 92,
+          "kind": "table_not_in_schema",
+          "table": "occasions"
+        },
+        {
+          "query_id": "Q012",
+          "source_file": "products.php",
+          "source_line": 82,
+          "kind": "table_not_in_schema",
+          "table": "products"
+        },
+        {
+          "query_id": "Q013",
+          "source_file": "products.php",
+          "source_line": 133,
+          "kind": "table_not_in_schema",
+          "table": "products"
+        },
+        {
+          "query_id": "Q014",
+          "source_file": "products.php",
+          "source_line": 152,
+          "kind": "table_not_in_schema",
+          "table": "products"
+        },
+        {
+          "query_id": "Q015",
+          "source_file": "products.php",
+          "source_line": 165,
+          "kind": "table_not_in_schema",
+          "table": "products"
+        },
+        {
+          "query_id": "Q018",
+          "source_file": "subcategories.php",
+          "source_line": 40,
+          "kind": "table_not_in_schema",
+          "table": "subcategories"
+        },
+        {
+          "query_id": "Q019",
+          "source_file": "subcategories.php",
+          "source_line": 65,
+          "kind": "table_not_in_schema",
+          "table": "subcategories"
+        },
+        {
+          "query_id": "Q020",
+          "source_file": "subcategories.php",
+          "source_line": 85,
+          "kind": "table_not_in_schema",
+          "table": "subcategories"
+        }
+      ],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH",
+        "D_vs_C": "MATCH",
+        "query_schema_drift": "17 site-columns"
+      }
+    },
+    "dignity_dev_hms": {
+      "A": {
+        "tables": 6,
+        "columns": 25,
+        "foreign_keys": 0,
+        "unique": 3,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "B": {
+        "tables": 6,
+        "columns": 25,
+        "foreign_keys": 0,
+        "unique": 3,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "C": {
+        "tables": 6,
+        "columns": 25,
+        "foreign_keys": 0,
+        "unique": 3,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "D": {
+        "tables": 6,
+        "columns": 25,
+        "foreign_keys": 0,
+        "unique": 3,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "D_vs_C": [],
+      "mysql_database": "c3_e3_dignity_dev_hms",
+      "query_schema_drift": [],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH",
+        "D_vs_C": "MATCH",
+        "query_schema_drift": "0 site-columns"
+      }
+    }
+  }
+}

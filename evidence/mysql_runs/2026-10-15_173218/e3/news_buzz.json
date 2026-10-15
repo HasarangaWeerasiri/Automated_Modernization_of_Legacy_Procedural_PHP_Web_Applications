@@ -1,0 +1,23 @@
+{
+  "app_output": "news_buzz",
+  "database": "mysql+pymysql://c3_tester@127.0.0.1/c3_e3_news_buzz",
+  "dialect": "mysql",
+  "date_utc": "2026-10-15T12:02:37.185180+00:00",
+  "steps": {
+    "database_empty_before": "PASS",
+    "upgrade_head": "PASS",
+    "live_schema_matches_models": "PASS",
+    "alembic_check": "PASS",
+    "downgrade_base": "PASS"
+  },
+  "mysql_only_defaults": [
+    {
+      "table": "posts",
+      "column": "updated_on",
+      "ddl": "DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+    }
+  ],
+  "schema_diffs": [],
+  "tables_left_after_downgrade": [],
+  "verdict": "PASS"
+}
