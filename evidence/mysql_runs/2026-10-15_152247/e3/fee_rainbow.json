@@ -1,0 +1,28 @@
+{
+  "app_output": "fee_rainbow",
+  "database": "mysql+pymysql://c3_tester@127.0.0.1/c3_e3_fee_rainbow",
+  "dialect": "mysql",
+  "date_utc": "2026-10-15T09:53:03.551462+00:00",
+  "steps": {
+    "database_empty_before": "PASS",
+    "upgrade_head": "PASS",
+    "live_schema_matches_models": "PASS",
+    "alembic_check": "PASS",
+    "downgrade_base": "PASS"
+  },
+  "mysql_only_defaults": [
+    {
+      "table": "admin",
+      "column": "created_at",
+      "ddl": "DEFAULT current_timestamp()"
+    },
+    {
+      "table": "admin",
+      "column": "updated_at",
+      "ddl": "DEFAULT current_timestamp()"
+    }
+  ],
+  "schema_diffs": [],
+  "tables_left_after_downgrade": [],
+  "verdict": "PASS"
+}
