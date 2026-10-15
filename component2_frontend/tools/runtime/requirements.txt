@@ -1,0 +1,4 @@
+# Phase 4 runtime check only (tools/runtime/): not needed by Stages 1-5 or the tests of the pipeline.
+# Playwright 1.62.0 bundles Chromium build 1234, the build already installed on the owner's machine.
+playwright==1.62.0
+pymysql==1.2.3

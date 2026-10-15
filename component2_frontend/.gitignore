@@ -37,6 +37,7 @@ output/generated/
 output/stage*_*.json
 output/tsc_*.json
 output/apps/
+output/runtime/
 
 # Whole-app harness: installed by `composer install` in tools/harness (composer.lock is committed)
 tools/harness/vendor/

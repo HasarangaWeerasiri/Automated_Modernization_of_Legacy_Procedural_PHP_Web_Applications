@@ -31,6 +31,7 @@ Usage, from component2_frontend/:
 """
 
 import json
+import re
 import shutil
 import sys
 import traceback
@@ -59,8 +60,11 @@ PLAIN_GROUP = "(plain)"
 NEXT_APP = "next-app"
 
 
-def run_stages(timeline, folder: Path, config, generation_config, contract, units=None, layout=None):
+def run_stages(timeline, folder: Path, config, generation_config, contract, units=None, layout=None,
+               endpoint_map=None):
     """Stages 1-5 for one loaded timeline, each stage's JSON written into `folder`. Raises on a stage failure.
+    `endpoint_map` (default: none, every page is no_endpoint) is only given for a substitute run, e.g. the
+    Phase 4 replay check (tools/runtime/replay/).
 
     `layout` may be a function of the Stage 2 tree: a page's route group is known only once Stage 2 has said
     whether the page stands inside a shell."""
@@ -70,7 +74,7 @@ def run_stages(timeline, folder: Path, config, generation_config, contract, unit
     stage2.write_tree(tree, folder / "stage2.json")
     requirements = stage3.recover_requirements(tree, timeline)
     stage3.write_requirements(requirements, folder / "stage3.json")
-    report = stage4.reconcile(requirements, contract, {})  # no endpoint map: every page is no_endpoint
+    report = stage4.reconcile(requirements, contract, endpoint_map or {})  # none: every page is no_endpoint
     stage4.write_report(report, folder / "stage4.json")
     if callable(layout):
         layout = layout(tree)
@@ -120,13 +124,54 @@ def _shell_document(header: dict, footer: dict) -> dict:
     }
 
 
-def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, build: bool = False) -> dict:
-    """Run every unit of an app and assemble one Next.js app; returns (and writes) the app's index."""
+LIB_HEADS = {"lib/api-types.ts": re.compile(r"export type (\w+)"),
+             "lib/api.ts": re.compile(r"(?:// .*\n)*export (?:async )?function (\w+)")}
+API_IMPORT = re.compile(r'import type \{ ([\w, ]+) \} from "\./api-types";')
+
+
+def merge_lib(relative: str, first: str, second: str) -> tuple[str | None, list]:
+    """Two units' lib/api-types.ts or lib/api.ts as one file (each unit writes only what its own endpoint
+    needs): the union of their declarations, in order of first appearance, with one import line. Returns
+    (merged text or None when the file is not one of these, [names declared differently by the two])."""
+    head = LIB_HEADS.get(relative)
+    if head is None:
+        return None, []
+    order, blocks, names, preamble, clash = [], {}, set(), [], []
+    for text in (first, second):
+        found = API_IMPORT.search(text)
+        if found:
+            names |= {n.strip() for n in found.group(1).split(",")}
+        for block in text.strip("\n").split("\n\n"):
+            match = head.match(block)
+            if match is None:
+                # (a unit with no endpoint writes only a stub ending in `export {};`: nothing to keep)
+                if not API_IMPORT.fullmatch(block) and not block.endswith("export {};") and block not in preamble:
+                    preamble.append(block)  # the header comment of api-types.ts
+                continue
+            name = match.group(1)
+            if name not in blocks:
+                order.append(name)
+                blocks[name] = block
+            elif blocks[name] != block:
+                clash.append(name)
+    if not order:  # neither unit has an endpoint
+        return first, clash
+    parts = ([f'import type {{ {", ".join(sorted(names))} }} from "./api-types";'] if names else []) + preamble
+    return "\n\n".join(parts + [blocks[name] for name in order]) + "\n", clash
+
+
+def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, build: bool = False,
+            contract_path: Path = EMPTY_CONTRACT, endpoint_map_path: Path | None = None) -> dict:
+    """Run every unit of an app and assemble one Next.js app; returns (and writes) the app's index.
+
+    By default there is no contract and no endpoint map (none exists for whole apps). A substitute contract and
+    map are given only by a test fixture, e.g. the Phase 4 replay check; they are named in the index."""
     folder = output / timelines.app
     if folder.exists():
         shutil.rmtree(folder)
     config, generation_config = load_boundary_config(), load_generation_config()
-    contract = loader.load_contract(EMPTY_CONTRACT)
+    contract = loader.load_contract(contract_path)
+    endpoint_map = loader.load_endpoint_map(endpoint_map_path) if endpoint_map_path else None
 
     loaded, raw = {}, {}
     for page in timelines.pages:
@@ -193,7 +238,7 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, bu
         entry["includes"] = sum(c.kind == "include" for c in timeline.calls)
         try:
             tree, result = run_stages(timeline, folder / entry["key"], config, generation_config, contract, unit_facts,
-                                 layout)
+                                      layout, endpoint_map)
             if result.not_generated is not None:  # spec v0.8 section 6a: not a page (e.g. non_html_response)
                 entry["notGenerated"] = result.not_generated
                 if result.not_generated.get("subtype") == "ajax_endpoint":  # spec v0.12: the JS that calls it
@@ -216,7 +261,13 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, bu
             target = app_dir / relative
             if target.exists():
                 if target.read_bytes() != source.read_bytes():
-                    collisions.append(f"{relative}: written by {owners[relative]} and, differently, by {key}")
+                    merged, clash = merge_lib(relative, target.read_text(encoding="utf-8"),
+                                              source.read_text(encoding="utf-8"))
+                    if merged is not None:  # each unit's fetch functions and response types, together
+                        target.write_bytes(merged.encode("utf-8"))
+                    for name in clash if merged is not None else [None]:
+                        collisions.append(f"{relative}: written by {owners[relative]} and, differently, by {key}"
+                                          + (f" ({name} differs)" if name else ""))
                 owners[relative] = ""  # shared by several units (lib/)
                 continue
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -260,6 +311,8 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, bu
     index = {
         "app": timelines.app, "sourceCommit": APPS.get(timelines.app, {}).get("commit", ""),
         "docroot": timelines.docroot, "files": timelines.files,
+        **({"substitute": {"contract": contract_path.name, "endpointMap": endpoint_map_path.name}}
+           if endpoint_map_path else {}),
         "pages": pages, "silentFiles": list(timelines.silent), "silentFileNotes": timelines.silent_notes or {},
         "silentFileRedirects": timelines.silent_redirects or {},
         "parseErrors": timelines.parse_errors,

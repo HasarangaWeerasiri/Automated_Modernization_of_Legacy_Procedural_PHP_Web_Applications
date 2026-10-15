@@ -1,0 +1,33 @@
+# Phase 4 runtime check, legacy side: HMS at 777fda4, unmodified (tools/runtime/hms/README.md).
+# Run tools/runtime/hms/prepare.py first: it writes build/htdocs and build/initdb/01-myhmsdb.sql.
+name: c2-hms
+services:
+  db:
+    # myhmsdb.sql was dumped from MariaDB 10.1.31 (its header): the same major version
+    image: mariadb:10.1.48
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"  # HMS connects as root with an empty password
+      MYSQL_DATABASE: myhmsdb            # the dump has no CREATE DATABASE; the init scripts run in this one
+    volumes:
+      - ./build/initdb/01-myhmsdb.sql:/docker-entrypoint-initdb.d/01-myhmsdb.sql:ro
+      - ./initdb/02-replay-user.sql:/docker-entrypoint-initdb.d/02-replay-user.sql:ro
+      - mysqld-socket:/run/mysqld        # shared with the web container: "localhost" = this socket
+    ports:
+      - "127.0.0.1:13306:3306"           # for the replay API only (read-only user c2replay)
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "--silent"]
+      interval: 3s
+      retries: 40
+  web:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./build/htdocs:/var/www/html:ro
+      - mysqld-socket:/run/mysqld
+      - ./build/logs:/var/log/php
+    ports:
+      - "127.0.0.1:18080:80"
+volumes:
+  mysqld-socket:

@@ -1,6 +1,6 @@
 # Component 2 — Agent Context (read this first, every task)
 
-_Version 22 — 15 Oct 2026 (warehouse judged: no new pattern → **boundary rules FROZEN (v1.0)**; step 5 = last pre-freeze fixes + freeze commit)._
+_Version 23 — 15 Oct 2026 (rules frozen at the owner's step-5 commit; Phase 4 — runtime rendering check on HMS — next; owner writes the gold standard in parallel)._
 
 This file is the handoff between the research chat and the coding agent. It records decisions
 already made. **Do not change a decision recorded here.** If something here looks wrong or a task
@@ -106,7 +106,7 @@ harness, not Member 01's core** (`_provenance.generator = "c2-harness"`).
 | Rule discovery (active) | HMS (`legacy-apps/hms`), WackoPicko (`legacy-apps/wackopicko`, MIT, PHP under `website/`), **phpBlog** (`legacy-apps/phpblog`, `codeplay-code/phpBlog-blogScript` @ `4ffe3c9`, GPL-3.0 — keep its LICENSE file with it; opened 13 Oct for Phase 3). Pinned commits and document roots are recorded in `legacy-apps/PINS.md` | Read, run the harness, test |
 | Rule discovery (active, opened 14 Oct) | **attendance** (`ihumaunkabir/online-attendance-management-system-1.0` @ `3178104`, MIT, `mysql_*`) → `legacy-apps/attendance`, git-ignored clone like the others | Read, run the harness, test |
 | Rule discovery (active, opened 14 Oct) | **warehouse** (`siamon123/warehouse-inventory-system` @ `69fdd1c`, MIT; DB through a `MySqli_DB` wrapper class — many reads will stay `unresolved`, which is data flow, not a pattern) → `legacy-apps/warehouse`, git-ignored. **The agent's machine cannot reach github.com**, so the owner supplies `warehouse-69fdd1c.zip` (a `git archive` of commit `69fdd1ca1364a37e6dfbc7d90ded693964d87efe`, no `.git`) and `warehouse-69fdd1c.sha256` (63 files). The harness reads the folder directly and **must verify every file against the manifest first** | Read, run the harness, test |
-| Evaluation | crud-php-mysqli, PHP-MySQL-CRUD-Application, College-Notes-Gallery @ `8c1cf3d`, ams-native @ `3c4d475`, School-Management-System (omd01) @ `1e5426d` | **Do not open, clone, read or build mocks from these.** Locked until the owner **freezes** the boundary rules (the rules doc header says *Frozen*) **and** the owner's gold standard is committed (roadmap Phase 5). Finishing a stage does not unlock them |
+| Evaluation | crud-php-mysqli (GitHub zip download, upload sha256 `0cea4883…`), PHP-MySQL-CRUD-Application (zip download, `4380927f…`), College-Notes-Gallery @ `8c1cf3d`, ams-native @ `3c4d475`, School-Management-System (omd01) @ `1e5426d` — each supplied to the owner as an archive + sha256 manifest (`c2-eval-apps.zip`) | Rules are frozen; still **locked for the agent** until the owner's gold standard is committed (roadmap Phase 5). The agent may only run `tools/sample_eval_pages.py` when the owner asks (it lists file names), never the harness or any stage |
 
 ## 6. Repo state (as of 12 Oct 2026)
 
@@ -117,7 +117,7 @@ harness, not Member 01's core** (`_provenance.generator = "c2-harness"`).
 - WackoPicko mocks: `{timeline,labels}_wp_{guestbook,view,login,header,thumbnails}.json` (generated). Their **labels are generator placeholders**, not C1 output, and every WackoPicko read is `unresolved` (data comes through class methods in `include/*.php`). Use them for Stage 2 only.
 - Deliberate contract gap: field **`contact`** (flagged on list pages only). `sku` appears in no schema.
 - `undecided` nodes: edge_cases (1, `auth_or_display`), wp_login (1, placeholder `logic_or_display`), wp_thumbnails (1, placeholder `logic_or_display`).
-- **Rules frozen** (boundary-rules v1.0, spec v0.12) by the owner's commit of Phase 3 step 5 — write its hash here after committing: `________`. No rule or spec change after it without a *post-freeze* entry in boundary-rules §10.
+- **Rules frozen** (boundary-rules v1.0, spec v0.12) by the owner's commit of Phase 3 step 5 — write its hash here after committing: `27c380e`. No rule or spec change after it without a *post-freeze* entry in boundary-rules §10.
 - Tests: 988 passing, 0 skipped (after step 4 part B). Warehouse: 48 PHP files, 41 pages, 1 shell (`layouts/header.php` + `footer.php`), 138 abstains (`unresolved_call` 76 — the wrapper, Q11; `cross_file_output` 40 — mostly the whitespace-only `load.php`), 0 tsc errors, `next build` ok. Manifest `legacy-apps/warehouse-69fdd1c.sha256` committed; the harness verifies it before reading.
 - Earlier: 981 passing, 2 skipped (after step 4 part A). phpBlog abstains 57 → 15, `unresolved_call` 20 → 0, `exit_arm_not_covered` 24 → 0; `header_redirect` HMS 13, attendance 15 (files that print nothing → `index.json` `silentFileRedirects`); R-I8c flags at attendance's 12 `connect.php` includes.
 - Earlier: 957 passing (after Phase 3 step 3). Attendance: 19 files, 14 pages, 0 shells, abstains 11 (`try_catch_enclosure` 6), 0 tsc errors, `next build` ok. R-I8c flags on WackoPicko login / register / similar; phpBlog `cross_file_output` 24 → 0.
