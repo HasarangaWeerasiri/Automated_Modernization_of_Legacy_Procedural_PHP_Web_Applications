@@ -151,29 +151,31 @@ Audit estimates: P0 ≈ 15–20 h, P1 ≈ 35–45 h. Five full days will not fit
 
 ## 9. Status Ledger (Claude fills in and updates after every task)
 
+Branch: `database-migration` (user override: no `pp1-c3-complete`). Starting point: `62b499d`, tag `c3-helpdesk-baseline-6of9` present. Starting test run on 2026-10-15: **514 passed, 61 skipped (MySQL), 0 failed**. Log: `evidence/test_runs/2026-10-15_pre_dev_pytest.txt`.
+
 | Task | Status | Evidence / commit | Notes |
 |---|---|---|---|
-| A1 pre-adaptation runs | | | |
-| A2 MySQL (E0) | | | |
-| S1 loop/switch soundness | | | |
-| S2 silent drops | | | |
-| S3 ENUM/SET | | | |
-| S4 evidence hygiene | | | |
-| S5 FR8 consistency | | | |
-| S6 security report | | | |
-| S7 standalone generated code | | | |
-| S8 transaction + LIMIT | | | |
-| S9 models + schema fidelity | | | |
-| S10 Alembic | | | |
-| S11 column use | | | |
-| S12 traceability | | | |
-| S13 Helpdesk Q002/Q004 class | | | |
-| S14 prepared statements | | | |
-| S15 evaluator + GT | | | |
-| E1–E7 | | | |
-| Baseline comparison | | | |
-| Demo | | | |
-| Docs + evidence register | | | |
+| A1 pre-adaptation runs | not started | — | Waiting for the third-party app choice (decision 8, CONFIRM). |
+| A2 MySQL (E0) | not started (blocked) | — | No `C3_DB_PASSWORD`. Local MySQL 8 on :3306 needs an admin login. Docker daemon not running at audit time. Decision 5 CONFIRM. |
+| S1 loop/switch soundness | not started | — | Audit probes: foreach, while-DELETE and switch are CONVERTED unsoundly. |
+| S2 silent drops | not started | — | `mysqli_prepare`, `mysqli_multi_query` and `mysqli_real_query` dropped; Clinic S22 missing. |
+| S3 ENUM/SET | not started | — | `type_map.py:123` raises and aborts stage 3. Values are upper-cased. |
+| S4 evidence hygiene | partly done | `414ff53`, `fe35517`, `061f02b`, `8e0a842` | Baseline, Clinic snapshot and MySQL 2026-10-08 JSONs are committed. Still to do: live Clinic/hard/mixed outputs are stale, docs and contract are stale, and Clinic tests read the untracked output. |
+| S5 FR8 consistency | not started | — | |
+| S6 security report | not started | — | Value/structural AST check exists. Allowlists are hard-coded per query. |
+| S7 standalone generated code | not started | — | Generated Clinic code imports `c3.conversion.*`. |
+| S8 transaction + LIMIT | not started | — | Mixed commit policy. LIMIT is only tested with ints. |
+| S9 models + schema fidelity | not started | — | Self-ref and dual-FK models fail `configure_mappers()`. UNIQUE, indexes, ON DELETE and CHECK are lost. |
+| S10 Alembic | not started | — | Alembic not installed. |
+| S11 column use | not started | — | |
+| S12 traceability | not started | — | Module and tests exist; not wired into the pipeline. |
+| S13 Helpdesk Q002/Q004 class | not started | — | |
+| S14 prepared statements | not started | — | |
+| S15 evaluator + GT | not started | — | hard_crud GT `expected_tables` vs evaluator `expected_table`. |
+| E1–E7 | not started | — | E1–E3 need MySQL. |
+| Baseline comparison | not started | — | |
+| Demo | not started | — | |
+| Docs + evidence register | started | `evidence/evidence_register.md` | Register created with the pre-dev test run. |
 
 ---
 
