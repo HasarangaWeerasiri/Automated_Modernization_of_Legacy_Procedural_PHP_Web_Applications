@@ -18,6 +18,10 @@ This is a living document. Each limitation names the evidence it is based on.
 - The S13 rule (SQL built and executed in the same conditional block) was designed from the Helpdesk holdout class after inspecting the unseen apps' pre-adaptation summaries, which showed the same class dominating. Post-S13 results for Helpdesk and the 3 unseen apps are post-adaptation, not independent generalisation evidence (`evidence/postadaptation/S13/README.md`). A fresh untouched app is needed for that.
 - PHP escape sequences in double-quoted strings (e.g. a literal tab printed as `\t`) are not decoded during recovery. The affected query then fails to parse and conversion abstains (NEWS-BUZZ Q003). This is safe, but it costs coverage.
 
+## Security analysis (S6)
+- The taint analysis in `security_report.json` is static, intra-file and order-based (last assignment before use, transitive over variables). It does not trace function parameters or other files, except validated cross-file bindings. `$_SESSION` is reported as indirect and not counted as user input. Legacy-risk labels are heuristic: a numeric cast, or an escape inside a quoted literal, counts as mitigated.
+- "100% injection-safety coverage" means every user-controlled value in a converted query is a bound parameter or a schema-allowlisted identifier, according to this static analysis. Runtime injection tests against MySQL are E4.
+
 ## Method
 - Behavioural equivalence on MySQL covers selected inputs only. Day-3 behaviour tests used SQLite.
 - Generated data access is parameterized SQLAlchemy (`text()` + bind parameters), not ORM query constructs.

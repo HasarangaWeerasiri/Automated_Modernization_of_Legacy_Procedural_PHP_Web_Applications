@@ -1,0 +1,168 @@
+{
+    "summary": {
+        "total_queries": 5,
+        "queries_with_user_input": 5,
+        "legacy_injection_sites": 5,
+        "legacy_injection_sites_remediated": 2,
+        "legacy_injection_sites_not_converted": 3,
+        "user_controlled_values_in_converted_queries": 2,
+        "bound_or_allowlisted": 2,
+        "injection_safety_coverage_percent": 100.0,
+        "generated_code_text_calls_not_literal": 0,
+        "generated_code_violations": 0
+    },
+    "scope": {
+        "user_input_sources": [
+            "$_GET",
+            "$_POST",
+            "$_REQUEST",
+            "$_COOKIE"
+        ],
+        "indirect_sources_reported_not_counted": [
+            "$_SESSION"
+        ],
+        "taint_analysis": "intra-file, order-based (last assignment before use), transitive over variables up to depth 6; function parameters and other files not traced except validated cross-file bindings",
+        "coverage_definition": "bound_or_allowlisted / user-controlled values in converted queries; unresolved queries are excluded and listed as not converted"
+    },
+    "queries": [
+        {
+            "query_id": "Q001",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\01_like_search.php",
+            "source_line": 9,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "q"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "q",
+                    "sources": [
+                        "_GET.q"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q002",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\02_dynamic_order.php",
+            "source_line": 9,
+            "recovery_status": "UNRESOLVED",
+            "conversion_status": "UNRESOLVED",
+            "conversion_rule": null,
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": [
+                    "column"
+                ]
+            },
+            "user_inputs": [
+                {
+                    "variable": "column",
+                    "sources": [
+                        "_GET.sort"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "not_converted"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": false
+        },
+        {
+            "query_id": "Q003",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\03_dynamic_in.php",
+            "source_line": 9,
+            "recovery_status": "UNRESOLVED",
+            "conversion_status": "UNRESOLVED",
+            "conversion_rule": null,
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": [
+                    "ids"
+                ]
+            },
+            "user_inputs": [
+                {
+                    "variable": "ids",
+                    "sources": [
+                        "_GET.ids"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "not_converted"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": false
+        },
+        {
+            "query_id": "Q004",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\04_conditional_append.php",
+            "source_line": 11,
+            "recovery_status": "UNRESOLVED",
+            "conversion_status": "UNRESOLVED",
+            "conversion_rule": null,
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "status",
+                    "sources": [
+                        "_GET.status"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "not_converted"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": false
+        },
+        {
+            "query_id": "Q005",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\05_join.php",
+            "source_line": 13,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "userId"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "userId",
+                    "sources": [
+                        "_GET.user_id"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        }
+    ],
+    "generated_code_scan": []
+}

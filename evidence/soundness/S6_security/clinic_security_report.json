@@ -1,0 +1,629 @@
+{
+    "summary": {
+        "total_queries": 22,
+        "queries_with_user_input": 15,
+        "legacy_injection_sites": 15,
+        "legacy_injection_sites_remediated": 15,
+        "legacy_injection_sites_not_converted": 0,
+        "user_controlled_values_in_converted_queries": 20,
+        "bound_or_allowlisted": 20,
+        "injection_safety_coverage_percent": 100.0,
+        "generated_code_text_calls_not_literal": 3,
+        "generated_code_violations": 0
+    },
+    "scope": {
+        "user_input_sources": [
+            "$_GET",
+            "$_POST",
+            "$_REQUEST",
+            "$_COOKIE"
+        ],
+        "indirect_sources_reported_not_counted": [
+            "$_SESSION"
+        ],
+        "taint_analysis": "intra-file, order-based (last assignment before use), transitive over variables up to depth 6; function parameters and other files not traced except validated cross-file bindings",
+        "coverage_definition": "bound_or_allowlisted / user-controlled values in converted queries; unresolved queries are excluded and listed as not converted"
+    },
+    "queries": [
+        {
+            "query_id": "Q001",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\01_list_patients.php",
+            "source_line": 4,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q002",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\02_find_patient.php",
+            "source_line": 5,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "id"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "id",
+                    "sources": [
+                        "_GET.id"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q003",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\03_add_patient.php",
+            "source_line": 8,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "department",
+                    "email",
+                    "name"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "department",
+                    "sources": [
+                        "_POST.department_id"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "name",
+                    "sources": [
+                        "_POST.name"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "email",
+                    "sources": [
+                        "_POST.email"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q004",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\04_update_contact.php",
+            "source_line": 8,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "id",
+                    "phone"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "phone",
+                    "sources": [
+                        "_POST.phone"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "id",
+                    "sources": [
+                        "_POST.id"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q005",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\05_delete_payment.php",
+            "source_line": 5,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "id"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "id",
+                    "sources": [
+                        "_POST.id"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q006",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\06_search_like.php",
+            "source_line": 5,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "q"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "q",
+                    "sources": [
+                        "_GET.q"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q007",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\07_literal_predicate.php",
+            "source_line": 4,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q008",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\08_join_appointments.php",
+            "source_line": 6,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "patient"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "patient",
+                    "sources": [
+                        "_GET.patient_id"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q009",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\09_group_totals.php",
+            "source_line": 5,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q010",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\10_subquery.php",
+            "source_line": 5,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "query_specific_template",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q011",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\11_in_values.php",
+            "source_line": 5,
+            "recovery_status": "UNRESOLVED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "query_specific_template",
+            "placeholders": {
+                "value_positions": [
+                    "ids"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "ids",
+                    "sources": [
+                        "_GET.ids"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q012",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\12_order_by.php",
+            "source_line": 5,
+            "recovery_status": "UNRESOLVED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "query_specific_template",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": [
+                    "sort"
+                ]
+            },
+            "user_inputs": [
+                {
+                    "variable": "sort",
+                    "sources": [
+                        "_GET.sort"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "schema_allowlisted_identifier"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q013",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\13_dynamic_table.php",
+            "source_line": 5,
+            "recovery_status": "UNRESOLVED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "query_specific_template",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": [
+                    "table"
+                ]
+            },
+            "user_inputs": [
+                {
+                    "variable": "table",
+                    "sources": [
+                        "_GET.table"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "schema_allowlisted_identifier"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q014",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\14_branch_query.php",
+            "source_line": 10,
+            "recovery_status": "UNRESOLVED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "query_specific_template",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q015",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\15_cross_file.php",
+            "source_line": 6,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "department_id"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "department_id",
+                    "sources": [
+                        "_GET.department_id"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q016",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\16_conditional_concat.php",
+            "source_line": 8,
+            "recovery_status": "UNRESOLVED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "query_specific_template",
+            "placeholders": {
+                "value_positions": [
+                    "department_id"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "department_id",
+                    "sources": [
+                        "_GET.department_id"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q017",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\17_update_arithmetic.php",
+            "source_line": 6,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "delta",
+                    "id"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "delta",
+                    "sources": [
+                        "_POST.delta"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "id",
+                    "sources": [
+                        "_POST.id"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q018",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\18_multi_condition.php",
+            "source_line": 5,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "minimum"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "minimum",
+                    "sources": [
+                        "_GET.minimum"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q019",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\19_limit_offset.php",
+            "source_line": 6,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "limit",
+                    "offset"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "limit",
+                    "sources": [
+                        "_GET.limit"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "offset",
+                    "sources": [
+                        "_GET.offset"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q020",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\20_cross_table_update.php",
+            "source_line": 6,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "query_specific_template",
+            "placeholders": {
+                "value_positions": [
+                    "id"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "id",
+                    "sources": [
+                        "_POST.id"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q021",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\21_quoted_literal.php",
+            "source_line": 4,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q022",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\22_prepared_statement.php",
+            "source_line": 5,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "UNRESOLVED",
+            "conversion_rule": null,
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        }
+    ],
+    "generated_code_scan": [
+        {
+            "function": "select_patients_q012",
+            "line": 191,
+            "sql_argument_kind": "JoinedStr",
+            "verdict": "allowed_schema_allowlisted_identifier"
+        },
+        {
+            "function": "select_q013",
+            "line": 198,
+            "sql_argument_kind": "JoinedStr",
+            "verdict": "allowed_schema_allowlisted_identifier"
+        },
+        {
+            "function": "select_doctors_q014",
+            "line": 212,
+            "sql_argument_kind": "Name",
+            "verdict": "allowed_literal_sql_selection"
+        }
+    ]
+}

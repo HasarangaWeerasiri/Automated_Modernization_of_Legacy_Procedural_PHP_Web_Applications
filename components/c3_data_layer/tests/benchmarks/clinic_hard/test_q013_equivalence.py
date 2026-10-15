@@ -25,6 +25,16 @@ LEGACY_DIR = (
 )
 
 
+def clinic_schema() -> dict:
+    """Clinic schema.json structure (identifier allowlists are schema-derived)."""
+
+    from dataclasses import asdict
+
+    from c3.mapping.schema_reader import read_schema
+
+    return asdict(read_schema(LEGACY_DIR.parent / "database" / "schema.sql"))
+
+
 @pytest.fixture(scope="module", autouse=True)
 def require_database():
     if not os.environ.get("C3_DB_PASSWORD"):
@@ -34,7 +44,7 @@ def require_database():
 @pytest.fixture(scope="module")
 def generated_q013():
     recovered = recover_queries_from_ast(analyze_php_ast(LEGACY_DIR))
-    converted = convert_queries(recovered)
+    converted = convert_queries(recovered, schema=clinic_schema())
 
     assert len(converted) == 22  # 22 Clinic sites (S22 mysqli_prepare detected since S2)
     assert sum(q["status"] == "CONVERTED" for q in converted) == 21
@@ -43,7 +53,10 @@ def generated_q013():
 
     assert q013["status"] == "CONVERTED"
     assert q013["query_shape"] == "TABLE_IDENTIFIER_SELECT"
-    assert q013["allowed_tables"] == ["patients"]
+    assert q013["allowed_tables"] == sorted(
+        t["name"] for t in clinic_schema()["tables"]
+        if "id" in {c["name"] for c in t["columns"]}
+    )
 
     source = generate_data_access_source(converted)
 

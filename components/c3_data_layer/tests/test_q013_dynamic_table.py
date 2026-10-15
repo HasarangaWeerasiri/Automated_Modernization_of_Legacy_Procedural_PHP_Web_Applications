@@ -20,6 +20,19 @@ LEGACY_DIR = (
     / "benchmarks/apps/clinic_inventory_legacy_hard/legacy"
 )
 
+# Explicit fallback-only allowlist for the resolver unit tests.
+ALLOWED = ("patients",)
+
+
+def clinic_schema() -> dict:
+    """Clinic schema.json structure, parsed by the project's schema reader."""
+
+    from dataclasses import asdict
+
+    from c3.mapping.schema_reader import read_schema
+
+    return asdict(read_schema(LEGACY_DIR.parent / "database" / "schema.sql"))
+
 
 @pytest.fixture(scope="module")
 def recovered_q013():
@@ -59,7 +72,21 @@ def generated_q013():
     [{}, {"table": None}, {"table": "patients"}],
 )
 def test_allowed_table_inputs(inputs):
-    assert resolve_q013_table(inputs) == "patients"
+    assert resolve_q013_table(inputs, allowed_tables=ALLOWED) == "patients"
+
+
+def test_allowlist_is_derived_from_schema(recovered_q013):
+    schema = clinic_schema()
+    expected = sorted(
+        t["name"] for t in schema["tables"]
+        if "id" in {c["name"] for c in t["columns"]}
+    )
+
+    converted = convert_q013_table(recovered_q013, schema)
+
+    assert converted["allowed_tables"] == expected
+    assert converted["allowlist_source"] == "schema"
+    assert resolve_q013_table({"table": "doctors"}, converted["allowed_tables"]) == "doctors"
 
 
 @pytest.mark.parametrize(
@@ -78,7 +105,7 @@ def test_allowed_table_inputs(inputs):
 )
 def test_disallowed_table_inputs(value):
     with pytest.raises(ValueError):
-        resolve_q013_table({"table": value})
+        resolve_q013_table({"table": value}, allowed_tables=ALLOWED)
 
 
 def test_original_source_and_conversion(recovered_q013):
@@ -201,7 +228,12 @@ def test_mutated_generated_representation_rejected():
 
     modified = deepcopy(converted)
     q013 = next(q for q in modified if q["query_id"] == "Q013")
-    q013["allowed_tables"] = ["patients", "doctors"]
+    q013["allowed_tables"] = ["patients", "doctors; DROP TABLE x"]
+
+    with pytest.raises(ValueError):
+        generate_data_access_source(modified)
+
+    q013["allowed_tables"] = ["doctors"]  # fallback missing
 
     with pytest.raises(ValueError):
         generate_data_access_source(modified)

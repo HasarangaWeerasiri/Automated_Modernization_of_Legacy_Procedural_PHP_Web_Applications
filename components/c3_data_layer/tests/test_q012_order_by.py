@@ -19,6 +19,19 @@ LEGACY_DIR = (
     / "benchmarks/apps/clinic_inventory_legacy_hard/legacy"
 )
 
+# Explicit allowlist for the resolver unit tests.
+ALLOWED = ("id", "full_name")
+
+
+def clinic_schema() -> dict:
+    """Clinic schema.json structure, parsed by the project's schema reader."""
+
+    from dataclasses import asdict
+
+    from c3.mapping.schema_reader import read_schema
+
+    return asdict(read_schema(LEGACY_DIR.parent / "database" / "schema.sql"))
+
 
 @pytest.fixture(scope="module")
 def recovered_q012():
@@ -29,7 +42,7 @@ def recovered_q012():
 @pytest.fixture(scope="module")
 def generated_q012():
     recovered = recover_queries_from_ast(analyze_php_ast(LEGACY_DIR))
-    converted = convert_queries(recovered)
+    converted = convert_queries(recovered, schema=clinic_schema())
 
     assert len(converted) == 22  # 22 Clinic sites (S22 mysqli_prepare detected since S2)
     assert sum(q["status"] == "CONVERTED" for q in converted) == 21
@@ -55,7 +68,7 @@ def generated_q012():
     ],
 )
 def test_allowed_sort_inputs(inputs, expected):
-    assert resolve_q012_sort(inputs) == expected
+    assert resolve_q012_sort(inputs, allowed_columns=ALLOWED) == expected
 
 
 @pytest.mark.parametrize(
@@ -73,7 +86,33 @@ def test_allowed_sort_inputs(inputs, expected):
 )
 def test_disallowed_sort_inputs(value):
     with pytest.raises(ValueError):
-        resolve_q012_sort({"sort": value})
+        resolve_q012_sort({"sort": value}, allowed_columns=ALLOWED)
+
+
+def test_allowlist_is_derived_from_schema(recovered_q012):
+    schema = clinic_schema()
+    patients = next(t for t in schema["tables"] if t["name"] == "patients")
+
+    converted = convert_q012_order_by(recovered_q012, schema)
+
+    assert converted["allowed_columns"] == [c["name"] for c in patients["columns"]]
+    assert converted["allowlist_source"] == "schema"
+
+
+def test_allowlist_without_schema_is_fallback_only(recovered_q012):
+    converted = convert_q012_order_by(recovered_q012)
+
+    assert converted["allowed_columns"] == ["full_name"]
+    assert converted["allowlist_source"] == "fallback_only"
+
+
+@pytest.mark.parametrize(
+    "allowed",
+    [None, [], ["id"], ["full_name", "id; DROP TABLE patients"], [1]],
+)
+def test_invalid_allowlist_rejected(allowed):
+    with pytest.raises(ValueError):
+        resolve_q012_sort({}, allowed_columns=allowed)
 
 
 def test_original_source_and_conversion(recovered_q012):

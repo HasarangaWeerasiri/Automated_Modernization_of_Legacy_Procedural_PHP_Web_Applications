@@ -146,7 +146,7 @@ GENERAL_RULE = "general"
 TEMPLATE_RULE = "query_specific_template"
 
 
-def convert_query(query: dict) -> dict:
+def convert_query(query: dict, schema: dict | None = None) -> dict:
     """
     Convert one recovered query into a safe intermediate
     data-access representation.
@@ -157,7 +157,7 @@ def convert_query(query: dict) -> dict:
     Reports count the two separately.
     """
 
-    result = _convert_query(query)
+    result = _convert_query(query, schema)
 
     if result.get("status") == "CONVERTED" and "conversion_rule" not in result:
         result["conversion_rule"] = (
@@ -167,7 +167,7 @@ def convert_query(query: dict) -> dict:
     return result
 
 
-def _convert_query(query: dict) -> dict:
+def _convert_query(query: dict, schema: dict | None = None) -> dict:
     """Conversion logic; see convert_query."""
 
     query_id = query.get("query_id")
@@ -218,7 +218,7 @@ def _convert_query(query: dict) -> dict:
             convert_q012_order_by,
         )
 
-        result = convert_q012_order_by(query)
+        result = convert_q012_order_by(query, schema)
 
         if result is not None:
             return result
@@ -230,7 +230,7 @@ def _convert_query(query: dict) -> dict:
     ):
         from c3.conversion.table_converter import convert_q013_table
 
-        result = convert_q013_table(query)
+        result = convert_q013_table(query, schema)
 
         if result is not None:
             return result
@@ -524,13 +524,17 @@ def _is_supported_join_select(tree) -> bool:
 
 def convert_queries(
     queries: list[dict],
+    schema: dict | None = None,
 ) -> list[dict]:
     """
     Convert all recovered queries.
+
+    schema (the schema.json structure) is used to derive identifier
+    allowlists for dynamic ORDER BY / table identifiers.
     """
 
     return [
-        convert_query(query)
+        convert_query(query, schema)
         for query in queries
     ]
 

@@ -25,6 +25,16 @@ LEGACY_DIR = (
 )
 
 
+def clinic_schema() -> dict:
+    """Clinic schema.json structure (identifier allowlists are schema-derived)."""
+
+    from dataclasses import asdict
+
+    from c3.mapping.schema_reader import read_schema
+
+    return asdict(read_schema(LEGACY_DIR.parent / "database" / "schema.sql"))
+
+
 def make_engine(database):
     return create_engine(
         URL.create(
@@ -72,7 +82,7 @@ def require_database():
 @pytest.fixture(scope="module")
 def generated_q012():
     recovered = recover_queries_from_ast(analyze_php_ast(LEGACY_DIR))
-    converted = convert_queries(recovered)
+    converted = convert_queries(recovered, schema=clinic_schema())
 
     assert len(converted) == 22  # 22 Clinic sites (S22 mysqli_prepare detected since S2)
     assert sum(q["status"] == "CONVERTED" for q in converted) == 21

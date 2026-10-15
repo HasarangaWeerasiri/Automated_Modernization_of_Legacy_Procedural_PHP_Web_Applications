@@ -297,7 +297,6 @@ def _build_order_by_function(query: dict) -> str:
         "operation": "SELECT",
         "table": "patients",
         "base_sql": BASE_SQL,
-        "allowed_columns": ["id", "full_name"],
         "input_source": "_GET",
         "input_key": "sort",
         "fallback": "full_name",
@@ -312,10 +311,17 @@ def _build_order_by_function(query: dict) -> str:
     ):
         raise ValueError("Invalid Q012 ORDER BY representation.")
 
+    from c3.conversion.identifier_allowlist import validate_identifier_allowlist
+
+    allowed = validate_identifier_allowlist(
+        query.get("allowed_columns"),
+        query["fallback"],
+    )
+
     return "\n".join([
         "def select_patients_q012(session, inputs):",
         '    """Execute Q012 using a validated ORDER BY identifier."""',
-        "    column = resolve_q012_sort(inputs)",
+        f"    column = resolve_q012_sort(inputs, allowed_columns={allowed!r})",
         f"    statement = text(f\"{BASE_SQL} ORDER BY {{column}}\")",
         "    return session.execute(statement).mappings().all()",
     ])
@@ -338,7 +344,6 @@ def _build_table_identifier_function(query: dict) -> str:
         "operation": "SELECT",
         "table": "patients",
         "sql_template": SQL_TEMPLATE,
-        "allowed_tables": ["patients"],
         "input_source": "_GET",
         "input_key": "table",
         "fallback": "patients",
@@ -353,10 +358,17 @@ def _build_table_identifier_function(query: dict) -> str:
     ):
         raise ValueError("Invalid Q013 table identifier representation.")
 
+    from c3.conversion.identifier_allowlist import validate_identifier_allowlist
+
+    allowed = validate_identifier_allowlist(
+        query.get("allowed_tables"),
+        query["fallback"],
+    )
+
     return "\n".join([
         "def select_q013(session, inputs):",
         '    """Execute Q013 with a validated table identifier."""',
-        "    table = resolve_q013_table(inputs)",
+        f"    table = resolve_q013_table(inputs, allowed_tables={allowed!r})",
         '    statement = text(f"SELECT id FROM {table} WHERE id = 1")',
         "    return session.execute(statement).mappings().all()",
     ])

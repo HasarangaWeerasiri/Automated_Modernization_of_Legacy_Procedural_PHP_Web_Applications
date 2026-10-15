@@ -2,9 +2,12 @@
 """One-command Data Layer Migration pipeline."""
 from c3.mapping.schema_reader import read_schema, write_schema_json
 import json
+from dataclasses import asdict
 from pathlib import Path
 
-from c3.mapping.sql_recovery import recover_queries
+from c3.mapping.sql_locator import analyze_php_ast
+from c3.mapping.sql_recovery import recover_queries_from_ast
+from c3.analysis.security_report import generate_security_report
 from c3.conversion.model_builder import generate_models
 from c3.conversion.query_converter import (
     convert_queries,
@@ -93,23 +96,25 @@ def run_pipeline(
     unresolved_file = output_dir / "unresolved_queries.json"
 
     print("[1/6] Recovering legacy SQL...")
-    queries = recover_queries(
+    ast_data = analyze_php_ast(
         php_path,
         php_executable=php_executable,
     )
+    queries = recover_queries_from_ast(ast_data)
     queries_file.write_text(
         json.dumps(queries, indent=4, default=str),
         encoding="utf-8",
     )
 
     print("[2/6] Converting recovered queries...")
-    converted = convert_queries(queries)
+    # The schema is parsed before conversion so that identifier allowlists
+    # are derived from it (stage 3 writes schema.json and the models).
+    schema = read_schema(schema_file)
+    converted = convert_queries(queries, schema=asdict(schema))
     write_converted_queries(converted, converted_file)
 
 
     print("[3/6] Parsing schema and generating SQLAlchemy models...")
-
-    schema = read_schema(schema_file)
 
     schema_json_file = output_dir / "schema.json"
 
@@ -127,11 +132,18 @@ def run_pipeline(
     print("[5/6] Generating column-use report...")
     generate_column_usage(queries_file, column_usage_file)
 
-    print("[6/6] Generating unresolved-query report...")
+    print("[6/6] Generating unresolved-query and security reports...")
     generate_unresolved_report(
         queries_file,
         unresolved_file,
         converted_file=converted_file,
+    )
+    generate_security_report(
+        queries,
+        converted,
+        ast_data.get("assignments", []),
+        data_access_file,
+        output_dir / "security_report.json",
     )
 
     summary = build_summary(queries, converted)

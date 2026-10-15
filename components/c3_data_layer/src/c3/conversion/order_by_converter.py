@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+from c3.conversion.identifier_allowlist import schema_columns
 from c3.conversion.order_by_source_gate import (
     validate_q012_source_shape,
 )
@@ -14,8 +15,14 @@ EXPECTED_SQL = (
 BASE_SQL = "SELECT id, full_name FROM patients"
 
 
-def convert_q012_order_by(query: dict) -> dict | None:
-    """Create Q012 IR only for its validated legacy source."""
+def convert_q012_order_by(query: dict, schema: dict | None = None) -> dict | None:
+    """
+    Create Q012 IR only for its validated legacy source.
+
+    The ORDER BY allowlist is every column of the queried table in the
+    recovered schema. Without a schema it is only the legacy fallback
+    column (most restrictive safe choice).
+    """
 
     if not isinstance(query, dict):
         return None
@@ -41,6 +48,14 @@ def convert_q012_order_by(query: dict) -> dict | None:
     ):
         return None
 
+    if schema is None:
+        allowed_columns = ["full_name"]
+    else:
+        allowed_columns = schema_columns(schema, "patients")
+
+        if not allowed_columns or "full_name" not in allowed_columns:
+            return None
+
     return {
         "query_id": "Q012",
         "source_file": source_file,
@@ -49,7 +64,8 @@ def convert_q012_order_by(query: dict) -> dict | None:
         "table": "patients",
         "query_shape": "ORDER_BY_SELECT",
         "base_sql": BASE_SQL,
-        "allowed_columns": ["id", "full_name"],
+        "allowed_columns": allowed_columns,
+        "allowlist_source": "schema" if schema is not None else "fallback_only",
         "input_source": "_GET",
         "input_key": "sort",
         "fallback": "full_name",
