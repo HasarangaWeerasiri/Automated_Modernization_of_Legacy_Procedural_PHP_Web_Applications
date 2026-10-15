@@ -142,11 +142,33 @@ def _has_unsafe_placeholder_position(
 
     return False
 
+GENERAL_RULE = "general"
+TEMPLATE_RULE = "query_specific_template"
+
+
 def convert_query(query: dict) -> dict:
     """
     Convert one recovered query into a safe intermediate
     data-access representation.
+
+    Every CONVERTED result carries conversion_rule: "general" for the
+    general converter, or "query_specific_template" for the guarded
+    templates written for individual development-benchmark queries.
+    Reports count the two separately.
     """
+
+    result = _convert_query(query)
+
+    if result.get("status") == "CONVERTED" and "conversion_rule" not in result:
+        result["conversion_rule"] = (
+            TEMPLATE_RULE if "query_shape" in result else GENERAL_RULE
+        )
+
+    return result
+
+
+def _convert_query(query: dict) -> dict:
+    """Conversion logic; see convert_query."""
 
     query_id = query.get("query_id")
 
@@ -285,12 +307,13 @@ def convert_query(query: dict) -> dict:
         ]
     )
 
+    conversion_rule = GENERAL_RULE
+
     if len(tables) != 1:
-        if len(tables) > 1 and (
-            _is_supported_join_select(tree)
-            or _is_supported_q010_subquery(tree, query)
-        ):
+        if len(tables) > 1 and _is_supported_join_select(tree):
             pass
+        elif len(tables) > 1 and _is_supported_q010_subquery(tree, query):
+            conversion_rule = TEMPLATE_RULE
         else:
             return {
                 **base_result,
@@ -410,6 +433,7 @@ def convert_query(query: dict) -> dict:
         ),
         "status": "CONVERTED",
         "reason": None,
+        "conversion_rule": conversion_rule,
     }
 
 def _is_supported_q010_subquery(tree, query: dict) -> bool:

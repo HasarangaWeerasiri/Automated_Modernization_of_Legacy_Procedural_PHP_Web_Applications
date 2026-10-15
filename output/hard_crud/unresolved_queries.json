@@ -8,6 +8,7 @@
         "recovered_sql": "SELECT id, name, email FROM users ORDER BY {{column}}",
         "operation": null,
         "status": "UNRESOLVED",
+        "stage": "recovery",
         "reason_code": "STRUCTURAL",
         "reason": "Dynamic value occurs in a structural ORDER BY position.",
         "action": "manual_review_required"
@@ -21,6 +22,7 @@
         "recovered_sql": "SELECT id, title, price FROM products WHERE id IN ({{ids}})",
         "operation": null,
         "status": "UNRESOLVED",
+        "stage": "recovery",
         "reason_code": "STRUCTURAL",
         "reason": "Dynamic value represents an SQL IN-list fragment rather than a scalar value.",
         "action": "manual_review_required"
@@ -34,6 +36,7 @@
         "recovered_sql": "SELECT id, name, email, status FROM users WHERE status = '{{status}}'",
         "operation": null,
         "status": "UNRESOLVED",
+        "stage": "recovery",
         "reason_code": "BRANCHING",
         "reason": "SQL construction depends on conditional control flow.",
         "action": "manual_review_required"

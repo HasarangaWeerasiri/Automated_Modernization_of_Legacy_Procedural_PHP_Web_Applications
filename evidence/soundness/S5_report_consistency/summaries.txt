@@ -1,0 +1,19 @@
+# S5 summaries with the new unambiguous counts (code: this commit)
+# date: 2026-10-15T12:43:19+05:30
+# command: python scripts/regression_check.py <tmp> --reference <after S13>  (0 changed queries), then summary.json per app
+simple_crud: {"total_queries": 4, "recovered_queries": 4, "recovery_unresolved": 0, "converted_queries": 4, "converted_by_general_rules": 4, "converted_by_query_specific_template": 0, "recovered_not_converted": 0, "not_converted": 0, "unresolved_queries": 0, "conversion_unresolved": 0}
+  unresolved_queries.json entries: 0 []
+mixed_crud: {"total_queries": 6, "recovered_queries": 5, "recovery_unresolved": 1, "converted_queries": 5, "converted_by_general_rules": 5, "converted_by_query_specific_template": 0, "recovered_not_converted": 0, "not_converted": 1, "unresolved_queries": 1, "conversion_unresolved": 1}
+  unresolved_queries.json entries: 1 ['recovery']
+hard_crud: {"total_queries": 5, "recovered_queries": 2, "recovery_unresolved": 3, "converted_queries": 2, "converted_by_general_rules": 2, "converted_by_query_specific_template": 0, "recovered_not_converted": 0, "not_converted": 3, "unresolved_queries": 3, "conversion_unresolved": 3}
+  unresolved_queries.json entries: 3 ['recovery']
+clinic: {"total_queries": 22, "recovered_queries": 17, "recovery_unresolved": 5, "converted_queries": 21, "converted_by_general_rules": 14, "converted_by_query_specific_template": 7, "recovered_not_converted": 1, "not_converted": 1, "unresolved_queries": 5, "conversion_unresolved": 1}
+  unresolved_queries.json entries: 1 ['conversion']
+helpdesk: {"total_queries": 9, "recovered_queries": 9, "recovery_unresolved": 0, "converted_queries": 8, "converted_by_general_rules": 8, "converted_by_query_specific_template": 0, "recovered_not_converted": 1, "not_converted": 1, "unresolved_queries": 0, "conversion_unresolved": 1}
+  unresolved_queries.json entries: 1 ['conversion']
+hms_kishan0725: {"total_queries": 44, "recovered_queries": 40, "recovery_unresolved": 4, "converted_queries": 40, "converted_by_general_rules": 40, "converted_by_query_specific_template": 0, "recovered_not_converted": 0, "not_converted": 4, "unresolved_queries": 4, "conversion_unresolved": 4}
+  unresolved_queries.json entries: 4 ['recovery']
+news_buzz: {"total_queries": 32, "recovered_queries": 30, "recovery_unresolved": 2, "converted_queries": 29, "converted_by_general_rules": 29, "converted_by_query_specific_template": 0, "recovered_not_converted": 1, "not_converted": 3, "unresolved_queries": 2, "conversion_unresolved": 3}
+  unresolved_queries.json entries: 3 ['conversion', 'recovery']
+fee_rainbow: {"total_queries": 22, "recovered_queries": 20, "recovery_unresolved": 2, "converted_queries": 19, "converted_by_general_rules": 19, "converted_by_query_specific_template": 0, "recovered_not_converted": 1, "not_converted": 3, "unresolved_queries": 2, "conversion_unresolved": 3}
+  unresolved_queries.json entries: 3 ['conversion', 'recovery']

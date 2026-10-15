@@ -396,7 +396,11 @@ def test_q015_binding_plan_and_fallback_validation():
 
     assert q015["status"] == "RECOVERED"
     assert diagnostics["resolution_status"] == "DIAGNOSTIC_ONLY"
-    assert diagnostics["safe_for_conversion"] is False
+    # Promoted candidates are marked consistently (S5): no record says
+    # RECOVERED and "not safe for conversion" at the same time.
+    assert q015["cross_file_resolution"] == "PROMOTED_TO_RECOVERED"
+    assert diagnostics["safe_for_conversion"] is True
+    assert diagnostics["validated_for_recovery"] is True
 
     assert diagnostics["binding_plan"] == [{
         "parameter": "departmentId",
@@ -425,6 +429,8 @@ def test_q015_binding_plan_and_fallback_validation():
 
     assert invalid_q015["status"] == "UNRESOLVED"
     assert invalid_diagnostics["resolution_status"] == "UNRESOLVED"
+    assert invalid_diagnostics.get("safe_for_conversion") is not True
+    assert "cross_file_resolution" not in invalid_q015
     assert invalid_diagnostics["reason"] == (
         "Unsupported fallback expression."
     )

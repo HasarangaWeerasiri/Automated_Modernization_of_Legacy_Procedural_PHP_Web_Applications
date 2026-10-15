@@ -15,6 +15,56 @@ from c3.analysis.column_usage_generator import generate_column_usage
 from c3.analysis.unresolved_report import generate_unresolved_report
 
 
+def build_summary(
+    queries: list[dict],
+    converted: list[dict],
+) -> dict:
+    """
+    Count queries per stage without ambiguity.
+
+    total = recovered + recovery_unresolved
+    total = converted + not_converted
+    converted = converted_by_general_rules + converted_by_query_specific_template
+
+    A query can be recovery-unresolved and still converted, but only by a
+    guarded query-specific template (that is how converted can exceed
+    recovered). unresolved_queries and conversion_unresolved are kept with
+    their original meaning for backward compatibility.
+    """
+
+    recovered_ids = {
+        q.get("query_id") for q in queries if q.get("status") == "RECOVERED"
+    }
+    converted_rows = [q for q in converted if q.get("status") == "CONVERTED"]
+
+    total = len(queries)
+    recovered = len(recovered_ids)
+    converted_count = len(converted_rows)
+
+    return {
+        "total_queries": total,
+        "recovered_queries": recovered,
+        "recovery_unresolved": total - recovered,
+        "converted_queries": converted_count,
+        "converted_by_general_rules": sum(
+            q.get("conversion_rule") == "general" for q in converted_rows
+        ),
+        "converted_by_query_specific_template": sum(
+            q.get("conversion_rule") == "query_specific_template"
+            for q in converted_rows
+        ),
+        "recovered_not_converted": sum(
+            q.get("query_id") in recovered_ids
+            and q.get("status") != "CONVERTED"
+            for q in converted
+        ),
+        "not_converted": total - converted_count,
+        # Backward-compatible keys (original meaning).
+        "unresolved_queries": total - recovered,
+        "conversion_unresolved": total - converted_count,
+    }
+
+
 def run_pipeline(
     php_path: str | Path,
     schema_file: str | Path,
@@ -78,24 +128,14 @@ def run_pipeline(
     generate_column_usage(queries_file, column_usage_file)
 
     print("[6/6] Generating unresolved-query report...")
-    generate_unresolved_report(queries_file, unresolved_file)
+    generate_unresolved_report(
+        queries_file,
+        unresolved_file,
+        converted_file=converted_file,
+    )
 
-    summary = {
-        "total_queries": len(queries),
-        "recovered_queries": sum(
-            q.get("status") == "RECOVERED" for q in queries
-        ),
-        "converted_queries": sum(
-            q.get("status") == "CONVERTED" for q in converted
-        ),
-        "unresolved_queries": sum(
-            q.get("status") != "RECOVERED" for q in queries
-        ),
-        "conversion_unresolved": sum(
-            q.get("status") != "CONVERTED" for q in converted
-        ),
-        "output_directory": str(output_dir),
-    }
+    summary = build_summary(queries, converted)
+    summary["output_directory"] = str(output_dir)
 
     (output_dir / "summary.json").write_text(
         json.dumps(summary, indent=4),

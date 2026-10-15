@@ -12,7 +12,8 @@
         "like_wildcard_parameters": [],
         "parameterized_sql": "INSERT INTO users (name, email, status) VALUES (:name, :email, 'active')",
         "status": "CONVERTED",
-        "reason": null
+        "reason": null,
+        "conversion_rule": "general"
     },
     {
         "query_id": "Q002",
@@ -26,7 +27,8 @@
         "like_wildcard_parameters": [],
         "parameterized_sql": "DELETE FROM users WHERE id = :id",
         "status": "CONVERTED",
-        "reason": null
+        "reason": null,
+        "conversion_rule": "general"
     },
     {
         "query_id": "Q003",
@@ -41,7 +43,8 @@
         "like_wildcard_parameters": [],
         "parameterized_sql": "UPDATE users SET name = :name WHERE id = :id",
         "status": "CONVERTED",
-        "reason": null
+        "reason": null,
+        "conversion_rule": "general"
     },
     {
         "query_id": "Q004",
@@ -53,6 +56,7 @@
         "like_wildcard_parameters": [],
         "parameterized_sql": "SELECT id, name, email, status FROM users",
         "status": "CONVERTED",
-        "reason": null
+        "reason": null,
+        "conversion_rule": "general"
     }
 ]

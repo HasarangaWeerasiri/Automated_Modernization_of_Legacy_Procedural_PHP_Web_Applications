@@ -15,15 +15,60 @@ from typing import Any
 
 def build_unresolved_report(
     queries: list[dict[str, Any]],
+    converted: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """
-    Extract unresolved queries and produce manual-review records.
+    Produce one manual-review record per query that was not converted.
+
+    With conversion results, the report lists every query that is not
+    CONVERTED exactly once, whether it failed at recovery
+    (stage "recovery") or at conversion (stage "conversion"). Queries that
+    were converted, including by a guarded template after an unresolved
+    recovery, are not listed. Without conversion results, only
+    recovery-unresolved queries are listed (original behaviour).
     """
 
     unresolved: list[dict[str, Any]] = []
 
+    conversion_by_id = (
+        {item.get("query_id"): item for item in converted}
+        if converted is not None
+        else None
+    )
+
     for query in queries:
+        conversion = (
+            conversion_by_id.get(query.get("query_id"), {})
+            if conversion_by_id is not None
+            else None
+        )
+
+        if conversion is not None and conversion.get("status") == "CONVERTED":
+            continue
+
         if query.get("status") != "UNRESOLVED":
+            if conversion is None:
+                continue
+
+            unresolved.append(
+                {
+                    "query_id": query.get("query_id"),
+                    "source_file": query.get("source_file"),
+                    "source_line": query.get("source_line"),
+                    "executor": query.get("executor"),
+                    "sql_argument": query.get("sql_argument"),
+                    "recovered_sql": query.get("recovered_sql"),
+                    "operation": query.get("operation"),
+                    "status": "CONVERSION_UNRESOLVED",
+                    "stage": "conversion",
+                    "reason_code": "CONVERSION_UNSUPPORTED",
+                    "reason": (
+                        conversion.get("reason")
+                        or "Query could not be safely converted."
+                    ),
+                    "action": "manual_review_required",
+                }
+            )
             continue
 
         unresolved.append(
@@ -36,6 +81,7 @@ def build_unresolved_report(
                 "recovered_sql": query.get("recovered_sql"),
                 "operation": query.get("operation"),
                 "status": "UNRESOLVED",
+                **({"stage": "recovery"} if conversion is not None else {}),
 "reason_code": (
     query.get("reason_code")
     or "UNKNOWN_EXPR"
@@ -54,9 +100,11 @@ def build_unresolved_report(
 def generate_unresolved_report(
     queries_file: Path,
     output_file: Path,
+    converted_file: Path | None = None,
 ) -> list[dict[str, Any]]:
     """
-    Read queries.json and write unresolved_queries.json.
+    Read queries.json (and converted_queries.json when given) and write
+    unresolved_queries.json.
     """
 
     with queries_file.open(
@@ -65,7 +113,13 @@ def generate_unresolved_report(
     ) as file:
         queries = json.load(file)
 
-    unresolved = build_unresolved_report(queries)
+    converted = None
+
+    if converted_file is not None:
+        with Path(converted_file).open("r", encoding="utf-8") as file:
+            converted = json.load(file)
+
+    unresolved = build_unresolved_report(queries, converted)
 
     output_file.parent.mkdir(
         parents=True,

@@ -1334,6 +1334,14 @@ def recover_queries_from_ast(
         )
 
         if cross_file_candidate is not None:
+            # The diagnostics keep their collected resolution_status; mark
+            # explicitly that this candidate passed validation and was
+            # promoted, so the record is not self-contradictory.
+            cross_file_diagnostics = {
+                **cross_file_diagnostics,
+                "safe_for_conversion": True,
+                "validated_for_recovery": True,
+            }
             recovered_sql = cross_file_candidate["recovered_sql"]
             operation = cross_file_candidate["operation"]
             dynamic_variables = cross_file_candidate["dynamic_variables"]
@@ -1400,7 +1408,10 @@ def recover_queries_from_ast(
                     dynamic_variables
                 ),
                 **(
-                    {"binding_plan": cross_file_candidate["binding_plan"]}
+                    {
+                        "binding_plan": cross_file_candidate["binding_plan"],
+                        "cross_file_resolution": "PROMOTED_TO_RECOVERED",
+                    }
                     if cross_file_candidate is not None
                     else {}
                 ),
