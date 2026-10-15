@@ -94,7 +94,13 @@ def test_cross_table_cycle_is_deferred():
     assert [(name, fk["column"]) for name, fk in deferred] == [("a", "b_id")]
 
 
-def test_sqlite_round_trip_upgrade_check_downgrade(output, tmp_path, monkeypatch):
+@pytest.mark.parametrize("password", [None, "set-in-session"])
+def test_sqlite_round_trip_upgrade_check_downgrade(output, tmp_path, monkeypatch, password):
+    # With C3_DB_PASSWORD set (as in the MySQL test sessions) SQLite must still work.
+    if password:
+        monkeypatch.setenv("C3_DB_PASSWORD", password)
+    else:
+        monkeypatch.delenv("C3_DB_PASSWORD", raising=False)
     database = tmp_path / "roundtrip.db"
     monkeypatch.setenv("C3_ALEMBIC_URL", f"sqlite:///{database}")
     config = Config(str(output / "alembic" / "alembic.ini"))
