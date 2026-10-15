@@ -117,6 +117,7 @@ def mysql_to_sqlalchemy(mysql_type: str) -> str:
 
     base = match.group(1).upper()
     arguments = match.group(2)
+    unsigned = "UNSIGNED" in (match.group(3) or "").upper()
     numbers = (
         [part.strip() for part in arguments.split(",")]
         if arguments is not None
@@ -140,7 +141,11 @@ def mysql_to_sqlalchemy(mysql_type: str) -> str:
             return "String(1)"
 
     if base in ("DECIMAL", "NUMERIC", "DEC", "FIXED") and len(numbers) <= 2:
-        return f"Numeric({', '.join(numbers)})" if numbers else "Numeric"
+        generic = f"Numeric({', '.join(numbers)})" if numbers else "Numeric()"
+        if unsigned:
+            mysql_type = f"mysql.DECIMAL({', '.join(numbers + ['unsigned=True'])})"
+            return f"{generic}.with_variant({mysql_type}, 'mysql')"
+        return generic if numbers else "Numeric"
 
     if base == "TINYINT" and numbers == ["1"]:
         return "Boolean"
@@ -149,7 +154,16 @@ def mysql_to_sqlalchemy(mysql_type: str) -> str:
         return "Boolean"
 
     if base in INTEGER_TYPES and len(numbers) <= 1:
+        if unsigned:
+            # Keep UNSIGNED on MySQL (a generic Integer would allow negative
+            # values and halve the range); stay portable on other backends.
+            mysql_name = "INTEGER" if base in ("INT", "INTEGER") else base
+            return (
+                f"{INTEGER_TYPES[base]}().with_variant("
+                f"mysql.{mysql_name}(unsigned=True), 'mysql')"
+            )
         return INTEGER_TYPES[base]
+
 
     if base in ("BINARY", "VARBINARY") and len(numbers) == 1:
         return f"LargeBinary({numbers[0]})"

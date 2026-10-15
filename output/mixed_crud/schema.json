@@ -9,7 +9,9 @@
                     "nullable": false,
                     "primary_key": true,
                     "auto_increment": true,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "title",
@@ -17,7 +19,9 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "price",
@@ -25,10 +29,17 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 }
             ],
-            "foreign_keys": []
+            "foreign_keys": [],
+            "unique_constraints": [],
+            "indexes": [],
+            "check_constraints": [],
+            "unsupported_features": []
         }
-    ]
+    ],
+    "unsupported_objects": []
 }

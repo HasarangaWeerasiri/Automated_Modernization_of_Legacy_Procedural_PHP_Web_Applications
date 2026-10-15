@@ -1,0 +1,60 @@
+# Clinic models.py before (S6) vs after (S9): recovered constraints now emitted
+9a10,11
+>     CheckConstraint,
+>     Column,
+11a14
+>     Enum,
+13a17
+>     Index,
+14a19
+>     JSON,
+18a24
+>     Table,
+21,24c27,28
+<     Enum,
+<     JSON,
+<     Column,
+<     Table,
+---
+>     UniqueConstraint,
+>     text,
+25a30
+> from sqlalchemy.dialects import mysql
+52a58,60
+>     __table_args__ = (
+>         UniqueConstraint('code', name='uq_department_code'),
+>     )
+63a72,74
+>     __table_args__ = (
+>         Index('idx_patients_department', 'department_id'),
+>     )
+66c77
+<     department_id = mapped_column(Integer, ForeignKey("departments.id"), nullable=False)
+---
+>     department_id = mapped_column(Integer, ForeignKey("departments.id", name='fk_patients_department'), nullable=False)
+80c91
+<     department_id = mapped_column(Integer, ForeignKey("departments.id"), nullable=False)
+---
+>     department_id = mapped_column(Integer, ForeignKey("departments.id", name='fk_doctors_department'), nullable=False)
+83c94
+<     active = mapped_column(Boolean, nullable=False)
+---
+>     active = mapped_column(Boolean, nullable=False, server_default='1')
+90a102,104
+>     __table_args__ = (
+>         Index('idx_appointments_patient', 'patient_id'),
+>     )
+93,94c107,108
+<     patient_id = mapped_column(Integer, ForeignKey("patients.id"), nullable=False)
+<     doctor_id = mapped_column(Integer, ForeignKey("doctors.id"), nullable=False)
+---
+>     patient_id = mapped_column(Integer, ForeignKey("patients.id", name='fk_appointments_patient'), nullable=False)
+>     doctor_id = mapped_column(Integer, ForeignKey("doctors.id", name='fk_appointments_doctor'), nullable=False)
+96c110
+<     status = mapped_column(String(30), nullable=False)
+---
+>     status = mapped_column(String(30), nullable=False, server_default='pending')
+108c122
+<     appointment_id = mapped_column(Integer, ForeignKey("appointments.id"), nullable=False)
+---
+>     appointment_id = mapped_column(Integer, ForeignKey("appointments.id", name='fk_payments_appointment'), nullable=False)

@@ -166,7 +166,7 @@ Branch: `database-migration` (user override: no `pp1-c3-complete`). Starting poi
 | S6 security report | **done** | `evidence/soundness/S6_security/`, `tests/test_security_report.py` | `security_report.json` per app: superglobal taint (intra-file, transitive), sanitizers, value vs structural positions, remediation, coverage, generated-code AST scan. Coverage 100% / 0 violations on all 8 apps. Q012/Q013 allowlists derived from the schema. **Needs a MySQL re-run** of the Q012/Q013 equivalence tests. Runtime injection negatives = E4. Tests: 627 / 61 skipped. |
 | S7 standalone generated code | not started | — | Generated Clinic code imports `c3.conversion.*`. |
 | S8 transaction + LIMIT | not started | — | Mixed commit policy. LIMIT is only tested with ints. |
-| S9 models + schema fidelity | not started | — | Self-ref and dual-FK models fail `configure_mappers()`. UNIQUE, indexes, ON DELETE and CHECK are lost. |
+| S9 models + schema fidelity | **done** (E2 live comparison pending) | `evidence/soundness/S9_schema_fidelity/`, `tests/test_schema_fidelity.py` | UNIQUE, indexes, CHECK, FK name and actions, defaults, ON UPDATE and UNSIGNED are emitted. Self-ref and multi-FK map and traverse. Unsupported objects and features are listed in `migration_notes.md`. 9/9 apps map. Tests: 637 / 61 skipped. |
 | S10 Alembic | not started | — | Alembic not installed. |
 | S11 column use | not started | — | |
 | S12 traceability | not started | — | Module and tests exist; not wired into the pipeline. |

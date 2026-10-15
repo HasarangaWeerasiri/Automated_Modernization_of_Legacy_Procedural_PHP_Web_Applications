@@ -1,0 +1,11 @@
+# date: 2026-10-15T13:45:58+05:30
+# command: python scripts/regression_check.py <tmp> --reference <after S6>  (0 changed queries), then python scripts/check_models.py <tmp>/<app>/models.py
+simple_crud: configure_mappers OK (2 mapped classes, 2 tables)
+mixed_crud: configure_mappers OK (1 mapped classes, 1 tables)
+hard_crud: configure_mappers OK (5 mapped classes, 5 tables)
+clinic: configure_mappers OK (5 mapped classes, 5 tables)
+helpdesk: configure_mappers OK (3 mapped classes, 3 tables)
+hms_kishan0725: configure_mappers OK (2 mapped classes, 6 tables)
+news_buzz: configure_mappers OK (2 mapped classes, 2 tables)
+fee_rainbow: configure_mappers OK (1 mapped classes, 1 tables)
+dignity_dev_hms: configure_mappers OK (2 mapped classes, 6 tables)

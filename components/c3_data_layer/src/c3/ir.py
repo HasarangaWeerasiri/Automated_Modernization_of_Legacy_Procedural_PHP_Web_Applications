@@ -21,6 +21,8 @@ class Column:
     primary_key: bool = False
     auto_increment: bool = False
     default: Optional[str] = None
+    unique: bool = False
+    on_update: Optional[str] = None
 
 
 @dataclass
@@ -30,6 +32,9 @@ class ForeignKey:
     column: str
     referenced_table: str
     referenced_column: str
+    name: Optional[str] = None
+    on_delete: Optional[str] = None
+    on_update: Optional[str] = None
 
 
 @dataclass
@@ -39,6 +44,14 @@ class Table:
     name: str
     columns: list[Column] = field(default_factory=list)
     foreign_keys: list[ForeignKey] = field(default_factory=list)
+    # {"name": str | None, "columns": [str, ...]}
+    unique_constraints: list[dict] = field(default_factory=list)
+    # {"name": str | None, "columns": [str, ...]}
+    indexes: list[dict] = field(default_factory=list)
+    # {"name": str | None, "expression": str}
+    check_constraints: list[dict] = field(default_factory=list)
+    # Features recognised but not migrated (listed in migration_notes.md).
+    unsupported_features: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -46,6 +59,8 @@ class DatabaseSchema:
     """Represents the complete recovered database schema."""
 
     tables: list[Table] = field(default_factory=list)
+    # Views, triggers, routines, events found in the dump (not migrated).
+    unsupported_objects: list[str] = field(default_factory=list)
 
 
 @dataclass

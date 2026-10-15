@@ -32,6 +32,7 @@ BENCHMARKS = {
     "hms_kishan0725": (APPS / "_app_only" / "hms_kishan0725", APPS / "hms_kishan0725" / "myhmsdb.sql"),
     "news_buzz": (APPS / "_app_only" / "news_buzz", APPS / "news_buzz" / "db" / "NEWSBUZZ.sql"),
     "fee_rainbow": (APPS / "_app_only" / "fee_rainbow", APPS / "fee_rainbow" / "database" / "db.sql"),
+    "dignity_dev_hms": (APPS / "_app_only" / "dignity_dev_hms", APPS / "dignity_dev_hms" / "127_0_0_1.sql"),
 }
 
 

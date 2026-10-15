@@ -9,7 +9,9 @@
                     "nullable": false,
                     "primary_key": true,
                     "auto_increment": true,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "name",
@@ -17,7 +19,9 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "email",
@@ -25,7 +29,9 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "status",
@@ -33,7 +39,9 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "role",
@@ -41,7 +49,9 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "created_at",
@@ -49,10 +59,16 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 }
             ],
-            "foreign_keys": []
+            "foreign_keys": [],
+            "unique_constraints": [],
+            "indexes": [],
+            "check_constraints": [],
+            "unsupported_features": []
         },
         {
             "name": "categories",
@@ -63,7 +79,9 @@
                     "nullable": false,
                     "primary_key": true,
                     "auto_increment": true,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "name",
@@ -71,10 +89,16 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 }
             ],
-            "foreign_keys": []
+            "foreign_keys": [],
+            "unique_constraints": [],
+            "indexes": [],
+            "check_constraints": [],
+            "unsupported_features": []
         },
         {
             "name": "products",
@@ -85,7 +109,9 @@
                     "nullable": false,
                     "primary_key": true,
                     "auto_increment": true,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "category_id",
@@ -93,7 +119,9 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "title",
@@ -101,7 +129,9 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "description",
@@ -109,7 +139,9 @@
                     "nullable": true,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "price",
@@ -117,7 +149,9 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "stock",
@@ -125,7 +159,9 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "status",
@@ -133,16 +169,25 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 }
             ],
             "foreign_keys": [
                 {
                     "column": "category_id",
                     "referenced_table": "categories",
-                    "referenced_column": "id"
+                    "referenced_column": "id",
+                    "name": null,
+                    "on_delete": null,
+                    "on_update": null
                 }
-            ]
+            ],
+            "unique_constraints": [],
+            "indexes": [],
+            "check_constraints": [],
+            "unsupported_features": []
         },
         {
             "name": "orders",
@@ -153,7 +198,9 @@
                     "nullable": false,
                     "primary_key": true,
                     "auto_increment": true,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "user_id",
@@ -161,7 +208,9 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "total",
@@ -169,7 +218,9 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "status",
@@ -177,7 +228,9 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "created_at",
@@ -185,16 +238,25 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 }
             ],
             "foreign_keys": [
                 {
                     "column": "user_id",
                     "referenced_table": "users",
-                    "referenced_column": "id"
+                    "referenced_column": "id",
+                    "name": null,
+                    "on_delete": null,
+                    "on_update": null
                 }
-            ]
+            ],
+            "unique_constraints": [],
+            "indexes": [],
+            "check_constraints": [],
+            "unsupported_features": []
         },
         {
             "name": "order_items",
@@ -205,7 +267,9 @@
                     "nullable": false,
                     "primary_key": true,
                     "auto_increment": true,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "order_id",
@@ -213,7 +277,9 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "product_id",
@@ -221,7 +287,9 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "quantity",
@@ -229,7 +297,9 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 },
                 {
                     "name": "unit_price",
@@ -237,21 +307,34 @@
                     "nullable": false,
                     "primary_key": false,
                     "auto_increment": false,
-                    "default": null
+                    "default": null,
+                    "unique": false,
+                    "on_update": null
                 }
             ],
             "foreign_keys": [
                 {
                     "column": "order_id",
                     "referenced_table": "orders",
-                    "referenced_column": "id"
+                    "referenced_column": "id",
+                    "name": null,
+                    "on_delete": null,
+                    "on_update": null
                 },
                 {
                     "column": "product_id",
                     "referenced_table": "products",
-                    "referenced_column": "id"
+                    "referenced_column": "id",
+                    "name": null,
+                    "on_delete": null,
+                    "on_update": null
                 }
-            ]
+            ],
+            "unique_constraints": [],
+            "indexes": [],
+            "check_constraints": [],
+            "unsupported_features": []
         }
-    ]
+    ],
+    "unsupported_objects": []
 }

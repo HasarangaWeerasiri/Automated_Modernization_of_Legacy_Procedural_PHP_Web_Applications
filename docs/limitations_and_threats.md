@@ -25,6 +25,10 @@ This is a living document. Each limitation names the evidence it is based on.
 ## Fresh holdout findings
 - Dignity-Dev builds SQL inside procedural functions from function parameters. The S6 taint analysis does not trace across function calls, so its security report shows 0 user inputs even though `$_POST` data reaches those parameters. Implicit comma joins (`FROM a, b`) are not converted.
 
+## Schema fidelity (S9)
+- Composite foreign keys, views, triggers, routines, events, partitioning, generated-column expressions and FULLTEXT/SPATIAL indexes are listed in `migration_notes.md` but not migrated.
+- Index prefix lengths and ASC/DESC are dropped. `DEFAULT … ON UPDATE CURRENT_TIMESTAMP` is emitted as MySQL-specific DDL.
+
 ## Method
 - Behavioural equivalence on MySQL covers selected inputs only. Day-3 behaviour tests used SQLite.
 - Generated data access is parameterized SQLAlchemy (`text()` + bind parameters), not ORM query constructs.

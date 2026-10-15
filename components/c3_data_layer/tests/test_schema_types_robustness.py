@@ -21,8 +21,8 @@ from c3.pipeline import run_pipeline
     "mysql_type,expected",
     [
         ("INT(11)", "Integer"),
-        ("int(4) unsigned", "Integer"),
-        ("BIGINT(20) UNSIGNED", "BigInteger"),
+        ("int(4) unsigned", "Integer().with_variant(mysql.INTEGER(unsigned=True), 'mysql')"),
+        ("BIGINT(20) UNSIGNED", "BigInteger().with_variant(mysql.BIGINT(unsigned=True), 'mysql')"),
         ("SMALLINT(6)", "SmallInteger"),
         ("TINYINT(4)", "Integer"),
         ("TINYINT(1)", "Boolean"),

@@ -11,3 +11,11 @@ None. Every column type has a SQLAlchemy mapping.
 ## Tables without a primary key
 
 None.
+
+## Table features not migrated
+
+None.
+
+## Database objects not migrated
+
+None (no views, triggers, routines or events in the dump).

@@ -36,7 +36,9 @@ def test_tinyint_one_maps_to_boolean():
 
 
 def test_unsigned_integer_mapping():
-    assert mysql_to_sqlalchemy("INT UNSIGNED") == "Integer"
+    # UNSIGNED is preserved through the MySQL dialect type (S9).
+    assert mysql_to_sqlalchemy("INT UNSIGNED") == "Integer().with_variant(mysql.INTEGER(unsigned=True), 'mysql')"
+    assert mysql_to_sqlalchemy("DECIMAL(10,2) UNSIGNED") == "Numeric(10, 2).with_variant(mysql.DECIMAL(10, 2, unsigned=True), 'mysql')"
 
 
 def test_unsupported_type_is_not_guessed():
