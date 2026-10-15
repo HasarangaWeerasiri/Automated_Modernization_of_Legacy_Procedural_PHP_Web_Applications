@@ -263,6 +263,55 @@ function getControlFlowContext(
 
 
 /**
+ * Return the conditionally executed blocks enclosing an AST node,
+ * innermost first: the then-body of an if ("IF@<offset of the if>"),
+ * an elseif body ("ELSEIF@..."), an else body ("ELSE@...") and a
+ * catch body ("CATCH@...").
+ *
+ * Only the block that actually contains the node is recorded: a node in
+ * an else body is NOT inside the if's then-body, even though the If_
+ * node is one of its ancestors. A node in an if condition is in no block.
+ */
+function getBranchContext(
+    Node $node
+): array {
+    $contexts = [];
+
+    $child = $node;
+    $parent = $node->getAttribute('parent');
+
+    while ($parent instanceof Node) {
+        $kind = null;
+
+        if (
+            $parent instanceof Node\Stmt\If_
+            && in_array($child, $parent->stmts, true)
+        ) {
+            $kind = 'IF';
+        } elseif (
+            $parent instanceof Node\Stmt\ElseIf_
+            && in_array($child, $parent->stmts, true)
+        ) {
+            $kind = 'ELSEIF';
+        } elseif ($parent instanceof Node\Stmt\Else_) {
+            $kind = 'ELSE';
+        } elseif ($parent instanceof Node\Stmt\Catch_) {
+            $kind = 'CATCH';
+        }
+
+        if ($kind !== null) {
+            $contexts[] = $kind . '@' . $parent->getStartFilePos();
+        }
+
+        $child = $parent;
+        $parent = $parent->getAttribute('parent');
+    }
+
+    return $contexts;
+}
+
+
+/**
  * Return the loops and switch cases enclosing an AST node,
  * innermost first.
  *
@@ -719,6 +768,7 @@ foreach ($phpFiles as $phpFile) {
                 $prettyPrinter
             ),
             'loop_context' => getLoopContext($assignment),
+            'branch_context' => getBranchContext($assignment),
             'function_call' => $functionCallMetadata,
         ];
     }
@@ -753,6 +803,7 @@ foreach ($phpFiles as $phpFile) {
                 'source_file' => $phpFile,
                 'source_line' => $call->getStartLine(),
                 'loop_context' => getLoopContext($call),
+                'branch_context' => getBranchContext($call),
                 'executor' => $functionName,
                 'sql_argument' => null,
                 'status' => 'UNSUPPORTED_EXECUTOR',
@@ -783,6 +834,7 @@ foreach ($phpFiles as $phpFile) {
                 'source_file' => $phpFile,
                 'source_line' => $call->getStartLine(),
                 'loop_context' => getLoopContext($call),
+                'branch_context' => getBranchContext($call),
                 'executor' => $functionName,
                 'sql_argument' => null,
                 'status' => 'UNRESOLVED',
@@ -800,6 +852,7 @@ foreach ($phpFiles as $phpFile) {
             'source_file' => $phpFile,
             'source_line' => $call->getStartLine(),
             'loop_context' => getLoopContext($call),
+                'branch_context' => getBranchContext($call),
             'executor' => $functionName,
             'sql_argument' => expressionToString(
                 $sqlNode,
@@ -856,6 +909,7 @@ foreach ($phpFiles as $phpFile) {
                 'source_file' => $phpFile,
                 'source_line' => $call->getStartLine(),
                 'loop_context' => getLoopContext($call),
+                'branch_context' => getBranchContext($call),
                 'executor' => $normalizedMethod,
                 'sql_argument' => null,
                 'status' => 'UNRESOLVED',
@@ -873,6 +927,7 @@ foreach ($phpFiles as $phpFile) {
             'source_file' => $phpFile,
             'source_line' => $call->getStartLine(),
             'loop_context' => getLoopContext($call),
+                'branch_context' => getBranchContext($call),
             'executor' => $normalizedMethod,
             'sql_argument' => expressionToString(
                 $sqlNode,

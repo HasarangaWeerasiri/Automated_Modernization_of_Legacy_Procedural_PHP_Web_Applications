@@ -1,0 +1,54 @@
+[
+    {
+        "query_id": "Q003",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 71,
+        "executor": "mysqli_query",
+        "sql_argument": "\"update appointmenttb set userStatus='0' where ID = '\" . $_GET['ID'] . \"'\"",
+        "recovered_sql": "update appointmenttb set userStatus='0' where ID = '{{UNRESOLVED:$_GET['ID']}}'",
+        "operation": "UPDATE",
+        "status": "UNRESOLVED",
+        "reason_code": "UNKNOWN_EXPR",
+        "reason": "Query contains unsupported dynamic expression.",
+        "action": "manual_review_required"
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 86,
+        "executor": "mysqli_query",
+        "sql_argument": "\"select p.pid,p.ID,p.fname,p.lname,p.doctor,p.appdate,p.apptime,p.disease,p.allergy,p.prescription,a.docFees from prestb p inner join appointmenttb a on p.ID=a.ID and p.pid = '{$pid}' and p.ID = '\" . $_GET['ID'] . \"'\"",
+        "recovered_sql": "select p.pid,p.ID,p.fname,p.lname,p.doctor,p.appdate,p.apptime,p.disease,p.allergy,p.prescription,a.docFees from prestb p inner join appointmenttb a on p.ID=a.ID and p.pid = '{{pid}}' and p.ID = '{{UNRESOLVED:$_GET['ID']}}'",
+        "operation": "SELECT",
+        "status": "UNRESOLVED",
+        "reason_code": "UNKNOWN_EXPR",
+        "reason": "Query contains unsupported dynamic expression.",
+        "action": "manual_review_required"
+    },
+    {
+        "query_id": "Q018",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "\"update appointmenttb set doctorStatus='0' where ID = '\" . $_GET['ID'] . \"'\"",
+        "recovered_sql": "update appointmenttb set doctorStatus='0' where ID = '{{UNRESOLVED:$_GET['ID']}}'",
+        "operation": "UPDATE",
+        "status": "UNRESOLVED",
+        "reason_code": "UNKNOWN_EXPR",
+        "reason": "Query contains unsupported dynamic expression.",
+        "action": "manual_review_required"
+    },
+    {
+        "query_id": "Q036",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\include\\header.php",
+        "source_line": 35,
+        "executor": "mysqli_query",
+        "sql_argument": "\"select fullName from users where id='\" . $_SESSION['id'] . \"'\"",
+        "recovered_sql": "select fullName from users where id='{{UNRESOLVED:$_SESSION['id']}}'",
+        "operation": "SELECT",
+        "status": "UNRESOLVED",
+        "reason_code": "UNKNOWN_EXPR",
+        "reason": "Query contains unsupported dynamic expression.",
+        "action": "manual_review_required"
+    }
+]

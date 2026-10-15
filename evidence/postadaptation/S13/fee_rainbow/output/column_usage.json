@@ -1,0 +1,397 @@
+[
+    {
+        "query_id": "Q001",
+        "operation": "SELECT",
+        "tables": [
+            "admin"
+        ],
+        "read_columns": [
+            "username"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\auth.php",
+        "source_line": 9,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "operation": "SELECT",
+        "tables": [
+            "admin"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "username"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\auth.php",
+        "source_line": 28,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q003",
+        "operation": "INSERT",
+        "tables": [
+            "categories"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "name",
+            "created_at",
+            "updated_at"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\categories.php",
+        "source_line": 34,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q004",
+        "operation": "UPDATE",
+        "tables": [
+            "categories"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "name",
+            "updated_at"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\categories.php",
+        "source_line": 57,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q005",
+        "operation": "DELETE",
+        "tables": [
+            "subcategories"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [
+            "category_id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\categories.php",
+        "source_line": 76,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q006",
+        "operation": "DELETE",
+        "tables": [
+            "categories"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\categories.php",
+        "source_line": 80,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q007",
+        "operation": "SELECT",
+        "tables": [
+            "categories",
+            "subcategories"
+        ],
+        "read_columns": [
+            "id",
+            "name"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "name"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\categories.php",
+        "source_line": 100,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q008",
+        "operation": "INSERT",
+        "tables": [
+            "occasions"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "name",
+            "created_at",
+            "updated_at"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\occasions.php",
+        "source_line": 27,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q009",
+        "operation": "UPDATE",
+        "tables": [
+            "occasions"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "name",
+            "updated_at"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\occasions.php",
+        "source_line": 52,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q010",
+        "operation": "DELETE",
+        "tables": [
+            "occasions"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\occasions.php",
+        "source_line": 72,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q011",
+        "operation": "SELECT",
+        "tables": [
+            "occasions"
+        ],
+        "read_columns": [
+            "id",
+            "name"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "name"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\occasions.php",
+        "source_line": 92,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q012",
+        "operation": "INSERT",
+        "tables": [
+            "products"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "name",
+            "category_id",
+            "subcategory_id",
+            "occasion_id",
+            "price",
+            "description",
+            "image",
+            "created_at",
+            "updated_at"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\products.php",
+        "source_line": 82,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q013",
+        "operation": "UPDATE",
+        "tables": [
+            "products"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "name",
+            "category_id",
+            "subcategory_id",
+            "occasion_id",
+            "price",
+            "image",
+            "description",
+            "updated_at"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\products.php",
+        "source_line": 133,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q014",
+        "operation": "SELECT",
+        "tables": [
+            "products"
+        ],
+        "read_columns": [
+            "image"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\products.php",
+        "source_line": 152,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q015",
+        "operation": "DELETE",
+        "tables": [
+            "products"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\products.php",
+        "source_line": 165,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q016",
+        "operation": "SELECT",
+        "tables": [
+            "admin"
+        ],
+        "read_columns": [
+            "id"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "username"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\register.php",
+        "source_line": 30,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q017",
+        "operation": "INSERT",
+        "tables": [
+            "admin"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "username",
+            "password",
+            "created_at",
+            "updated_at"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\register.php",
+        "source_line": 44,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q018",
+        "operation": "INSERT",
+        "tables": [
+            "subcategories"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "name",
+            "category_id",
+            "created_at",
+            "updated_at"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\subcategories.php",
+        "source_line": 40,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q019",
+        "operation": "UPDATE",
+        "tables": [
+            "subcategories"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "name",
+            "updated_at"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\subcategories.php",
+        "source_line": 65,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q020",
+        "operation": "DELETE",
+        "tables": [
+            "subcategories"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\subcategories.php",
+        "source_line": 85,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q021",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\config\\helpers.php",
+        "source_line": 4,
+        "status": "UNRESOLVED",
+        "reason": "No recoverable assignment chain found."
+    },
+    {
+        "query_id": "Q022",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\config\\helpers.php",
+        "source_line": 4,
+        "status": "UNRESOLVED",
+        "reason": "No recoverable assignment chain found."
+    }
+]

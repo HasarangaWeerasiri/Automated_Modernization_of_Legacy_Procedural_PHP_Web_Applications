@@ -1,0 +1,561 @@
+[
+    {
+        "query_id": "Q001",
+        "operation": "INSERT",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "username",
+            "firstname",
+            "lastname",
+            "email",
+            "password",
+            "role"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\adduser.php",
+        "source_line": 51,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\editposts.php",
+        "source_line": 17,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q003",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\editposts.php",
+        "source_line": 88,
+        "status": "UNRESOLVED",
+        "reason": "SQL parse failed: Invalid expression / Unexpected token. Line 1, Col: 82.\n  UPDATE posts SET title = :post_title , tag = :post_tag , content=:post_content , \u001b[4m\\\u001b[0mtstatus = :post_status , image = :picture , postdate = :post_date WHERE id= :post_id"
+    },
+    {
+        "query_id": "Q004",
+        "operation": "SELECT",
+        "tables": [
+            "posts"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\index.php",
+        "source_line": 34,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q005",
+        "operation": "SELECT",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\index.php",
+        "source_line": 64,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q006",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\post.php",
+        "source_line": 17,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q007",
+        "operation": "SELECT",
+        "tables": [
+            "posts"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 51,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q008",
+        "operation": "DELETE",
+        "tables": [
+            "posts"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 98,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q009",
+        "operation": "UPDATE",
+        "tables": [
+            "posts"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "status"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 110,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q010",
+        "operation": "SELECT",
+        "tables": [
+            "posts"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "author"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 153,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q011",
+        "operation": "DELETE",
+        "tables": [
+            "posts"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 200,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q012",
+        "operation": "UPDATE",
+        "tables": [
+            "posts"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "status"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 212,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q013",
+        "operation": "SELECT",
+        "tables": [
+            "posts"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "author"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 251,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q014",
+        "operation": "DELETE",
+        "tables": [
+            "posts"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [
+            "id",
+            "author"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 292,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q015",
+        "operation": "SELECT",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "username"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\profile.php",
+        "source_line": 7,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q016",
+        "operation": "UPDATE",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "firstname",
+            "lastname",
+            "email"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\profile.php",
+        "source_line": 55,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q017",
+        "operation": "UPDATE",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "password",
+            "firstname",
+            "lastname",
+            "email"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\profile.php",
+        "source_line": 76,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q018",
+        "operation": "SELECT",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "username"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\profile1.php",
+        "source_line": 7,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q019",
+        "operation": "UPDATE",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "password",
+            "firstname",
+            "lastname",
+            "email"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\profile1.php",
+        "source_line": 68,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q020",
+        "operation": "INSERT",
+        "tables": [
+            "posts"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "title",
+            "author",
+            "postdate",
+            "image",
+            "content",
+            "status",
+            "tag"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\publishnews.php",
+        "source_line": 73,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q021",
+        "operation": "SELECT",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\users.php",
+        "source_line": 53,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q022",
+        "operation": "SELECT",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [
+            "role"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\users.php",
+        "source_line": 84,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q023",
+        "operation": "DELETE",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\users.php",
+        "source_line": 96,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q024",
+        "operation": "SELECT",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [
+            "role"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\users.php",
+        "source_line": 109,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q025",
+        "operation": "UPDATE",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "role"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\users.php",
+        "source_line": 123,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q026",
+        "operation": "SELECT",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\users.php",
+        "source_line": 176,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q027",
+        "operation": "SELECT",
+        "tables": [
+            "posts"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "status"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\index.php",
+        "source_line": 15,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q028",
+        "operation": "SELECT",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "username"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\login.php",
+        "source_line": 10,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q029",
+        "operation": "SELECT",
+        "tables": [
+            "posts"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\publicposts.php",
+        "source_line": 16,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q030",
+        "operation": "SELECT",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "username"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\registerprocess.php",
+        "source_line": 38,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q031",
+        "operation": "INSERT",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "username",
+            "firstname",
+            "lastname",
+            "email",
+            "password"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\registerprocess.php",
+        "source_line": 51,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q032",
+        "operation": "SELECT",
+        "tables": [
+            "posts"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "tag",
+            "status"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\search.php",
+        "source_line": 19,
+        "status": "ANALYZED",
+        "reason": null
+    }
+]

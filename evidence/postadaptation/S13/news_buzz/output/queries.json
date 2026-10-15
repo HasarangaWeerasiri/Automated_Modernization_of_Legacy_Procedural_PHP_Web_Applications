@@ -1,0 +1,505 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\adduser.php",
+        "source_line": 51,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "INSERT INTO users(username,firstname,lastname,email,password,role) VALUES ('{{username}}' , '{{firstname}}' , '{{lastname}}' , '{{email}}', '{{password}}' , '{{role}}')",
+        "operation": "INSERT",
+        "dynamic_variables": [
+            "username",
+            "firstname",
+            "lastname",
+            "email",
+            "password",
+            "role"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\editposts.php",
+        "source_line": 17,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM posts WHERE id='{{id}}' AND author = '{{currentuser}}'",
+        "operation": null,
+        "dynamic_variables": [
+            "id",
+            "currentuser"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\editposts.php",
+        "source_line": 88,
+        "executor": "mysqli_query",
+        "sql_argument": "$queryupdate",
+        "recovered_sql": "UPDATE posts SET title = '{{post_title}}' , tag = '{{post_tag}}' , content='{{post_content}}' , \\tstatus = '{{post_status}}' , image = '{{picture}}' , postdate = '{{post_date}}' WHERE id= '{{post_id}}'",
+        "operation": "UPDATE",
+        "dynamic_variables": [
+            "post_title",
+            "post_tag",
+            "post_content",
+            "post_status",
+            "picture",
+            "post_date",
+            "post_id"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\index.php",
+        "source_line": 34,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM posts",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q005",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\index.php",
+        "source_line": 64,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM users",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q006",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\post.php",
+        "source_line": 17,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM posts WHERE id='{{post}}' AND author = '{{currentuser}}'",
+        "operation": null,
+        "dynamic_variables": [
+            "post",
+            "currentuser"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q007",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 51,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM posts ORDER BY id DESC",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q008",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 98,
+        "executor": "mysqli_query",
+        "sql_argument": "$del_query",
+        "recovered_sql": "DELETE FROM posts WHERE id='{{post_del}}'",
+        "operation": "DELETE",
+        "dynamic_variables": [
+            "post_del"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q009",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 110,
+        "executor": "mysqli_query",
+        "sql_argument": "$pub_query",
+        "recovered_sql": "UPDATE posts SET status='published' WHERE id='{{post_pub}}'",
+        "operation": "UPDATE",
+        "dynamic_variables": [
+            "post_pub"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q010",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 153,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM posts WHERE author = '{{currentuser}}' ORDER BY id DESC",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "currentuser"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q011",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 200,
+        "executor": "mysqli_query",
+        "sql_argument": "$del_query",
+        "recovered_sql": "DELETE FROM posts WHERE id='{{post_del}}'",
+        "operation": "DELETE",
+        "dynamic_variables": [
+            "post_del"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q012",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 212,
+        "executor": "mysqli_query",
+        "sql_argument": "$pub_query",
+        "recovered_sql": "UPDATE posts SET status='published' WHERE id='{{post_pub}}'",
+        "operation": "UPDATE",
+        "dynamic_variables": [
+            "post_pub"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q013",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 251,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM posts WHERE author = '{{currentuser}}' ORDER BY id DESC",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "currentuser"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q014",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\posts.php",
+        "source_line": 292,
+        "executor": "mysqli_query",
+        "sql_argument": "$del_query",
+        "recovered_sql": "DELETE FROM posts WHERE id='{{post_del}}' AND author='{{currentuser}}'",
+        "operation": "DELETE",
+        "dynamic_variables": [
+            "post_del",
+            "currentuser"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q015",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\profile.php",
+        "source_line": 7,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM users WHERE username = '{{username}}'",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "username"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q016",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\profile.php",
+        "source_line": 55,
+        "executor": "mysqli_query",
+        "sql_argument": "$updatequery1",
+        "recovered_sql": "UPDATE users SET firstname = '{{userfirstname}}' , lastname='{{userlastname}}' , email='{{useremail}}' WHERE id = '{{userid}}'",
+        "operation": "UPDATE",
+        "dynamic_variables": [
+            "userfirstname",
+            "userlastname",
+            "useremail",
+            "userid"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q017",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\profile.php",
+        "source_line": 76,
+        "executor": "mysqli_query",
+        "sql_argument": "$updatequery",
+        "recovered_sql": "UPDATE users SET password = '{{userpassword}}', firstname='{{userfirstname}}' , lastname= '{{userlastname}}' , email= '{{useremail}}' WHERE id='{{userid}}'",
+        "operation": "UPDATE",
+        "dynamic_variables": [
+            "userpassword",
+            "userfirstname",
+            "userlastname",
+            "useremail",
+            "userid"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q018",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\profile1.php",
+        "source_line": 7,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM users WHERE username = '{{username}}'",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "username"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q019",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\profile1.php",
+        "source_line": 68,
+        "executor": "mysqli_query",
+        "sql_argument": "$updatequery",
+        "recovered_sql": "UPDATE users SET password = '{{userpassword}}', firstname='{{userfirstname}}' , lastname= '{{userlastname}}' , email= '{{useremail}}' WHERE id='{{userid}}'",
+        "operation": "UPDATE",
+        "dynamic_variables": [
+            "userpassword",
+            "userfirstname",
+            "userlastname",
+            "useremail",
+            "userid"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q020",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\publishnews.php",
+        "source_line": 73,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "INSERT INTO posts (title,author,postdate,image,content,status,tag) VALUES ('{{post_title}}' , '{{post_author}}' , '{{post_date}}' , '{{picture}}' , '{{post_content}}' , '{{post_status}}', '{{post_tag}}')",
+        "operation": "INSERT",
+        "dynamic_variables": [
+            "post_title",
+            "post_author",
+            "post_date",
+            "picture",
+            "post_content",
+            "post_status",
+            "post_tag"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q021",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\users.php",
+        "source_line": 53,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM users",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q022",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\users.php",
+        "source_line": 84,
+        "executor": "mysqli_query",
+        "sql_argument": "$query0",
+        "recovered_sql": "SELECT role FROM users WHERE id = '{{the_user_id}}'",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "the_user_id"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q023",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\users.php",
+        "source_line": 96,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "DELETE FROM users WHERE id = '{{the_user_id}}'",
+        "operation": "DELETE",
+        "dynamic_variables": [
+            "the_user_id"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q024",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\users.php",
+        "source_line": 109,
+        "executor": "mysqli_query",
+        "sql_argument": "$query0",
+        "recovered_sql": "SELECT role FROM users WHERE id = '{{the_user_id}}'",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "the_user_id"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q025",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\users.php",
+        "source_line": 123,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "UPDATE users SET role = 'admin' WHERE id = '{{the_user_id}}'",
+        "operation": "UPDATE",
+        "dynamic_variables": [
+            "the_user_id"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q026",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\users.php",
+        "source_line": 176,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM users",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q027",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\index.php",
+        "source_line": 15,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM posts WHERE status='published' ORDER BY updated_on DESC",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q028",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\login.php",
+        "source_line": 10,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM users WHERE username = '{{username}}'",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "username"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q029",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\publicposts.php",
+        "source_line": 16,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM posts WHERE id={{post}}",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "post"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q030",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\registerprocess.php",
+        "source_line": 38,
+        "executor": "mysqli_query",
+        "sql_argument": "$checkusername",
+        "recovered_sql": "SELECT * FROM users WHERE username = '{{username}}'",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "username"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q031",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\registerprocess.php",
+        "source_line": 51,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "INSERT INTO users(username,firstname,lastname,email,password) VALUES ('{{username}}' , '{{firstname}}' , '{{lastname}}' , '{{email}}', '{{password}}')",
+        "operation": "INSERT",
+        "dynamic_variables": [
+            "username",
+            "firstname",
+            "lastname",
+            "email",
+            "password"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q032",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\search.php",
+        "source_line": 19,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM posts WHERE tag LIKE '%{{search}}%' AND status='published'",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "search"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    }
+]

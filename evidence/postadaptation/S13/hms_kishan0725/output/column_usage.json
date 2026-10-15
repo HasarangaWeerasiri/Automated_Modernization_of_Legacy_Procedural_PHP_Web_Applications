@@ -1,0 +1,799 @@
+[
+    {
+        "query_id": "Q001",
+        "operation": "SELECT",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [
+            "apptime"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "apptime",
+            "doctor",
+            "appdate"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 42,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "operation": "INSERT",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "pid",
+            "fname",
+            "lname",
+            "gender",
+            "email",
+            "contact",
+            "doctor",
+            "docFees",
+            "appdate",
+            "apptime",
+            "userStatus",
+            "doctorStatus"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 45,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q003",
+        "operation": "UPDATE",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 71,
+        "status": "UNRESOLVED",
+        "reason": "Query contains unsupported dynamic expression."
+    },
+    {
+        "query_id": "Q004",
+        "operation": "SELECT",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 86,
+        "status": "UNRESOLVED",
+        "reason": "Query contains unsupported dynamic expression."
+    },
+    {
+        "query_id": "Q005",
+        "operation": "SELECT",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "username",
+            "spec"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 144,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q006",
+        "operation": "SELECT",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "username",
+            "spec"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 313,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q007",
+        "operation": "SELECT",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [
+            "ID",
+            "doctor",
+            "docFees",
+            "appdate",
+            "apptime",
+            "userStatus",
+            "doctorStatus"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "fname",
+            "lname"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 473,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q008",
+        "operation": "SELECT",
+        "tables": [
+            "prestb"
+        ],
+        "read_columns": [
+            "doctor",
+            "ID",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "pid"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 550,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q009",
+        "operation": "INSERT",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "username",
+            "password",
+            "email",
+            "spec",
+            "docFees"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 15,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q010",
+        "operation": "DELETE",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [
+            "email"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 27,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q011",
+        "operation": "SELECT",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 278,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q012",
+        "operation": "SELECT",
+        "tables": [
+            "patreg"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 329,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q013",
+        "operation": "SELECT",
+        "tables": [
+            "prestb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 385,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q014",
+        "operation": "SELECT",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 458,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q015",
+        "operation": "SELECT",
+        "tables": [
+            "contact"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 568,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q016",
+        "operation": "SELECT",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "contact"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\appsearch.php",
+        "source_line": 17,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q017",
+        "operation": "INSERT",
+        "tables": [
+            "contact"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "name",
+            "email",
+            "contact",
+            "message"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\contact.php",
+        "source_line": 11,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q018",
+        "operation": "UPDATE",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 8,
+        "status": "UNRESOLVED",
+        "reason": "Query contains unsupported dynamic expression."
+    },
+    {
+        "query_id": "Q019",
+        "operation": "SELECT",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [
+            "pid",
+            "ID",
+            "fname",
+            "lname",
+            "gender",
+            "email",
+            "contact",
+            "appdate",
+            "apptime",
+            "userStatus",
+            "doctorStatus"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "doctor"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 186,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q020",
+        "operation": "SELECT",
+        "tables": [
+            "prestb"
+        ],
+        "read_columns": [
+            "pid",
+            "fname",
+            "lname",
+            "ID",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "doctor"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 280,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q021",
+        "operation": "SELECT",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 332,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q022",
+        "operation": "SELECT",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "email"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctorsearch.php",
+        "source_line": 16,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q023",
+        "operation": "SELECT",
+        "tables": [
+            "patreg"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "email",
+            "password"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func.php",
+        "source_line": 8,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q024",
+        "operation": "UPDATE",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "payment"
+        ],
+        "filter_columns": [
+            "contact"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func.php",
+        "source_line": 34,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q025",
+        "operation": "INSERT",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "username",
+            "password",
+            "email",
+            "docFees"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func.php",
+        "source_line": 62,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q026",
+        "operation": "SELECT",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "username",
+            "password"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func1.php",
+        "source_line": 8,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q027",
+        "operation": "SELECT",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func1.php",
+        "source_line": 43,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q028",
+        "operation": "INSERT",
+        "tables": [
+            "patreg"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "fname",
+            "lname",
+            "gender",
+            "email",
+            "contact",
+            "password",
+            "cpassword"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 14,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q029",
+        "operation": "SELECT",
+        "tables": [
+            "patreg"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 26,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q030",
+        "operation": "UPDATE",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "payment"
+        ],
+        "filter_columns": [
+            "contact"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 41,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q031",
+        "operation": "INSERT",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "name"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 66,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q032",
+        "operation": "SELECT",
+        "tables": [
+            "admintb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "username",
+            "password"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 8,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q033",
+        "operation": "UPDATE",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "payment"
+        ],
+        "filter_columns": [
+            "contact"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 24,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q034",
+        "operation": "SELECT",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 36,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q035",
+        "operation": "INSERT",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "name"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 49,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q036",
+        "operation": "SELECT",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\include\\header.php",
+        "source_line": 35,
+        "status": "UNRESOLVED",
+        "reason": "Query contains unsupported dynamic expression."
+    },
+    {
+        "query_id": "Q037",
+        "operation": "SELECT",
+        "tables": [
+            "contact"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "contact"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\messearch.php",
+        "source_line": 15,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q038",
+        "operation": "UPDATE",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "payment"
+        ],
+        "filter_columns": [
+            "contact"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 23,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q039",
+        "operation": "SELECT",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "spec"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 45,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q040",
+        "operation": "SELECT",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 57,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q041",
+        "operation": "INSERT",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "username"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 84,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q042",
+        "operation": "SELECT",
+        "tables": [
+            "patreg"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "contact"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\patientsearch.php",
+        "source_line": 15,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q043",
+        "operation": "INSERT",
+        "tables": [
+            "prestb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "doctor",
+            "pid",
+            "ID",
+            "fname",
+            "lname",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\prescribe.php",
+        "source_line": 33,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q044",
+        "operation": "SELECT",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "contact",
+            "doctor"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\search.php",
+        "source_line": 8,
+        "status": "ANALYZED",
+        "reason": null
+    }
+]

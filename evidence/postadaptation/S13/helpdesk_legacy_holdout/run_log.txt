@@ -1,0 +1,20 @@
+# date: 2026-10-15T12:34:43+05:30
+# code: fd99762 + S13 working tree (committed with this evidence)
+# command (cwd components/c3_data_layer, PYTHONPATH=src): python -m c3.cli run --php ../../benchmarks/apps/helpdesk_legacy_holdout/legacy --schema ../../benchmarks/apps/helpdesk_legacy_holdout/database/schema.sql --output ../../evidence/postadaptation/S13/helpdesk_legacy_holdout/output
+[1/6] Recovering legacy SQL...
+[2/6] Converting recovered queries...
+[3/6] Parsing schema and generating SQLAlchemy models...
+[4/6] Generating data-access functions...
+[5/6] Generating column-use report...
+[6/6] Generating unresolved-query report...
+
+Migration pipeline completed.
+{
+    "total_queries": 9,
+    "recovered_queries": 9,
+    "converted_queries": 8,
+    "unresolved_queries": 0,
+    "conversion_unresolved": 1,
+    "output_directory": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\evidence\\postadaptation\\S13\\helpdesk_legacy_holdout\\output"
+}
+# exit code: 0

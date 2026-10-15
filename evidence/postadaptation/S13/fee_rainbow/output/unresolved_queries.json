@@ -1,0 +1,28 @@
+[
+    {
+        "query_id": "Q021",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\config\\helpers.php",
+        "source_line": 4,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": null,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason_code": "UNKNOWN_EXPR",
+        "reason": "No recoverable assignment chain found.",
+        "action": "manual_review_required"
+    },
+    {
+        "query_id": "Q022",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\config\\helpers.php",
+        "source_line": 4,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": null,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason_code": "UNKNOWN_EXPR",
+        "reason": "No recoverable assignment chain found.",
+        "action": "manual_review_required"
+    }
+]

@@ -1,0 +1,181 @@
+[
+    {
+        "query_id": "Q001",
+        "operation": "SELECT",
+        "tables": [
+            "agents",
+            "teams"
+        ],
+        "read_columns": [
+            "id",
+            "full_name",
+            "team_name"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\agents.php",
+        "source_line": 5,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "operation": "INSERT",
+        "tables": [
+            "tickets"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "agent_id",
+            "subject",
+            "description",
+            "priority"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\create.php",
+        "source_line": 13,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q003",
+        "operation": "DELETE",
+        "tables": [
+            "tickets"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\delete.php",
+        "source_line": 8,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q004",
+        "operation": "UPDATE",
+        "tables": [
+            "tickets"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "status",
+            "priority"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\edit.php",
+        "source_line": 10,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q005",
+        "operation": "SELECT",
+        "tables": [
+            "tickets"
+        ],
+        "read_columns": [
+            "id",
+            "subject",
+            "priority",
+            "status"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\edit.php",
+        "source_line": 15,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q006",
+        "operation": "SELECT",
+        "tables": [
+            "tickets",
+            "agents",
+            "teams"
+        ],
+        "read_columns": [
+            "id",
+            "subject",
+            "priority",
+            "status",
+            "full_name",
+            "team_name"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\index.php",
+        "source_line": 5,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q007",
+        "operation": "SELECT",
+        "tables": [
+            "teams",
+            "agents",
+            "tickets"
+        ],
+        "read_columns": [
+            "team_name",
+            "id"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\report.php",
+        "source_line": 5,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q008",
+        "operation": "SELECT",
+        "tables": [
+            "tickets"
+        ],
+        "read_columns": [
+            "id",
+            "subject",
+            "status"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "subject"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\search.php",
+        "source_line": 6,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q009",
+        "operation": "SELECT",
+        "tables": [
+            "tickets"
+        ],
+        "read_columns": [
+            "id",
+            "subject",
+            "description",
+            "priority",
+            "status",
+            "agent_id"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\view.php",
+        "source_line": 6,
+        "status": "ANALYZED",
+        "reason": null
+    }
+]

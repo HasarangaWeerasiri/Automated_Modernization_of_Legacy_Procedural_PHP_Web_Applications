@@ -1,0 +1,20 @@
+# date: 2026-10-15T12:34:44+05:30
+# code: fd99762 + S13 working tree (committed with this evidence)
+# command (cwd components/c3_data_layer, PYTHONPATH=src): python -m c3.cli run --php ../../benchmarks/apps/_app_only/news_buzz --schema ../../benchmarks/apps/news_buzz/db/NEWSBUZZ.sql --output ../../evidence/postadaptation/S13/news_buzz/output
+[1/6] Recovering legacy SQL...
+[2/6] Converting recovered queries...
+[3/6] Parsing schema and generating SQLAlchemy models...
+[4/6] Generating data-access functions...
+[5/6] Generating column-use report...
+[6/6] Generating unresolved-query report...
+
+Migration pipeline completed.
+{
+    "total_queries": 32,
+    "recovered_queries": 30,
+    "converted_queries": 29,
+    "unresolved_queries": 2,
+    "conversion_unresolved": 3,
+    "output_directory": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\evidence\\postadaptation\\S13\\news_buzz\\output"
+}
+# exit code: 0

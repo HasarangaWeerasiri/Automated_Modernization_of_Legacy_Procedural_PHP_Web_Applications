@@ -14,6 +14,10 @@ This is a living document. Each limitation names the evidence it is based on.
 ## Pre-adaptation findings (to be fixed and re-measured post-adaptation)
 - The unchanged pipeline crashed on all 3 unseen apps at stage 3 (`INT(11)` display width), and ALTER-style primary keys were lost (`evidence/preadaptation/README.md`).
 
+## Adaptation (S13)
+- The S13 rule (SQL built and executed in the same conditional block) was designed from the Helpdesk holdout class after inspecting the unseen apps' pre-adaptation summaries, which showed the same class dominating. Post-S13 results for Helpdesk and the 3 unseen apps are post-adaptation, not independent generalisation evidence (`evidence/postadaptation/S13/README.md`). A fresh untouched app is needed for that.
+- PHP escape sequences in double-quoted strings (e.g. a literal tab printed as `	`) are not decoded during recovery. The affected query then fails to parse and conversion abstains (NEWS-BUZZ Q003). This is safe, but it costs coverage.
+
 ## Method
 - Behavioural equivalence on MySQL covers selected inputs only. Day-3 behaviour tests used SQLite.
 - Generated data access is parameterized SQLAlchemy (`text()` + bind parameters), not ORM query constructs.

@@ -1,0 +1,376 @@
+{
+    "tables": [
+        {
+            "name": "admintb",
+            "columns": [
+                {
+                    "name": "username",
+                    "data_type": "VARCHAR(50)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "password",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        },
+        {
+            "name": "appointmenttb",
+            "columns": [
+                {
+                    "name": "pid",
+                    "data_type": "INT(11)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "ID",
+                    "data_type": "INT(11)",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "fname",
+                    "data_type": "VARCHAR(20)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "lname",
+                    "data_type": "VARCHAR(20)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "gender",
+                    "data_type": "VARCHAR(10)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "email",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "contact",
+                    "data_type": "VARCHAR(10)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "doctor",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "docFees",
+                    "data_type": "INT(5)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "appdate",
+                    "data_type": "DATE",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "apptime",
+                    "data_type": "TIME",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "userStatus",
+                    "data_type": "INT(5)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "doctorStatus",
+                    "data_type": "INT(5)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        },
+        {
+            "name": "contact",
+            "columns": [
+                {
+                    "name": "name",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "email",
+                    "data_type": "TEXT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "contact",
+                    "data_type": "VARCHAR(10)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "message",
+                    "data_type": "VARCHAR(200)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        },
+        {
+            "name": "doctb",
+            "columns": [
+                {
+                    "name": "username",
+                    "data_type": "VARCHAR(50)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "password",
+                    "data_type": "VARCHAR(50)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "email",
+                    "data_type": "VARCHAR(50)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "spec",
+                    "data_type": "VARCHAR(50)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "docFees",
+                    "data_type": "INT(10)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        },
+        {
+            "name": "patreg",
+            "columns": [
+                {
+                    "name": "pid",
+                    "data_type": "INT(11)",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "fname",
+                    "data_type": "VARCHAR(20)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "lname",
+                    "data_type": "VARCHAR(20)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "gender",
+                    "data_type": "VARCHAR(10)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "email",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "contact",
+                    "data_type": "VARCHAR(10)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "password",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "cpassword",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        },
+        {
+            "name": "prestb",
+            "columns": [
+                {
+                    "name": "doctor",
+                    "data_type": "VARCHAR(50)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "pid",
+                    "data_type": "INT(11)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "ID",
+                    "data_type": "INT(11)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "fname",
+                    "data_type": "VARCHAR(50)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "lname",
+                    "data_type": "VARCHAR(50)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "appdate",
+                    "data_type": "DATE",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "apptime",
+                    "data_type": "TIME",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "disease",
+                    "data_type": "VARCHAR(250)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "allergy",
+                    "data_type": "VARCHAR(250)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "prescription",
+                    "data_type": "VARCHAR(1000)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        }
+    ]
+}

@@ -1,0 +1,20 @@
+# date: 2026-10-15T12:34:45+05:30
+# code: fd99762 + S13 working tree (committed with this evidence)
+# command (cwd components/c3_data_layer, PYTHONPATH=src): python -m c3.cli run --php ../../benchmarks/apps/_app_only/fee_rainbow --schema ../../benchmarks/apps/fee_rainbow/database/db.sql --output ../../evidence/postadaptation/S13/fee_rainbow/output
+[1/6] Recovering legacy SQL...
+[2/6] Converting recovered queries...
+[3/6] Parsing schema and generating SQLAlchemy models...
+[4/6] Generating data-access functions...
+[5/6] Generating column-use report...
+[6/6] Generating unresolved-query report...
+
+Migration pipeline completed.
+{
+    "total_queries": 22,
+    "recovered_queries": 20,
+    "converted_queries": 19,
+    "unresolved_queries": 2,
+    "conversion_unresolved": 3,
+    "output_directory": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\evidence\\postadaptation\\S13\\fee_rainbow\\output"
+}
+# exit code: 0

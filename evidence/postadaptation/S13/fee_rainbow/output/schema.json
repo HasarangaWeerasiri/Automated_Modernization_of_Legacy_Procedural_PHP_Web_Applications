@@ -1,0 +1,50 @@
+{
+    "tables": [
+        {
+            "name": "admin",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT(11)",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "username",
+                    "data_type": "VARCHAR(10)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "password",
+                    "data_type": "VARCHAR(255)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "created_at",
+                    "data_type": "TIMESTAMP",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": "current_timestamp()"
+                },
+                {
+                    "name": "updated_at",
+                    "data_type": "TIMESTAMP",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": "current_timestamp()"
+                }
+            ],
+            "foreign_keys": []
+        }
+    ]
+}

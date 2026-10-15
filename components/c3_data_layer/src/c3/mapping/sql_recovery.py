@@ -523,17 +523,44 @@ def _collect_conditional_append_variants(
 
 def _detect_branching_assignment(
     assignment_chain: list[dict],
+    sql_call: dict | None = None,
 ) -> tuple[str | None, str | None]:
     """
     Detect SQL construction that depends on control flow.
 
-    If any assignment participating in the recovered SQL
-    expression occurs inside a conditional branch, there may
-    be multiple possible SQL shapes at runtime.
+    With branch-block information from the extractor, the SQL value at
+    the execution point is deterministic when every conditional block
+    (if/elseif/else/catch body) that encloses a chain assignment also
+    encloses the execution point: whenever the call runs, every chain
+    assignment has run, in source order. Example (recoverable):
 
-    The current deterministic recovery stage therefore
-    abstains instead of choosing one branch.
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $sql = "INSERT INTO t (a) VALUES ('$a')";
+            mysqli_query($conn, $sql);
+        }
+
+    Otherwise (e.g. an assignment in a branch and the call after it)
+    there may be several SQL shapes at runtime, so recovery abstains.
+
+    Records without branch information (older extractor output, unit
+    fixtures) fall back to the conservative rule: any assignment inside
+    a conditional branch abstains.
     """
+
+    if sql_call is not None and "branch_context" in sql_call and all(
+        "branch_context" in assignment for assignment in assignment_chain
+    ):
+        call_blocks = set(sql_call.get("branch_context") or [])
+
+        for assignment in assignment_chain:
+            if set(assignment.get("branch_context") or []) - call_blocks:
+                return (
+                    "BRANCHING",
+                    "SQL construction depends on conditional "
+                    "control flow.",
+                )
+
+        return None, None
 
     for assignment in assignment_chain:
         control_flow = assignment.get(
@@ -1175,6 +1202,11 @@ def recover_queries_from_ast(
                     "expression": sql_argument_text,
                     "control_flow": sql_call.get("control_flow", []),
                     "loop_context": sql_call.get("loop_context", []),
+                    **(
+                        {"branch_context": sql_call["branch_context"]}
+                        if "branch_context" in sql_call
+                        else {}
+                    ),
                 }
             ]
         else:
@@ -1235,7 +1267,8 @@ def recover_queries_from_ast(
             branching_reason_code,
             branching_reason,
         ) = _detect_branching_assignment(
-            assignment_chain
+            assignment_chain,
+            sql_call,
         )
 
         loop_reason_code, loop_reason = _detect_loop_or_switch_dependency(

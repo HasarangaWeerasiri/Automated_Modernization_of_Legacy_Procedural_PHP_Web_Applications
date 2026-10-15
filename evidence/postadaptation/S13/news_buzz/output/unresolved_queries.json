@@ -1,0 +1,28 @@
+[
+    {
+        "query_id": "Q002",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\editposts.php",
+        "source_line": 17,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM posts WHERE id='{{id}}' AND author = '{{currentuser}}'",
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow.",
+        "action": "manual_review_required"
+    },
+    {
+        "query_id": "Q006",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\news_buzz\\admin\\post.php",
+        "source_line": 17,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "SELECT * FROM posts WHERE id='{{post}}' AND author = '{{currentuser}}'",
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow.",
+        "action": "manual_review_required"
+    }
+]

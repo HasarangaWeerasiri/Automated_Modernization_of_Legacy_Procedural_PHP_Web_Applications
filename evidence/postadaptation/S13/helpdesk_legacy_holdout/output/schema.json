@@ -1,0 +1,130 @@
+{
+    "tables": [
+        {
+            "name": "teams",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "team_name",
+                    "data_type": "VARCHAR(80)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        },
+        {
+            "name": "agents",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "team_id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "full_name",
+                    "data_type": "VARCHAR(120)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": [
+                {
+                    "column": "team_id",
+                    "referenced_table": "teams",
+                    "referenced_column": "id"
+                }
+            ]
+        },
+        {
+            "name": "tickets",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "agent_id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "subject",
+                    "data_type": "VARCHAR(160)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "description",
+                    "data_type": "TEXT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "priority",
+                    "data_type": "VARCHAR(12)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": "'normal'"
+                },
+                {
+                    "name": "status",
+                    "data_type": "VARCHAR(16)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": "'open'"
+                },
+                {
+                    "name": "created_at",
+                    "data_type": "TIMESTAMP",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": "CURRENT_TIMESTAMP"
+                }
+            ],
+            "foreign_keys": [
+                {
+                    "column": "agent_id",
+                    "referenced_table": "agents",
+                    "referenced_column": "id"
+                }
+            ]
+        }
+    ]
+}
