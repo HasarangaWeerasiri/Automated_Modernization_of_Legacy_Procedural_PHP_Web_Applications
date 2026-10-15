@@ -1,0 +1,123 @@
+{
+  "timestamp_utc": "2026-10-13T04:47:47.539979+00:00",
+  "application": "community_service_desk_holdout",
+  "query_count": 9,
+  "recovery_states": {
+    "RECOVERED": 7,
+    "UNRESOLVED": 2
+  },
+  "conversion_states": {
+    "CONVERTED": 6,
+    "UNRESOLVED": 3
+  },
+  "converted": 6,
+  "conversion_rate_percent": 66.67,
+  "queries": [
+    {
+      "query_id": "Q001",
+      "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\agents.php",
+      "source_line": 5,
+      "operation": "SELECT",
+      "table": "agents",
+      "parameters": [],
+      "like_wildcard_parameters": [],
+      "parameterized_sql": "SELECT a.id, a.full_name, m.team_name FROM agents a INNER JOIN teams m ON m.id = a.team_id ORDER BY a.id",
+      "status": "CONVERTED",
+      "reason": null
+    },
+    {
+      "query_id": "Q002",
+      "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\create.php",
+      "source_line": 13,
+      "operation": null,
+      "status": "UNRESOLVED",
+      "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+      "query_id": "Q003",
+      "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\delete.php",
+      "source_line": 8,
+      "operation": "DELETE",
+      "table": "tickets",
+      "parameters": [
+        "id"
+      ],
+      "like_wildcard_parameters": [],
+      "parameterized_sql": "DELETE FROM tickets WHERE id = :id",
+      "status": "CONVERTED",
+      "reason": null
+    },
+    {
+      "query_id": "Q004",
+      "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\edit.php",
+      "source_line": 10,
+      "operation": null,
+      "status": "UNRESOLVED",
+      "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+      "query_id": "Q005",
+      "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\edit.php",
+      "source_line": 15,
+      "operation": "SELECT",
+      "table": "tickets",
+      "parameters": [
+        "id"
+      ],
+      "like_wildcard_parameters": [],
+      "parameterized_sql": "SELECT id, subject, priority, status FROM tickets WHERE id = :id",
+      "status": "CONVERTED",
+      "reason": null
+    },
+    {
+      "query_id": "Q006",
+      "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\index.php",
+      "source_line": 5,
+      "operation": "SELECT",
+      "table": "tickets",
+      "parameters": [],
+      "like_wildcard_parameters": [],
+      "parameterized_sql": "SELECT t.id, t.subject, t.priority, t.status, a.full_name, m.team_name FROM tickets t JOIN agents a ON a.id = t.agent_id JOIN teams m ON m.id = a.team_id ORDER BY t.id DESC",
+      "status": "CONVERTED",
+      "reason": null
+    },
+    {
+      "query_id": "Q007",
+      "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\report.php",
+      "source_line": 5,
+      "operation": "SELECT",
+      "status": "UNRESOLVED",
+      "reason": "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported."
+    },
+    {
+      "query_id": "Q008",
+      "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\search.php",
+      "source_line": 6,
+      "operation": "SELECT",
+      "table": "tickets",
+      "parameters": [
+        "term"
+      ],
+      "like_wildcard_parameters": [
+        "term"
+      ],
+      "parameterized_sql": "SELECT id, subject, status FROM tickets WHERE subject LIKE :term ORDER BY id DESC",
+      "status": "CONVERTED",
+      "reason": null
+    },
+    {
+      "query_id": "Q009",
+      "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\view.php",
+      "source_line": 6,
+      "operation": "SELECT",
+      "table": "tickets",
+      "parameters": [
+        "id"
+      ],
+      "like_wildcard_parameters": [],
+      "parameterized_sql": "SELECT id, subject, description, priority, status, agent_id FROM tickets WHERE id = :id",
+      "status": "CONVERTED",
+      "reason": null
+    }
+  ]
+}

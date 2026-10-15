@@ -1,0 +1,136 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\agents.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT a.id, a.full_name, m.team_name FROM agents a INNER JOIN teams m ON m.id = a.team_id ORDER BY a.id",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\create.php",
+        "source_line": 13,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "INSERT INTO tickets (agent_id, subject, description, priority) VALUES ({{agent_id}}, '{{subject}}', '{{description}}', '{{priority}}')",
+        "operation": null,
+        "dynamic_variables": [
+            "agent_id",
+            "subject",
+            "description",
+            "priority"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\delete.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "DELETE FROM tickets WHERE id = {{id}}",
+        "operation": "DELETE",
+        "dynamic_variables": [
+            "id"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\edit.php",
+        "source_line": 10,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "UPDATE tickets SET status = '{{status}}', priority = '{{priority}}' WHERE id = {{id}}",
+        "operation": null,
+        "dynamic_variables": [
+            "status",
+            "priority",
+            "id"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q005",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\edit.php",
+        "source_line": 15,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, subject, priority, status FROM tickets WHERE id = {{id}}",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "id"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q006",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\index.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT t.id, t.subject, t.priority, t.status, a.full_name, m.team_name FROM tickets t JOIN agents a ON a.id = t.agent_id JOIN teams m ON m.id = a.team_id ORDER BY t.id DESC",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q007",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\report.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT m.team_name, COUNT(t.id) AS ticket_count FROM teams m LEFT JOIN agents a ON a.team_id = m.id LEFT JOIN tickets t ON t.agent_id = a.id GROUP BY m.id, m.team_name ORDER BY m.id",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q008",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\search.php",
+        "source_line": 6,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, subject, status FROM tickets WHERE subject LIKE '%{{term}}%' ORDER BY id DESC",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "term"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q009",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\helpdesk_legacy_holdout\\legacy\\view.php",
+        "source_line": 6,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, subject, description, priority, status, agent_id FROM tickets WHERE id = {{id}}",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "id"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    }
+]
