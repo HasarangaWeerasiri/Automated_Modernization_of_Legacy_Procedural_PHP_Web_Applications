@@ -1,0 +1,20 @@
+# HMS (kishan0725): FR1–FR10 status (2026-10-15)
+
+Status values: **PASS** = tested on HMS with saved evidence; **FAIL**; **NOT TESTED**.
+
+HMS results are **post-adaptation**: the H1 rule was found on HMS. It is a general rule and changed nothing on the other apps. The last pre-adaptation recall was 93.0%.
+
+| FR | Requirement | HMS status | Result | Evidence |
+|---|---|---|---|---|
+| FR1 | SQL execution-point identification | **PASS** | 44/44 live sites detected; 0 of the 8 commented-out lines reported | `evidence/evaluation/hms_kishan0725/evaluation.json` (detection) |
+| FR2 | Fragmented / conditional SQL recovery | **PASS** | Recovery P/R 100/100 (43 TP, 0 FN, 0 FP; 1 ambiguous excluded). HMS has little conditional SQL, so this tests mostly concatenation and interpolation | `evidence/evaluation/hms_kishan0725/summary.md`, `evidence/hms/H1_unresolved_review/review.md` |
+| FR3 | Schema recovery | **PASS** | Independent sqlglot parse = schema.json = ORM; original DDL loaded into MySQL and reflected = ORM (6 tables). 4 PK-less tables reported, with no key invented | `evidence/hms/E_checks/e2_offline/`, `evidence/mysql_runs/2026-10-15_173248/e2/schema_comparison_mysql.json`, `evidence/hms/H2_tables_without_pk/proposal.md` |
+| FR4 | Column-use analysis | **PASS** | Operation, tables, read, write and filter all 100% on 37 schema-consistent sites. The 6 schema-mismatch sites, reported separately, are also 100% | `evidence/evaluation/hms_kishan0725/evaluation.json` |
+| FR5 | ORM model generation | **PASS** | models.py imports, `configure_mappers()` OK, live MySQL reflection matches. 2 ORM classes and 4 Core tables (no PK in the dump) | `evidence/hms/E_checks/e2_offline/orm_mapping_test_log.txt`, `evidence/mysql_runs/2026-10-15_173248/e2/` |
+| FR6 | Parameterised SQLAlchemy data access | **NOT TESTED** (behaviour on MySQL) | 44 functions generated; they run without C3 (44/44 called with a recording session); E1 dry run 44/44 READY. **Real-MySQL equivalence with PHP (E1) waits for the student's case values** | `output/hms_kishan0725/HMS_HANDOFF.md`, `evidence/hms/E_checks/e1_dry_run/`, `benchmarks/equivalence_cases/HMS_E1_FILL_GUIDE.md` |
+| FR7 | Injection safety | **PASS** (static and recording session) | E4: 44/44 functions SAFE against 12 payloads. Security report: 100% of user values bound (62/62); 26/26 legacy injection sites remediated; 0 generated-code violations. The MySQL hostile cases run with E1 | `evidence/hms/E_checks/e4/injection_report.json`, `output/hms_kishan0725/security_report.json` |
+| FR8 | Abstention and unresolved reporting | **PASS** | 0 false recoveries. `unresolved_queries.json` is empty (every site converted). The ambiguous site and 7 drift site-columns are flagged in the handoff. HMS needs no abstentions, so FR8 is only weakly exercised here | `evidence/evaluation/hms_kishan0725/evaluation.json`, `output/hms_kishan0725/HMS_HANDOFF.md` |
+| FR9 | Alembic migration | **PASS** | MySQL 8: upgrade → live schema = models → `alembic check` → downgrade, PASS at `a791cd8`. The later env.py fix `a4ed6b2` touches only SQLite URLs | `evidence/mysql_runs/2026-10-15_173218/e3/hms_kishan0725.json` |
+| FR10 | Traceability | **PASS** | `traceability_report.json`: 44/44 sites → generated function. The handoff lists PHP file:line per function; docstrings name each parameter's PHP value | `output/hms_kishan0725/traceability_report.json`, `HMS_HANDOFF.md` |
+
+**Open for HMS:** FR6 E1 on MySQL (student values, then `.\scripts\run_e1_mysql.ps1 -Apps hms_kishan0725`). H2 decision (recommended: option A, keep as is).

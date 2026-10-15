@@ -181,6 +181,7 @@ Branch: `database-migration` (user override: no `pp1-c3-complete`). Starting poi
 | HMS H2 tables without PK | **proposal done**; decision with student | `evidence/hms/H2_tables_without_pk/proposal.md`, register 63 | Recommend A (keep Core Table): no function changes. B/C need owner confirmation plus the duplicate check. |
 | HMS item 5 E1 on MySQL | **fill-in table ready; waiting for student values and the MySQL run** | `benchmarks/equivalence_cases/HMS_E1_FILL_GUIDE.md`, register 65 | 46 inputs × (normal, empty_result); 7 drift sites expected INCONCLUSIVE. |
 | HMS H4 handoff | **done** | `output/hms_kishan0725/HMS_HANDOFF.md`, register 67 | 44 functions documented; signatures frozen (`signatures.json` + test); runs with C3 blocked (44/44 called). |
+| HMS FR matrix | **done** | `evidence/hms/FR_matrix_HMS.md`, register 69 | 9 PASS, FR6 not tested on MySQL (E1 pending), 0 FAIL. |
 | Baseline comparison | not started | — | |
 | Demo | not started | — | |
 | Docs + evidence register | started | `evidence/evidence_register.md` | Register created with the pre-dev test run. |
