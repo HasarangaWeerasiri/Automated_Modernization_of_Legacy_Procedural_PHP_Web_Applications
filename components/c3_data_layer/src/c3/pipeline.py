@@ -138,7 +138,7 @@ def run_pipeline(
     )
 
     print("[4/7] Generating data-access functions...")
-    generate_data_access(converted_file, data_access_file)
+    generate_data_access(converted_file, data_access_file, source_root=php_path)
 
     print("[5/7] Generating column-use report...")
     generate_column_usage(queries_file, column_usage_file)

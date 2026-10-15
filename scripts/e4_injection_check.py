@@ -22,6 +22,7 @@ import argparse
 import importlib.util
 import inspect
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -188,7 +189,8 @@ def check_function(function) -> dict:
 
 def generated_functions(module, converted: dict):
     for name, function in inspect.getmembers(module, inspect.isfunction):
-        if function.__module__ != module.__name__ or name.startswith("unresolved_query_"):
+        # Generated query functions end in _q<NNN>; inlined runtime helpers do not.
+        if function.__module__ != module.__name__ or name.startswith("unresolved_query_") or not re.search(r"_q\d+$", name):
             continue
         query_id = name.rsplit("_", 1)[-1].upper()
         yield query_id, name, function, converted.get(query_id, {}).get("conversion_rule")

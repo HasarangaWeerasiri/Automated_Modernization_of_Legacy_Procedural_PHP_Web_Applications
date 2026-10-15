@@ -17,6 +17,7 @@ from c3.conversion.conditional_converter import (
     EXPECTED_BRANCHES,
     EXPECTED_CONDITION,
 )
+from c3.generation.runtime_inliner import inline_helpers
 from c3.generation.branch_emitter import (
     generate_conditional_select_source,
 )
@@ -93,7 +94,7 @@ def _build_function(query: dict) -> str:
     )
 
     source_file = str(
-        query.get("source_file") or "unknown"
+        query.get("display_source") or query.get("source_file") or "unknown"
     ).replace("\\", "/")
 
     source_line = query.get(
@@ -183,7 +184,7 @@ def _build_unresolved_stub(query: dict) -> str:
     """Emit a safe function inventory entry without inventing SQL behavior."""
     query_id = _safe_identifier(str(query.get("query_id") or "unknown"))
     name = f"unresolved_query_{query_id}"
-    source_file = str(query.get("source_file") or "unknown").replace("\\", "/")
+    source_file = str(query.get("display_source") or query.get("source_file") or "unknown").replace("\\", "/")
     source_line = query.get("source_line")
     location = f"{source_file}:{source_line if source_line is not None else 'unknown'}"
     message = f"manual review: {location}"
@@ -469,12 +470,44 @@ def _build_join_update_function(query: dict) -> str:
     ])
 
 
+def _display_source(source_file, source_root) -> str | None:
+    """The PHP file relative to the analysed root (no machine-specific paths)."""
+
+    if not isinstance(source_file, str) or source_root is None:
+        return None
+    try:
+        return Path(source_file).resolve().relative_to(Path(source_root).resolve()).as_posix()
+    except ValueError:
+        return Path(source_file).name
+
+
+RUNTIME_HELPERS = {
+    "has_conditional": ("c3.conversion.branch_binding", "resolve_isset_condition"),
+    "has_expanding_in": ("c3.conversion.in_list_binding", "resolve_q011_ids"),
+    "has_order_by": ("c3.conversion.order_by_binding", "resolve_q012_sort"),
+    "has_table_identifier": ("c3.conversion.table_binding", "resolve_q013_table"),
+    "has_conditional_concat": ("c3.conversion.conditional_concat_binding", "resolve_q016_department"),
+    "has_join_update": ("c3.conversion.join_update_binding", "resolve_q020_id"),
+}
+
+
 def generate_data_access_source(
     converted_queries: list[dict],
+    source_root: str | Path | None = None,
 ) -> str:
     """
     Generate complete data_access.py source code.
+
+    The output is standalone (S7): runtime helpers are copied in, so it
+    imports only SQLAlchemy and the standard library. With source_root,
+    docstrings name PHP files relative to it.
     """
+
+    converted_queries = [
+        {**query, "display_source": _display_source(query.get("source_file"), source_root)}
+        if isinstance(query, dict) else query
+        for query in converted_queries
+    ]
 
     lines = [
         '"""',
@@ -534,45 +567,33 @@ def generate_data_access_source(
         elif query.get("status") == "UNRESOLVED":
             functions.append(_build_unresolved_stub(query))
 
-    if has_conditional:
-        lines.insert(
-            lines.index("from sqlalchemy import text") + 1,
-            "from c3.conversion.branch_binding import resolve_isset_condition",
-        )
+    flags = {
+        "has_conditional": has_conditional,
+        "has_expanding_in": has_expanding_in,
+        "has_order_by": has_order_by,
+        "has_table_identifier": has_table_identifier,
+        "has_conditional_concat": has_conditional_concat,
+        "has_join_update": has_join_update,
+    }
+    helpers = [RUNTIME_HELPERS[flag] for flag, used in flags.items() if used]
 
     if has_expanding_in:
         lines.insert(
             lines.index("from sqlalchemy import text") + 1,
             "from sqlalchemy import bindparam",
         )
-        lines.insert(
-            lines.index("from sqlalchemy import bindparam") + 1,
-            "from c3.conversion.in_list_binding import resolve_q011_ids",
-        )
 
-    if has_order_by:
-        lines.insert(
-            lines.index("from sqlalchemy import text") + 1,
-            "from c3.conversion.order_by_binding import resolve_q012_sort",
-        )
-
-    if has_table_identifier:
-        lines.insert(
-            lines.index("from sqlalchemy import text") + 1,
-            "from c3.conversion.table_binding import resolve_q013_table",
-        )
-
-    if has_conditional_concat:
-        lines.insert(
-            lines.index("from sqlalchemy import text") + 1,
-            "from c3.conversion.conditional_concat_binding import resolve_q016_department",
-        )
-
-    if has_join_update:
-        lines.insert(
-            lines.index("from sqlalchemy import text") + 1,
-            "from c3.conversion.join_update_binding import resolve_q020_id",
-        )
+    if helpers:
+        imports, helper_source = inline_helpers(helpers)
+        position = lines.index("from sqlalchemy import text")
+        for import_line in reversed(imports):
+            lines.insert(position, import_line)
+        lines.append("# Runtime helpers copied from C3 so that this file runs without C3")
+        lines.append("# installed. Regenerate instead of editing them by hand.")
+        lines.append("")
+        lines.append(helper_source)
+        lines.append("")
+        lines.append("")
 
     lines.append("\n\n\n".join(functions))
 
@@ -598,6 +619,7 @@ def load_converted_queries(
 def generate_data_access(
     input_file: str | Path,
     output_file: str | Path,
+    source_root: str | Path | None = None,
 ) -> None:
     """
     Generate data_access.py from converted query IR.
@@ -610,7 +632,8 @@ def generate_data_access(
     )
 
     source = generate_data_access_source(
-        converted_queries
+        converted_queries,
+        source_root=source_root,
     )
 
     output_path = Path(output_file)
