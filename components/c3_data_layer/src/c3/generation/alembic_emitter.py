@@ -41,6 +41,7 @@ ALEMBIC_INI = """\
 [alembic]
 script_location = %(here)s
 version_locations = %(here)s/versions
+path_separator = os
 
 [loggers]
 keys = root,sqlalchemy,alembic
