@@ -65,7 +65,11 @@ def run_pipeline(
 
     write_schema_json(schema, schema_json_file)
 
-    generate_models(schema_json_file, models_file)
+    generate_models(
+        schema_json_file,
+        models_file,
+        notes_file=output_dir / "migration_notes.md",
+    )
 
     print("[4/6] Generating data-access functions...")
     generate_data_access(converted_file, data_access_file)

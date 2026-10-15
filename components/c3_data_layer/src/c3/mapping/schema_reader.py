@@ -138,9 +138,19 @@ def parse_column(definition: str) -> Column | None:
 
     name = match.group(1)
 
-    data_type = " ".join(
-        match.group(2).split()
-    ).upper()
+    # Upper-case the type keywords but keep the parenthesised arguments
+    # verbatim: ENUM/SET values are case-sensitive data.
+    type_match = re.fullmatch(
+        r"([A-Za-z]+)\s*(\(.*\))?(.*)",
+        match.group(2).strip(),
+        re.DOTALL,
+    )
+
+    data_type = type_match.group(1).upper() + (type_match.group(2) or "")
+    modifiers = " ".join(type_match.group(3).split()).upper()
+
+    if modifiers:
+        data_type += " " + modifiers
 
     options = match.group(3)
 
