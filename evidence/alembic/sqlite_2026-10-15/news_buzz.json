@@ -1,0 +1,16 @@
+{
+  "app_output": "news_buzz",
+  "database": "sqlite:///C%3A/Users/sanjula/AppData/Local/Temp/c3dev/e3_news_buzz.db",
+  "dialect": "sqlite",
+  "date_utc": "2026-10-15T09:44:53.472383+00:00",
+  "steps": {},
+  "mysql_only_defaults": [
+    {
+      "table": "posts",
+      "column": "updated_on",
+      "ddl": "DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+    }
+  ],
+  "verdict": "NOT_APPLICABLE_SQLITE_INCOMPATIBLE_MYSQL_DEFAULTS",
+  "note": "SQLite cannot execute these MySQL server defaults; run E3 on MySQL 8."
+}

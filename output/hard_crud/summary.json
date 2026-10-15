@@ -26,7 +26,8 @@
         "schema.json",
         "security_report.json",
         "summary.json",
-        "summary.json"
+        "summary.json",
+        "alembic/"
     ],
     "output_directory": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\output\\hard_crud"
 }

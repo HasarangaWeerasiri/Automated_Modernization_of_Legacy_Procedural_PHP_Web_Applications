@@ -167,7 +167,7 @@ Branch: `database-migration` (user override: no `pp1-c3-complete`). Starting poi
 | S7 standalone generated code | not started | — | Generated Clinic code imports `c3.conversion.*`. |
 | S8 transaction + LIMIT | not started | — | Mixed commit policy. LIMIT is only tested with ints. |
 | S9 models + schema fidelity | **done** (E2 live comparison pending) | `evidence/soundness/S9_schema_fidelity/`, `tests/test_schema_fidelity.py` | UNIQUE, indexes, CHECK, FK name and actions, defaults, ON UPDATE and UNSIGNED are emitted. Self-ref and multi-FK map and traverse. Unsupported objects and features are listed in `migration_notes.md`. 9/9 apps map. Tests: 637 / 61 skipped. |
-| S10 Alembic | not started | — | Alembic not installed. |
+| S10 Alembic | **done**; E3 on MySQL pending (user run) | `cc7a8a8`, `367c393`, `0bdb823`; `evidence/alembic/sqlite_2026-10-15/` | Stage 7 emits `alembic/` for every app. SQLite round trip: 7 PASS, 2 N/A (MySQL-only defaults, kept as is and listed in `migration_notes.md`). The real E3 runs on MySQL 8 via `scripts/run_e3_mysql.ps1` into `c3_e3_<app>`. Tests: 643 / 61 skipped. |
 | S11 column use | not started | — | |
 | S12 traceability | not started | — | Module and tests exist; not wired into the pipeline. |
 | S13 Helpdesk Q002/Q004 class | **done** | `evidence/soundness/S13_guarded_blocks/`, `evidence/postadaptation/S13/`, `tests/test_guarded_block_recovery.py` | Block-containment rule (`branch_context` from the extractor). **Post-adaptation:** Helpdesk 8/9 (frozen 6/9), HMS 40/44, NEWS-BUZZ 29/32, Fee-Rainbow 19/22. 50 newly recovered queries audited by hand: 0 unsound. Also closes a try/catch soundness gap. Dev fixtures unchanged. Tests: 595 / 61 skipped. Recommendation: fresh run on the reserve app. |

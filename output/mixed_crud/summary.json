@@ -24,7 +24,8 @@
         "security_report.json",
         "summary.json",
         "traceability.json",
-        "summary.json"
+        "summary.json",
+        "alembic/"
     ],
     "output_directory": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\output\\mixed_crud"
 }

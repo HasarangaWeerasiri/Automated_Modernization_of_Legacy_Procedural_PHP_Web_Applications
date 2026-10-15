@@ -1,0 +1,123 @@
+{
+  "database": "SQLite (mechanics check only; MySQL 8 is the real E3)",
+  "date": "2026-10-15",
+  "results": {
+    "clinic": {
+      "verdict": "PASS",
+      "steps": {
+        "database_empty_before": "PASS",
+        "upgrade_head": "PASS",
+        "live_schema_matches_models": "PASS",
+        "alembic_check": "PASS",
+        "downgrade_base": "PASS"
+      },
+      "mysql_only_defaults": [],
+      "schema_diffs": []
+    },
+    "dignity_dev_hms": {
+      "verdict": "PASS",
+      "steps": {
+        "database_empty_before": "PASS",
+        "upgrade_head": "PASS",
+        "live_schema_matches_models": "PASS",
+        "alembic_check": "PASS",
+        "downgrade_base": "PASS"
+      },
+      "mysql_only_defaults": [],
+      "schema_diffs": []
+    },
+    "fee_rainbow": {
+      "verdict": "NOT_APPLICABLE_SQLITE_INCOMPATIBLE_MYSQL_DEFAULTS",
+      "steps": {},
+      "mysql_only_defaults": [
+        {
+          "table": "admin",
+          "column": "created_at",
+          "ddl": "DEFAULT current_timestamp()"
+        },
+        {
+          "table": "admin",
+          "column": "updated_at",
+          "ddl": "DEFAULT current_timestamp()"
+        }
+      ],
+      "schema_diffs": []
+    },
+    "hard_crud": {
+      "verdict": "PASS",
+      "steps": {
+        "database_empty_before": "PASS",
+        "upgrade_head": "PASS",
+        "live_schema_matches_models": "PASS",
+        "alembic_check": "PASS",
+        "downgrade_base": "PASS"
+      },
+      "mysql_only_defaults": [],
+      "schema_diffs": []
+    },
+    "helpdesk": {
+      "verdict": "PASS",
+      "steps": {
+        "database_empty_before": "PASS",
+        "upgrade_head": "PASS",
+        "live_schema_matches_models": "PASS",
+        "alembic_check": "PASS",
+        "downgrade_base": "PASS"
+      },
+      "mysql_only_defaults": [],
+      "schema_diffs": []
+    },
+    "hms_kishan0725": {
+      "verdict": "PASS",
+      "steps": {
+        "database_empty_before": "PASS",
+        "upgrade_head": "PASS",
+        "live_schema_matches_models": "PASS",
+        "alembic_check": "PASS",
+        "downgrade_base": "PASS"
+      },
+      "mysql_only_defaults": [],
+      "schema_diffs": []
+    },
+    "mixed_crud": {
+      "verdict": "PASS",
+      "steps": {
+        "database_empty_before": "PASS",
+        "upgrade_head": "PASS",
+        "live_schema_matches_models": "PASS",
+        "alembic_check": "PASS",
+        "downgrade_base": "PASS"
+      },
+      "mysql_only_defaults": [],
+      "schema_diffs": []
+    },
+    "news_buzz": {
+      "verdict": "NOT_APPLICABLE_SQLITE_INCOMPATIBLE_MYSQL_DEFAULTS",
+      "steps": {},
+      "mysql_only_defaults": [
+        {
+          "table": "posts",
+          "column": "updated_on",
+          "ddl": "DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+        }
+      ],
+      "schema_diffs": []
+    },
+    "simple_crud": {
+      "verdict": "PASS",
+      "steps": {
+        "database_empty_before": "PASS",
+        "upgrade_head": "PASS",
+        "live_schema_matches_models": "PASS",
+        "alembic_check": "PASS",
+        "downgrade_base": "PASS"
+      },
+      "mysql_only_defaults": [],
+      "schema_diffs": []
+    }
+  },
+  "counts": {
+    "NOT_APPLICABLE_SQLITE_INCOMPATIBLE_MYSQL_DEFAULTS": 2,
+    "PASS": 7
+  }
+}

@@ -16,6 +16,10 @@ None.
 
 None.
 
+## MySQL-specific DDL (kept as-is)
+
+None.
+
 ## Database objects not migrated
 
 None (no views, triggers, routines or events in the dump).

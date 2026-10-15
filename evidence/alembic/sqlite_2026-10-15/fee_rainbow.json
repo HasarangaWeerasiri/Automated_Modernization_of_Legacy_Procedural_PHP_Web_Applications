@@ -1,0 +1,21 @@
+{
+  "app_output": "fee_rainbow",
+  "database": "sqlite:///C%3A/Users/sanjula/AppData/Local/Temp/c3dev/e3_fee_rainbow.db",
+  "dialect": "sqlite",
+  "date_utc": "2026-10-15T09:44:54.252543+00:00",
+  "steps": {},
+  "mysql_only_defaults": [
+    {
+      "table": "admin",
+      "column": "created_at",
+      "ddl": "DEFAULT current_timestamp()"
+    },
+    {
+      "table": "admin",
+      "column": "updated_at",
+      "ddl": "DEFAULT current_timestamp()"
+    }
+  ],
+  "verdict": "NOT_APPLICABLE_SQLITE_INCOMPATIBLE_MYSQL_DEFAULTS",
+  "note": "SQLite cannot execute these MySQL server defaults; run E3 on MySQL 8."
+}

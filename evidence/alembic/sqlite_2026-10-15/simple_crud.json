@@ -1,0 +1,17 @@
+{
+  "app_output": "simple_crud",
+  "database": "sqlite:///C%3A/Users/sanjula/AppData/Local/Temp/c3dev/e3_simple_crud.db",
+  "dialect": "sqlite",
+  "date_utc": "2026-10-15T09:44:35.530872+00:00",
+  "steps": {
+    "database_empty_before": "PASS",
+    "upgrade_head": "PASS",
+    "live_schema_matches_models": "PASS",
+    "alembic_check": "PASS",
+    "downgrade_base": "PASS"
+  },
+  "mysql_only_defaults": [],
+  "schema_diffs": [],
+  "tables_left_after_downgrade": [],
+  "verdict": "PASS"
+}
