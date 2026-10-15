@@ -1,6 +1,6 @@
 # HMS (kishan0725): C3 data-layer handoff
 
-Generated 2026-10-15 from code `26402af` by `scripts/make_handoff.py`. Regenerate rather than edit. **Function signatures are frozen at tag `hms-handoff-v1`.**
+Generated 2026-10-15 from code `01f427e` by `scripts/make_handoff.py`. Regenerate rather than edit. **Function signatures are frozen at tag `hms-handoff-v1`.**
 
 ## Files
 
@@ -36,19 +36,19 @@ with Session(engine) as session:
 
 ## Functions
 
-E1 status comes from `evidence/mysql_runs/2026-10-15_181758/e1/hms_kishan0725.json` (site verdicts: {'INCONCLUSIVE': 12, 'FAIL': 5, 'PASS': 27}). **PASS** means every input case behaved identically to the PHP on MySQL (rows, affected rows, insert id, table checksums), or the PHP was injectable and the generated code bound the payload as a value. Use non-PASS functions with care; see `evidence/hms/E1_triage/triage.md`.
+E1 status comes from `evidence/mysql_runs/2026-10-15_195730/e1/hms_kishan0725.json` (site verdicts: {'INCONCLUSIVE': 17, 'PASS': 27}). **PASS** means every input case behaved identically to the PHP on MySQL (rows, affected rows, insert id, table checksums), or the PHP was injectable and the generated code bound the payload as a value. Use non-PASS functions with care; see `evidence/hms/E1_triage/triage.md`.
 
 | Function | Parameters (PHP value) | Returns | Commit | PHP site | E1 (PHP vs SQLAlchemy on MySQL) |
 |---|---|---|---|---|---|
 | `select_appointmenttb_q001` | `doctor` ← `$doctor`<br>`appdate` ← `$appdate`<br>`apptime` ← `$apptime` | list of row mappings: `apptime` | no (read) | `admin-panel.php:42` | valid inputs PASS; INCONCLUSIVE only on invalid input rejected by both sides |
 | `insert_appointmenttb_q002` | `pid` ← `$pid`<br>`fname` ← `$fname`<br>`lname` ← `$lname`<br>`gender` ← `$gender`<br>`email` ← `$email`<br>`contact` ← `$contact`<br>`doctor` ← `$doctor`<br>`docFees` ← `$docFees`<br>`appdate` ← `$appdate`<br>`apptime` ← `$apptime` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `admin-panel.php:45` | valid inputs PASS; INCONCLUSIVE only on invalid input rejected by both sides |
-| `update_appointmenttb_q003` | `GET_ID` ← `$_GET['ID']` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `admin-panel.php:71` | valid inputs PASS; FAIL only on a hostile input that injected the legacy SQL (harness misclassification, fixed in 26402af; MySQL re-run pending) |
+| `update_appointmenttb_q003` | `GET_ID` ← `$_GET['ID']` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `admin-panel.php:71` | valid inputs PASS; INCONCLUSIVE only on invalid input rejected by both sides |
 | `select_prestb_q004` | `pid` ← `$pid`<br>`GET_ID` ← `$_GET['ID']` | list of row mappings: `pid`, `ID`, `fname`, `lname`, `doctor`, `appdate`, `apptime`, `disease`, `allergy`, `prescription`, `docFees` | no (read) | `admin-panel.php:86` | **PASS** |
 | `select_doctb_q005` | none | list of row mappings: `username`, `spec` | no (read) | `admin-panel.php:144` | **PASS** |
 | `select_doctb_q006` | none | list of row mappings: `username`, `spec` | no (read) | `admin-panel.php:313` | **PASS** |
 | `select_appointmenttb_q007` | `fname` ← `$fname`<br>`lname` ← `$lname` | list of row mappings: `ID`, `doctor`, `docFees`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `admin-panel.php:473` | **PASS** |
 | `select_prestb_q008` | `pid` ← `$pid` | list of row mappings: `doctor`, `ID`, `appdate`, `apptime`, `disease`, `allergy`, `prescription` | no (read) | `admin-panel.php:550` | **PASS** |
-| `insert_doctb_q009` | `doctor` ← `$doctor`<br>`dpassword` ← `$dpassword`<br>`demail` ← `$demail`<br>`spec` ← `$spec`<br>`docFees` ← `$docFees` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `admin-panel1.php:15` | valid inputs PASS; FAIL only on a hostile input that injected the legacy SQL (harness misclassification, fixed in 26402af; MySQL re-run pending) |
+| `insert_doctb_q009` | `doctor` ← `$doctor`<br>`dpassword` ← `$dpassword`<br>`demail` ← `$demail`<br>`spec` ← `$spec`<br>`docFees` ← `$docFees` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `admin-panel1.php:15` | valid inputs PASS; INCONCLUSIVE only on invalid input rejected by both sides |
 | `delete_doctb_q010` | `demail` ← `$demail` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `admin-panel1.php:27` | **PASS** |
 | `select_doctb_q011` | none | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `admin-panel1.php:278` | **PASS** |
 | `select_patreg_q012` | none | list of row mappings: `pid`, `fname`, `lname`, `gender`, `email`, `contact`, `password`, `cpassword` | no (read) | `admin-panel1.php:329` | **PASS** |
@@ -56,8 +56,8 @@ E1 status comes from `evidence/mysql_runs/2026-10-15_181758/e1/hms_kishan0725.js
 | `select_appointmenttb_q014` | none | list of row mappings: `pid`, `ID`, `fname`, `lname`, `gender`, `email`, `contact`, `doctor`, `docFees`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `admin-panel1.php:458` | **PASS** |
 | `select_contact_q015` | none | list of row mappings: `name`, `email`, `contact`, `message` | no (read) | `admin-panel1.php:568` | **PASS** |
 | `select_appointmenttb_q016` | `contact` ← `$contact` | list of row mappings: `pid`, `ID`, `fname`, `lname`, `gender`, `email`, `contact`, `doctor`, `docFees`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `appsearch.php:17` | **PASS** |
-| `insert_contact_q017` | `name` ← `$name`<br>`email` ← `$email`<br>`contact` ← `$contact`<br>`message` ← `$message` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `contact.php:11` | valid inputs PASS; FAIL only on a hostile input that injected the legacy SQL (harness misclassification, fixed in 26402af; MySQL re-run pending) |
-| `update_appointmenttb_q018` | `GET_ID` ← `$_GET['ID']` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `doctor-panel.php:8` | valid inputs PASS; FAIL only on a hostile input that injected the legacy SQL (harness misclassification, fixed in 26402af; MySQL re-run pending) |
+| `insert_contact_q017` | `name` ← `$name`<br>`email` ← `$email`<br>`contact` ← `$contact`<br>`message` ← `$message` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `contact.php:11` | valid inputs PASS; INCONCLUSIVE only on invalid input rejected by both sides |
+| `update_appointmenttb_q018` | `GET_ID` ← `$_GET['ID']` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `doctor-panel.php:8` | valid inputs PASS; INCONCLUSIVE only on invalid input rejected by both sides |
 | `select_appointmenttb_q019` | `dname` ← `$dname` | list of row mappings: `pid`, `ID`, `fname`, `lname`, `gender`, `email`, `contact`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `doctor-panel.php:186` | **PASS** |
 | `select_prestb_q020` | `doctor` ← `$doctor` | list of row mappings: `pid`, `fname`, `lname`, `ID`, `appdate`, `apptime`, `disease`, `allergy`, `prescription` | no (read) | `doctor-panel.php:280` | **PASS** |
 | `select_appointmenttb_q021` | none | list of row mappings: `pid`, `ID`, `fname`, `lname`, `gender`, `email`, `contact`, `doctor`, `docFees`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `doctor-panel.php:332` | **PASS** |
@@ -67,7 +67,7 @@ E1 status comes from `evidence/mysql_runs/2026-10-15_181758/e1/hms_kishan0725.js
 | `insert_doctb_q025` | `doctor` ← `$doctor`<br>`dpassword` ← `$dpassword`<br>`demail` ← `$demail`<br>`docFees` ← `$docFees` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func.php:62` | INCONCLUSIVE: the legacy statement fails under strict MySQL (missing NOT NULL value), same on both sides |
 | `select_doctb_q026` | `dname` ← `$dname`<br>`dpass` ← `$dpass` | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `func1.php:8` | **PASS** |
 | `select_doctb_q027` | none | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `func1.php:43` | **PASS** |
-| `insert_patreg_q028` | `fname` ← `$fname`<br>`lname` ← `$lname`<br>`gender` ← `$gender`<br>`email` ← `$email`<br>`contact` ← `$contact`<br>`password` ← `$password`<br>`cpassword` ← `$cpassword` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func2.php:14` | valid inputs PASS; FAIL only on a hostile input that injected the legacy SQL (harness misclassification, fixed in 26402af; MySQL re-run pending) |
+| `insert_patreg_q028` | `fname` ← `$fname`<br>`lname` ← `$lname`<br>`gender` ← `$gender`<br>`email` ← `$email`<br>`contact` ← `$contact`<br>`password` ← `$password`<br>`cpassword` ← `$cpassword` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func2.php:14` | valid inputs PASS; INCONCLUSIVE only on invalid input rejected by both sides |
 | `select_patreg_q029` | none | list of row mappings: `pid`, `fname`, `lname`, `gender`, `email`, `contact`, `password`, `cpassword` | no (read) | `func2.php:26` | **PASS** |
 | `update_appointmenttb_q030` | `status` ← `$status`<br>`contact` ← `$contact` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func2.php:41` | INCONCLUSIVE: schema drift (statement fails on both sides) |
 | `insert_doctb_q031` | `name` ← `$name` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func2.php:66` | INCONCLUSIVE: schema drift (statement fails on both sides) |
@@ -75,7 +75,7 @@ E1 status comes from `evidence/mysql_runs/2026-10-15_181758/e1/hms_kishan0725.js
 | `update_appointmenttb_q033` | `status` ← `$status`<br>`contact` ← `$contact` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func3.php:24` | INCONCLUSIVE: schema drift (statement fails on both sides) |
 | `select_doctb_q034` | none | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `func3.php:36` | **PASS** |
 | `insert_doctb_q035` | `name` ← `$name` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func3.php:49` | INCONCLUSIVE: schema drift (statement fails on both sides) |
-| `select_users_q036` | `SESSION_id` ← `$_SESSION['id']` | list of row mappings: `fullName` | no (read) | `include/header.php:35` | INCONCLUSIVE: schema drift (statement fails on both sides) |
+| `select_users_q036` | `SESSION_id` ← `$_SESSION['id']` | list of row mappings: `fullName` | no (read) | `header.php:35` | INCONCLUSIVE: schema drift (statement fails on both sides) |
 | `select_contact_q037` | `contact` ← `$contact` | list of row mappings: `name`, `email`, `contact`, `message` | no (read) | `messearch.php:15` | **PASS** |
 | `update_appointmenttb_q038` | `status` ← `$status`<br>`contact` ← `$contact` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `newfunc.php:23` | INCONCLUSIVE: schema drift (statement fails on both sides) |
 | `select_doctb_q039` | none | list of row mappings: `(spec)` | no (read) | `newfunc.php:45` | **PASS** |
@@ -100,7 +100,7 @@ These functions are generated as the PHP wrote them. On a database built from th
 | `func2.php:66` (Q031) | column `doctb.name` (write) not in schema |
 | `func3.php:24` (Q033) | column `appointmenttb.payment` (write) not in schema |
 | `func3.php:49` (Q035) | column `doctb.name` (write) not in schema |
-| `include/header.php:35` (Q036) | table `users` not in schema |
+| `header.php:35` (Q036) | table `users` not in schema |
 | `newfunc.php:23` (Q038) | column `appointmenttb.payment` (write) not in schema |
 
 ## Tables without a primary key
