@@ -24,7 +24,7 @@
 
 | Area | Fact |
 |---|---|
-| Tests | 514 passed, 61 skipped (all MySQL), 0 failed = 575 collected. No MySQL test has been re-run since 8 Oct (that evidence is gitignored, 18/18 checks on MySQL 8.0). Day 3 behaviour tests ran on **SQLite**. |
+| Tests | **642 passed (581 without MySQL + 61 MySQL), 0 failed, as of 2026-10-15** (`evidence/mysql_2026-10-15/`). At the audit it was 514 passed, 61 skipped (MySQL). The real-MySQL run covers the **Clinic** fixtures only. simple/mixed/hard have only the 8 Oct MySQL run, and the unseen apps have none yet (see E1). Day 3 behaviour tests ran on **SQLite**. |
 | Helpdesk | 9 / 7 / 6 / 2 / 3 reproduces exactly. |
 | Clinic | **22** SQL scenarios, not 21. Fresh run: converted 21 = **14 general + 7 query-ID-specific templates** (Q010, Q011, Q012, Q013, Q014, Q016, Q020); **S22 (`mysqli_prepare`) silently dropped**. On-disk output is stale (14/21). |
 | Unsound recovery | SQL built in `foreach` / `while` / `switch` is treated as straight-line code → marked RECOVERED/CONVERTED with wrong SQL (including a DELETE `WHERE 1=0 OR id = :i`). |
@@ -131,7 +131,7 @@ Audit estimates: P0 ≈ 15–20 h, P1 ≈ 35–45 h. Five full days will not fit
 ## 7. How to report results honestly (use on slides)
 
 - **Say:** "Pipeline runs end to end on N applications (2 original synthetic benchmarks, M unseen third-party). Helpdesk holdout: 6/9 pre-adaptation, X/9 post-adaptation. Clinic: 21 converted of 22 sites — 14 by general rules, 7 by guarded query-specific templates." "Unresolved queries are flagged with file, line and reason; unsound conversions found during self-audit (loops, switch) were fixed." "Behavioural equivalence verified on MySQL 8: P PASS / F FAIL / I INCONCLUSIVE."
-- **Do not say:** "21/21 general accuracy", "100% accuracy", "ORM queries" (it is parameterized SQLAlchemy `text()`), "works on arbitrary PHP apps", "575 passing" (it is 514 pass + 61 MySQL-dependent; update after E1).
+- **Do not say:** "21/21 general accuracy", "100% accuracy", "ORM queries" (it is parameterized SQLAlchemy `text()`), "works on arbitrary PHP apps", "575 passing". Say "642 passed (581 without MySQL + 61 MySQL), 0 failed, as of 2026-10-15", and never present the Clinic MySQL run as equivalence for other apps.
 - **Strength to present:** the self-audit itself — the soundness bugs found and fixed, the frozen baselines and the pre-/post-adaptation protocol are evidence of research rigour.
 
 ---
@@ -156,7 +156,7 @@ Branch: `database-migration` (user override: no `pp1-c3-complete`). Starting poi
 | Task | Status | Evidence / commit | Notes |
 |---|---|---|---|
 | A1 pre-adaptation runs | **done** | `evidence/preadaptation/` (+ manifest) | HMS, NEWS-BUZZ and Fee-Rainbow at pinned commits. **All 3 crash at stage 3/6 on `INT(n)`**, and ALTER-style PKs are lost (0 PKs). Detection is complete (independent grep). BRANCHING dominates the unresolved queries. |
-| A2 MySQL (E0) | waiting on user | — | Decision: local MySQL80 service. The user runs the MySQL tests in their own terminal and pastes the logs; the password is never written to a file or chat. |
+| A2 MySQL (E0) | **done** | `evidence/mysql_2026-10-15/`, register rows 19–21 | Local MySQL80 8.0.39, run by the student. Clinic equivalence 61 passed; full suite **642 passed (581 + 61 MySQL), 0 failed**. Runner made idempotent with UTF-8 logs (`7a08033`). |
 | S1 loop/switch soundness | **done** | `evidence/soundness/S1_loop_switch/`, `tests/test_loop_switch_soundness.py` | The extractor now records enclosing loops and switch cases (`loop_context`), and recovery abstains with `LOOP_OR_SWITCH_CONTROL_FLOW`. 9 must-abstain and 6 must-recover fixtures, all written independently. Regression check: 0 changed queries on 8 apps. Tests: 530 passed / 61 skipped. |
 | S2 silent drops | **done** | `evidence/soundness/S2_executors/`, `tests/test_executor_coverage.py` | Probe 11/11 rows (was 8/11). Clinic reports 22 sites; S22 is RECOVERED and conversion-unresolved (prepared `?`, see S14). New reason codes: `UNSUPPORTED_EXECUTOR`, `MULTI_STATEMENT_EXECUTOR`, `MISSING_SQL_ARGUMENT`. PHP 8 named args are supported. Tests: 551 passed / 61 skipped. |
 | S3 ENUM/SET | **done** | `evidence/soundness/S3_types/`, `tests/test_schema_types_robustness.py` | ENUM → `Enum(...)`, SET → `mysql.SET(...)`, case preserved. `INT(n)` and other display widths accepted. Unknown types → `UnmappedMySQLType` (DDL passthrough) and listed in the new `migration_notes.md`; the pipeline never aborts for one column. The 3 unseen apps now complete all 6 stages. Tests: 577 passed / 61 skipped. |
@@ -173,7 +173,7 @@ Branch: `database-migration` (user override: no `pp1-c3-complete`). Starting poi
 | S13 Helpdesk Q002/Q004 class | not started | — | |
 | S14 prepared statements | not started | — | |
 | S15 evaluator + GT | not started | — | hard_crud GT `expected_tables` vs evaluator `expected_table`. |
-| E1–E7 | not started | — | E1–E3 need MySQL. |
+| E1–E7 | E1 planned | `docs/E1_equivalence_plan.md` | Clinic has real-MySQL evidence. E1 adds simple/mixed/hard, Helpdesk and the 3 unseen apps → `php_vs_sqlalchemy_equivalence.json` (PASS/FAIL/INCONCLUSIVE). The legacy SQL is built by PHP from the verbatim source (no circularity). Runs after S13/S4/S5. |
 | Baseline comparison | not started | — | |
 | Demo | not started | — | |
 | Docs + evidence register | started | `evidence/evidence_register.md` | Register created with the pre-dev test run. |

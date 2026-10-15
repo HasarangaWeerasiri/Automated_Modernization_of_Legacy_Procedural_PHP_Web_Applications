@@ -10,6 +10,8 @@ Every number below comes from a command run during this audit, unless it is expl
 
 ## 0. Headline findings (read this first)
 
+> **Update after the audit (current test figure):** 642 passed (581 without MySQL + 61 MySQL), 0 failed, as of 2026-10-15. The MySQL run is in `evidence/mysql_2026-10-15/full_suite_with_mysql_log.txt`, and the without-MySQL run is `evidence/test_runs/2026-10-15_after_S3b_pytest.txt`. The figures below are what the audit measured before development started.
+
 1. **The Clinic "21/21" depends on query-ID-specific code.** Seven of the 21 conversions (Q010, Q011, Q012, Q013, Q014, Q016, Q020) go through converters gated on `query_id == "Q0xx"`. Most of them also need a **whole-file regex** that matches the exact Clinic PHP source text, with Clinic table names, column names, `$_GET` keys and default values. Two examples: `in_list_source_gate.py` hard-codes `SELECT id, full_name FROM patients WHERE id IN ($ids)` with default `'1,2'`, and `table_binding.py` hard-codes `ALLOWED_Q013_TABLES = frozenset({"patients"})`. The same pattern classes in another app are **not** converted. hard_crud Q002 (dynamic ORDER BY), Q003 (dynamic IN) and Q004 (conditional append) all stay UNRESOLVED. **By general rules alone, Clinic is 14 of 22 sites, not 21/21.**
 2. **The Clinic benchmark has 22 SQL scenarios, not 21.** `22_prepared_statement.php` (`mysqli_prepare` + `mysqli_stmt_bind_param`) **appears in no output file**. It is silently dropped.
 3. **Unsound recoveries produce wrong code without any warning.** SQL built in `foreach`, in `while` and in `switch` is treated as straight-line code, marked RECOVERED and CONVERTED. One case is a **DELETE**: `DELETE FROM users WHERE 1=0 OR id = :i` generated from a loop.
@@ -256,6 +258,8 @@ Packaging notes:
 ---
 
 ## 3. Claims vs measured results
+
+> **Update after the audit (current test figure):** 642 passed (581 without MySQL + 61 MySQL), 0 failed, as of 2026-10-15. The MySQL run is in `evidence/mysql_2026-10-15/full_suite_with_mysql_log.txt`, and the without-MySQL run is `evidence/test_runs/2026-10-15_after_S3b_pytest.txt`. The figures below are what the audit measured before development started.
 
 | Item | Your claim | Measured (2026-10-15) | Match |
 |---|---|---|---|

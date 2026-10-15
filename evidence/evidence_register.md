@@ -3,6 +3,13 @@
 Every number used in slides or reports must appear here, with the command that produced it and the saved raw output.
 Commands run from `components/c3_data_layer` with `PYTHONPATH=src` and the project venv unless stated otherwise.
 
+## Notes
+
+- Note on rows 19 and 20: the pytest output in those two logs was written as UTF-16 by `Tee-Object` (Windows PowerShell 5.1); the header lines are UTF-8. The files are kept unchanged as evidence. Since `7a08033`, the runner writes UTF-8 only.
+- Scope note: the MySQL equivalence evidence in rows 19 and 20 covers the Clinic fixtures only. simple/mixed/hard have only the 2026-10-08 run (row 1). The unseen apps (HMS, NEWS-BUZZ, Fee-Rainbow) have no MySQL equivalence run yet; that is planned as E1 (`docs/E1_equivalence_plan.md`).
+
+## Register
+
 | # | Date | Claim | Command | Result | Raw output file | Commit |
 |---|---|---|---|---|---|---|
 | 1 | 2026-10-08 | MySQL 8.0 behavioural validation, simple/mixed/hard CRUD | `tests/mysql_validation/run_*.php` + `run_*_migrated.py` + `compare_*.py` (run by the student) | 18/18 checks (5 + 7 + 6) | `evidence/mysql_2026-10-08/*.json` | `8e0a842` |
@@ -23,3 +30,6 @@ Commands run from `components/c3_data_layer` with `PYTHONPATH=src` and the proje
 | 16 | 2026-10-15 | Test suite after S3 | `python -m pytest -q -rs -p no:cacheprovider` | 577 passed, 61 skipped (MySQL), 0 failed (+26 tests in `tests/test_schema_types_robustness.py`) | `evidence/test_runs/2026-10-15_after_S3_pytest.txt` | (this commit) |
 | 17 | 2026-10-15 | S3b: ALTER-style primary keys, AUTO_INCREMENT and FKs recovered; PK-less tables emitted as Core `Table` (no invented PK); `configure_mappers()` passes on all 8 apps (3 unseen apps failed before) | `python scripts/check_models.py <tmp>/<app>/models.py ...` after `python scripts/regression_check.py <tmp>` | 8/8 OK; HMS 2 mapped + 4 Core tables; 0 changed queries | `evidence/soundness/S3b_alter_keys/models_check_output.txt` | (this commit) |
 | 18 | 2026-10-15 | Test suite after S3b | `python -m pytest -q -rs -p no:cacheprovider` | 581 passed, 61 skipped (MySQL), 0 failed (+4 tests in `tests/test_alter_table_schema.py`) | `evidence/test_runs/2026-10-15_after_S3b_pytest.txt` | (this commit) |
+| 19 | 2026-10-15 | Real-MySQL equivalence for the **Clinic** fixtures (61 tests: legacy PHP vs generated SQLAlchemy on MySQL 8.0.39), run by the student at code `e77f854` | `$env:C3_DB_PASSWORD = Read-Host ...; .\scripts\run_mysql_tests.ps1 -ResetClinicDatabases -RegenerateClinicOutput` (runs `python -m pytest tests/benchmarks/clinic_hard -v -rs -p no:cacheprovider`) | 61 passed, 0 skipped, 0 failed | `evidence/mysql_2026-10-15/clinic_mysql_equivalence_log.txt` (pytest output is UTF-16, see note) | `3b13ef9` |
+| 20 | 2026-10-15 | Full test suite with MySQL enabled, at code `e77f854` | same script (runs `python -m pytest -q -rs -p no:cacheprovider`) | **642 passed (581 without MySQL + 61 MySQL), 0 failed**, 1 warning (Starlette deprecation) | `evidence/mysql_2026-10-15/full_suite_with_mysql_log.txt` | `3b13ef9` |
+| 21 | 2026-10-15 | Clinic regenerated with current code (live untracked folder, used by the MySQL tests) | `run_mysql_tests.ps1 -RegenerateClinicOutput` | total 22, recovered 17, converted 21, unresolved 5, conversion-unresolved 1 | console output reported by the student | — |
