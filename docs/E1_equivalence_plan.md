@@ -46,13 +46,14 @@ Values come from a hand-written case file per app (`benchmarks/equivalence_cases
 | mixed_crud | `schema.sql` | none, hand-written seed | 5 (+1 INCONCLUSIVE) | |
 | hard_crud | `schema.sql` | none, hand-written seed | 2 (+3 INCONCLUSIVE) | |
 | Helpdesk | `database/schema.sql` | 3 INSERT blocks in the schema | 6 (+3 INCONCLUSIVE) | holdout; report beside the 6/9 baseline |
+| Dignity-Dev (fresh holdout) | `127_0_0_1.sql` | INSERT blocks in the dump | 4 (+10 INCONCLUSIVE) | |
 | HMS | `myhmsdb.sql` | 6 INSERT blocks (contains plaintext demo passwords, local only) | 19 (+25 INCONCLUSIVE) | no licence: logs record row counts and checksums only, not raw rows |
 | NEWS-BUZZ | `db/NEWSBUZZ.sql` | 2 INSERT blocks | 4 (+28 INCONCLUSIVE) | |
 | Fee-Rainbow | `database/db.sql` | 1 INSERT block | 18 (+4 INCONCLUSIVE) | |
 
 The "converted" counts are those of code `e77f854`. They will be re-measured after S13, and E1 runs on whatever code is frozen at that time.
 
-**Databases:** `c3_e1_<app>_legacy`, `c3_e1_<app>_migrated`, created by `scripts/run_mysql_tests.ps1 -E1` (to be added). The runner needs `GRANT ALL ON c3_e1\_%.* TO 'c3_tester'@'localhost'` once, run by you as admin. The password stays session-only, as now.
+**Databases (16, explicit names, no wildcards):** `c3_e1_<app>_legacy` and `c3_e1_<app>_migrated` for the 8 apps (simple_crud, mixed_crud, hard_crud, helpdesk, hms_kishan0725, news_buzz, fee_rainbow, dignity_dev_hms; Clinic already has its own). Statements to run once in MySQL Workbench: `scripts/e1_create_databases.sql` (it also creates the 9 empty `c3_e3_<app>` databases for the E3 Alembic round trip). The runner resets each database with DROP/CREATE before every run; `c3_tester` has rights on exactly these databases. The password stays session-only.
 
 ## 5. Who runs what
 
