@@ -24,3 +24,35 @@ def select_users_q001(session, q):
     result = session.execute(statement, params)
 
     return result.mappings().all()
+
+
+def unresolved_query_q002(session, **kwargs):
+    """Unresolved query Q002; C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/hard_crud/legacy/02_dynamic_order.php:9."""
+    raise NotImplementedError('manual review: C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/hard_crud/legacy/02_dynamic_order.php:9')
+
+
+def unresolved_query_q003(session, **kwargs):
+    """Unresolved query Q003; C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/hard_crud/legacy/03_dynamic_in.php:9."""
+    raise NotImplementedError('manual review: C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/hard_crud/legacy/03_dynamic_in.php:9')
+
+
+def unresolved_query_q004(session, **kwargs):
+    """Unresolved query Q004; C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/hard_crud/legacy/04_conditional_append.php:11."""
+    raise NotImplementedError('manual review: C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/hard_crud/legacy/04_conditional_append.php:11')
+
+
+def select_orders_q005(session, userId):
+    """
+    Migrated from C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/hard_crud/legacy/05_join.php:13.
+    Original query ID: Q005.
+    """
+
+    statement = text('SELECT orders.id, orders.total, orders.status, users.name FROM orders JOIN users ON orders.user_id = users.id WHERE users.id = :userId')
+
+    params = {
+        "userId": userId,
+    }
+
+    result = session.execute(statement, params)
+
+    return result.mappings().all()

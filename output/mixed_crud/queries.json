@@ -83,6 +83,11 @@
         "dynamic_variables": [],
         "status": "UNRESOLVED",
         "reason_code": "UNKNOWN_EXPR",
-        "reason": "Query contains unsupported dynamic expression."
+        "reason": "Query contains unsupported dynamic expression.",
+        "cross_file_diagnostics": {
+            "function_name": "buildQuery",
+            "resolution_status": "UNRESOLVED",
+            "reason": "Function definition is missing or ambiguous."
+        }
     }
 ]

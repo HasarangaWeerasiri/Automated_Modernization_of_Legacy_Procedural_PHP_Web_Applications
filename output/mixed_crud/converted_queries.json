@@ -6,6 +6,7 @@
         "operation": "SELECT",
         "table": "products",
         "parameters": [],
+        "like_wildcard_parameters": [],
         "parameterized_sql": "SELECT id, title, price FROM products",
         "status": "CONVERTED",
         "reason": null
@@ -19,6 +20,7 @@
         "parameters": [
             "id"
         ],
+        "like_wildcard_parameters": [],
         "parameterized_sql": "SELECT id, title, price FROM products WHERE id = :id",
         "status": "CONVERTED",
         "reason": null
@@ -32,6 +34,7 @@
         "parameters": [
             "id"
         ],
+        "like_wildcard_parameters": [],
         "parameterized_sql": "DELETE FROM products WHERE id = :id",
         "status": "CONVERTED",
         "reason": null
@@ -43,6 +46,7 @@
         "operation": "SELECT",
         "table": "products",
         "parameters": [],
+        "like_wildcard_parameters": [],
         "parameterized_sql": "SELECT id, title, price FROM products",
         "status": "CONVERTED",
         "reason": null
@@ -58,6 +62,7 @@
             "price",
             "id"
         ],
+        "like_wildcard_parameters": [],
         "parameterized_sql": "UPDATE products SET title = :title, price = :price WHERE id = :id",
         "status": "CONVERTED",
         "reason": null

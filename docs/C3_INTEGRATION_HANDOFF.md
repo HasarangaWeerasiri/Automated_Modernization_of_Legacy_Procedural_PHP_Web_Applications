@@ -37,6 +37,7 @@ Generated files:
 - data_access.py: SQLAlchemy database-access functions
 - schema.json: Parsed database schema
 - converted_queries.json: Query conversion metadata
+- migration_notes.md: Schema features not migrated automatically (unsupported column types, tables without a primary key)
 
 The backend should:
 1. Invoke the C3 pipeline.
@@ -63,11 +64,12 @@ Frontend pages may include:
 
 ## 6. Important Limitations
 
-- Only supported SQL patterns are converted.
-- Dynamic SQL may be marked UNRESOLVED.
-- JOIN conversion is currently unsupported.
-- An existing MySQL schema is required.
-- Generated code has not been validated against a production database.
+- Only supported SQL patterns are converted; everything else is UNRESOLVED with file, line, reason code and reason.
+- Static INNER JOIN SELECTs are converted; LEFT/RIGHT JOINs and dynamic JOINs are not.
+- Generated data access is parameterized SQLAlchemy (`text()` + bind parameters), not ORM query constructs.
+- An existing MySQL schema (`schema.sql` / dump) is required.
+- Tables without a primary key are generated as SQLAlchemy Core `Table` objects, not ORM classes.
+- Behavioural equivalence on MySQL has been shown for the Clinic fixtures only (61 tests, 2026-10-15).
 - Generated files should not be executed automatically without review.
 
 ## 7. Integration Contract
@@ -76,9 +78,13 @@ contracts/c3_data_layer_contract.json
 
 ## 8. Research Validation
 
-Controlled benchmarks:
-- simple_crud: 4 recovered, 4 converted
-- mixed_crud: 5 recovered, 5 converted, 1 unresolved
-- hard_crud: 2 recovered, 1 converted, 3 recovery-unresolved
+Current results (2026-10-15; see `docs/C3_EVALUATION_RESULTS.md` and `evidence/evidence_register.md`). Each entry is total / recovered / converted:
 
-The benchmarks demonstrate supported behavior and conservative handling of unsupported cases. They do not establish real-world migration accuracy.
+- simple_crud: 4 / 4 / 4
+- mixed_crud: 6 / 5 / 5
+- hard_crud: 5 / 2 / 2
+- Clinic (development): 22 / 17 / 21. 14 are converted by general rules and 7 by guarded query-specific templates.
+- Helpdesk holdout: 9 / 7 / 6 pre-adaptation (frozen); 9 / 9 / 8 post-adaptation
+- Unseen third-party apps, post-adaptation: HMS 44 / 40 / 40, NEWS-BUZZ 32 / 30 / 29, Fee-Rainbow 22 / 20 / 19
+
+These benchmarks demonstrate supported behaviour and conservative handling of unsupported cases. They do not establish real-world migration accuracy.

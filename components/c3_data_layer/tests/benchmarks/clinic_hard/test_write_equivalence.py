@@ -7,6 +7,8 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
+
+from clinic_generated_output import generated_data_access_file
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session
@@ -16,12 +18,7 @@ COMPONENT_DIR = Path(__file__).resolve().parents[3]
 REPO_ROOT = COMPONENT_DIR.parents[1]
 TEST_DIR = Path(__file__).resolve().parent
 
-GENERATED_FILE = (
-    REPO_ROOT
-    / "output"
-    / "clinic_inventory_legacy_hard"
-    / "data_access.py"
-)
+# Generated fresh per test session (not read from output/).
 
 PHP_HARNESS = TEST_DIR / "php_write_transaction_test.php"
 
@@ -53,7 +50,7 @@ CHECK_QUERIES = {
 def load_generated_module():
     spec = importlib.util.spec_from_file_location(
         "clinic_generated_writes",
-        GENERATED_FILE,
+        generated_data_access_file(),
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

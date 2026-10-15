@@ -26,12 +26,13 @@
   The script stops on the first failing step, and it never prints the password.
 
 .PARAMETER RegenerateClinicOutput
-  Regenerates output/clinic_inventory_legacy_hard (the untracked live folder) with the current code.
-  The Clinic equivalence tests read data_access.py from there until task S4 moves them to tmp_path.
+  Optional. Regenerates output/clinic_inventory_legacy_hard (the untracked live folder) with the
+  current code, for inspection only. Since S4 the Clinic equivalence tests generate their own
+  output in a temp folder and no longer read this folder.
 
 .EXAMPLE
   $env:C3_DB_PASSWORD = Read-Host "c3_tester password"
-  .\scripts\run_mysql_tests.ps1 -ResetClinicDatabases -RegenerateClinicOutput
+  .\scripts\run_mysql_tests.ps1 -ResetClinicDatabases
 #>
 param(
     [switch]$ResetClinicDatabases,

@@ -44,7 +44,13 @@
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\05_join.php",
         "source_line": 13,
         "operation": "SELECT",
-        "status": "UNRESOLVED",
-        "reason": "Initial converter supports exactly one referenced table."
+        "table": "orders",
+        "parameters": [
+            "userId"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "SELECT orders.id, orders.total, orders.status, users.name FROM orders JOIN users ON orders.user_id = users.id WHERE users.id = :userId",
+        "status": "CONVERTED",
+        "reason": null
     }
 ]

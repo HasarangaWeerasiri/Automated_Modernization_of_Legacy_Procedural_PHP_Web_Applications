@@ -57,7 +57,23 @@
         ],
         "status": "UNRESOLVED",
         "reason_code": "BRANCHING",
-        "reason": "SQL construction depends on conditional control flow."
+        "reason": "SQL construction depends on conditional control flow.",
+        "sql_variants": [
+            {
+                "source_line": 5,
+                "control_flow": [],
+                "sql": "SELECT id, name, email, status FROM users",
+                "fully_supported": true
+            },
+            {
+                "source_line": 8,
+                "control_flow": [
+                    "IF"
+                ],
+                "sql": "SELECT id, name, email, status FROM users WHERE status = '{{status}}'",
+                "fully_supported": true
+            }
+        ]
     },
     {
         "query_id": "Q005",

@@ -5,6 +5,8 @@ import subprocess
 from pathlib import Path
 
 import pytest
+
+from clinic_generated_output import generated_data_access_file
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session
@@ -32,18 +34,13 @@ PHP_HARNESSES = {
     "Q021": "php_q017_q021_test.php",
 }
 
-GENERATED_FILE = (
-    REPO_ROOT
-    / "output"
-    / "clinic_inventory_legacy_hard"
-    / "data_access.py"
-)
+# Generated fresh per test session (not read from output/).
 
 
 def load_generated_module():
     spec = importlib.util.spec_from_file_location(
         "clinic_generated_data_access",
-        GENERATED_FILE,
+        generated_data_access_file(),
     )
 
     module = importlib.util.module_from_spec(spec)

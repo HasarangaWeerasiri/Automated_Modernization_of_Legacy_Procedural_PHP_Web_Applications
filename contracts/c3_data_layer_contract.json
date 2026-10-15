@@ -1,7 +1,7 @@
 ﻿{
   "component_id": "C3",
   "component_name": "Data Layer Migration",
-  "contract_version": "1.0.0",
+  "contract_version": "1.1.0",
   "description": "Recover supported SQL from legacy procedural PHP and generate SQLAlchemy data-access artifacts and migration reports.",
   "interface": {
     "type": "python_cli",
@@ -36,12 +36,13 @@
     "schema.json": "Parsed database schema",
     "column_usage.json": "Column usage report",
     "unresolved_queries.json": "Unresolved queries",
-    "summary.json": "Migration summary"
+    "summary.json": "Migration summary",
+    "migration_notes.md": "Schema features not migrated automatically (unsupported column types, tables without a primary key)"
   },
   "limitations": [
-    "Only supported SQL patterns are converted",
-    "Dynamic SQL may remain unresolved",
-    "The converter currently supports one referenced table per query",
+    "Only supported SQL patterns are converted; others are reported as UNRESOLVED with file, line and reason",
+    "Static INNER JOIN SELECTs are supported; LEFT/RIGHT and dynamic JOINs are not",
+    "Generated data access uses SQLAlchemy text() with bind parameters, not ORM query constructs",
     "Generated code requires database validation",
     "An existing database schema must be supplied"
   ]

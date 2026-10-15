@@ -88,3 +88,8 @@ def update_product_q005(session, title, price, id):
 
     session.commit()
     return result
+
+
+def unresolved_query_q006(session, **kwargs):
+    """Unresolved query Q006; C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/mixed_crud/legacy/06_dynamic_function.php:8."""
+    raise NotImplementedError('manual review: C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/mixed_crud/legacy/06_dynamic_function.php:8')

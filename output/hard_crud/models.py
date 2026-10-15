@@ -18,12 +18,34 @@ from sqlalchemy import (
     String,
     Text,
     Time,
+    Enum,
+    JSON,
+    Column,
+    Table,
 )
+from sqlalchemy.dialects.mysql import SET
+from sqlalchemy.types import UserDefinedType
 from sqlalchemy.orm import DeclarativeBase, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
     pass
+
+
+class UnmappedMySQLType(UserDefinedType):
+    """MySQL type C3 could not map; DDL is emitted verbatim.
+
+    Values pass through without Python type conversion.
+    Each column using it is listed in migration_notes.md.
+    """
+
+    cache_ok = True
+
+    def __init__(self, mysql_type):
+        self.mysql_type = mysql_type
+
+    def get_col_spec(self, **kw):
+        return self.mysql_type
 
 
 class User(Base):
