@@ -1,7 +1,7 @@
 ﻿{
   "component_id": "C3",
   "component_name": "Data Layer Migration",
-  "contract_version": "1.2.0",
+  "contract_version": "1.3.0",
   "description": "Recover supported SQL from legacy procedural PHP and generate SQLAlchemy data-access artifacts and migration reports.",
   "interface": {
     "type": "python_cli",
@@ -28,6 +28,12 @@
       "required": true
     }
   },
+  "primary_outputs": [
+    "models.py",
+    "data_access.py",
+    "unresolved_queries.json"
+  ],
+  "primary_outputs_note": "The three outputs defined by the proposal. All other files in 'outputs' are supporting artifacts (reports and metadata).",
   "outputs": {
     "models.py": "Generated SQLAlchemy models",
     "data_access.py": "Generated SQLAlchemy data-access functions",

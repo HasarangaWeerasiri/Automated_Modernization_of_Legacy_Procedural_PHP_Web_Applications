@@ -18,6 +18,15 @@ from c3.analysis.column_usage_generator import generate_column_usage
 from c3.analysis.unresolved_report import generate_unresolved_report
 
 
+# The proposal defines three primary outputs; every other file is a
+# supporting artifact (reports and metadata that explain or justify them).
+PRIMARY_OUTPUTS = (
+    "models.py",
+    "data_access.py",
+    "unresolved_queries.json",
+)
+
+
 def build_summary(
     queries: list[dict],
     converted: list[dict],
@@ -147,6 +156,12 @@ def run_pipeline(
     )
 
     summary = build_summary(queries, converted)
+    summary["primary_outputs"] = list(PRIMARY_OUTPUTS)
+    summary["supporting_artifacts"] = sorted(
+        path.name
+        for path in output_dir.iterdir()
+        if path.is_file() and path.name not in PRIMARY_OUTPUTS
+    ) + ["summary.json"]
     summary["output_directory"] = str(output_dir)
 
     (output_dir / "summary.json").write_text(

@@ -121,3 +121,21 @@ def test_build_summary_on_hand_written_records():
         "unresolved_queries": 2,
         "conversion_unresolved": 2,
     }
+
+
+def test_summary_separates_primary_outputs_from_supporting_artifacts(tmp_path):
+    php, schema = BENCHMARKS["simple_crud"]
+
+    summary = run_pipeline(php, schema, tmp_path)
+
+    assert summary["primary_outputs"] == [
+        "models.py",
+        "data_access.py",
+        "unresolved_queries.json",
+    ]
+    for name in summary["primary_outputs"]:
+        assert (tmp_path / name).is_file()
+    assert not set(summary["primary_outputs"]) & set(summary["supporting_artifacts"])
+    assert {"queries.json", "converted_queries.json", "schema.json", "summary.json"} <= set(
+        summary["supporting_artifacts"]
+    )

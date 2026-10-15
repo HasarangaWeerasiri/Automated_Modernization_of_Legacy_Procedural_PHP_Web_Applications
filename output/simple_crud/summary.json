@@ -9,5 +9,22 @@
     "not_converted": 0,
     "unresolved_queries": 0,
     "conversion_unresolved": 0,
+    "primary_outputs": [
+        "models.py",
+        "data_access.py",
+        "unresolved_queries.json"
+    ],
+    "supporting_artifacts": [
+        "column_usage.json",
+        "converted_queries.json",
+        "evaluation.json",
+        "migration_notes.md",
+        "queries.json",
+        "schema.json",
+        "security_report.json",
+        "sql_locations.json",
+        "summary.json",
+        "summary.json"
+    ],
     "output_directory": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\output\\simple_crud"
 }

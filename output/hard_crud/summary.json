@@ -9,5 +9,24 @@
     "not_converted": 3,
     "unresolved_queries": 3,
     "conversion_unresolved": 3,
+    "primary_outputs": [
+        "models.py",
+        "data_access.py",
+        "unresolved_queries.json"
+    ],
+    "supporting_artifacts": [
+        "baseline_queries.json",
+        "baseline_summary.json",
+        "column_usage.json",
+        "converted_queries.json",
+        "migration_notes.md",
+        "post_soundness_queries.json",
+        "post_soundness_summary.json",
+        "queries.json",
+        "schema.json",
+        "security_report.json",
+        "summary.json",
+        "summary.json"
+    ],
     "output_directory": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\output\\hard_crud"
 }

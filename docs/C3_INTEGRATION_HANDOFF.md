@@ -32,6 +32,13 @@ Requirements:
 
 ## 4. Backend Integration
 
+**Primary outputs (the proposal's three deliverables):**
+- `models.py`: typed SQLAlchemy models and relationships
+- `data_access.py`: parameterized SQLAlchemy data-access functions with source traceability
+- `unresolved_queries.json`: every query not converted, with file, line, reason and the action `manual_review_required`
+
+**Supporting artifacts** explain or justify the primary outputs: `queries.json`, `converted_queries.json`, `schema.json`, `column_usage.json`, `security_report.json`, `migration_notes.md` and `summary.json`. `summary.json` lists the split in `primary_outputs` / `supporting_artifacts`.
+
 Generated files:
 - models.py: SQLAlchemy model definitions
 - data_access.py: SQLAlchemy database-access functions

@@ -48,6 +48,8 @@ def main() -> None:
     )
 
     print("\nMigration pipeline completed.")
+    print("Primary outputs: " + ", ".join(summary["primary_outputs"]))
+    print("Supporting artifacts: " + ", ".join(summary["supporting_artifacts"]))
     print(json.dumps(summary, indent=4))
 
 

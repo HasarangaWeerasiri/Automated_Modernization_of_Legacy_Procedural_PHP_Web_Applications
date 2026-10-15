@@ -6,6 +6,8 @@
 
 Component 3 (C3) of the Automated Modernization of Legacy Procedural PHP Web Applications project migrates database operations in legacy procedural PHP into parameterized SQLAlchemy data access (`text()` + bind parameters). It recovers SQL statically, converts what it can recover safely, and abstains (unresolved, with file, line and reason) when it cannot.
 
+**Primary outputs** (per the proposal): `models.py`, `data_access.py` and `unresolved_queries.json`. Every other file C3 writes is a supporting artifact.
+
 ## 2. Benchmark applications
 
 | Application | Role | Origin |
