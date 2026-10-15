@@ -1,0 +1,40 @@
+{
+  "source": "hms_kishan0725",
+  "excluded_directories": [
+    "TCPDF",
+    "vendor",
+    "ckeditor"
+  ],
+  "php_file_count": 29,
+  "php_files": [
+    "admin-panel.php",
+    "admin-panel1.php",
+    "appsearch.php",
+    "contact.php",
+    "doctor-panel.php",
+    "doctorsearch.php",
+    "error.php",
+    "error1.php",
+    "error2.php",
+    "func.php",
+    "func1.php",
+    "func2.php",
+    "func3.php",
+    "header.php",
+    "include/checklogin.php",
+    "include/config.php",
+    "include/footer.php",
+    "include/header.php",
+    "include/setting.php",
+    "include/sidebar.php",
+    "index.php",
+    "index1.php",
+    "logout.php",
+    "logout1.php",
+    "messearch.php",
+    "newfunc.php",
+    "patientsearch.php",
+    "prescribe.php",
+    "search.php"
+  ]
+}

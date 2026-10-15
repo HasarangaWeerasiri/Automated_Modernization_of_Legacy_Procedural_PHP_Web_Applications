@@ -1,0 +1,465 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 42,
+        "operation": "SELECT",
+        "table": "appointmenttb",
+        "parameters": [
+            "doctor",
+            "appdate",
+            "apptime"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select apptime from appointmenttb where doctor=:doctor and appdate=:appdate and apptime=:apptime",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 45,
+        "operation": "INSERT",
+        "table": "appointmenttb",
+        "parameters": [
+            "pid",
+            "fname",
+            "lname",
+            "gender",
+            "email",
+            "contact",
+            "doctor",
+            "docFees",
+            "appdate",
+            "apptime"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "insert into appointmenttb(pid,fname,lname,gender,email,contact,doctor,docFees,appdate,apptime,userStatus,doctorStatus) values(:pid,:fname,:lname,:gender,:email,:contact,:doctor,:docFees,:appdate,:apptime,'1','1')",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 71,
+        "operation": "UPDATE",
+        "status": "UNRESOLVED",
+        "reason": "Query contains unsupported dynamic expression."
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 86,
+        "operation": "SELECT",
+        "status": "UNRESOLVED",
+        "reason": "Query contains unsupported dynamic expression."
+    },
+    {
+        "query_id": "Q005",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 144,
+        "operation": "SELECT",
+        "table": "doctb",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select username,spec from doctb",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q006",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 313,
+        "operation": "SELECT",
+        "table": "doctb",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select username,spec from doctb",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q007",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 473,
+        "operation": "SELECT",
+        "table": "appointmenttb",
+        "parameters": [
+            "fname",
+            "lname"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select ID,doctor,docFees,appdate,apptime,userStatus,doctorStatus from appointmenttb where fname =:fname and lname=:lname;",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q008",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 550,
+        "operation": "SELECT",
+        "table": "prestb",
+        "parameters": [
+            "pid"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select doctor,ID,appdate,apptime,disease,allergy,prescription from prestb where pid=:pid;",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q009",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 15,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q010",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 27,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q011",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 278,
+        "operation": "SELECT",
+        "table": "doctb",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select * from doctb",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q012",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 329,
+        "operation": "SELECT",
+        "table": "patreg",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select * from patreg",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q013",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 385,
+        "operation": "SELECT",
+        "table": "prestb",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select * from prestb",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q014",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 458,
+        "operation": "SELECT",
+        "table": "appointmenttb",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select * from appointmenttb;",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q015",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 568,
+        "operation": "SELECT",
+        "table": "contact",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select * from contact;",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q016",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\appsearch.php",
+        "source_line": 17,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q017",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\contact.php",
+        "source_line": 11,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q018",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 8,
+        "operation": "UPDATE",
+        "status": "UNRESOLVED",
+        "reason": "Query contains unsupported dynamic expression."
+    },
+    {
+        "query_id": "Q019",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 186,
+        "operation": "SELECT",
+        "table": "appointmenttb",
+        "parameters": [
+            "dname"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select pid,ID,fname,lname,gender,email,contact,appdate,apptime,userStatus,doctorStatus from appointmenttb where doctor=:dname;",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q020",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 280,
+        "operation": "SELECT",
+        "table": "prestb",
+        "parameters": [
+            "doctor"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select pid,fname,lname,ID,appdate,apptime,disease,allergy,prescription from prestb where doctor=:doctor;",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q021",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 332,
+        "operation": "SELECT",
+        "table": "appointmenttb",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select * from appointmenttb;",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q022",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctorsearch.php",
+        "source_line": 16,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q023",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func.php",
+        "source_line": 8,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q024",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func.php",
+        "source_line": 34,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q025",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func.php",
+        "source_line": 62,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q026",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func1.php",
+        "source_line": 8,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q027",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func1.php",
+        "source_line": 43,
+        "operation": "SELECT",
+        "table": "doctb",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select * from doctb",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q028",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 14,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q029",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 26,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q030",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 41,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q031",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 66,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q032",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 8,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q033",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 24,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q034",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 36,
+        "operation": "SELECT",
+        "table": "doctb",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select * from doctb",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q035",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 49,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q036",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\include\\header.php",
+        "source_line": 35,
+        "operation": "SELECT",
+        "status": "UNRESOLVED",
+        "reason": "Query contains unsupported dynamic expression."
+    },
+    {
+        "query_id": "Q037",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\messearch.php",
+        "source_line": 15,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q038",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 23,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q039",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 45,
+        "operation": "SELECT",
+        "table": "doctb",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select distinct(spec) from doctb",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q040",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 57,
+        "operation": "SELECT",
+        "table": "doctb",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "select * from doctb",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q041",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 84,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q042",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\patientsearch.php",
+        "source_line": 15,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q043",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\prescribe.php",
+        "source_line": 33,
+        "operation": "INSERT",
+        "table": "prestb",
+        "parameters": [
+            "doctor",
+            "pid",
+            "ID",
+            "fname",
+            "lname",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "insert into prestb(doctor,pid,ID,fname,lname,appdate,apptime,disease,allergy,prescription) values (:doctor,:pid,:ID,:fname,:lname,:appdate,:apptime,:disease,:allergy,:prescription)",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q044",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\search.php",
+        "source_line": 8,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    }
+]

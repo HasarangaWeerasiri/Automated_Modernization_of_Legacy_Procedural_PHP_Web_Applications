@@ -1,0 +1,308 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\auth.php",
+        "source_line": 9,
+        "operation": "SELECT",
+        "table": "admin",
+        "parameters": [
+            "id"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "SELECT username FROM admin WHERE id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\auth.php",
+        "source_line": 28,
+        "operation": "SELECT",
+        "table": "admin",
+        "parameters": [
+            "username"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "SELECT * FROM admin WHERE username = :username",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\categories.php",
+        "source_line": 34,
+        "operation": "INSERT",
+        "table": "categories",
+        "parameters": [
+            "name"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "INSERT INTO categories (name, created_at, updated_at) VALUES (:name, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\categories.php",
+        "source_line": 57,
+        "operation": "UPDATE",
+        "table": "categories",
+        "parameters": [
+            "name",
+            "id"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "UPDATE categories SET name = :name, updated_at = CURRENT_TIMESTAMP WHERE id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q005",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\categories.php",
+        "source_line": 76,
+        "operation": "DELETE",
+        "table": "subcategories",
+        "parameters": [
+            "id"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "DELETE FROM subcategories WHERE category_id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q006",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\categories.php",
+        "source_line": 80,
+        "operation": "DELETE",
+        "table": "categories",
+        "parameters": [
+            "id"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "DELETE FROM categories WHERE id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q007",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\categories.php",
+        "source_line": 100,
+        "operation": "SELECT",
+        "status": "UNRESOLVED",
+        "reason": "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported."
+    },
+    {
+        "query_id": "Q008",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\occasions.php",
+        "source_line": 27,
+        "operation": "INSERT",
+        "table": "occasions",
+        "parameters": [
+            "name"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "INSERT INTO occasions (name, created_at, updated_at) VALUES (:name, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q009",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\occasions.php",
+        "source_line": 52,
+        "operation": "UPDATE",
+        "table": "occasions",
+        "parameters": [
+            "name",
+            "id"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "UPDATE occasions SET name = :name, updated_at = CURRENT_TIMESTAMP WHERE id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q010",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\occasions.php",
+        "source_line": 72,
+        "operation": "DELETE",
+        "table": "occasions",
+        "parameters": [
+            "id"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "DELETE FROM occasions WHERE id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q011",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\occasions.php",
+        "source_line": 92,
+        "operation": "SELECT",
+        "table": "occasions",
+        "parameters": [
+            "keyword",
+            "limit",
+            "offset"
+        ],
+        "like_wildcard_parameters": [
+            "keyword"
+        ],
+        "parameterized_sql": "SELECT id, name FROM occasions WHERE name LIKE :keyword ORDER BY id ASC LIMIT :limit OFFSET :offset",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q012",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\products.php",
+        "source_line": 82,
+        "operation": "INSERT",
+        "table": "products",
+        "parameters": [
+            "name",
+            "category_id",
+            "subcategory_id",
+            "occasion_id",
+            "price",
+            "description",
+            "gambar"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "INSERT INTO products (name, category_id, subcategory_id, occasion_id, price, description, image, created_at, updated_at) VALUES (:name, :category_id, :subcategory_id, :occasion_id, :price, :description, :gambar, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q013",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\products.php",
+        "source_line": 133,
+        "operation": "UPDATE",
+        "table": "products",
+        "parameters": [
+            "name",
+            "category_id",
+            "subcategory_id",
+            "occasion_id",
+            "price",
+            "gambar",
+            "description",
+            "id"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "UPDATE products SET name = :name, category_id = :category_id, subcategory_id = :subcategory_id, occasion_id = :occasion_id, price = :price, image = :gambar, description = :description, updated_at = CURRENT_TIMESTAMP WHERE id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q014",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\products.php",
+        "source_line": 152,
+        "operation": "SELECT",
+        "table": "products",
+        "parameters": [
+            "id"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "SELECT image FROM products WHERE id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q015",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\products.php",
+        "source_line": 165,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q016",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\register.php",
+        "source_line": 30,
+        "operation": "SELECT",
+        "table": "admin",
+        "parameters": [
+            "username"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "SELECT id FROM admin WHERE username = :username",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q017",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\register.php",
+        "source_line": 44,
+        "operation": "INSERT",
+        "table": "admin",
+        "parameters": [
+            "username",
+            "hashed_password"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "INSERT INTO admin (username, password, created_at, updated_at) VALUES (:username, :hashed_password, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q018",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\subcategories.php",
+        "source_line": 40,
+        "operation": "INSERT",
+        "table": "subcategories",
+        "parameters": [
+            "name",
+            "id"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "INSERT INTO subcategories (name, category_id, created_at, updated_at) VALUES (:name, :id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q019",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\subcategories.php",
+        "source_line": 65,
+        "operation": "UPDATE",
+        "table": "subcategories",
+        "parameters": [
+            "name",
+            "id"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "UPDATE subcategories SET name = :name, updated_at = CURRENT_TIMESTAMP WHERE id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q020",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\app\\models\\subcategories.php",
+        "source_line": 85,
+        "operation": "DELETE",
+        "table": "subcategories",
+        "parameters": [
+            "id"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "DELETE FROM subcategories WHERE id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q021",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\admin\\config\\helpers.php",
+        "source_line": 4,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "No recoverable assignment chain found."
+    },
+    {
+        "query_id": "Q022",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\fee_rainbow\\config\\helpers.php",
+        "source_line": 4,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "No recoverable assignment chain found."
+    }
+]

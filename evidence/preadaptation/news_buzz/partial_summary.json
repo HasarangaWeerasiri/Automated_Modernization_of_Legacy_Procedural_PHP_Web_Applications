@@ -1,0 +1,30 @@
+{
+  "application": "news_buzz",
+  "files_written": [
+    "converted_queries.json",
+    "queries.json",
+    "schema.json"
+  ],
+  "exit_code": 1,
+  "last_stage_started": "[3/6] Parsing schema and generating SQLAlchemy models...",
+  "error": "ValueError: Unsupported MySQL type: INT(4)",
+  "total_queries": 32,
+  "recovery_status": {
+    "UNRESOLVED": 28,
+    "RECOVERED": 4
+  },
+  "recovery_reason_codes": {
+    "BRANCHING": 28
+  },
+  "executors": {
+    "mysqli_query": 32
+  },
+  "conversion_status": {
+    "UNRESOLVED": 28,
+    "CONVERTED": 4
+  },
+  "conversion_unresolved_reasons": {
+    "SQL construction depends on conditional control flow.": 28
+  },
+  "files_with_sql_sites": 14
+}

@@ -1,0 +1,684 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 42,
+        "executor": "mysqli_query",
+        "sql_argument": "\"select apptime from appointmenttb where doctor='{$doctor}' and appdate='{$appdate}' and apptime='{$apptime}'\"",
+        "recovered_sql": "select apptime from appointmenttb where doctor='{{doctor}}' and appdate='{{appdate}}' and apptime='{{apptime}}'",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "doctor",
+            "appdate",
+            "apptime"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 45,
+        "executor": "mysqli_query",
+        "sql_argument": "\"insert into appointmenttb(pid,fname,lname,gender,email,contact,doctor,docFees,appdate,apptime,userStatus,doctorStatus) values({$pid},'{$fname}','{$lname}','{$gender}','{$email}','{$contact}','{$doctor}','{$docFees}','{$appdate}','{$apptime}','1','1')\"",
+        "recovered_sql": "insert into appointmenttb(pid,fname,lname,gender,email,contact,doctor,docFees,appdate,apptime,userStatus,doctorStatus) values({{pid}},'{{fname}}','{{lname}}','{{gender}}','{{email}}','{{contact}}','{{doctor}}','{{docFees}}','{{appdate}}','{{apptime}}','1','1')",
+        "operation": "INSERT",
+        "dynamic_variables": [
+            "pid",
+            "fname",
+            "lname",
+            "gender",
+            "email",
+            "contact",
+            "doctor",
+            "docFees",
+            "appdate",
+            "apptime"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 71,
+        "executor": "mysqli_query",
+        "sql_argument": "\"update appointmenttb set userStatus='0' where ID = '\" . $_GET['ID'] . \"'\"",
+        "recovered_sql": "update appointmenttb set userStatus='0' where ID = '{{UNRESOLVED:$_GET['ID']}}'",
+        "operation": "UPDATE",
+        "dynamic_variables": [],
+        "status": "UNRESOLVED",
+        "reason_code": "UNKNOWN_EXPR",
+        "reason": "Query contains unsupported dynamic expression."
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 86,
+        "executor": "mysqli_query",
+        "sql_argument": "\"select p.pid,p.ID,p.fname,p.lname,p.doctor,p.appdate,p.apptime,p.disease,p.allergy,p.prescription,a.docFees from prestb p inner join appointmenttb a on p.ID=a.ID and p.pid = '{$pid}' and p.ID = '\" . $_GET['ID'] . \"'\"",
+        "recovered_sql": "select p.pid,p.ID,p.fname,p.lname,p.doctor,p.appdate,p.apptime,p.disease,p.allergy,p.prescription,a.docFees from prestb p inner join appointmenttb a on p.ID=a.ID and p.pid = '{{pid}}' and p.ID = '{{UNRESOLVED:$_GET['ID']}}'",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "pid"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "UNKNOWN_EXPR",
+        "reason": "Query contains unsupported dynamic expression."
+    },
+    {
+        "query_id": "Q005",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 144,
+        "executor": "mysqli_query",
+        "sql_argument": "\"select username,spec from doctb\"",
+        "recovered_sql": "select username,spec from doctb",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q006",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 313,
+        "executor": "mysqli_query",
+        "sql_argument": "\"select username,spec from doctb\"",
+        "recovered_sql": "select username,spec from doctb",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q007",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 473,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select ID,doctor,docFees,appdate,apptime,userStatus,doctorStatus from appointmenttb where fname ='{{fname}}' and lname='{{lname}}';",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "fname",
+            "lname"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q008",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 550,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select doctor,ID,appdate,apptime,disease,allergy,prescription from prestb where pid='{{pid}}';",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "pid"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q009",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 15,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "insert into doctb(username,password,email,spec,docFees)values('{{doctor}}','{{dpassword}}','{{demail}}','{{spec}}','{{docFees}}')",
+        "operation": null,
+        "dynamic_variables": [
+            "doctor",
+            "dpassword",
+            "demail",
+            "spec",
+            "docFees"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q010",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 27,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "delete from doctb where email='{{demail}}';",
+        "operation": null,
+        "dynamic_variables": [
+            "demail"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q011",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 278,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from doctb",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q012",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 329,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from patreg",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q013",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 385,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from prestb",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q014",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 458,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from appointmenttb;",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q015",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 568,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from contact;",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q016",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\appsearch.php",
+        "source_line": 17,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from appointmenttb where contact= '{{contact}}';",
+        "operation": null,
+        "dynamic_variables": [
+            "contact"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q017",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\contact.php",
+        "source_line": 11,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "insert into contact(name,email,contact,message) values('{{name}}','{{email}}','{{contact}}','{{message}}');",
+        "operation": null,
+        "dynamic_variables": [
+            "name",
+            "email",
+            "contact",
+            "message"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q018",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "\"update appointmenttb set doctorStatus='0' where ID = '\" . $_GET['ID'] . \"'\"",
+        "recovered_sql": "update appointmenttb set doctorStatus='0' where ID = '{{UNRESOLVED:$_GET['ID']}}'",
+        "operation": "UPDATE",
+        "dynamic_variables": [],
+        "status": "UNRESOLVED",
+        "reason_code": "UNKNOWN_EXPR",
+        "reason": "Query contains unsupported dynamic expression."
+    },
+    {
+        "query_id": "Q019",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 186,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select pid,ID,fname,lname,gender,email,contact,appdate,apptime,userStatus,doctorStatus from appointmenttb where doctor='{{dname}}';",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "dname"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q020",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 280,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select pid,fname,lname,ID,appdate,apptime,disease,allergy,prescription from prestb where doctor='{{doctor}}';",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "doctor"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q021",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 332,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from appointmenttb;",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q022",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctorsearch.php",
+        "source_line": 16,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from doctb where email= '{{contact}}'",
+        "operation": null,
+        "dynamic_variables": [
+            "contact"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q023",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from patreg where email='{{email}}' and password='{{password}}';",
+        "operation": null,
+        "dynamic_variables": [
+            "email",
+            "password"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q024",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func.php",
+        "source_line": 34,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "update appointmenttb set payment='{{status}}' where contact='{{contact}}';",
+        "operation": null,
+        "dynamic_variables": [
+            "status",
+            "contact"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q025",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func.php",
+        "source_line": 62,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "insert into doctb(username,password,email,docFees)values('{{doctor}}','{{dpassword}}','{{demail}}','{{docFees}}')",
+        "operation": null,
+        "dynamic_variables": [
+            "doctor",
+            "dpassword",
+            "demail",
+            "docFees"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q026",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func1.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from doctb where username='{{dname}}' and password='{{dpass}}';",
+        "operation": null,
+        "dynamic_variables": [
+            "dname",
+            "dpass"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q027",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func1.php",
+        "source_line": 43,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from doctb",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q028",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 14,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "insert into patreg(fname,lname,gender,email,contact,password,cpassword) values ('{{fname}}','{{lname}}','{{gender}}','{{email}}','{{contact}}','{{password}}','{{cpassword}}');",
+        "operation": null,
+        "dynamic_variables": [
+            "fname",
+            "lname",
+            "gender",
+            "email",
+            "contact",
+            "password",
+            "cpassword"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q029",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 26,
+        "executor": "mysqli_query",
+        "sql_argument": "$query1",
+        "recovered_sql": "select * from patreg;",
+        "operation": null,
+        "dynamic_variables": [],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow.",
+        "sql_variants": [
+            {
+                "source_line": 25,
+                "control_flow": [
+                    "IF"
+                ],
+                "sql": "select * from patreg;"
+            }
+        ]
+    },
+    {
+        "query_id": "Q030",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 41,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "update appointmenttb set payment='{{status}}' where contact='{{contact}}';",
+        "operation": null,
+        "dynamic_variables": [
+            "status",
+            "contact"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q031",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 66,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "insert into doctb(name)values('{{name}}')",
+        "operation": null,
+        "dynamic_variables": [
+            "name"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q032",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from admintb where username='{{username}}' and password='{{password}}';",
+        "operation": null,
+        "dynamic_variables": [
+            "username",
+            "password"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q033",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 24,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "update appointmenttb set payment='{{status}}' where contact='{{contact}}';",
+        "operation": null,
+        "dynamic_variables": [
+            "status",
+            "contact"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q034",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 36,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from doctb",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q035",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 49,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "insert into doctb(name)values('{{name}}')",
+        "operation": null,
+        "dynamic_variables": [
+            "name"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q036",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\include\\header.php",
+        "source_line": 35,
+        "executor": "mysqli_query",
+        "sql_argument": "\"select fullName from users where id='\" . $_SESSION['id'] . \"'\"",
+        "recovered_sql": "select fullName from users where id='{{UNRESOLVED:$_SESSION['id']}}'",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "UNRESOLVED",
+        "reason_code": "UNKNOWN_EXPR",
+        "reason": "Query contains unsupported dynamic expression."
+    },
+    {
+        "query_id": "Q037",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\messearch.php",
+        "source_line": 15,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from contact where contact= '{{contact}}'",
+        "operation": null,
+        "dynamic_variables": [
+            "contact"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q038",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 23,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "update appointmenttb set payment='{{status}}' where contact='{{contact}}';",
+        "operation": null,
+        "dynamic_variables": [
+            "status",
+            "contact"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q039",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 45,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select distinct(spec) from doctb",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q040",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 57,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from doctb",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q041",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 84,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "insert into doctb(username)values('{{username}}')",
+        "operation": null,
+        "dynamic_variables": [
+            "username"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q042",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\patientsearch.php",
+        "source_line": 15,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from patreg where contact= '{{contact}}'",
+        "operation": null,
+        "dynamic_variables": [
+            "contact"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q043",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\prescribe.php",
+        "source_line": 33,
+        "executor": "mysqli_query",
+        "sql_argument": "\"insert into prestb(doctor,pid,ID,fname,lname,appdate,apptime,disease,allergy,prescription) values ('{$doctor}','{$pid}','{$ID}','{$fname}','{$lname}','{$appdate}','{$apptime}','{$disease}','{$allergy}','{$prescription}')\"",
+        "recovered_sql": "insert into prestb(doctor,pid,ID,fname,lname,appdate,apptime,disease,allergy,prescription) values ('{{doctor}}','{{pid}}','{{ID}}','{{fname}}','{{lname}}','{{appdate}}','{{apptime}}','{{disease}}','{{allergy}}','{{prescription}}')",
+        "operation": "INSERT",
+        "dynamic_variables": [
+            "doctor",
+            "pid",
+            "ID",
+            "fname",
+            "lname",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q044",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\search.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "$query",
+        "recovered_sql": "select * from appointmenttb where contact='{{contact}}' and doctor='{{docname}}';",
+        "operation": null,
+        "dynamic_variables": [
+            "contact",
+            "docname"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    }
+]

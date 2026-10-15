@@ -155,8 +155,8 @@ Branch: `database-migration` (user override: no `pp1-c3-complete`). Starting poi
 
 | Task | Status | Evidence / commit | Notes |
 |---|---|---|---|
-| A1 pre-adaptation runs | not started | — | Waiting for the third-party app choice (decision 8, CONFIRM). |
-| A2 MySQL (E0) | not started (blocked) | — | No `C3_DB_PASSWORD`. Local MySQL 8 on :3306 needs an admin login. Docker daemon not running at audit time. Decision 5 CONFIRM. |
+| A1 pre-adaptation runs | **done** | `evidence/preadaptation/` (+ manifest) | HMS, NEWS-BUZZ and Fee-Rainbow at pinned commits. **All 3 crash at stage 3/6 on `INT(n)`**, and ALTER-style PKs are lost (0 PKs). Detection is complete (independent grep). BRANCHING dominates the unresolved queries. |
+| A2 MySQL (E0) | waiting on user | — | Decision: local MySQL80 service. The user runs the MySQL tests in their own terminal and pastes the logs; the password is never written to a file or chat. |
 | S1 loop/switch soundness | not started | — | Audit probes: foreach, while-DELETE and switch are CONVERTED unsoundly. |
 | S2 silent drops | not started | — | `mysqli_prepare`, `mysqli_multi_query` and `mysqli_real_query` dropped; Clinic S22 missing. |
 | S3 ENUM/SET | not started | — | `type_map.py:123` raises and aborts stage 3. Values are upper-cased. |

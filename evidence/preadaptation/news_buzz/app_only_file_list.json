@@ -1,0 +1,43 @@
+{
+  "source": "news_buzz",
+  "excluded_directories": [
+    "GUMP-master"
+  ],
+  "php_file_count": 34,
+  "php_files": [
+    "about.php",
+    "admin/adduser.php",
+    "admin/editposts.php",
+    "admin/includes/adminfooter.php",
+    "admin/includes/adminheader.php",
+    "admin/includes/adminnav.php",
+    "admin/includes/connection.php",
+    "admin/index.php",
+    "admin/post.php",
+    "admin/posts.php",
+    "admin/profile.php",
+    "admin/profile1.php",
+    "admin/publishnews.php",
+    "admin/users.php",
+    "gump.class.php",
+    "includes/connection.php",
+    "includes/footer.php",
+    "includes/header.php",
+    "includes/navbar.php",
+    "includes/sidebar.php",
+    "index.php",
+    "lang/en.php",
+    "lang/es.php",
+    "lang/fr.php",
+    "lang/he.php",
+    "lang/pt-br.php",
+    "lang/ru.php",
+    "login.php",
+    "logout.php",
+    "publicposts.php",
+    "register.php",
+    "registerprocess.php",
+    "search.php",
+    "trending.php"
+  ]
+}

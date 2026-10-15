@@ -1,0 +1,144 @@
+{
+    "tables": [
+        {
+            "name": "posts",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT(4)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "title",
+                    "data_type": "VARCHAR(225)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "author",
+                    "data_type": "VARCHAR(225)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "postdate",
+                    "data_type": "DATE",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "image",
+                    "data_type": "TEXT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "content",
+                    "data_type": "TEXT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "updated_on",
+                    "data_type": "TIMESTAMP",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": "CURRENT_TIMESTAMP"
+                },
+                {
+                    "name": "status",
+                    "data_type": "VARCHAR(225)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "tag",
+                    "data_type": "VARCHAR(300)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        },
+        {
+            "name": "users",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT(4)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "username",
+                    "data_type": "VARCHAR(225)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "firstname",
+                    "data_type": "VARCHAR(225)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "lastname",
+                    "data_type": "VARCHAR(225)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "email",
+                    "data_type": "VARCHAR(225)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "password",
+                    "data_type": "VARCHAR(225)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "role",
+                    "data_type": "VARCHAR(225)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": "'user'"
+                }
+            ],
+            "foreign_keys": []
+        }
+    ]
+}

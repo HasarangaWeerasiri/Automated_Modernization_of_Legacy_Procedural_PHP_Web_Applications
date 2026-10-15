@@ -1,0 +1,32 @@
+{
+  "application": "hms_kishan0725",
+  "files_written": [
+    "converted_queries.json",
+    "queries.json",
+    "schema.json"
+  ],
+  "exit_code": 1,
+  "last_stage_started": "[3/6] Parsing schema and generating SQLAlchemy models...",
+  "error": "ValueError: Unsupported MySQL type: INT(11)",
+  "total_queries": 44,
+  "recovery_status": {
+    "RECOVERED": 19,
+    "UNRESOLVED": 25
+  },
+  "recovery_reason_codes": {
+    "UNKNOWN_EXPR": 4,
+    "BRANCHING": 21
+  },
+  "executors": {
+    "mysqli_query": 44
+  },
+  "conversion_status": {
+    "CONVERTED": 19,
+    "UNRESOLVED": 25
+  },
+  "conversion_unresolved_reasons": {
+    "Query contains unsupported dynamic expression.": 4,
+    "SQL construction depends on conditional control flow.": 21
+  },
+  "files_with_sql_sites": 16
+}

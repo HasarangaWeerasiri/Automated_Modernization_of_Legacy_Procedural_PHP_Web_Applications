@@ -1,0 +1,49 @@
+# date: 2026-10-15T11:44:03+05:30
+# repo HEAD: cb8a6fef6d2114d42768f47afc14ecf646d1b3dd  (src identical to 01869d8)
+# app commit: 6285fb5375920af6a71569e8053147c77f7c1c11
+# command (cwd components/c3_data_layer, PYTHONPATH=src): python -m c3.cli run --php ../../benchmarks/apps/_app_only/fee_rainbow --schema ../../benchmarks/apps/fee_rainbow/database/db.sql --output ../../evidence/preadaptation/fee_rainbow/output
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\sanjula\Desktop\Research\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\components\c3_data_layer\src\c3\cli.py", line 55, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\sanjula\Desktop\Research\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\components\c3_data_layer\src\c3\cli.py", line 43, in main
+    summary = run_pipeline(
+        php_path=args.php,
+    ...<2 lines>...
+        php_executable=args.php_executable,
+    )
+  File "C:\Users\sanjula\Desktop\Research\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\components\c3_data_layer\src\c3\pipeline.py", line 68, in run_pipeline
+    generate_models(schema_json_file, models_file)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanjula\Desktop\Research\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\components\c3_data_layer\src\c3\conversion\model_builder.py", line 452, in generate_models
+    generate_models_source(
+    ~~~~~~~~~~~~~~~~~~~~~~^
+        schema
+        ^^^^^^
+    )
+    ^
+  File "C:\Users\sanjula\Desktop\Research\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\components\c3_data_layer\src\c3\conversion\model_builder.py", line 404, in generate_models_source
+    _build_column(
+    ~~~~~~~~~~~~~^
+        table,
+        ^^^^^^
+        column,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\sanjula\Desktop\Research\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\components\c3_data_layer\src\c3\conversion\model_builder.py", line 150, in _build_column
+    sqlalchemy_type = mysql_to_sqlalchemy(
+        column["data_type"]
+    )
+  File "C:\Users\sanjula\Desktop\Research\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\components\c3_data_layer\src\c3\conversion\type_map.py", line 123, in mysql_to_sqlalchemy
+    raise ValueError(
+        f"Unsupported MySQL type: {mysql_type}"
+    )
+ValueError: Unsupported MySQL type: INT(11)
+[1/6] Recovering legacy SQL...
+[2/6] Converting recovered queries...
+[3/6] Parsing schema and generating SQLAlchemy models...
+# exit code: 1
+# wall-clock seconds: 0.64
