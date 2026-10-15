@@ -1,0 +1,220 @@
+[
+    {
+        "query_id": "Q001",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 31,
+        "status": "UNRESOLVED",
+        "reason": "Dynamic table identifier cannot be parameterized safely."
+    },
+    {
+        "query_id": "Q002",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 53,
+        "status": "UNRESOLVED",
+        "reason": "Dynamic table identifier cannot be parameterized safely."
+    },
+    {
+        "query_id": "Q003",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 96,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on loop iterations or on which switch case ran."
+    },
+    {
+        "query_id": "Q004",
+        "operation": "INSERT",
+        "tables": [
+            "patient_info"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 158,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q005",
+        "operation": "INSERT",
+        "tables": [
+            "appointments"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 178,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q006",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 203,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q007",
+        "operation": "SELECT",
+        "tables": [
+            "patient_info",
+            "appointments"
+        ],
+        "read_columns": [
+            "appointment_no",
+            "full_name",
+            "medical_condition"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "speciality",
+            "patient_id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 219,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q008",
+        "operation": "SELECT",
+        "tables": [
+            "patient_info",
+            "appointments"
+        ],
+        "read_columns": [
+            "appointment_no",
+            "full_name",
+            "speciality",
+            "medical_condition"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "patient_id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 226,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q009",
+        "operation": "SELECT",
+        "tables": [
+            "patient_info",
+            "appointments"
+        ],
+        "read_columns": [
+            "appointment_no",
+            "full_name",
+            "dob",
+            "weight",
+            "phone_no",
+            "address",
+            "medical_condition"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "appointment_no",
+            "patient_id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 233,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q010",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 249,
+        "status": "UNRESOLVED",
+        "reason": "Recovered expression is not a recognized CRUD SQL operation."
+    },
+    {
+        "query_id": "Q011",
+        "operation": "SELECT",
+        "tables": [
+            "appointments"
+        ],
+        "read_columns": [
+            "doctors_suggestion"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "appointment_no"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 292,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q012",
+        "operation": "SELECT",
+        "tables": [
+            "appointments"
+        ],
+        "read_columns": [
+            "payment_amount"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "appointment_no"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 299,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q013",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 313,
+        "status": "UNRESOLVED",
+        "reason": "Dynamic table identifier cannot be parameterized safely."
+    },
+    {
+        "query_id": "Q014",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 320,
+        "status": "UNRESOLVED",
+        "reason": "Dynamic table identifier cannot be parameterized safely."
+    }
+]

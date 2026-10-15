@@ -16,7 +16,9 @@
       "schema": "benchmarks/apps/simple_crud/schema.sql",
       "php_files": 4,
       "loc": 25,
-      "db_api": ["mysqli_query"],
+      "db_api": [
+        "mysqli_query"
+      ],
       "has_enum_or_set": false,
       "source_committed": true
     },
@@ -28,7 +30,9 @@
       "schema": "benchmarks/apps/mixed_crud/schema.sql",
       "php_files": 6,
       "loc": 39,
-      "db_api": ["mysqli_query"],
+      "db_api": [
+        "mysqli_query"
+      ],
       "has_enum_or_set": false,
       "source_committed": true
     },
@@ -40,7 +44,9 @@
       "schema": "benchmarks/apps/hard_crud/schema.sql",
       "php_files": 5,
       "loc": 46,
-      "db_api": ["mysqli_query"],
+      "db_api": [
+        "mysqli_query"
+      ],
       "has_enum_or_set": false,
       "source_committed": true
     },
@@ -53,7 +59,10 @@
       "php_files": 24,
       "loc": 142,
       "sql_sites": 22,
-      "db_api": ["mysqli_query", "mysqli_prepare"],
+      "db_api": [
+        "mysqli_query",
+        "mysqli_prepare"
+      ],
       "has_enum_or_set": false,
       "source_committed": true
     },
@@ -66,7 +75,9 @@
       "php_files": 9,
       "loc": 127,
       "sql_sites": 9,
-      "db_api": ["mysqli_query"],
+      "db_api": [
+        "mysqli_query"
+      ],
       "has_enum_or_set": false,
       "source_committed": true
     },
@@ -80,7 +91,11 @@
       "licence": "NONE (no licence file; GitHub licence null). Analysed locally only; source not committed.",
       "path": "benchmarks/apps/hms_kishan0725",
       "c3_input": "benchmarks/apps/_app_only/hms_kishan0725",
-      "excluded_directories": ["TCPDF", "vendor", "ckeditor"],
+      "excluded_directories": [
+        "TCPDF",
+        "vendor",
+        "ckeditor"
+      ],
       "schema": "benchmarks/apps/hms_kishan0725/myhmsdb.sql",
       "schema_style": "phpMyAdmin dump: CREATE TABLE without keys, then ALTER TABLE ... ADD PRIMARY KEY / MODIFY ... AUTO_INCREMENT; INT(11) display widths",
       "php_files": 29,
@@ -88,7 +103,9 @@
       "loc": 3634,
       "executor_lines": 52,
       "executor_lines_commented_out": 8,
-      "db_api": ["mysqli_query"],
+      "db_api": [
+        "mysqli_query"
+      ],
       "sql_patterns": "inline interpolation inside mysqli_query; $_POST/$_SESSION inputs; calls nested in if blocks",
       "has_enum_or_set": false,
       "uses_pdo": false,
@@ -105,7 +122,9 @@
       "licence": "MIT (Copyright (c) 2017 Anirban Dutta)",
       "path": "benchmarks/apps/news_buzz",
       "c3_input": "benchmarks/apps/_app_only/news_buzz",
-      "excluded_directories": ["GUMP-master"],
+      "excluded_directories": [
+        "GUMP-master"
+      ],
       "excluded_reason": "GUMP-master is a bundled third-party validation library (MIT)",
       "schema": "benchmarks/apps/news_buzz/db/NEWSBUZZ.sql",
       "schema_style": "phpMyAdmin dump with ALTER TABLE ... ADD PRIMARY KEY; INT(n) display widths",
@@ -113,7 +132,9 @@
       "php_file_list": "evidence/preadaptation/news_buzz/app_only_file_list.json",
       "loc": 4637,
       "executor_lines": 32,
-      "db_api": ["mysqli_query"],
+      "db_api": [
+        "mysqli_query"
+      ],
       "sql_patterns": "$query variables, 'or die(mysqli_error())', .= appends, foreach/while/switch, heavy include/require",
       "has_enum_or_set": false,
       "uses_pdo": false,
@@ -139,22 +160,42 @@
       "php_file_list": "evidence/preadaptation/fee_rainbow/app_only_file_list.json",
       "loc": 2807,
       "executor_lines": 22,
-      "db_api": ["mysqli_query"],
+      "db_api": [
+        "mysqli_query"
+      ],
       "sql_patterns": "inline interpolation, .= appends, PHP 8 named arguments (mysqli_query(mysql: $conn, query: $query))",
       "has_enum_or_set": false,
       "uses_pdo": false,
       "source_committed": false,
       "source_not_committed_reason": "3.4 MB, mostly images",
       "preadaptation_evidence": "evidence/preadaptation/fee_rainbow/"
-    }
-  ],
-  "reserve": [
+    },
     {
       "name": "dignity_dev_hms",
+      "role": "fresh_holdout",
+      "origin": "third-party",
       "url": "https://github.com/Dignity-Dev/Hospital-Management-System",
-      "commit": "b9e939d64e06",
-      "licence": "MIT",
-      "note": "reserve only; not run"
+      "commit": "b9e939d64e06ae5adedb51b91329784a645b74e9",
+      "commit_date": "2022-11-05",
+      "licence": "MIT (Copyright (c) 2022 DATA - Dignity Technology)",
+      "path": "benchmarks/apps/dignity_dev_hms",
+      "c3_input": "benchmarks/apps/_app_only/dignity_dev_hms",
+      "excluded_directories": [],
+      "schema": "benchmarks/apps/dignity_dev_hms/127_0_0_1.sql",
+      "schema_style": "phpMyAdmin dump with ALTER TABLE ... ADD PRIMARY KEY; 4 of 6 tables have no primary key",
+      "php_files": 18,
+      "php_file_list": "evidence/fresh_holdout/dignity_dev_hms/app_only_file_list.json",
+      "loc": 1368,
+      "executor_lines": 14,
+      "db_api": [
+        "mysqli OO ->query"
+      ],
+      "sql_patterns": "SQL built inside procedural functions from parameters; dynamic table and column identifiers; switch-selected INSERT; implicit comma joins",
+      "has_enum_or_set": false,
+      "uses_pdo": false,
+      "source_committed": false,
+      "first_run": "2026-10-15, current rules (post-S13), untouched: evidence/fresh_holdout/dignity_dev_hms/"
     }
-  ]
+  ],
+  "reserve": []
 }

@@ -1,0 +1,25 @@
+{
+  "source": "dignity_dev_hms",
+  "excluded_directories": [],
+  "php_file_count": 18,
+  "php_files": [
+    "add_patient.php",
+    "admin_home.php",
+    "all_appointments.php",
+    "doctor.php",
+    "footer.php",
+    "header.php",
+    "hms-staff.php",
+    "index.php",
+    "library.php",
+    "login.php",
+    "logout.php",
+    "nav-bar.php",
+    "patient_info.php",
+    "payment.php",
+    "register.php",
+    "slideshow.php",
+    "staff.php",
+    "update_info.php"
+  ]
+}

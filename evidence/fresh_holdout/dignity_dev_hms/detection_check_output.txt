@@ -1,0 +1,2 @@
+# independent grep vs detected sites (same method as evidence/preadaptation/detection_check.py)
+dignity_dev_hms: executor lines=14, detected sites=14, not detected=0

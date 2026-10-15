@@ -1,0 +1,240 @@
+{
+    "tables": [
+        {
+            "name": "admin",
+            "columns": [
+                {
+                    "name": "email",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "password",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        },
+        {
+            "name": "appointments",
+            "columns": [
+                {
+                    "name": "appointment_no",
+                    "data_type": "INT(30)",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "patient_id",
+                    "data_type": "INT(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "speciality",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "medical_condition",
+                    "data_type": "TEXT",
+                    "nullable": true,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": "NULL"
+                },
+                {
+                    "name": "doctors_suggestion",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": true,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": "NULL"
+                },
+                {
+                    "name": "payment_amount",
+                    "data_type": "INT(199)",
+                    "nullable": true,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": "NULL"
+                },
+                {
+                    "name": "case_closed",
+                    "data_type": "VARCHAR(10)",
+                    "nullable": true,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": "NULL"
+                }
+            ],
+            "foreign_keys": []
+        },
+        {
+            "name": "clerks",
+            "columns": [
+                {
+                    "name": "email",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "password",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "fullname",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        },
+        {
+            "name": "doctors",
+            "columns": [
+                {
+                    "name": "email",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "password",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "fullname",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "speciality",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        },
+        {
+            "name": "patient_info",
+            "columns": [
+                {
+                    "name": "patient_Id",
+                    "data_type": "INT(20)",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "full_name",
+                    "data_type": "VARCHAR(20)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "DOB",
+                    "data_type": "INT(10)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "weight",
+                    "data_type": "INT(8)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "phone_no",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "address",
+                    "data_type": "VARCHAR(260)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        },
+        {
+            "name": "users",
+            "columns": [
+                {
+                    "name": "email",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "password",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "fullname",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        }
+    ]
+}

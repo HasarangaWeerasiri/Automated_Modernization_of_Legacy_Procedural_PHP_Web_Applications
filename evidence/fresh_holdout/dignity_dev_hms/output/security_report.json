@@ -1,0 +1,253 @@
+{
+    "summary": {
+        "total_queries": 14,
+        "queries_with_user_input": 0,
+        "legacy_injection_sites": 0,
+        "legacy_injection_sites_remediated": 0,
+        "legacy_injection_sites_not_converted": 0,
+        "user_controlled_values_in_converted_queries": 0,
+        "bound_or_allowlisted": 0,
+        "injection_safety_coverage_percent": null,
+        "generated_code_text_calls_not_literal": 0,
+        "generated_code_violations": 0
+    },
+    "scope": {
+        "user_input_sources": [
+            "$_GET",
+            "$_POST",
+            "$_REQUEST",
+            "$_COOKIE"
+        ],
+        "indirect_sources_reported_not_counted": [
+            "$_SESSION"
+        ],
+        "taint_analysis": "intra-file, order-based (last assignment before use), transitive over variables up to depth 6; function parameters and other files not traced except validated cross-file bindings",
+        "coverage_definition": "bound_or_allowlisted / user-controlled values in converted queries; unresolved queries are excluded and listed as not converted"
+    },
+    "queries": [
+        {
+            "query_id": "Q001",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+            "source_line": 31,
+            "recovery_status": "UNRESOLVED",
+            "conversion_status": "UNRESOLVED",
+            "conversion_rule": null,
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": [
+                    "table",
+                    "email_id",
+                    "password"
+                ]
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q002",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+            "source_line": 53,
+            "recovery_status": "UNRESOLVED",
+            "conversion_status": "UNRESOLVED",
+            "conversion_rule": null,
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": [
+                    "table",
+                    "email_id",
+                    "password"
+                ]
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q003",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+            "source_line": 96,
+            "recovery_status": "UNRESOLVED",
+            "conversion_status": "UNRESOLVED",
+            "conversion_rule": null,
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q004",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+            "source_line": 158,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q005",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+            "source_line": 178,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q006",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+            "source_line": 203,
+            "recovery_status": "UNRESOLVED",
+            "conversion_status": "UNRESOLVED",
+            "conversion_rule": null,
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q007",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+            "source_line": 219,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "UNRESOLVED",
+            "conversion_rule": null,
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q008",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+            "source_line": 226,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "UNRESOLVED",
+            "conversion_rule": null,
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q009",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+            "source_line": 233,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "UNRESOLVED",
+            "conversion_rule": null,
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q010",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+            "source_line": 249,
+            "recovery_status": "UNRESOLVED",
+            "conversion_status": "UNRESOLVED",
+            "conversion_rule": null,
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q011",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+            "source_line": 292,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q012",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+            "source_line": 299,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q013",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+            "source_line": 313,
+            "recovery_status": "UNRESOLVED",
+            "conversion_status": "UNRESOLVED",
+            "conversion_rule": null,
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": [
+                    "table",
+                    "id"
+                ]
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q014",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+            "source_line": 320,
+            "recovery_status": "UNRESOLVED",
+            "conversion_status": "UNRESOLVED",
+            "conversion_rule": null,
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": [
+                    "table"
+                ]
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        }
+    ],
+    "generated_code_scan": []
+}

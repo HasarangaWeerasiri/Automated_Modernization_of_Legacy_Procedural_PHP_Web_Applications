@@ -1,0 +1,28 @@
+# FRESH HOLDOUT (current rules, post-S13): first and only untouched run of this app
+# date: 2026-10-15T13:34:34+05:30
+# repo HEAD: 4d02c963cf79338f7d1b1202fd792e261ba3c9f2 (converter src/tools identical to 89d14a9)
+# app commit: b9e939d64e06ae5adedb51b91329784a645b74e9
+# command (cwd components/c3_data_layer, PYTHONPATH=src): python -m c3.cli run --php ../../benchmarks/apps/_app_only/dignity_dev_hms --schema ../../benchmarks/apps/dignity_dev_hms/127_0_0_1.sql --output ../../evidence/fresh_holdout/dignity_dev_hms/output
+[1/6] Recovering legacy SQL...
+[2/6] Converting recovered queries...
+[3/6] Parsing schema and generating SQLAlchemy models...
+[4/6] Generating data-access functions...
+[5/6] Generating column-use report...
+[6/6] Generating unresolved-query and security reports...
+
+Migration pipeline completed.
+{
+    "total_queries": 14,
+    "recovered_queries": 7,
+    "recovery_unresolved": 7,
+    "converted_queries": 4,
+    "converted_by_general_rules": 4,
+    "converted_by_query_specific_template": 0,
+    "recovered_not_converted": 3,
+    "not_converted": 10,
+    "unresolved_queries": 7,
+    "conversion_unresolved": 10,
+    "output_directory": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\evidence\\fresh_holdout\\dignity_dev_hms\\output"
+}
+# exit code: 0
+# wall-clock seconds: 0.63

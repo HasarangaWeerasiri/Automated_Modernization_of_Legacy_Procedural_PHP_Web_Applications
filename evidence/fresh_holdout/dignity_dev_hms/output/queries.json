@@ -1,0 +1,222 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 31,
+        "executor": "query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT COUNT(*) FROM {{table}} WHERE email = '{{email_id}}' AND password = '{{password}}';",
+        "operation": null,
+        "dynamic_variables": [
+            "table",
+            "email_id",
+            "password"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "STRUCTURAL",
+        "reason": "Dynamic table identifier cannot be parameterized safely."
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 53,
+        "executor": "query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT fullname FROM {{table}} WHERE email = '{{email_id}}' AND password = '{{password}}';",
+        "operation": null,
+        "dynamic_variables": [
+            "table",
+            "email_id",
+            "password"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "STRUCTURAL",
+        "reason": "Dynamic table identifier cannot be parameterized safely."
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 96,
+        "executor": "query",
+        "sql_argument": "$sql",
+        "recovered_sql": "INSERT INTO {{table}} VALUES ('{{email}}', '{{password}}', '{{fullname}}');",
+        "operation": null,
+        "dynamic_variables": [
+            "table",
+            "email",
+            "password",
+            "fullname"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "LOOP_OR_SWITCH_CONTROL_FLOW",
+        "reason": "SQL construction depends on loop iterations or on which switch case ran."
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 158,
+        "executor": "query",
+        "sql_argument": "$sql",
+        "recovered_sql": "INSERT INTO `patient_info` VALUES (NULL, '{{full_name}}', {{age}},{{weight}}, '{{phone_no}}','{{address}}');",
+        "operation": "INSERT",
+        "dynamic_variables": [
+            "full_name",
+            "age",
+            "weight",
+            "phone_no",
+            "address"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q005",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 178,
+        "executor": "query",
+        "sql_argument": "$sql",
+        "recovered_sql": "INSERT INTO appointments VALUES (NULL, {{patient_id}}, '{{specialist}}', '{{medical_condition}}', NULL, NULL, 'no')",
+        "operation": "INSERT",
+        "dynamic_variables": [
+            "patient_id",
+            "specialist",
+            "medical_condition"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q006",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 203,
+        "executor": "query",
+        "sql_argument": "$sql",
+        "recovered_sql": "UPDATE appointments SET {{column_name}} = '{{data}}' WHERE appointment_no = {{appointment_no}};",
+        "operation": null,
+        "dynamic_variables": [
+            "column_name",
+            "data",
+            "appointment_no"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q007",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 219,
+        "executor": "query",
+        "sql_argument": "\"SELECT appointment_no, full_name, medical_condition FROM patient_info, appointments where speciality='{$doctor}' AND patient_info.patient_id = appointments.patient_id\"",
+        "recovered_sql": "SELECT appointment_no, full_name, medical_condition FROM patient_info, appointments where speciality='{{doctor}}' AND patient_info.patient_id = appointments.patient_id",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "doctor"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q008",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 226,
+        "executor": "query",
+        "sql_argument": "'SELECT appointment_no, full_name,speciality, medical_condition FROM patient_info, appointments where patient_info.patient_id = appointments.patient_id'",
+        "recovered_sql": "SELECT appointment_no, full_name,speciality, medical_condition FROM patient_info, appointments where patient_info.patient_id = appointments.patient_id",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q009",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 233,
+        "executor": "query",
+        "sql_argument": "\"SELECT appointment_no, full_name, dob, weight, phone_no, address, medical_condition FROM patient_info, appointments where appointment_no={$appointment_no} AND patient_info.patient_id = appointments.patient_id;\"",
+        "recovered_sql": "SELECT appointment_no, full_name, dob, weight, phone_no, address, medical_condition FROM patient_info, appointments where appointment_no={{appointment_no}} AND patient_info.patient_id = appointments.patient_id;",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "appointment_no"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q010",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 249,
+        "executor": "query",
+        "sql_argument": "$sql",
+        "recovered_sql": "",
+        "operation": null,
+        "dynamic_variables": [],
+        "status": "UNRESOLVED",
+        "reason_code": "UNSUPPORTED_SHAPE",
+        "reason": "Recovered expression is not a recognized CRUD SQL operation."
+    },
+    {
+        "query_id": "Q011",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 292,
+        "executor": "query",
+        "sql_argument": "\"SELECT doctors_suggestion FROM appointments WHERE appointment_no={$appointment_no};\"",
+        "recovered_sql": "SELECT doctors_suggestion FROM appointments WHERE appointment_no={{appointment_no}};",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "appointment_no"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q012",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 299,
+        "executor": "query",
+        "sql_argument": "'SELECT payment_amount FROM appointments WHERE appointment_no=appointment_no;'",
+        "recovered_sql": "SELECT payment_amount FROM appointments WHERE appointment_no=appointment_no;",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q013",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 313,
+        "executor": "query",
+        "sql_argument": "\"DELETE FROM {$table} WHERE email='{$id}';\"",
+        "recovered_sql": "DELETE FROM {{table}} WHERE email='{{id}}';",
+        "operation": null,
+        "dynamic_variables": [
+            "table",
+            "id"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "STRUCTURAL",
+        "reason": "Dynamic table identifier cannot be parameterized safely."
+    },
+    {
+        "query_id": "Q014",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\dignity_dev_hms\\library.php",
+        "source_line": 320,
+        "executor": "query",
+        "sql_argument": "\"SELECT email FROM {$table};\"",
+        "recovered_sql": "SELECT email FROM {{table}};",
+        "operation": null,
+        "dynamic_variables": [
+            "table"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "STRUCTURAL",
+        "reason": "Dynamic table identifier cannot be parameterized safely."
+    }
+]
