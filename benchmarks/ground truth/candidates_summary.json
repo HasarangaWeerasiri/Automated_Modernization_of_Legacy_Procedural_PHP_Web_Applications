@@ -1,0 +1,53 @@
+{
+  "helpdesk": {
+    "raw_php_root": "benchmarks/apps/helpdesk_legacy_holdout/legacy",
+    "excluded_directories": [],
+    "php_files_scanned": 9,
+    "sites": 9,
+    "sites_flagged_comment": 0,
+    "in_sample": 9,
+    "sampling": "all 9 sites (<= 40)"
+  },
+  "hms_kishan0725": {
+    "raw_php_root": "benchmarks/apps/hms_kishan0725",
+    "excluded_directories": [
+      "TCPDF",
+      "vendor",
+      "ckeditor"
+    ],
+    "php_files_scanned": 29,
+    "sites": 52,
+    "sites_flagged_comment": 8,
+    "in_sample": 33,
+    "sampling": "stratified sample of 33 of 44 non-comment sites; strata = PHP file; quota max(1, round(30 * file_sites / total)); seed 20261015"
+  },
+  "news_buzz": {
+    "raw_php_root": "benchmarks/apps/news_buzz",
+    "excluded_directories": [
+      "GUMP-master"
+    ],
+    "php_files_scanned": 34,
+    "sites": 32,
+    "sites_flagged_comment": 0,
+    "in_sample": 32,
+    "sampling": "all 32 sites (<= 40)"
+  },
+  "fee_rainbow": {
+    "raw_php_root": "benchmarks/apps/fee_rainbow",
+    "excluded_directories": [],
+    "php_files_scanned": 56,
+    "sites": 22,
+    "sites_flagged_comment": 0,
+    "in_sample": 22,
+    "sampling": "all 22 sites (<= 40)"
+  },
+  "dignity_dev_hms": {
+    "raw_php_root": "benchmarks/apps/dignity_dev_hms",
+    "excluded_directories": [],
+    "php_files_scanned": 18,
+    "sites": 14,
+    "sites_flagged_comment": 0,
+    "in_sample": 14,
+    "sampling": "all 14 sites (<= 40)"
+  }
+}

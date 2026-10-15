@@ -1,0 +1,10 @@
+site_id,file,line,call,in_sample,stratum,grep_note,expected_recoverable,expected_operation,expected_tables,expected_read_columns,expected_write_columns,expected_filter_columns,annotator_notes
+S001,agents.php,5,mysqli_query,yes,agents.php,,,,,,,,
+S002,create.php,13,mysqli_query,yes,create.php,,,,,,,,
+S003,delete.php,8,mysqli_query,yes,delete.php,,,,,,,,
+S004,edit.php,10,mysqli_query,yes,edit.php,,,,,,,,
+S005,edit.php,15,mysqli_query,yes,edit.php,,,,,,,,
+S006,index.php,5,mysqli_query,yes,index.php,,,,,,,,
+S007,report.php,5,mysqli_query,yes,report.php,,,,,,,,
+S008,search.php,6,mysqli_query,yes,search.php,,,,,,,,
+S009,view.php,6,mysqli_query,yes,view.php,,,,,,,,

@@ -173,7 +173,7 @@ Branch: `database-migration` (user override: no `pp1-c3-complete`). Starting poi
 | S13 Helpdesk Q002/Q004 class | **done** | `evidence/soundness/S13_guarded_blocks/`, `evidence/postadaptation/S13/`, `tests/test_guarded_block_recovery.py` | Block-containment rule (`branch_context` from the extractor). **Post-adaptation:** Helpdesk 8/9 (frozen 6/9), HMS 40/44, NEWS-BUZZ 29/32, Fee-Rainbow 19/22. 50 newly recovered queries audited by hand: 0 unsound. Also closes a try/catch soundness gap. Dev fixtures unchanged. Tests: 595 / 61 skipped. Recommendation: fresh run on the reserve app. |
 | Fresh holdout (Dignity-Dev) | **done** | `evidence/fresh_holdout/dignity_dev_hms/` | First untouched run on current rules: 14 / 7 / 4, detection 14/14, models map, conversions sound. Shows the taint-analysis limit (function parameters). |
 | S14 prepared statements | not started | — | |
-| S15 evaluator + GT | not started | — | hard_crud GT `expected_tables` vs evaluator `expected_table`. |
+| S15 evaluator + GT | **GT candidates ready; annotation by the student** | `benchmarks/ground truth/`, register row 45 | Candidate sites come from an independent grep (`scripts/ground_truth/grep_sql_sites.py`), with blank annotation fields. HMS uses a stratified sample of 33 out of 44. Evaluator CSV reader, `c3 evaluate`, and the `expected_tables` fix are still to do. |
 | E1–E7 | E1 planned | `docs/E1_equivalence_plan.md` | Clinic has real-MySQL evidence. E1 adds simple/mixed/hard, Helpdesk and the 3 unseen apps → `php_vs_sqlalchemy_equivalence.json` (PASS/FAIL/INCONCLUSIVE). The legacy SQL is built by PHP from the verbatim source (no circularity). Runs after S13/S4/S5. |
 | Baseline comparison | not started | — | |
 | Demo | not started | — | |
