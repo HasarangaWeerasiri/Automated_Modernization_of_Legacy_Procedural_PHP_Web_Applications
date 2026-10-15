@@ -7,10 +7,15 @@ from c3.analysis.column_analyzer import analyze_query_records
 def generate_column_usage(
     queries_file: Path,
     output_file: Path,
+    converted_file: Path | None = None,
+    schema_file: Path | None = None,
 ) -> list[dict]:
     """
     Read recovered queries from queries.json, perform column-use
     analysis, and write the results to column_usage.json.
+
+    The conversion results (template-converted queries) and schema.json
+    (table attribution, SELECT * expansion) are used when given.
     """
 
     with queries_file.open(
@@ -19,7 +24,10 @@ def generate_column_usage(
     ) as file:
         queries = json.load(file)
 
-    results = analyze_query_records(queries)
+    def load(path):
+        return json.loads(Path(path).read_text(encoding="utf-8")) if path and Path(path).exists() else None
+
+    results = analyze_query_records(queries, load(converted_file), load(schema_file))
 
     output = [
         result.to_dict()

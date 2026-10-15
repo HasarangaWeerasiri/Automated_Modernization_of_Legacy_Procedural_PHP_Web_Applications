@@ -17,7 +17,29 @@
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\01_like_search.php",
         "source_line": 9,
         "status": "ANALYZED",
-        "reason": null
+        "reason": null,
+        "join_columns": [],
+        "group_by_columns": [],
+        "order_by_columns": [],
+        "having_columns": [],
+        "qualified_columns": {
+            "read": [
+                "users.id",
+                "users.name",
+                "users.email"
+            ],
+            "write": [],
+            "filter": [
+                "users.name"
+            ],
+            "join": [],
+            "group_by": [],
+            "order_by": [],
+            "having": []
+        },
+        "expanded_read_columns": null,
+        "dynamic_identifiers": [],
+        "analysis_source": "recovered_sql"
     },
     {
         "query_id": "Q002",
@@ -29,7 +51,15 @@
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\02_dynamic_order.php",
         "source_line": 9,
         "status": "UNRESOLVED",
-        "reason": "Dynamic value occurs in a structural ORDER BY position."
+        "reason": "Dynamic value occurs in a structural ORDER BY position.",
+        "join_columns": [],
+        "group_by_columns": [],
+        "order_by_columns": [],
+        "having_columns": [],
+        "qualified_columns": {},
+        "expanded_read_columns": null,
+        "dynamic_identifiers": [],
+        "analysis_source": "recovered_sql"
     },
     {
         "query_id": "Q003",
@@ -41,7 +71,15 @@
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\03_dynamic_in.php",
         "source_line": 9,
         "status": "UNRESOLVED",
-        "reason": "Dynamic value represents an SQL IN-list fragment rather than a scalar value."
+        "reason": "Dynamic value represents an SQL IN-list fragment rather than a scalar value.",
+        "join_columns": [],
+        "group_by_columns": [],
+        "order_by_columns": [],
+        "having_columns": [],
+        "qualified_columns": {},
+        "expanded_read_columns": null,
+        "dynamic_identifiers": [],
+        "analysis_source": "recovered_sql"
     },
     {
         "query_id": "Q004",
@@ -53,7 +91,15 @@
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\04_conditional_append.php",
         "source_line": 11,
         "status": "UNRESOLVED",
-        "reason": "SQL construction depends on conditional control flow."
+        "reason": "SQL construction depends on conditional control flow.",
+        "join_columns": [],
+        "group_by_columns": [],
+        "order_by_columns": [],
+        "having_columns": [],
+        "qualified_columns": {},
+        "expanded_read_columns": null,
+        "dynamic_identifiers": [],
+        "analysis_source": "recovered_sql"
     },
     {
         "query_id": "Q005",
@@ -70,11 +116,42 @@
         ],
         "write_columns": [],
         "filter_columns": [
-            "id"
+            "id",
+            "user_id"
         ],
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\hard_crud\\legacy\\05_join.php",
         "source_line": 13,
         "status": "ANALYZED",
-        "reason": null
+        "reason": null,
+        "join_columns": [
+            "user_id",
+            "id"
+        ],
+        "group_by_columns": [],
+        "order_by_columns": [],
+        "having_columns": [],
+        "qualified_columns": {
+            "read": [
+                "orders.id",
+                "orders.total",
+                "orders.status",
+                "users.name"
+            ],
+            "write": [],
+            "filter": [
+                "users.id",
+                "orders.user_id"
+            ],
+            "join": [
+                "orders.user_id",
+                "users.id"
+            ],
+            "group_by": [],
+            "order_by": [],
+            "having": []
+        },
+        "expanded_read_columns": null,
+        "dynamic_identifiers": [],
+        "analysis_source": "recovered_sql"
     }
 ]

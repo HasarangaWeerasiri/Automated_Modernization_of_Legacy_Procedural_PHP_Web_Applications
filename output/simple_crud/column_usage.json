@@ -15,7 +15,27 @@
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\simple_crud\\legacy\\create_user.php",
         "source_line": 9,
         "status": "ANALYZED",
-        "reason": null
+        "reason": null,
+        "join_columns": [],
+        "group_by_columns": [],
+        "order_by_columns": [],
+        "having_columns": [],
+        "qualified_columns": {
+            "read": [],
+            "write": [
+                "users.name",
+                "users.email",
+                "users.status"
+            ],
+            "filter": [],
+            "join": [],
+            "group_by": [],
+            "order_by": [],
+            "having": []
+        },
+        "expanded_read_columns": null,
+        "dynamic_identifiers": [],
+        "analysis_source": "recovered_sql"
     },
     {
         "query_id": "Q002",
@@ -31,7 +51,25 @@
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\simple_crud\\legacy\\delete_user.php",
         "source_line": 8,
         "status": "ANALYZED",
-        "reason": null
+        "reason": null,
+        "join_columns": [],
+        "group_by_columns": [],
+        "order_by_columns": [],
+        "having_columns": [],
+        "qualified_columns": {
+            "read": [],
+            "write": [],
+            "filter": [
+                "users.id"
+            ],
+            "join": [],
+            "group_by": [],
+            "order_by": [],
+            "having": []
+        },
+        "expanded_read_columns": null,
+        "dynamic_identifiers": [],
+        "analysis_source": "recovered_sql"
     },
     {
         "query_id": "Q003",
@@ -49,7 +87,27 @@
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\simple_crud\\legacy\\update_user.php",
         "source_line": 8,
         "status": "ANALYZED",
-        "reason": null
+        "reason": null,
+        "join_columns": [],
+        "group_by_columns": [],
+        "order_by_columns": [],
+        "having_columns": [],
+        "qualified_columns": {
+            "read": [],
+            "write": [
+                "users.name"
+            ],
+            "filter": [
+                "users.id"
+            ],
+            "join": [],
+            "group_by": [],
+            "order_by": [],
+            "having": []
+        },
+        "expanded_read_columns": null,
+        "dynamic_identifiers": [],
+        "analysis_source": "recovered_sql"
     },
     {
         "query_id": "Q004",
@@ -68,6 +126,27 @@
         "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\simple_crud\\legacy\\users.php",
         "source_line": 4,
         "status": "ANALYZED",
-        "reason": null
+        "reason": null,
+        "join_columns": [],
+        "group_by_columns": [],
+        "order_by_columns": [],
+        "having_columns": [],
+        "qualified_columns": {
+            "read": [
+                "users.id",
+                "users.name",
+                "users.email",
+                "users.status"
+            ],
+            "write": [],
+            "filter": [],
+            "join": [],
+            "group_by": [],
+            "order_by": [],
+            "having": []
+        },
+        "expanded_read_columns": null,
+        "dynamic_identifiers": [],
+        "analysis_source": "recovered_sql"
     }
 ]

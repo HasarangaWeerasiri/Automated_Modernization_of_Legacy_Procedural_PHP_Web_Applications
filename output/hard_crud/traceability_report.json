@@ -112,7 +112,8 @@
         ],
         "write_columns": [],
         "filter_columns": [
-            "id"
+            "id",
+            "user_id"
         ],
         "reason": null,
         "action": "use_generated_function",

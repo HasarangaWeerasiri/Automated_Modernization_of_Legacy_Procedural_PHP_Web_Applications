@@ -1,0 +1,11 @@
+S11 column-use roles: before (after S8) vs after (S11). 0 changed recovery/conversion results.
+app | sites | analyzed before -> after | from template SQL | usage changed | +filter (JOIN/HAVING) | +UPDATE reads | qualified unresolved (?.col) | SELECT * expanded
+simple_crud | 4 | 4 -> 4 | 0 | 0 | 0 | 0 | 0 | 0
+mixed_crud | 6 | 5 -> 5 | 0 | 0 | 0 | 0 | 0 | 0
+hard_crud | 5 | 2 -> 2 | 0 | 1 | 1 | 0 | 0 | 0
+clinic | 22 | 17 -> 22 | 5 | 8 | 2 | 2 | 4 | 0
+helpdesk | 9 | 9 -> 9 | 0 | 3 | 3 | 0 | 0 | 0
+hms_kishan0725 | 44 | 40 -> 40 | 0 | 0 | 0 | 0 | 0 | 18
+news_buzz | 32 | 29 -> 29 | 0 | 0 | 0 | 0 | 0 | 14
+fee_rainbow | 22 | 20 -> 20 | 0 | 1 | 1 | 0 | 0 | 1
+dignity_dev_hms | 14 | 7 -> 7 | 0 | 0 | 0 | 0 | 0 | 0

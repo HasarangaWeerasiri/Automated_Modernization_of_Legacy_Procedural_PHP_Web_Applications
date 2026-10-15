@@ -141,7 +141,7 @@ def run_pipeline(
     generate_data_access(converted_file, data_access_file, source_root=php_path)
 
     print("[5/7] Generating column-use report...")
-    generate_column_usage(queries_file, column_usage_file)
+    generate_column_usage(queries_file, column_usage_file, converted_file, schema_json_file)
 
     print("[6/7] Generating unresolved-query, traceability and security reports...")
     generate_traceability_report(
