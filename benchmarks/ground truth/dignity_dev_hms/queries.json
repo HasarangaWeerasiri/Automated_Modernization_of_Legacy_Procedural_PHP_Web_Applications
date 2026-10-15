@@ -1,0 +1,363 @@
+[
+    {
+        "query_id": "G001",
+        "source_file": "library.php",
+        "line": 31,
+        "call_type": "mysqli ->query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "read": [],
+            "filter": [
+                "email",
+                "password"
+            ],
+            "note": "SELECT COUNT(*)"
+        },
+        "dynamic_parts": [
+            "dynamic table identifier"
+        ],
+        "notes": "Table name is the function parameter $table (default 'users'); hms-staff.php passes $_POST['type'] directly."
+    },
+    {
+        "query_id": "G002",
+        "source_file": "library.php",
+        "line": 53,
+        "call_type": "mysqli ->query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "read": [
+                "fullname"
+            ],
+            "filter": [
+                "email",
+                "password"
+            ]
+        },
+        "dynamic_parts": [
+            "dynamic table identifier"
+        ],
+        "notes": "Table is $table, guarded to users|doctors|clerks by an if; still a dynamic identifier at the call."
+    },
+    {
+        "query_id": "G003",
+        "source_file": "library.php",
+        "line": 96,
+        "call_type": "mysqli ->query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "INSERT",
+            "note": "INSERT without column list"
+        },
+        "dynamic_parts": [
+            "dynamic table identifier",
+            "switch-selected statement"
+        ],
+        "notes": "switch($table) picks one of three INSERT strings, each with INSERT INTO $table; default branch leaves $sql unset."
+    },
+    {
+        "query_id": "G004",
+        "source_file": "library.php",
+        "line": 158,
+        "call_type": "mysqli ->query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "patient_info",
+        "expected_tables": [
+            "patient_info"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "patient_id",
+            "full_name",
+            "dob",
+            "weight",
+            "phone_no",
+            "address"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "INSERT ... VALUES without a column list: write columns are all table columns in schema order (patient_Id, full_name, DOB, weight, phone_no, address)."
+    },
+    {
+        "query_id": "G005",
+        "source_file": "library.php",
+        "line": 178,
+        "call_type": "mysqli ->query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "appointments",
+        "expected_tables": [
+            "appointments"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "appointment_no",
+            "patient_id",
+            "speciality",
+            "medical_condition",
+            "doctors_suggestion",
+            "payment_amount",
+            "case_closed"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "INSERT ... VALUES without a column list: all columns in schema order."
+    },
+    {
+        "query_id": "G006",
+        "source_file": "library.php",
+        "line": 203,
+        "call_type": "mysqli ->query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "UPDATE",
+            "tables": [
+                "appointments"
+            ],
+            "filter": [
+                "appointment_no"
+            ]
+        },
+        "dynamic_parts": [
+            "dynamic column identifier",
+            "branch-selected statement"
+        ],
+        "notes": "if/else: one branch is a fixed UPDATE, the other is 'SET $column_name = ...' with the column name from a parameter."
+    },
+    {
+        "query_id": "G007",
+        "source_file": "library.php",
+        "line": 219,
+        "call_type": "mysqli ->query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "patient_info",
+        "expected_tables": [
+            "patient_info",
+            "appointments"
+        ],
+        "expected_read_columns": [
+            "appointment_no",
+            "full_name",
+            "medical_condition"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "speciality",
+            "patient_id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Implicit comma join; join condition in WHERE."
+    },
+    {
+        "query_id": "G008",
+        "source_file": "library.php",
+        "line": 226,
+        "call_type": "mysqli ->query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "patient_info",
+        "expected_tables": [
+            "patient_info",
+            "appointments"
+        ],
+        "expected_read_columns": [
+            "appointment_no",
+            "full_name",
+            "speciality",
+            "medical_condition"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "patient_id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Implicit comma join; single-quoted static string."
+    },
+    {
+        "query_id": "G009",
+        "source_file": "library.php",
+        "line": 233,
+        "call_type": "mysqli ->query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "patient_info",
+        "expected_tables": [
+            "patient_info",
+            "appointments"
+        ],
+        "expected_read_columns": [
+            "appointment_no",
+            "full_name",
+            "dob",
+            "weight",
+            "phone_no",
+            "address",
+            "medical_condition"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "appointment_no",
+            "patient_id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Implicit comma join; $appointment_no unquoted parameter."
+    },
+    {
+        "query_id": "G010",
+        "source_file": "library.php",
+        "line": 249,
+        "call_type": "mysqli ->query",
+        "site_kind": "direct_executor",
+        "site_status": "dead_code_empty_sql",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "$sql = '' (empty string) immediately before the call, and get_table() is never called. Not a SQL statement."
+    },
+    {
+        "query_id": "G011",
+        "source_file": "library.php",
+        "line": 292,
+        "call_type": "mysqli ->query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "appointments",
+        "expected_tables": [
+            "appointments"
+        ],
+        "expected_read_columns": [
+            "doctors_suggestion"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "appointment_no"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G012",
+        "source_file": "library.php",
+        "line": 299,
+        "call_type": "mysqli ->query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "appointments",
+        "expected_tables": [
+            "appointments"
+        ],
+        "expected_read_columns": [
+            "payment_amount"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "appointment_no"
+        ],
+        "dynamic_parts": [],
+        "notes": "WHERE appointment_no=appointment_no compares the column to itself (always true for non-NULL): static, but likely a bug."
+    },
+    {
+        "query_id": "G013",
+        "source_file": "library.php",
+        "line": 313,
+        "call_type": "mysqli ->query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "DELETE",
+            "filter": [
+                "email"
+            ]
+        },
+        "dynamic_parts": [
+            "dynamic table identifier"
+        ],
+        "notes": "DELETE FROM $table: table from parameter (callers pass 'doctors' or 'clerks')."
+    },
+    {
+        "query_id": "G014",
+        "source_file": "library.php",
+        "line": 320,
+        "call_type": "mysqli ->query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "read": [
+                "email"
+            ]
+        },
+        "dynamic_parts": [
+            "dynamic table identifier"
+        ],
+        "notes": "SELECT email FROM $table: table from parameter (callers pass 'doctors' or 'clerks')."
+    }
+]

@@ -1,0 +1,237 @@
+[
+    {
+        "query_id": "G001",
+        "source_file": "agents.php",
+        "line": 5,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "agents",
+        "expected_tables": [
+            "agents",
+            "teams"
+        ],
+        "expected_read_columns": [
+            "id",
+            "full_name",
+            "team_name"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id",
+            "team_id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Static INNER JOIN; ORDER BY a.id."
+    },
+    {
+        "query_id": "G002",
+        "source_file": "create.php",
+        "line": 13,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "tickets",
+        "expected_tables": [
+            "tickets"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "agent_id",
+            "subject",
+            "description",
+            "priority"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Inside if(POST)/else; values escaped or (int)-cast."
+    },
+    {
+        "query_id": "G003",
+        "source_file": "delete.php",
+        "line": 8,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "DELETE",
+        "expected_table": "tickets",
+        "expected_tables": [
+            "tickets"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "$id is (int)-cast."
+    },
+    {
+        "query_id": "G004",
+        "source_file": "edit.php",
+        "line": 10,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "tickets",
+        "expected_tables": [
+            "tickets"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "status",
+            "priority"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Inside if(POST)."
+    },
+    {
+        "query_id": "G005",
+        "source_file": "edit.php",
+        "line": 15,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "tickets",
+        "expected_tables": [
+            "tickets"
+        ],
+        "expected_read_columns": [
+            "id",
+            "subject",
+            "priority",
+            "status"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G006",
+        "source_file": "index.php",
+        "line": 5,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "tickets",
+        "expected_tables": [
+            "tickets",
+            "agents",
+            "teams"
+        ],
+        "expected_read_columns": [
+            "id",
+            "subject",
+            "priority",
+            "status",
+            "full_name",
+            "team_name"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id",
+            "agent_id",
+            "team_id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Two JOINs; ORDER BY t.id DESC."
+    },
+    {
+        "query_id": "G007",
+        "source_file": "report.php",
+        "line": 5,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "teams",
+        "expected_tables": [
+            "teams",
+            "agents",
+            "tickets"
+        ],
+        "expected_read_columns": [
+            "team_name",
+            "id"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "team_id",
+            "id",
+            "agent_id"
+        ],
+        "dynamic_parts": [],
+        "notes": "read 'id' is COUNT(t.id); GROUP BY m.id, m.team_name (not counted as filter)."
+    },
+    {
+        "query_id": "G008",
+        "source_file": "search.php",
+        "line": 6,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "tickets",
+        "expected_tables": [
+            "tickets"
+        ],
+        "expected_read_columns": [
+            "id",
+            "subject",
+            "status"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "subject"
+        ],
+        "dynamic_parts": [],
+        "notes": "LIKE '%$term%' with escaped value."
+    },
+    {
+        "query_id": "G009",
+        "source_file": "view.php",
+        "line": 6,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "tickets",
+        "expected_tables": [
+            "tickets"
+        ],
+        "expected_read_columns": [
+            "id",
+            "subject",
+            "description",
+            "priority",
+            "status",
+            "agent_id"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "$id = raw $_GET['id'] (not cast, not quoted): value position, structure fixed, but injectable."
+    }
+]

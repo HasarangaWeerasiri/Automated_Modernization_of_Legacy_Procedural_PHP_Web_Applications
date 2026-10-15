@@ -1,0 +1,1396 @@
+[
+    {
+        "query_id": "G001",
+        "source_file": "admin/app/models/auth.php",
+        "line": 9,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "admin",
+        "expected_tables": [
+            "admin"
+        ],
+        "expected_read_columns": [
+            "username"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "$id from raw $_COOKIE, unquoted: value position, injectable."
+    },
+    {
+        "query_id": "G002",
+        "source_file": "admin/app/models/auth.php",
+        "line": 28,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "admin",
+        "expected_tables": [
+            "admin"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "username"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G003",
+        "source_file": "admin/app/models/categories.php",
+        "line": 34,
+        "call_type": "mysqli_query (named arg query:)",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "categories",
+        "expected_tables": [
+            "categories"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "name",
+            "created_at",
+            "updated_at"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G004",
+        "source_file": "admin/app/models/categories.php",
+        "line": 57,
+        "call_type": "mysqli_query (named args mysql:, query:)",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "categories",
+        "expected_tables": [
+            "categories"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "name",
+            "updated_at"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G005",
+        "source_file": "admin/app/models/categories.php",
+        "line": 76,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "DELETE",
+        "expected_table": "subcategories",
+        "expected_tables": [
+            "subcategories"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "category_id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G006",
+        "source_file": "admin/app/models/categories.php",
+        "line": 80,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "DELETE",
+        "expected_table": "categories",
+        "expected_tables": [
+            "categories"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G007",
+        "source_file": "admin/app/models/categories.php",
+        "line": 100,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": "ambiguous",
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "tables": [
+                "categories",
+                "subcategories"
+            ],
+            "read": [
+                "id",
+                "name"
+            ],
+            "filter": [
+                "id",
+                "category_id",
+                "name"
+            ]
+        },
+        "dynamic_parts": [],
+        "notes": "SQL text is static, but the function can never run successfully: its only caller (CategoryController.php:25) passes 2 of 4 required args (ArgumentCountError), and escape($conn, $keyword) would pass the mysqli object as the string (TypeError). Author to decide whether unreachable sites count."
+    },
+    {
+        "query_id": "G008",
+        "source_file": "admin/app/models/occasions.php",
+        "line": 27,
+        "call_type": "mysqli_query (named arg query:)",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "occasions",
+        "expected_tables": [
+            "occasions"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "name",
+            "created_at",
+            "updated_at"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G009",
+        "source_file": "admin/app/models/occasions.php",
+        "line": 52,
+        "call_type": "mysqli_query (named args mysql:, query:)",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "occasions",
+        "expected_tables": [
+            "occasions"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "name",
+            "updated_at"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G010",
+        "source_file": "admin/app/models/occasions.php",
+        "line": 72,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "DELETE",
+        "expected_table": "occasions",
+        "expected_tables": [
+            "occasions"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G011",
+        "source_file": "admin/app/models/occasions.php",
+        "line": 92,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": "ambiguous",
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "tables": [
+                "occasions"
+            ],
+            "read": [
+                "id",
+                "name"
+            ],
+            "filter": [
+                "name"
+            ]
+        },
+        "dynamic_parts": [],
+        "notes": "SQL text is static, but the function can never run successfully: searchOccasion() has no caller, and escape($conn, $keyword) would raise TypeError first. Author to decide whether unreachable sites count."
+    },
+    {
+        "query_id": "G012",
+        "source_file": "admin/app/models/products.php",
+        "line": 82,
+        "call_type": "mysqli_query (named arg query:)",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "products",
+        "expected_tables": [
+            "products"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "name",
+            "category_id",
+            "subcategory_id",
+            "occasion_id",
+            "price",
+            "description",
+            "image",
+            "created_at",
+            "updated_at"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G013",
+        "source_file": "admin/app/models/products.php",
+        "line": 133,
+        "call_type": "mysqli_query (named args mysql:, query:)",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "products",
+        "expected_tables": [
+            "products"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "name",
+            "category_id",
+            "subcategory_id",
+            "occasion_id",
+            "price",
+            "image",
+            "description",
+            "updated_at"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G014",
+        "source_file": "admin/app/models/products.php",
+        "line": 152,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "products",
+        "expected_tables": [
+            "products"
+        ],
+        "expected_read_columns": [
+            "image"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G015",
+        "source_file": "admin/app/models/products.php",
+        "line": 165,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "DELETE",
+        "expected_table": "products",
+        "expected_tables": [
+            "products"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text. Inside if($row)."
+    },
+    {
+        "query_id": "G016",
+        "source_file": "admin/app/models/register.php",
+        "line": 30,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "admin",
+        "expected_tables": [
+            "admin"
+        ],
+        "expected_read_columns": [
+            "id"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "username"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G017",
+        "source_file": "admin/app/models/register.php",
+        "line": 44,
+        "call_type": "mysqli_query (named arg query:)",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "admin",
+        "expected_tables": [
+            "admin"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "username",
+            "password",
+            "created_at",
+            "updated_at"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G018",
+        "source_file": "admin/app/models/subcategories.php",
+        "line": 40,
+        "call_type": "mysqli_query (named arg query:)",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "subcategories",
+        "expected_tables": [
+            "subcategories"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "name",
+            "category_id",
+            "created_at",
+            "updated_at"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G019",
+        "source_file": "admin/app/models/subcategories.php",
+        "line": 65,
+        "call_type": "mysqli_query (named args mysql:, query:)",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "subcategories",
+        "expected_tables": [
+            "subcategories"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "name",
+            "updated_at"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G020",
+        "source_file": "admin/app/models/subcategories.php",
+        "line": 85,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "DELETE",
+        "expected_table": "subcategories",
+        "expected_tables": [
+            "subcategories"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G021",
+        "source_file": "admin/config/helpers.php",
+        "line": 4,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [
+            "SQL is a function parameter (wrapper)"
+        ],
+        "notes": "Generic executor inside function query($query): the SQL is the function parameter. ~22 callers (see wrapper_call rows) pass different statements."
+    },
+    {
+        "query_id": "G022",
+        "source_file": "config/helpers.php",
+        "line": 4,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [
+            "SQL is a function parameter (wrapper)"
+        ],
+        "notes": "Generic executor inside function query($query) (front-end copy). ~10 callers (see wrapper_call rows)."
+    },
+    {
+        "query_id": "G023",
+        "source_file": "admin/app/models/categories.php",
+        "line": 7,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "tables": [
+                "categories",
+                "subcategories"
+            ],
+            "read": [
+                "id",
+                "name"
+            ],
+            "filter": [
+                "id",
+                "category_id"
+            ]
+        },
+        "dynamic_parts": [
+            "optional WHERE clause"
+        ],
+        "notes": "Optional WHERE/AND clause appended via ternary on $search (empty string or a LIKE condition)."
+    },
+    {
+        "query_id": "G024",
+        "source_file": "admin/app/models/categories.php",
+        "line": 21,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "tables": [
+                "categories"
+            ]
+        },
+        "dynamic_parts": [
+            "optional WHERE clause"
+        ],
+        "notes": "Optional WHERE/AND clause appended via ternary on $search (empty string or a LIKE condition)."
+    },
+    {
+        "query_id": "G025",
+        "source_file": "admin/app/models/occasions.php",
+        "line": 7,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "tables": [
+                "occasions"
+            ],
+            "read": [
+                "*"
+            ]
+        },
+        "dynamic_parts": [
+            "optional WHERE clause"
+        ],
+        "notes": "Optional WHERE/AND clause appended via ternary on $search (empty string or a LIKE condition)."
+    },
+    {
+        "query_id": "G026",
+        "source_file": "admin/app/models/occasions.php",
+        "line": 14,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "tables": [
+                "occasions"
+            ]
+        },
+        "dynamic_parts": [
+            "optional WHERE clause"
+        ],
+        "notes": "Optional WHERE/AND clause appended via ternary on $search (empty string or a LIKE condition)."
+    },
+    {
+        "query_id": "G027",
+        "source_file": "admin/app/models/products.php",
+        "line": 17,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "tables": [
+                "products",
+                "categories",
+                "subcategories",
+                "occasions"
+            ],
+            "read": [
+                "id",
+                "name",
+                "price"
+            ],
+            "filter": [
+                "category_id",
+                "id",
+                "subcategory_id",
+                "occasion_id"
+            ]
+        },
+        "dynamic_parts": [
+            "optional WHERE clause"
+        ],
+        "notes": "Optional WHERE/AND clause appended via ternary on $search (empty string or a LIKE condition). (4 OR'd LIKE conditions)"
+    },
+    {
+        "query_id": "G028",
+        "source_file": "admin/app/models/products.php",
+        "line": 42,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "tables": [
+                "products",
+                "categories",
+                "subcategories",
+                "occasions"
+            ],
+            "filter": [
+                "category_id",
+                "id",
+                "subcategory_id",
+                "occasion_id"
+            ]
+        },
+        "dynamic_parts": [
+            "optional WHERE clause"
+        ],
+        "notes": "Optional WHERE/AND clause appended via ternary on $search (empty string or a LIKE condition). (4 OR'd LIKE conditions)"
+    },
+    {
+        "query_id": "G029",
+        "source_file": "admin/app/models/subcategories.php",
+        "line": 7,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "tables": [
+                "subcategories"
+            ],
+            "read": [
+                "*"
+            ],
+            "filter": [
+                "category_id"
+            ]
+        },
+        "dynamic_parts": [
+            "optional AND condition"
+        ],
+        "notes": "Optional 'AND name LIKE ...' appended via ternary on $search."
+    },
+    {
+        "query_id": "G030",
+        "source_file": "admin/app/models/subcategories.php",
+        "line": 24,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "tables": [
+                "subcategories"
+            ],
+            "filter": [
+                "category_id"
+            ]
+        },
+        "dynamic_parts": [
+            "optional AND condition"
+        ],
+        "notes": "Optional 'AND name LIKE ...' via ternary; $search is not escaped here (injectable)."
+    },
+    {
+        "query_id": "G031",
+        "source_file": "admin/app/views/categories/edit.php",
+        "line": 5,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "categories",
+        "expected_tables": [
+            "categories"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text. $id raw $_GET."
+    },
+    {
+        "query_id": "G032",
+        "source_file": "admin/app/views/categories/subcategories/delete.php",
+        "line": 9,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "subcategories",
+        "expected_tables": [
+            "subcategories"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G033",
+        "source_file": "admin/app/views/categories/subcategories/index.php",
+        "line": 6,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "commented_out",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Line is commented out with #."
+    },
+    {
+        "query_id": "G034",
+        "source_file": "admin/app/views/categories/subcategories/edit.php",
+        "line": 5,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "subcategories",
+        "expected_tables": [
+            "subcategories"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G035",
+        "source_file": "admin/app/views/dashboard/index.php",
+        "line": 3,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "categories",
+        "expected_tables": [
+            "categories"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text. COUNT(*) only (no column read)."
+    },
+    {
+        "query_id": "G036",
+        "source_file": "admin/app/views/dashboard/index.php",
+        "line": 4,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "occasions",
+        "expected_tables": [
+            "occasions"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text. COUNT(*) only."
+    },
+    {
+        "query_id": "G037",
+        "source_file": "admin/app/views/dashboard/index.php",
+        "line": 5,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "products",
+        "expected_tables": [
+            "products"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text. COUNT(*) only."
+    },
+    {
+        "query_id": "G038",
+        "source_file": "admin/app/views/occasions/edit.php",
+        "line": 5,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "occasions",
+        "expected_tables": [
+            "occasions"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G039",
+        "source_file": "admin/app/views/products/add.php",
+        "line": 3,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "categories",
+        "expected_tables": [
+            "categories",
+            "subcategories"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id",
+            "category_id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text. SELECT DISTINCT c.*."
+    },
+    {
+        "query_id": "G040",
+        "source_file": "admin/app/views/products/add.php",
+        "line": 7,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "subcategories",
+        "expected_tables": [
+            "subcategories"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G041",
+        "source_file": "admin/app/views/products/add.php",
+        "line": 8,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "occasions",
+        "expected_tables": [
+            "occasions"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G042",
+        "source_file": "admin/app/views/products/index.php",
+        "line": 4,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "commented_out",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Line is commented out with #."
+    },
+    {
+        "query_id": "G043",
+        "source_file": "admin/app/views/products/edit.php",
+        "line": 5,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "categories",
+        "expected_tables": [
+            "categories",
+            "subcategories"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id",
+            "category_id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text. SELECT DISTINCT c.*."
+    },
+    {
+        "query_id": "G044",
+        "source_file": "admin/app/views/products/edit.php",
+        "line": 9,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "subcategories",
+        "expected_tables": [
+            "subcategories"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G045",
+        "source_file": "admin/app/views/products/edit.php",
+        "line": 10,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "occasions",
+        "expected_tables": [
+            "occasions"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G046",
+        "source_file": "admin/app/views/products/edit.php",
+        "line": 11,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "products",
+        "expected_tables": [
+            "products"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G047",
+        "source_file": "app/controllers/ProductsController.php",
+        "line": 5,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "products",
+        "expected_tables": [
+            "products"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text. LIMIT $limit (value)."
+    },
+    {
+        "query_id": "G048",
+        "source_file": "app/controllers/ProductsController.php",
+        "line": 10,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "categories",
+        "expected_tables": [
+            "categories"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G049",
+        "source_file": "app/controllers/ProductsController.php",
+        "line": 15,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "products",
+        "expected_tables": [
+            "products"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "category_id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G050",
+        "source_file": "app/controllers/ProductsController.php",
+        "line": 20,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "products",
+        "expected_tables": [
+            "products"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text. ORDER BY RAND()."
+    },
+    {
+        "query_id": "G051",
+        "source_file": "app/models/products.php",
+        "line": 17,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "tables": [
+                "products",
+                "categories",
+                "subcategories",
+                "occasions"
+            ],
+            "read": [
+                "id",
+                "name",
+                "price",
+                "image"
+            ],
+            "filter": [
+                "category_id",
+                "id",
+                "subcategory_id",
+                "occasion_id"
+            ]
+        },
+        "dynamic_parts": [
+            "optional WHERE clause"
+        ],
+        "notes": "Optional WHERE/AND clause appended via ternary on $search (empty string or a LIKE condition). (4 OR'd LIKE conditions)"
+    },
+    {
+        "query_id": "G052",
+        "source_file": "app/models/products.php",
+        "line": 42,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "tables": [
+                "products",
+                "categories",
+                "subcategories",
+                "occasions"
+            ],
+            "filter": [
+                "category_id",
+                "id",
+                "subcategory_id",
+                "occasion_id"
+            ]
+        },
+        "dynamic_parts": [
+            "optional WHERE clause"
+        ],
+        "notes": "Optional WHERE/AND clause appended via ternary on $search (empty string or a LIKE condition). (4 OR'd LIKE conditions)"
+    },
+    {
+        "query_id": "G053",
+        "source_file": "app/views/dashboard/index.php",
+        "line": 4,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "commented_out",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Line is commented out with #."
+    },
+    {
+        "query_id": "G054",
+        "source_file": "app/views/products/index.php",
+        "line": 4,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "commented_out",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Line is commented out with #."
+    },
+    {
+        "query_id": "G055",
+        "source_file": "app/views/products/detail.php",
+        "line": 5,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "categories",
+        "expected_tables": [
+            "categories"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G056",
+        "source_file": "app/views/products/detail.php",
+        "line": 6,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "subcategories",
+        "expected_tables": [
+            "subcategories"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G057",
+        "source_file": "app/views/products/detail.php",
+        "line": 7,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "occasions",
+        "expected_tables": [
+            "occasions"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text."
+    },
+    {
+        "query_id": "G058",
+        "source_file": "app/views/products/detail.php",
+        "line": 8,
+        "call_type": "query() wrapper",
+        "site_kind": "wrapper_call",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "products",
+        "expected_tables": [
+            "products",
+            "categories",
+            "subcategories",
+            "occasions"
+        ],
+        "expected_read_columns": [
+            "*",
+            "name"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "category_id",
+            "id",
+            "subcategory_id",
+            "occasion_id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Table not defined in database/db.sql (the dump only defines 'admin'); columns taken from the SQL text. p.* plus c/s/o.name aliases; WHERE p.id = $id (raw $_GET)."
+    }
+]

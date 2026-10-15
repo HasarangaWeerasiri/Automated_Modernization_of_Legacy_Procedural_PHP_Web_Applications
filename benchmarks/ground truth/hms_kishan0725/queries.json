@@ -1,0 +1,1197 @@
+[
+    {
+        "query_id": "G001",
+        "source_file": "admin-panel.php",
+        "line": 42,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "appointmenttb",
+        "expected_tables": [
+            "appointmenttb"
+        ],
+        "expected_read_columns": [
+            "apptime"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "doctor",
+            "appdate",
+            "apptime"
+        ],
+        "dynamic_parts": [],
+        "notes": "Nested in two ifs."
+    },
+    {
+        "query_id": "G002",
+        "source_file": "admin-panel.php",
+        "line": 45,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "appointmenttb",
+        "expected_tables": [
+            "appointmenttb"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "pid",
+            "fname",
+            "lname",
+            "gender",
+            "email",
+            "contact",
+            "doctor",
+            "docfees",
+            "appdate",
+            "apptime",
+            "userstatus",
+            "doctorstatus"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Values from $_SESSION/$_POST; $pid unquoted."
+    },
+    {
+        "query_id": "G003",
+        "source_file": "admin-panel.php",
+        "line": 71,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "appointmenttb",
+        "expected_tables": [
+            "appointmenttb"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "userstatus"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "ID from raw $_GET concatenated inside quotes."
+    },
+    {
+        "query_id": "G004",
+        "source_file": "admin-panel.php",
+        "line": 86,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "prestb",
+        "expected_tables": [
+            "prestb",
+            "appointmenttb"
+        ],
+        "expected_read_columns": [
+            "pid",
+            "id",
+            "fname",
+            "lname",
+            "doctor",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription",
+            "docfees"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id",
+            "pid"
+        ],
+        "dynamic_parts": [],
+        "notes": "Inside function generate_bill(); pid/ID conditions are in the JOIN ... ON clause."
+    },
+    {
+        "query_id": "G005",
+        "source_file": "admin-panel.php",
+        "line": 144,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "doctb",
+        "expected_tables": [
+            "doctb"
+        ],
+        "expected_read_columns": [
+            "username",
+            "spec"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Inside function get_specs()."
+    },
+    {
+        "query_id": "G006",
+        "source_file": "admin-panel.php",
+        "line": 313,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "doctb",
+        "expected_tables": [
+            "doctb"
+        ],
+        "expected_read_columns": [
+            "username",
+            "spec"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "PHP block wrapped in an HTML comment (<!-- <?php ... ?> -->): PHP still executes, only the output is hidden. Live site."
+    },
+    {
+        "query_id": "G007",
+        "source_file": "admin-panel.php",
+        "line": 473,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "appointmenttb",
+        "expected_tables": [
+            "appointmenttb"
+        ],
+        "expected_read_columns": [
+            "id",
+            "doctor",
+            "docfees",
+            "appdate",
+            "apptime",
+            "userstatus",
+            "doctorstatus"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "fname",
+            "lname"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G008",
+        "source_file": "admin-panel.php",
+        "line": 550,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "prestb",
+        "expected_tables": [
+            "prestb"
+        ],
+        "expected_read_columns": [
+            "doctor",
+            "id",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "pid"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G009",
+        "source_file": "admin-panel1.php",
+        "line": 15,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "doctb",
+        "expected_tables": [
+            "doctb"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "username",
+            "password",
+            "email",
+            "spec",
+            "docfees"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G010",
+        "source_file": "admin-panel1.php",
+        "line": 27,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "DELETE",
+        "expected_table": "doctb",
+        "expected_tables": [
+            "doctb"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "email"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G011",
+        "source_file": "admin-panel1.php",
+        "line": 278,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "doctb",
+        "expected_tables": [
+            "doctb"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G012",
+        "source_file": "admin-panel1.php",
+        "line": 329,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "patreg",
+        "expected_tables": [
+            "patreg"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G013",
+        "source_file": "admin-panel1.php",
+        "line": 385,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "prestb",
+        "expected_tables": [
+            "prestb"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G014",
+        "source_file": "admin-panel1.php",
+        "line": 458,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "appointmenttb",
+        "expected_tables": [
+            "appointmenttb"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G015",
+        "source_file": "admin-panel1.php",
+        "line": 568,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "contact",
+        "expected_tables": [
+            "contact"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G016",
+        "source_file": "appsearch.php",
+        "line": 17,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "appointmenttb",
+        "expected_tables": [
+            "appointmenttb"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "contact"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G017",
+        "source_file": "contact.php",
+        "line": 11,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "contact",
+        "expected_tables": [
+            "contact"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "name",
+            "email",
+            "contact",
+            "message"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G018",
+        "source_file": "doctor-panel.php",
+        "line": 8,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "appointmenttb",
+        "expected_tables": [
+            "appointmenttb"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "doctorstatus"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "ID from raw $_GET."
+    },
+    {
+        "query_id": "G019",
+        "source_file": "doctor-panel.php",
+        "line": 24,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "commented_out",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Line is commented out with //."
+    },
+    {
+        "query_id": "G020",
+        "source_file": "doctor-panel.php",
+        "line": 186,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "appointmenttb",
+        "expected_tables": [
+            "appointmenttb"
+        ],
+        "expected_read_columns": [
+            "pid",
+            "id",
+            "fname",
+            "lname",
+            "gender",
+            "email",
+            "contact",
+            "appdate",
+            "apptime",
+            "userstatus",
+            "doctorstatus"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "doctor"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G021",
+        "source_file": "doctor-panel.php",
+        "line": 280,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "prestb",
+        "expected_tables": [
+            "prestb"
+        ],
+        "expected_read_columns": [
+            "pid",
+            "fname",
+            "lname",
+            "id",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "doctor"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G022",
+        "source_file": "doctor-panel.php",
+        "line": 332,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "appointmenttb",
+        "expected_tables": [
+            "appointmenttb"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G023",
+        "source_file": "doctorsearch.php",
+        "line": 16,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "doctb",
+        "expected_tables": [
+            "doctb"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "email"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G024",
+        "source_file": "func.php",
+        "line": 8,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "patreg",
+        "expected_tables": [
+            "patreg"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "email",
+            "password"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G025",
+        "source_file": "func.php",
+        "line": 34,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "appointmenttb",
+        "expected_tables": [
+            "appointmenttb"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "payment"
+        ],
+        "expected_filter_columns": [
+            "contact"
+        ],
+        "dynamic_parts": [],
+        "notes": "Column 'payment' does not exist in appointmenttb (myhmsdb.sql). SQL text is fully static; statement would fail at runtime. Recorded from the SQL text."
+    },
+    {
+        "query_id": "G026",
+        "source_file": "func.php",
+        "line": 46,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "commented_out",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Line is commented out with //."
+    },
+    {
+        "query_id": "G027",
+        "source_file": "func.php",
+        "line": 62,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "doctb",
+        "expected_tables": [
+            "doctb"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "username",
+            "password",
+            "email",
+            "docfees"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G028",
+        "source_file": "func1.php",
+        "line": 8,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "doctb",
+        "expected_tables": [
+            "doctb"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "username",
+            "password"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G029",
+        "source_file": "func1.php",
+        "line": 27,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "commented_out",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Line is commented out with //."
+    },
+    {
+        "query_id": "G030",
+        "source_file": "func1.php",
+        "line": 43,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "doctb",
+        "expected_tables": [
+            "doctb"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Inside function display_docs()."
+    },
+    {
+        "query_id": "G031",
+        "source_file": "func1.php",
+        "line": 56,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "commented_out",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Line is commented out with //."
+    },
+    {
+        "query_id": "G032",
+        "source_file": "func2.php",
+        "line": 14,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "patreg",
+        "expected_tables": [
+            "patreg"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "fname",
+            "lname",
+            "gender",
+            "email",
+            "contact",
+            "password",
+            "cpassword"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G033",
+        "source_file": "func2.php",
+        "line": 26,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "patreg",
+        "expected_tables": [
+            "patreg"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G034",
+        "source_file": "func2.php",
+        "line": 41,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "appointmenttb",
+        "expected_tables": [
+            "appointmenttb"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "payment"
+        ],
+        "expected_filter_columns": [
+            "contact"
+        ],
+        "dynamic_parts": [],
+        "notes": "Column 'payment' does not exist in appointmenttb (myhmsdb.sql). SQL text is fully static; statement would fail at runtime. Recorded from the SQL text."
+    },
+    {
+        "query_id": "G035",
+        "source_file": "func2.php",
+        "line": 53,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "commented_out",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Line is commented out with //."
+    },
+    {
+        "query_id": "G036",
+        "source_file": "func2.php",
+        "line": 66,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "doctb",
+        "expected_tables": [
+            "doctb"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "name"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Column 'name' does not exist in doctb (myhmsdb.sql); recorded from the SQL text."
+    },
+    {
+        "query_id": "G037",
+        "source_file": "func3.php",
+        "line": 8,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "admintb",
+        "expected_tables": [
+            "admintb"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "username",
+            "password"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G038",
+        "source_file": "func3.php",
+        "line": 24,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "appointmenttb",
+        "expected_tables": [
+            "appointmenttb"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "payment"
+        ],
+        "expected_filter_columns": [
+            "contact"
+        ],
+        "dynamic_parts": [],
+        "notes": "Column 'payment' does not exist in appointmenttb (myhmsdb.sql). SQL text is fully static; statement would fail at runtime. Recorded from the SQL text."
+    },
+    {
+        "query_id": "G039",
+        "source_file": "func3.php",
+        "line": 36,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "doctb",
+        "expected_tables": [
+            "doctb"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Inside function display_docs()."
+    },
+    {
+        "query_id": "G040",
+        "source_file": "func3.php",
+        "line": 49,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "doctb",
+        "expected_tables": [
+            "doctb"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "name"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Column 'name' does not exist in doctb (myhmsdb.sql); recorded from the SQL text."
+    },
+    {
+        "query_id": "G041",
+        "source_file": "include/header.php",
+        "line": 35,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": "ambiguous",
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "tables": [
+                "users"
+            ],
+            "read": [
+                "fullname"
+            ],
+            "filter": [
+                "id"
+            ]
+        },
+        "dynamic_parts": [],
+        "notes": "SQL text is static, but table 'users' (and column fullName) is not in myhmsdb.sql, no app file includes include/header.php (index1.php includes the root header.php), and $con is undefined in this file. Looks like a leftover template; author to decide whether it counts as a real site."
+    },
+    {
+        "query_id": "G042",
+        "source_file": "messearch.php",
+        "line": 15,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "contact",
+        "expected_tables": [
+            "contact"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "contact"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G043",
+        "source_file": "newfunc.php",
+        "line": 8,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "commented_out",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Line is commented out with //."
+    },
+    {
+        "query_id": "G044",
+        "source_file": "newfunc.php",
+        "line": 23,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "appointmenttb",
+        "expected_tables": [
+            "appointmenttb"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "payment"
+        ],
+        "expected_filter_columns": [
+            "contact"
+        ],
+        "dynamic_parts": [],
+        "notes": "Column 'payment' does not exist in appointmenttb (myhmsdb.sql). SQL text is fully static; statement would fail at runtime. Recorded from the SQL text."
+    },
+    {
+        "query_id": "G045",
+        "source_file": "newfunc.php",
+        "line": 32,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "commented_out",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Line is commented out with //."
+    },
+    {
+        "query_id": "G046",
+        "source_file": "newfunc.php",
+        "line": 45,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "doctb",
+        "expected_tables": [
+            "doctb"
+        ],
+        "expected_read_columns": [
+            "spec"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "select distinct(spec); inside display_specs()."
+    },
+    {
+        "query_id": "G047",
+        "source_file": "newfunc.php",
+        "line": 57,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "doctb",
+        "expected_tables": [
+            "doctb"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Inside display_docs()."
+    },
+    {
+        "query_id": "G048",
+        "source_file": "newfunc.php",
+        "line": 70,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "commented_out",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "Line is commented out with //."
+    },
+    {
+        "query_id": "G049",
+        "source_file": "newfunc.php",
+        "line": 84,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "doctb",
+        "expected_tables": [
+            "doctb"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "username"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G050",
+        "source_file": "patientsearch.php",
+        "line": 15,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "patreg",
+        "expected_tables": [
+            "patreg"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "contact"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G051",
+        "source_file": "prescribe.php",
+        "line": 33,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "prestb",
+        "expected_tables": [
+            "prestb"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "doctor",
+            "pid",
+            "id",
+            "fname",
+            "lname",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G052",
+        "source_file": "search.php",
+        "line": 8,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "appointmenttb",
+        "expected_tables": [
+            "appointmenttb"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "contact",
+            "doctor"
+        ],
+        "dynamic_parts": [],
+        "notes": "doctor value from $_SESSION."
+    }
+]

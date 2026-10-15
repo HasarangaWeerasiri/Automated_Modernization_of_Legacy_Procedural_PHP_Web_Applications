@@ -1,0 +1,762 @@
+[
+    {
+        "query_id": "G001",
+        "source_file": "admin/adduser.php",
+        "line": 51,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "username",
+            "firstname",
+            "lastname",
+            "email",
+            "password",
+            "role"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G002",
+        "source_file": "admin/editposts.php",
+        "line": 17,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "tables": [
+                "posts"
+            ],
+            "read": [
+                "*"
+            ],
+            "variants": [
+                "SELECT * FROM posts WHERE id='$id'",
+                "SELECT * FROM posts WHERE id='$id' AND author = '$currentuser'"
+            ]
+        },
+        "dynamic_parts": [
+            "branch-selected WHERE (2 statically known variants)"
+        ],
+        "notes": "if/else on $_SESSION['role'] picks one of two SELECT strings before the single call; the WHERE clause differs."
+    },
+    {
+        "query_id": "G003",
+        "source_file": "admin/editposts.php",
+        "line": 88,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "posts",
+        "expected_tables": [
+            "posts"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "title",
+            "tag",
+            "content",
+            "status",
+            "image",
+            "postdate"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "Nested in while/if/else; $picture comes from one of two branches but is a value only."
+    },
+    {
+        "query_id": "G004",
+        "source_file": "admin/index.php",
+        "line": 34,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "posts",
+        "expected_tables": [
+            "posts"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G005",
+        "source_file": "admin/index.php",
+        "line": 64,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G006",
+        "source_file": "admin/post.php",
+        "line": 17,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": false,
+        "expected_operation": null,
+        "expected_table": null,
+        "expected_tables": [],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "static_facts": {
+            "operation": "SELECT",
+            "tables": [
+                "posts"
+            ],
+            "read": [
+                "*"
+            ],
+            "variants": [
+                "SELECT * FROM posts WHERE id='$post'",
+                "SELECT * FROM posts WHERE id='$post' AND author = '$currentuser'"
+            ]
+        },
+        "dynamic_parts": [
+            "branch-selected WHERE (2 statically known variants)"
+        ],
+        "notes": "if/else on $_SESSION['role'] picks one of two SELECT strings before the single call; the WHERE clause differs."
+    },
+    {
+        "query_id": "G007",
+        "source_file": "admin/posts.php",
+        "line": 51,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "posts",
+        "expected_tables": [
+            "posts"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": "ORDER BY id DESC; superadmin branch."
+    },
+    {
+        "query_id": "G008",
+        "source_file": "admin/posts.php",
+        "line": 98,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "DELETE",
+        "expected_table": "posts",
+        "expected_tables": [
+            "posts"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G009",
+        "source_file": "admin/posts.php",
+        "line": 110,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "posts",
+        "expected_tables": [
+            "posts"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "status"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "status = literal 'published'."
+    },
+    {
+        "query_id": "G010",
+        "source_file": "admin/posts.php",
+        "line": 153,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "posts",
+        "expected_tables": [
+            "posts"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "author"
+        ],
+        "dynamic_parts": [],
+        "notes": "admin branch."
+    },
+    {
+        "query_id": "G011",
+        "source_file": "admin/posts.php",
+        "line": 200,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "DELETE",
+        "expected_table": "posts",
+        "expected_tables": [
+            "posts"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G012",
+        "source_file": "admin/posts.php",
+        "line": 212,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "posts",
+        "expected_tables": [
+            "posts"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "status"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G013",
+        "source_file": "admin/posts.php",
+        "line": 251,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "posts",
+        "expected_tables": [
+            "posts"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "author"
+        ],
+        "dynamic_parts": [],
+        "notes": "user branch."
+    },
+    {
+        "query_id": "G014",
+        "source_file": "admin/posts.php",
+        "line": 292,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "DELETE",
+        "expected_table": "posts",
+        "expected_tables": [
+            "posts"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id",
+            "author"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G015",
+        "source_file": "admin/profile.php",
+        "line": 7,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "username"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G016",
+        "source_file": "admin/profile.php",
+        "line": 55,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "firstname",
+            "lastname",
+            "email"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G017",
+        "source_file": "admin/profile.php",
+        "line": 76,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "password",
+            "firstname",
+            "lastname",
+            "email"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G018",
+        "source_file": "admin/profile1.php",
+        "line": 7,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "username"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G019",
+        "source_file": "admin/profile1.php",
+        "line": 68,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "password",
+            "firstname",
+            "lastname",
+            "email"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G020",
+        "source_file": "admin/publishnews.php",
+        "line": 73,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "posts",
+        "expected_tables": [
+            "posts"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "title",
+            "author",
+            "postdate",
+            "image",
+            "content",
+            "status",
+            "tag"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G021",
+        "source_file": "admin/users.php",
+        "line": 53,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G022",
+        "source_file": "admin/users.php",
+        "line": 84,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [
+            "role"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "$the_user_id raw $_GET inside quotes."
+    },
+    {
+        "query_id": "G023",
+        "source_file": "admin/users.php",
+        "line": 96,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "DELETE",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G024",
+        "source_file": "admin/users.php",
+        "line": 109,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [
+            "role"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G025",
+        "source_file": "admin/users.php",
+        "line": 123,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "UPDATE",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "role"
+        ],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "role = literal 'admin'."
+    },
+    {
+        "query_id": "G026",
+        "source_file": "admin/users.php",
+        "line": 176,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G027",
+        "source_file": "index.php",
+        "line": 15,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "posts",
+        "expected_tables": [
+            "posts"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "status"
+        ],
+        "dynamic_parts": [],
+        "notes": "ORDER BY updated_on DESC."
+    },
+    {
+        "query_id": "G028",
+        "source_file": "login.php",
+        "line": 10,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "username"
+        ],
+        "dynamic_parts": [],
+        "notes": "escape results discarded; raw $_POST value."
+    },
+    {
+        "query_id": "G029",
+        "source_file": "publicposts.php",
+        "line": 16,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "posts",
+        "expected_tables": [
+            "posts"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "id"
+        ],
+        "dynamic_parts": [],
+        "notes": "WHERE id=$post unquoted; non-numeric input only triggers header() without exit, so value is injectable. Structure fixed."
+    },
+    {
+        "query_id": "G030",
+        "source_file": "registerprocess.php",
+        "line": 38,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "username"
+        ],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G031",
+        "source_file": "registerprocess.php",
+        "line": 51,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "INSERT",
+        "expected_table": "users",
+        "expected_tables": [
+            "users"
+        ],
+        "expected_read_columns": [],
+        "expected_write_columns": [
+            "username",
+            "firstname",
+            "lastname",
+            "email",
+            "password"
+        ],
+        "expected_filter_columns": [],
+        "dynamic_parts": [],
+        "notes": ""
+    },
+    {
+        "query_id": "G032",
+        "source_file": "search.php",
+        "line": 19,
+        "call_type": "mysqli_query",
+        "site_kind": "direct_executor",
+        "site_status": "live",
+        "expected_recoverable": true,
+        "expected_operation": "SELECT",
+        "expected_table": "posts",
+        "expected_tables": [
+            "posts"
+        ],
+        "expected_read_columns": [
+            "*"
+        ],
+        "expected_write_columns": [],
+        "expected_filter_columns": [
+            "tag",
+            "status"
+        ],
+        "dynamic_parts": [],
+        "notes": "LIKE '%$search%'."
+    }
+]
