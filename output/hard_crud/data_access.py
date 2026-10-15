@@ -11,7 +11,7 @@ from sqlalchemy import text
 
 def select_users_q001(session, q):
     """
-    Migrated from C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/hard_crud/legacy/01_like_search.php:9.
+    Migrated from 01_like_search.php:9.
     Original query ID: Q001.
     """
 
@@ -27,23 +27,23 @@ def select_users_q001(session, q):
 
 
 def unresolved_query_q002(session, **kwargs):
-    """Unresolved query Q002; C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/hard_crud/legacy/02_dynamic_order.php:9."""
-    raise NotImplementedError('manual review: C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/hard_crud/legacy/02_dynamic_order.php:9')
+    """Unresolved query Q002; 02_dynamic_order.php:9."""
+    raise NotImplementedError('manual review: 02_dynamic_order.php:9')
 
 
 def unresolved_query_q003(session, **kwargs):
-    """Unresolved query Q003; C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/hard_crud/legacy/03_dynamic_in.php:9."""
-    raise NotImplementedError('manual review: C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/hard_crud/legacy/03_dynamic_in.php:9')
+    """Unresolved query Q003; 03_dynamic_in.php:9."""
+    raise NotImplementedError('manual review: 03_dynamic_in.php:9')
 
 
 def unresolved_query_q004(session, **kwargs):
-    """Unresolved query Q004; C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/hard_crud/legacy/04_conditional_append.php:11."""
-    raise NotImplementedError('manual review: C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/hard_crud/legacy/04_conditional_append.php:11')
+    """Unresolved query Q004; 04_conditional_append.php:11."""
+    raise NotImplementedError('manual review: 04_conditional_append.php:11')
 
 
 def select_orders_q005(session, userId):
     """
-    Migrated from C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/hard_crud/legacy/05_join.php:13.
+    Migrated from 05_join.php:13.
     Original query ID: Q005.
     """
 

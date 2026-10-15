@@ -134,7 +134,7 @@ class RecordingSession:
 
 def call(function, value):
     names = [n for n, p in inspect.signature(function).parameters.items()
-             if n != "session" and p.kind not in (p.VAR_KEYWORD, p.VAR_POSITIONAL)]
+             if n != "session" and p.kind not in (p.VAR_KEYWORD, p.VAR_POSITIONAL, p.KEYWORD_ONLY)]
     arguments = {n: (AnyKey(value) if n == "inputs" else value) for n in names}
     session = RecordingSession()
     try:

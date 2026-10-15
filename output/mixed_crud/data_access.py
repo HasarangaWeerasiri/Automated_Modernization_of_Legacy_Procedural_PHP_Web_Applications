@@ -11,7 +11,7 @@ from sqlalchemy import text
 
 def select_products_q001(session):
     """
-    Migrated from C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/mixed_crud/legacy/01_select.php:4.
+    Migrated from 01_select.php:4.
     Original query ID: Q001.
     """
 
@@ -24,7 +24,7 @@ def select_products_q001(session):
 
 def select_products_q002(session, id):
     """
-    Migrated from C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/mixed_crud/legacy/02_interpolation.php:7.
+    Migrated from 02_interpolation.php:7.
     Original query ID: Q002.
     """
 
@@ -39,9 +39,9 @@ def select_products_q002(session, id):
     return result.mappings().all()
 
 
-def delete_product_q003(session, id):
+def delete_product_q003(session, id, *, commit: bool = True):
     """
-    Migrated from C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/mixed_crud/legacy/03_concat.php:8.
+    Migrated from 03_concat.php:8.
     Original query ID: Q003.
     """
 
@@ -53,13 +53,15 @@ def delete_product_q003(session, id):
 
     result = session.execute(statement, params)
 
-    session.commit()
+    if commit:
+        session.commit()
+
     return result
 
 
 def select_products_q004(session):
     """
-    Migrated from C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/mixed_crud/legacy/04_reassignment.php:7.
+    Migrated from 04_reassignment.php:7.
     Original query ID: Q004.
     """
 
@@ -70,9 +72,9 @@ def select_products_q004(session):
     return result.mappings().all()
 
 
-def update_product_q005(session, title, price, id):
+def update_product_q005(session, title, price, id, *, commit: bool = True):
     """
-    Migrated from C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/mixed_crud/legacy/05_update.php:11.
+    Migrated from 05_update.php:11.
     Original query ID: Q005.
     """
 
@@ -86,10 +88,12 @@ def update_product_q005(session, title, price, id):
 
     result = session.execute(statement, params)
 
-    session.commit()
+    if commit:
+        session.commit()
+
     return result
 
 
 def unresolved_query_q006(session, **kwargs):
-    """Unresolved query Q006; C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/mixed_crud/legacy/06_dynamic_function.php:8."""
-    raise NotImplementedError('manual review: C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/mixed_crud/legacy/06_dynamic_function.php:8')
+    """Unresolved query Q006; 06_dynamic_function.php:8."""
+    raise NotImplementedError('manual review: 06_dynamic_function.php:8')

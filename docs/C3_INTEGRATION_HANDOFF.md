@@ -74,6 +74,9 @@ Frontend pages may include:
 - Only supported SQL patterns are converted; everything else is UNRESOLVED with file, line, reason code and reason.
 - Static INNER JOIN SELECTs are converted; LEFT/RIGHT JOINs and dynamic JOINs are not.
 - Generated data access is parameterized SQLAlchemy (`text()` + bind parameters), not ORM query constructs.
+- `data_access.py` is standalone: it imports only SQLAlchemy and the standard library. The runtime helpers the templates need (identifier allowlists, ID parsing, LIMIT/OFFSET coercion) are copied into the file. Docstrings name PHP files relative to the analysed root.
+- Transaction policy: generated write functions commit by default. Pass `commit=False` to group several calls in one caller-managed transaction (then `session.commit()` or `session.rollback()`). The Clinic Q020 template never commits; the caller manages that transaction.
+- LIMIT/OFFSET parameters are coerced to non-negative integers, and other values raise `ValueError` before any SQL runs.
 - An existing MySQL schema (`schema.sql` / dump) is required.
 - Tables without a primary key are generated as SQLAlchemy Core `Table` objects, not ORM classes.
 - Behavioural equivalence on MySQL has been shown for the Clinic fixtures only (61 tests, 2026-10-15).

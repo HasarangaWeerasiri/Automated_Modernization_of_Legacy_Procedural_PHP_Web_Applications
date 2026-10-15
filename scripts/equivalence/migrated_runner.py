@@ -33,7 +33,7 @@ def function_for(module, query_id: str):
 def parameters(function) -> list[str]:
     return [
         name for name, p in inspect.signature(function).parameters.items()
-        if name != "session" and p.kind not in (p.VAR_KEYWORD, p.VAR_POSITIONAL)
+        if name != "session" and p.kind not in (p.VAR_KEYWORD, p.VAR_POSITIONAL, p.KEYWORD_ONLY)
     ]
 
 

@@ -81,6 +81,23 @@ def _function_name(query: dict) -> str:
     )
 
 
+ROW_COUNT_PARAMETER_PATTERN = re.compile(
+    r"\b(?:LIMIT\s+:(\w+)(?:\s*,\s*:(\w+))?|OFFSET\s+:(\w+))",
+    re.IGNORECASE,
+)
+
+
+def _row_count_parameters(sql: str) -> set[str]:
+    """Bind parameters used as LIMIT / OFFSET values."""
+
+    return {
+        name
+        for match in ROW_COUNT_PARAMETER_PATTERN.finditer(sql)
+        for name in match.groups()
+        if name
+    }
+
+
 def _build_function(query: dict) -> str:
     """
     Generate one SQLAlchemy data-access function.
@@ -104,6 +121,13 @@ def _build_function(query: dict) -> str:
     signature_parts = ["session"]
     signature_parts.extend(parameters)
 
+    is_write = query["operation"] != "SELECT"
+
+    if is_write:
+        # Transaction policy (S8): commit by default; commit=False lets the
+        # caller group several calls in one transaction.
+        signature_parts.extend(["*", "commit: bool = True"])
+
     signature = ", ".join(
         signature_parts
     )
@@ -116,9 +140,13 @@ def _build_function(query: dict) -> str:
         query.get("like_wildcard_parameters", [])
     )
 
+    row_count_parameters = _row_count_parameters(query["parameterized_sql"])
+
     for parameter in parameters:
         if parameter in like_wildcard_parameters:
             value_expression = f'f"%{{{parameter}}}%"'
+        elif parameter in row_count_parameters:
+            value_expression = f"to_row_count({parameter}, {parameter!r})"
         else:
             value_expression = parameter
 
@@ -172,7 +200,9 @@ def _build_function(query: dict) -> str:
     else:
         lines.extend(
             [
-                "    session.commit()",
+                "    if commit:",
+                "        session.commit()",
+                "",
                 "    return result",
             ]
         )
@@ -576,6 +606,9 @@ def generate_data_access_source(
         "has_join_update": has_join_update,
     }
     helpers = [RUNTIME_HELPERS[flag] for flag, used in flags.items() if used]
+
+    if any("to_row_count(" in function for function in functions):
+        helpers.append(("c3.conversion.limit_binding", "to_row_count"))
 
     if has_expanding_in:
         lines.insert(

@@ -9,9 +9,9 @@ Dynamic legacy values are passed using SQLAlchemy named bind parameters.
 from sqlalchemy import text
 
 
-def insert_user_q001(session, name, email):
+def insert_user_q001(session, name, email, *, commit: bool = True):
     """
-    Migrated from C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/simple_crud/legacy/create_user.php:9.
+    Migrated from create_user.php:9.
     Original query ID: Q001.
     """
 
@@ -24,13 +24,15 @@ def insert_user_q001(session, name, email):
 
     result = session.execute(statement, params)
 
-    session.commit()
+    if commit:
+        session.commit()
+
     return result
 
 
-def delete_user_q002(session, id):
+def delete_user_q002(session, id, *, commit: bool = True):
     """
-    Migrated from C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/simple_crud/legacy/delete_user.php:8.
+    Migrated from delete_user.php:8.
     Original query ID: Q002.
     """
 
@@ -42,13 +44,15 @@ def delete_user_q002(session, id):
 
     result = session.execute(statement, params)
 
-    session.commit()
+    if commit:
+        session.commit()
+
     return result
 
 
-def update_user_q003(session, name, id):
+def update_user_q003(session, name, id, *, commit: bool = True):
     """
-    Migrated from C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/simple_crud/legacy/update_user.php:8.
+    Migrated from update_user.php:8.
     Original query ID: Q003.
     """
 
@@ -61,13 +65,15 @@ def update_user_q003(session, name, id):
 
     result = session.execute(statement, params)
 
-    session.commit()
+    if commit:
+        session.commit()
+
     return result
 
 
 def select_users_q004(session):
     """
-    Migrated from C:/Users/sanjula/Desktop/Research/Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications/benchmarks/apps/simple_crud/legacy/users.php:4.
+    Migrated from users.php:4.
     Original query ID: Q004.
     """
 
