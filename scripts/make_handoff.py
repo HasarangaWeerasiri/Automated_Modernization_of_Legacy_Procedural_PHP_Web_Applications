@@ -97,6 +97,8 @@ def main() -> int:
     parser.add_argument("--schema", required=True)
     parser.add_argument("--title", required=True)
     parser.add_argument("--name", required=True)
+    parser.add_argument("--e1", help="E1 per-app report (run_e1.py output) for the per-function E1 status column")
+    parser.add_argument("--e1-fix-note", default="", help="note for FAILs that a later harness fix reclassifies")
     args = parser.parse_args()
 
     out = Path(args.output)
@@ -145,6 +147,27 @@ def main() -> int:
             "conversion_rule": record.get("conversion_rule"),
         })
     functions.sort(key=lambda f: f["query_id"])
+
+    e1_status, e1_counts, e1_source = {}, {}, None
+    if args.e1:
+        report = load(Path(args.e1))
+        e1_source = Path(args.e1).as_posix()
+        drift_ids = {d["query_id"] for d in query_schema_drift(list(usage.values()), schema)}
+        for site in report["results"]:
+            e1_counts[site["verdict"]] = e1_counts.get(site["verdict"], 0) + 1
+            cases = {c["case"]: c["verdict"] for c in site["cases"]}
+            valid = [cases.get(k) for k in ("normal", "empty_result") if k in cases]
+            if site["verdict"] == "PASS":
+                text = "**PASS**"
+            elif "INCONCLUSIVE" in valid:
+                text = ("INCONCLUSIVE: schema drift (statement fails on both sides)" if site["c3_query_id"] in drift_ids
+                        else "INCONCLUSIVE: the legacy statement fails under strict MySQL (missing NOT NULL value), same on both sides")
+            elif site["verdict"] == "FAIL":
+                text = ("valid inputs PASS; FAIL only on a hostile input that injected the legacy SQL"
+                        + (f" ({args.e1_fix_note})" if args.e1_fix_note else ""))
+            else:
+                text = "valid inputs PASS; INCONCLUSIVE only on invalid input rejected by both sides"
+            e1_status[site.get("generated_function")] = text
 
     drift = query_schema_drift(list(usage.values()), schema)
     pk_less = [t["name"] for t in schema["tables"] if not any(c["primary_key"] for c in t["columns"])]
@@ -202,13 +225,21 @@ def main() -> int:
         "",
         "## Functions",
         "",
-        "| Function | Parameters (PHP value) | Returns | Commit | PHP site |",
-        "|---|---|---|---|---|",
+        "| Function | Parameters (PHP value) | Returns | Commit | PHP site | E1 (PHP vs SQLAlchemy on MySQL) |",
+        "|---|---|---|---|---|---|",
     ]
+    if e1_source:
+        lines[lines.index("## Functions") + 1:lines.index("## Functions") + 1] = [
+            "",
+            f"E1 status comes from `{e1_source}` (site verdicts: {e1_counts}). **PASS** means every input case behaved "
+            "identically to the PHP on MySQL (rows, affected rows, insert id, table checksums), or the PHP was injectable and the "
+            "generated code bound the payload as a value. Use non-PASS functions with care; see `evidence/hms/E1_triage/triage.md`.",
+        ]
     for f in functions:
         params = "<br>".join(f"`{p['name']}` ← `{p['php_value']}`" for p in f["parameters"]) or "none"
         commit = "commit by default (`commit=False` available)" if f["operation"] != "SELECT" else "no (read)"
-        lines.append(f"| `{f['function']}` | {params} | {f['returns']} | {commit} | `{f['php_site']}` |")
+        lines.append(f"| `{f['function']}` | {params} | {f['returns']} | {commit} | `{f['php_site']}` | "
+                     f"{e1_status.get(f['function'], 'not run')} |")
 
     lines += ["", "## Unresolved sites (manual work)", ""]
     if unresolved:

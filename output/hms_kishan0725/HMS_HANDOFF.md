@@ -1,6 +1,6 @@
 # HMS (kishan0725): C3 data-layer handoff
 
-Generated 2026-10-15 from code `3458bbb` by `scripts/make_handoff.py`. Regenerate rather than edit. **Function signatures are frozen at tag `hms-handoff-v1`.**
+Generated 2026-10-15 from code `26402af` by `scripts/make_handoff.py`. Regenerate rather than edit. **Function signatures are frozen at tag `hms-handoff-v1`.**
 
 ## Files
 
@@ -36,52 +36,54 @@ with Session(engine) as session:
 
 ## Functions
 
-| Function | Parameters (PHP value) | Returns | Commit | PHP site |
-|---|---|---|---|---|
-| `select_appointmenttb_q001` | `doctor` ← `$doctor`<br>`appdate` ← `$appdate`<br>`apptime` ← `$apptime` | list of row mappings: `apptime` | no (read) | `admin-panel.php:42` |
-| `insert_appointmenttb_q002` | `pid` ← `$pid`<br>`fname` ← `$fname`<br>`lname` ← `$lname`<br>`gender` ← `$gender`<br>`email` ← `$email`<br>`contact` ← `$contact`<br>`doctor` ← `$doctor`<br>`docFees` ← `$docFees`<br>`appdate` ← `$appdate`<br>`apptime` ← `$apptime` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `admin-panel.php:45` |
-| `update_appointmenttb_q003` | `GET_ID` ← `$_GET['ID']` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `admin-panel.php:71` |
-| `select_prestb_q004` | `pid` ← `$pid`<br>`GET_ID` ← `$_GET['ID']` | list of row mappings: `pid`, `ID`, `fname`, `lname`, `doctor`, `appdate`, `apptime`, `disease`, `allergy`, `prescription`, `docFees` | no (read) | `admin-panel.php:86` |
-| `select_doctb_q005` | none | list of row mappings: `username`, `spec` | no (read) | `admin-panel.php:144` |
-| `select_doctb_q006` | none | list of row mappings: `username`, `spec` | no (read) | `admin-panel.php:313` |
-| `select_appointmenttb_q007` | `fname` ← `$fname`<br>`lname` ← `$lname` | list of row mappings: `ID`, `doctor`, `docFees`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `admin-panel.php:473` |
-| `select_prestb_q008` | `pid` ← `$pid` | list of row mappings: `doctor`, `ID`, `appdate`, `apptime`, `disease`, `allergy`, `prescription` | no (read) | `admin-panel.php:550` |
-| `insert_doctb_q009` | `doctor` ← `$doctor`<br>`dpassword` ← `$dpassword`<br>`demail` ← `$demail`<br>`spec` ← `$spec`<br>`docFees` ← `$docFees` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `admin-panel1.php:15` |
-| `delete_doctb_q010` | `demail` ← `$demail` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `admin-panel1.php:27` |
-| `select_doctb_q011` | none | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `admin-panel1.php:278` |
-| `select_patreg_q012` | none | list of row mappings: `pid`, `fname`, `lname`, `gender`, `email`, `contact`, `password`, `cpassword` | no (read) | `admin-panel1.php:329` |
-| `select_prestb_q013` | none | list of row mappings: `doctor`, `pid`, `ID`, `fname`, `lname`, `appdate`, `apptime`, `disease`, `allergy`, `prescription` | no (read) | `admin-panel1.php:385` |
-| `select_appointmenttb_q014` | none | list of row mappings: `pid`, `ID`, `fname`, `lname`, `gender`, `email`, `contact`, `doctor`, `docFees`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `admin-panel1.php:458` |
-| `select_contact_q015` | none | list of row mappings: `name`, `email`, `contact`, `message` | no (read) | `admin-panel1.php:568` |
-| `select_appointmenttb_q016` | `contact` ← `$contact` | list of row mappings: `pid`, `ID`, `fname`, `lname`, `gender`, `email`, `contact`, `doctor`, `docFees`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `appsearch.php:17` |
-| `insert_contact_q017` | `name` ← `$name`<br>`email` ← `$email`<br>`contact` ← `$contact`<br>`message` ← `$message` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `contact.php:11` |
-| `update_appointmenttb_q018` | `GET_ID` ← `$_GET['ID']` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `doctor-panel.php:8` |
-| `select_appointmenttb_q019` | `dname` ← `$dname` | list of row mappings: `pid`, `ID`, `fname`, `lname`, `gender`, `email`, `contact`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `doctor-panel.php:186` |
-| `select_prestb_q020` | `doctor` ← `$doctor` | list of row mappings: `pid`, `fname`, `lname`, `ID`, `appdate`, `apptime`, `disease`, `allergy`, `prescription` | no (read) | `doctor-panel.php:280` |
-| `select_appointmenttb_q021` | none | list of row mappings: `pid`, `ID`, `fname`, `lname`, `gender`, `email`, `contact`, `doctor`, `docFees`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `doctor-panel.php:332` |
-| `select_doctb_q022` | `contact` ← `$contact` | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `doctorsearch.php:16` |
-| `select_patreg_q023` | `email` ← `$email`<br>`password` ← `$password` | list of row mappings: `pid`, `fname`, `lname`, `gender`, `email`, `contact`, `password`, `cpassword` | no (read) | `func.php:8` |
-| `update_appointmenttb_q024` | `status` ← `$status`<br>`contact` ← `$contact` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func.php:34` |
-| `insert_doctb_q025` | `doctor` ← `$doctor`<br>`dpassword` ← `$dpassword`<br>`demail` ← `$demail`<br>`docFees` ← `$docFees` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func.php:62` |
-| `select_doctb_q026` | `dname` ← `$dname`<br>`dpass` ← `$dpass` | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `func1.php:8` |
-| `select_doctb_q027` | none | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `func1.php:43` |
-| `insert_patreg_q028` | `fname` ← `$fname`<br>`lname` ← `$lname`<br>`gender` ← `$gender`<br>`email` ← `$email`<br>`contact` ← `$contact`<br>`password` ← `$password`<br>`cpassword` ← `$cpassword` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func2.php:14` |
-| `select_patreg_q029` | none | list of row mappings: `pid`, `fname`, `lname`, `gender`, `email`, `contact`, `password`, `cpassword` | no (read) | `func2.php:26` |
-| `update_appointmenttb_q030` | `status` ← `$status`<br>`contact` ← `$contact` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func2.php:41` |
-| `insert_doctb_q031` | `name` ← `$name` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func2.php:66` |
-| `select_admintb_q032` | `username` ← `$username`<br>`password` ← `$password` | list of row mappings: `username`, `password` | no (read) | `func3.php:8` |
-| `update_appointmenttb_q033` | `status` ← `$status`<br>`contact` ← `$contact` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func3.php:24` |
-| `select_doctb_q034` | none | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `func3.php:36` |
-| `insert_doctb_q035` | `name` ← `$name` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func3.php:49` |
-| `select_users_q036` | `SESSION_id` ← `$_SESSION['id']` | list of row mappings: `fullName` | no (read) | `include/header.php:35` |
-| `select_contact_q037` | `contact` ← `$contact` | list of row mappings: `name`, `email`, `contact`, `message` | no (read) | `messearch.php:15` |
-| `update_appointmenttb_q038` | `status` ← `$status`<br>`contact` ← `$contact` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `newfunc.php:23` |
-| `select_doctb_q039` | none | list of row mappings: `(spec)` | no (read) | `newfunc.php:45` |
-| `select_doctb_q040` | none | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `newfunc.php:57` |
-| `insert_doctb_q041` | `username` ← `$username` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `newfunc.php:84` |
-| `select_patreg_q042` | `contact` ← `$contact` | list of row mappings: `pid`, `fname`, `lname`, `gender`, `email`, `contact`, `password`, `cpassword` | no (read) | `patientsearch.php:15` |
-| `insert_prestb_q043` | `doctor` ← `$doctor`<br>`pid` ← `$pid`<br>`ID` ← `$ID`<br>`fname` ← `$fname`<br>`lname` ← `$lname`<br>`appdate` ← `$appdate`<br>`apptime` ← `$apptime`<br>`disease` ← `$disease`<br>`allergy` ← `$allergy`<br>`prescription` ← `$prescription` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `prescribe.php:33` |
-| `select_appointmenttb_q044` | `contact` ← `$contact`<br>`docname` ← `$docname` | list of row mappings: `pid`, `ID`, `fname`, `lname`, `gender`, `email`, `contact`, `doctor`, `docFees`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `search.php:8` |
+E1 status comes from `evidence/mysql_runs/2026-10-15_181758/e1/hms_kishan0725.json` (site verdicts: {'INCONCLUSIVE': 12, 'FAIL': 5, 'PASS': 27}). **PASS** means every input case behaved identically to the PHP on MySQL (rows, affected rows, insert id, table checksums), or the PHP was injectable and the generated code bound the payload as a value. Use non-PASS functions with care; see `evidence/hms/E1_triage/triage.md`.
+
+| Function | Parameters (PHP value) | Returns | Commit | PHP site | E1 (PHP vs SQLAlchemy on MySQL) |
+|---|---|---|---|---|---|
+| `select_appointmenttb_q001` | `doctor` ← `$doctor`<br>`appdate` ← `$appdate`<br>`apptime` ← `$apptime` | list of row mappings: `apptime` | no (read) | `admin-panel.php:42` | valid inputs PASS; INCONCLUSIVE only on invalid input rejected by both sides |
+| `insert_appointmenttb_q002` | `pid` ← `$pid`<br>`fname` ← `$fname`<br>`lname` ← `$lname`<br>`gender` ← `$gender`<br>`email` ← `$email`<br>`contact` ← `$contact`<br>`doctor` ← `$doctor`<br>`docFees` ← `$docFees`<br>`appdate` ← `$appdate`<br>`apptime` ← `$apptime` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `admin-panel.php:45` | valid inputs PASS; INCONCLUSIVE only on invalid input rejected by both sides |
+| `update_appointmenttb_q003` | `GET_ID` ← `$_GET['ID']` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `admin-panel.php:71` | valid inputs PASS; FAIL only on a hostile input that injected the legacy SQL (harness misclassification, fixed in 26402af; MySQL re-run pending) |
+| `select_prestb_q004` | `pid` ← `$pid`<br>`GET_ID` ← `$_GET['ID']` | list of row mappings: `pid`, `ID`, `fname`, `lname`, `doctor`, `appdate`, `apptime`, `disease`, `allergy`, `prescription`, `docFees` | no (read) | `admin-panel.php:86` | **PASS** |
+| `select_doctb_q005` | none | list of row mappings: `username`, `spec` | no (read) | `admin-panel.php:144` | **PASS** |
+| `select_doctb_q006` | none | list of row mappings: `username`, `spec` | no (read) | `admin-panel.php:313` | **PASS** |
+| `select_appointmenttb_q007` | `fname` ← `$fname`<br>`lname` ← `$lname` | list of row mappings: `ID`, `doctor`, `docFees`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `admin-panel.php:473` | **PASS** |
+| `select_prestb_q008` | `pid` ← `$pid` | list of row mappings: `doctor`, `ID`, `appdate`, `apptime`, `disease`, `allergy`, `prescription` | no (read) | `admin-panel.php:550` | **PASS** |
+| `insert_doctb_q009` | `doctor` ← `$doctor`<br>`dpassword` ← `$dpassword`<br>`demail` ← `$demail`<br>`spec` ← `$spec`<br>`docFees` ← `$docFees` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `admin-panel1.php:15` | valid inputs PASS; FAIL only on a hostile input that injected the legacy SQL (harness misclassification, fixed in 26402af; MySQL re-run pending) |
+| `delete_doctb_q010` | `demail` ← `$demail` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `admin-panel1.php:27` | **PASS** |
+| `select_doctb_q011` | none | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `admin-panel1.php:278` | **PASS** |
+| `select_patreg_q012` | none | list of row mappings: `pid`, `fname`, `lname`, `gender`, `email`, `contact`, `password`, `cpassword` | no (read) | `admin-panel1.php:329` | **PASS** |
+| `select_prestb_q013` | none | list of row mappings: `doctor`, `pid`, `ID`, `fname`, `lname`, `appdate`, `apptime`, `disease`, `allergy`, `prescription` | no (read) | `admin-panel1.php:385` | **PASS** |
+| `select_appointmenttb_q014` | none | list of row mappings: `pid`, `ID`, `fname`, `lname`, `gender`, `email`, `contact`, `doctor`, `docFees`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `admin-panel1.php:458` | **PASS** |
+| `select_contact_q015` | none | list of row mappings: `name`, `email`, `contact`, `message` | no (read) | `admin-panel1.php:568` | **PASS** |
+| `select_appointmenttb_q016` | `contact` ← `$contact` | list of row mappings: `pid`, `ID`, `fname`, `lname`, `gender`, `email`, `contact`, `doctor`, `docFees`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `appsearch.php:17` | **PASS** |
+| `insert_contact_q017` | `name` ← `$name`<br>`email` ← `$email`<br>`contact` ← `$contact`<br>`message` ← `$message` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `contact.php:11` | valid inputs PASS; FAIL only on a hostile input that injected the legacy SQL (harness misclassification, fixed in 26402af; MySQL re-run pending) |
+| `update_appointmenttb_q018` | `GET_ID` ← `$_GET['ID']` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `doctor-panel.php:8` | valid inputs PASS; FAIL only on a hostile input that injected the legacy SQL (harness misclassification, fixed in 26402af; MySQL re-run pending) |
+| `select_appointmenttb_q019` | `dname` ← `$dname` | list of row mappings: `pid`, `ID`, `fname`, `lname`, `gender`, `email`, `contact`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `doctor-panel.php:186` | **PASS** |
+| `select_prestb_q020` | `doctor` ← `$doctor` | list of row mappings: `pid`, `fname`, `lname`, `ID`, `appdate`, `apptime`, `disease`, `allergy`, `prescription` | no (read) | `doctor-panel.php:280` | **PASS** |
+| `select_appointmenttb_q021` | none | list of row mappings: `pid`, `ID`, `fname`, `lname`, `gender`, `email`, `contact`, `doctor`, `docFees`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `doctor-panel.php:332` | **PASS** |
+| `select_doctb_q022` | `contact` ← `$contact` | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `doctorsearch.php:16` | **PASS** |
+| `select_patreg_q023` | `email` ← `$email`<br>`password` ← `$password` | list of row mappings: `pid`, `fname`, `lname`, `gender`, `email`, `contact`, `password`, `cpassword` | no (read) | `func.php:8` | **PASS** |
+| `update_appointmenttb_q024` | `status` ← `$status`<br>`contact` ← `$contact` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func.php:34` | INCONCLUSIVE: schema drift (statement fails on both sides) |
+| `insert_doctb_q025` | `doctor` ← `$doctor`<br>`dpassword` ← `$dpassword`<br>`demail` ← `$demail`<br>`docFees` ← `$docFees` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func.php:62` | INCONCLUSIVE: the legacy statement fails under strict MySQL (missing NOT NULL value), same on both sides |
+| `select_doctb_q026` | `dname` ← `$dname`<br>`dpass` ← `$dpass` | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `func1.php:8` | **PASS** |
+| `select_doctb_q027` | none | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `func1.php:43` | **PASS** |
+| `insert_patreg_q028` | `fname` ← `$fname`<br>`lname` ← `$lname`<br>`gender` ← `$gender`<br>`email` ← `$email`<br>`contact` ← `$contact`<br>`password` ← `$password`<br>`cpassword` ← `$cpassword` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func2.php:14` | valid inputs PASS; FAIL only on a hostile input that injected the legacy SQL (harness misclassification, fixed in 26402af; MySQL re-run pending) |
+| `select_patreg_q029` | none | list of row mappings: `pid`, `fname`, `lname`, `gender`, `email`, `contact`, `password`, `cpassword` | no (read) | `func2.php:26` | **PASS** |
+| `update_appointmenttb_q030` | `status` ← `$status`<br>`contact` ← `$contact` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func2.php:41` | INCONCLUSIVE: schema drift (statement fails on both sides) |
+| `insert_doctb_q031` | `name` ← `$name` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func2.php:66` | INCONCLUSIVE: schema drift (statement fails on both sides) |
+| `select_admintb_q032` | `username` ← `$username`<br>`password` ← `$password` | list of row mappings: `username`, `password` | no (read) | `func3.php:8` | **PASS** |
+| `update_appointmenttb_q033` | `status` ← `$status`<br>`contact` ← `$contact` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func3.php:24` | INCONCLUSIVE: schema drift (statement fails on both sides) |
+| `select_doctb_q034` | none | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `func3.php:36` | **PASS** |
+| `insert_doctb_q035` | `name` ← `$name` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `func3.php:49` | INCONCLUSIVE: schema drift (statement fails on both sides) |
+| `select_users_q036` | `SESSION_id` ← `$_SESSION['id']` | list of row mappings: `fullName` | no (read) | `include/header.php:35` | INCONCLUSIVE: schema drift (statement fails on both sides) |
+| `select_contact_q037` | `contact` ← `$contact` | list of row mappings: `name`, `email`, `contact`, `message` | no (read) | `messearch.php:15` | **PASS** |
+| `update_appointmenttb_q038` | `status` ← `$status`<br>`contact` ← `$contact` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `newfunc.php:23` | INCONCLUSIVE: schema drift (statement fails on both sides) |
+| `select_doctb_q039` | none | list of row mappings: `(spec)` | no (read) | `newfunc.php:45` | **PASS** |
+| `select_doctb_q040` | none | list of row mappings: `username`, `password`, `email`, `spec`, `docFees` | no (read) | `newfunc.php:57` | **PASS** |
+| `insert_doctb_q041` | `username` ← `$username` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `newfunc.php:84` | INCONCLUSIVE: the legacy statement fails under strict MySQL (missing NOT NULL value), same on both sides |
+| `select_patreg_q042` | `contact` ← `$contact` | list of row mappings: `pid`, `fname`, `lname`, `gender`, `email`, `contact`, `password`, `cpassword` | no (read) | `patientsearch.php:15` | **PASS** |
+| `insert_prestb_q043` | `doctor` ← `$doctor`<br>`pid` ← `$pid`<br>`ID` ← `$ID`<br>`fname` ← `$fname`<br>`lname` ← `$lname`<br>`appdate` ← `$appdate`<br>`apptime` ← `$apptime`<br>`disease` ← `$disease`<br>`allergy` ← `$allergy`<br>`prescription` ← `$prescription` | `CursorResult` (use `.rowcount`; `.lastrowid` after INSERT) | commit by default (`commit=False` available) | `prescribe.php:33` | valid inputs PASS; INCONCLUSIVE only on invalid input rejected by both sides |
+| `select_appointmenttb_q044` | `contact` ← `$contact`<br>`docname` ← `$docname` | list of row mappings: `pid`, `ID`, `fname`, `lname`, `gender`, `email`, `contact`, `doctor`, `docFees`, `appdate`, `apptime`, `userStatus`, `doctorStatus` | no (read) | `search.php:8` | **PASS** |
 
 ## Unresolved sites (manual work)
 

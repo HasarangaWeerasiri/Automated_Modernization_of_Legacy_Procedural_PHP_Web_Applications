@@ -179,7 +179,7 @@ Branch: `database-migration` (user override: no `pp1-c3-complete`). Starting poi
 | HMS H1 unresolved review | **done** | `evidence/hms/H1_unresolved_review/`, register 61 | 3 missed recoveries fixed by a general array-element rule; header.php:35 is GT-ambiguous and a schema mismatch. HMS 44/44/44. |
 | HMS item 2 (E2/E4/E1 dry) | **done** | `evidence/hms/E_checks/`, `evidence/mysql_runs/2026-10-15_173248/e2/`, register 62, 66 | E2 offline and **live MySQL MATCH**; drift 7 site-columns; E4 44/44 SAFE; E1 dry 44/44 READY; E3 PASS at `a791cd8`. |
 | HMS H2 tables without PK | **proposal done**; decision with student | `evidence/hms/H2_tables_without_pk/proposal.md`, register 63 | Recommend A (keep Core Table): no function changes. B/C need owner confirmation plus the duplicate check. |
-| HMS item 5 E1 on MySQL | **fill-in table ready; waiting for student values and the MySQL run** | `benchmarks/equivalence_cases/HMS_E1_FILL_GUIDE.md`, register 65 | 46 inputs × (normal, empty_result); 7 drift sites expected INCONCLUSIVE. |
+| HMS item 5 E1 on MySQL | **run 1 done: 27 PASS / 5 FAIL / 12 INCONCLUSIVE; triaged** (0 generated functions wrong); harness fixed `26402af`; re-run pending | `evidence/mysql_runs/2026-10-15_181758/e1/`, `evidence/hms/E1_triage/triage.md`, register 71–73 | Predicted after re-run: 27 / 0 / 17. FR6 = PASS for the 27 E1-PASS sites. |
 | HMS H4 handoff | **done** | `output/hms_kishan0725/HMS_HANDOFF.md`, register 67 | 44 functions documented; signatures frozen (`signatures.json` + test); runs with C3 blocked (44/44 called). |
 | HMS FR matrix | **done** | `evidence/hms/FR_matrix_HMS.md`, register 69 | 9 PASS, FR6 not tested on MySQL (E1 pending), 0 FAIL. |
 | Baseline comparison | not started | — | |
