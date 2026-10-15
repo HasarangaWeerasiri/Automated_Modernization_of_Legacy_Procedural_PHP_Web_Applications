@@ -13,6 +13,9 @@ def select_users_q001(session, q):
     """
     Migrated from 01_like_search.php:9.
     Original query ID: Q001.
+
+    Parameters (PHP value at the call):
+        q: $q
     """
 
     statement = text('SELECT id, name, email FROM users WHERE name LIKE :q')
@@ -45,6 +48,9 @@ def select_orders_q005(session, userId):
     """
     Migrated from 05_join.php:13.
     Original query ID: Q005.
+
+    Parameters (PHP value at the call):
+        userId: $userId
     """
 
     statement = text('SELECT orders.id, orders.total, orders.status, users.name FROM orders JOIN users ON orders.user_id = users.id WHERE users.id = :userId')

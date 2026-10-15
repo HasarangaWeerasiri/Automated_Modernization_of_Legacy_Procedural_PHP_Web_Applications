@@ -1,0 +1,1231 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 42,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select apptime from appointmenttb where doctor='{{doctor}}' and appdate='{{appdate}}' and apptime='{{apptime}}'",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [
+            "apptime"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "apptime",
+            "doctor",
+            "appdate"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_appointmenttb_q001",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 45,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "insert into appointmenttb(pid,fname,lname,gender,email,contact,doctor,docFees,appdate,apptime,userStatus,doctorStatus) values({{pid}},'{{fname}}','{{lname}}','{{gender}}','{{email}}','{{contact}}','{{doctor}}','{{docFees}}','{{appdate}}','{{apptime}}','1','1')",
+        "operation": "INSERT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "pid",
+            "fname",
+            "lname",
+            "gender",
+            "email",
+            "contact",
+            "doctor",
+            "docFees",
+            "appdate",
+            "apptime",
+            "userStatus",
+            "doctorStatus"
+        ],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "insert_appointmenttb_q002",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 71,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "update appointmenttb set userStatus='0' where ID = '{{GET_ID}}'",
+        "operation": "UPDATE",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "userStatus"
+        ],
+        "filter_columns": [
+            "ID"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "update_appointmenttb_q003",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 86,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select p.pid,p.ID,p.fname,p.lname,p.doctor,p.appdate,p.apptime,p.disease,p.allergy,p.prescription,a.docFees from prestb p inner join appointmenttb a on p.ID=a.ID and p.pid = '{{pid}}' and p.ID = '{{GET_ID}}'",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "prestb",
+            "appointmenttb"
+        ],
+        "read_columns": [
+            "pid",
+            "ID",
+            "fname",
+            "lname",
+            "doctor",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription",
+            "docFees"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "ID",
+            "pid"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_prestb_q004",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q005",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 144,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select username,spec from doctb",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "username",
+            "spec"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_doctb_q005",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q006",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 313,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select username,spec from doctb",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "username",
+            "spec"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_doctb_q006",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q007",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 473,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select ID,doctor,docFees,appdate,apptime,userStatus,doctorStatus from appointmenttb where fname ='{{fname}}' and lname='{{lname}}';",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [
+            "ID",
+            "doctor",
+            "docFees",
+            "appdate",
+            "apptime",
+            "userStatus",
+            "doctorStatus"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "fname",
+            "lname"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_appointmenttb_q007",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q008",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+        "source_line": 550,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select doctor,ID,appdate,apptime,disease,allergy,prescription from prestb where pid='{{pid}}';",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "prestb"
+        ],
+        "read_columns": [
+            "doctor",
+            "ID",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "pid"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_prestb_q008",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q009",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 15,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "insert into doctb(username,password,email,spec,docFees)values('{{doctor}}','{{dpassword}}','{{demail}}','{{spec}}','{{docFees}}')",
+        "operation": "INSERT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "username",
+            "password",
+            "email",
+            "spec",
+            "docFees"
+        ],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "insert_doctb_q009",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q010",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 27,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "delete from doctb where email='{{demail}}';",
+        "operation": "DELETE",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [
+            "email"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "delete_doctb_q010",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q011",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 278,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from doctb",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_doctb_q011",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q012",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 329,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from patreg",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "patreg"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_patreg_q012",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q013",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 385,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from prestb",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "prestb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_prestb_q013",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q014",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 458,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from appointmenttb;",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_appointmenttb_q014",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q015",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+        "source_line": 568,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from contact;",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "contact"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_contact_q015",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q016",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\appsearch.php",
+        "source_line": 17,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from appointmenttb where contact= '{{contact}}';",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "contact"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_appointmenttb_q016",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q017",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\contact.php",
+        "source_line": 11,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "insert into contact(name,email,contact,message) values('{{name}}','{{email}}','{{contact}}','{{message}}');",
+        "operation": "INSERT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "contact"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "name",
+            "email",
+            "contact",
+            "message"
+        ],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "insert_contact_q017",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q018",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "update appointmenttb set doctorStatus='0' where ID = '{{GET_ID}}'",
+        "operation": "UPDATE",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "doctorStatus"
+        ],
+        "filter_columns": [
+            "ID"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "update_appointmenttb_q018",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q019",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 186,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select pid,ID,fname,lname,gender,email,contact,appdate,apptime,userStatus,doctorStatus from appointmenttb where doctor='{{dname}}';",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [
+            "pid",
+            "ID",
+            "fname",
+            "lname",
+            "gender",
+            "email",
+            "contact",
+            "appdate",
+            "apptime",
+            "userStatus",
+            "doctorStatus"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "doctor"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_appointmenttb_q019",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q020",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 280,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select pid,fname,lname,ID,appdate,apptime,disease,allergy,prescription from prestb where doctor='{{doctor}}';",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "prestb"
+        ],
+        "read_columns": [
+            "pid",
+            "fname",
+            "lname",
+            "ID",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "doctor"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_prestb_q020",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q021",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+        "source_line": 332,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from appointmenttb;",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_appointmenttb_q021",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q022",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctorsearch.php",
+        "source_line": 16,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from doctb where email= '{{contact}}'",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "email"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_doctb_q022",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q023",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from patreg where email='{{email}}' and password='{{password}}';",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "patreg"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "email",
+            "password"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_patreg_q023",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q024",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func.php",
+        "source_line": 34,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "update appointmenttb set payment='{{status}}' where contact='{{contact}}';",
+        "operation": "UPDATE",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "payment"
+        ],
+        "filter_columns": [
+            "contact"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "update_appointmenttb_q024",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q025",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func.php",
+        "source_line": 62,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "insert into doctb(username,password,email,docFees)values('{{doctor}}','{{dpassword}}','{{demail}}','{{docFees}}')",
+        "operation": "INSERT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "username",
+            "password",
+            "email",
+            "docFees"
+        ],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "insert_doctb_q025",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q026",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func1.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from doctb where username='{{dname}}' and password='{{dpass}}';",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "username",
+            "password"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_doctb_q026",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q027",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func1.php",
+        "source_line": 43,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from doctb",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_doctb_q027",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q028",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 14,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "insert into patreg(fname,lname,gender,email,contact,password,cpassword) values ('{{fname}}','{{lname}}','{{gender}}','{{email}}','{{contact}}','{{password}}','{{cpassword}}');",
+        "operation": "INSERT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "patreg"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "fname",
+            "lname",
+            "gender",
+            "email",
+            "contact",
+            "password",
+            "cpassword"
+        ],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "insert_patreg_q028",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q029",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 26,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from patreg;",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "patreg"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_patreg_q029",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q030",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 41,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "update appointmenttb set payment='{{status}}' where contact='{{contact}}';",
+        "operation": "UPDATE",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "payment"
+        ],
+        "filter_columns": [
+            "contact"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "update_appointmenttb_q030",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q031",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+        "source_line": 66,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "insert into doctb(name)values('{{name}}')",
+        "operation": "INSERT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "name"
+        ],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "insert_doctb_q031",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q032",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from admintb where username='{{username}}' and password='{{password}}';",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "admintb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "username",
+            "password"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_admintb_q032",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q033",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 24,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "update appointmenttb set payment='{{status}}' where contact='{{contact}}';",
+        "operation": "UPDATE",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "payment"
+        ],
+        "filter_columns": [
+            "contact"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "update_appointmenttb_q033",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q034",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 36,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from doctb",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_doctb_q034",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q035",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+        "source_line": 49,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "insert into doctb(name)values('{{name}}')",
+        "operation": "INSERT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "name"
+        ],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "insert_doctb_q035",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q036",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\include\\header.php",
+        "source_line": 35,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select fullName from users where id='{{SESSION_id}}'",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "users"
+        ],
+        "read_columns": [
+            "fullName"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_users_q036",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q037",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\messearch.php",
+        "source_line": 15,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from contact where contact= '{{contact}}'",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "contact"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "contact"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_contact_q037",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q038",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 23,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "update appointmenttb set payment='{{status}}' where contact='{{contact}}';",
+        "operation": "UPDATE",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "payment"
+        ],
+        "filter_columns": [
+            "contact"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "update_appointmenttb_q038",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q039",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 45,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select distinct(spec) from doctb",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "spec"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_doctb_q039",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q040",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 57,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from doctb",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_doctb_q040",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q041",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+        "source_line": 84,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "insert into doctb(username)values('{{username}}')",
+        "operation": "INSERT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "doctb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "username"
+        ],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "insert_doctb_q041",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q042",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\patientsearch.php",
+        "source_line": 15,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from patreg where contact= '{{contact}}'",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "patreg"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "contact"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_patreg_q042",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q043",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\prescribe.php",
+        "source_line": 33,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "insert into prestb(doctor,pid,ID,fname,lname,appdate,apptime,disease,allergy,prescription) values ('{{doctor}}','{{pid}}','{{ID}}','{{fname}}','{{lname}}','{{appdate}}','{{apptime}}','{{disease}}','{{allergy}}','{{prescription}}')",
+        "operation": "INSERT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "prestb"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "doctor",
+            "pid",
+            "ID",
+            "fname",
+            "lname",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription"
+        ],
+        "filter_columns": [],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "insert_prestb_q043",
+        "generated_function_kind": "data_access"
+    },
+    {
+        "query_id": "Q044",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\search.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "recovery_status": "RECOVERED",
+        "recovered_sql": "select * from appointmenttb where contact='{{contact}}' and doctor='{{docname}}';",
+        "operation": "SELECT",
+        "analysis_status": "ANALYZED",
+        "tables": [
+            "appointmenttb"
+        ],
+        "read_columns": [
+            "*"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "contact",
+            "doctor"
+        ],
+        "reason": null,
+        "action": "use_generated_function",
+        "conversion_status": "CONVERTED",
+        "conversion_rule": "general",
+        "conversion_reason": null,
+        "generated_function": "select_appointmenttb_q044",
+        "generated_function_kind": "data_access"
+    }
+]

@@ -1,0 +1,11 @@
+{
+ "handoff": "output\\hms_kishan0725\\HMS_HANDOFF.md",
+ "functions": 44,
+ "unresolved": 0,
+ "drift": 7,
+ "standalone": {
+  "tables": 6,
+  "functions_called": 44,
+  "failures": []
+ }
+}

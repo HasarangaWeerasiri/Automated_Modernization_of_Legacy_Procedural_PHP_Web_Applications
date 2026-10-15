@@ -1,0 +1,29 @@
+{
+    "total_queries": 44,
+    "recovered_queries": 44,
+    "recovery_unresolved": 0,
+    "converted_queries": 44,
+    "converted_by_general_rules": 44,
+    "converted_by_query_specific_template": 0,
+    "recovered_not_converted": 0,
+    "not_converted": 0,
+    "unresolved_queries": 0,
+    "conversion_unresolved": 0,
+    "primary_outputs": [
+        "models.py",
+        "data_access.py",
+        "unresolved_queries.json"
+    ],
+    "supporting_artifacts": [
+        "column_usage.json",
+        "converted_queries.json",
+        "migration_notes.md",
+        "queries.json",
+        "schema.json",
+        "security_report.json",
+        "traceability_report.json",
+        "summary.json",
+        "alembic/"
+    ],
+    "output_directory": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\output\\hms_kishan0725"
+}

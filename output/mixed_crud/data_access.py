@@ -26,6 +26,9 @@ def select_products_q002(session, id):
     """
     Migrated from 02_interpolation.php:7.
     Original query ID: Q002.
+
+    Parameters (PHP value at the call):
+        id: $id
     """
 
     statement = text('SELECT id, title, price FROM products WHERE id = :id')
@@ -43,6 +46,9 @@ def delete_product_q003(session, id, *, commit: bool = True):
     """
     Migrated from 03_concat.php:8.
     Original query ID: Q003.
+
+    Parameters (PHP value at the call):
+        id: $id
     """
 
     statement = text('DELETE FROM products WHERE id = :id')
@@ -76,6 +82,11 @@ def update_product_q005(session, title, price, id, *, commit: bool = True):
     """
     Migrated from 05_update.php:11.
     Original query ID: Q005.
+
+    Parameters (PHP value at the call):
+        title: $title
+        price: $price
+        id: $id
     """
 
     statement = text('UPDATE products SET title = :title, price = :price WHERE id = :id')

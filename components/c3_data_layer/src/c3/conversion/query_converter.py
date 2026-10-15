@@ -477,6 +477,15 @@ def _convert_query(query: dict, schema: dict | None = None) -> dict:
         "table": tables[0],
         "parameters": parameters,
         "like_wildcard_parameters": like_wildcard_parameters,
+        **(
+            {"parameter_sources": {
+                name: source
+                for name, source in (query.get("dynamic_variable_sources") or {}).items()
+                if name in parameters
+            }}
+            if query.get("dynamic_variable_sources")
+            else {}
+        ),
         "parameterized_sql": parameterized_sql,
         **(
             {"prepared_statement_parameters": prepared_parameters}

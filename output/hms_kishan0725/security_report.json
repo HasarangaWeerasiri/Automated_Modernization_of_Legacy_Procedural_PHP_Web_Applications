@@ -1,0 +1,1592 @@
+{
+    "summary": {
+        "total_queries": 44,
+        "queries_with_user_input": 26,
+        "legacy_injection_sites": 26,
+        "legacy_injection_sites_remediated": 23,
+        "legacy_injection_sites_not_converted": 0,
+        "user_controlled_values_in_converted_queries": 62,
+        "bound_or_allowlisted": 59,
+        "injection_safety_coverage_percent": 95.16,
+        "generated_code_text_calls_not_literal": 0,
+        "generated_code_violations": 0
+    },
+    "scope": {
+        "user_input_sources": [
+            "$_GET",
+            "$_POST",
+            "$_REQUEST",
+            "$_COOKIE"
+        ],
+        "indirect_sources_reported_not_counted": [
+            "$_SESSION"
+        ],
+        "taint_analysis": "intra-file, order-based (last assignment before use), transitive over variables up to depth 6; function parameters and other files not traced except validated cross-file bindings",
+        "coverage_definition": "bound_or_allowlisted / user-controlled values in converted queries; unresolved queries are excluded and listed as not converted"
+    },
+    "queries": [
+        {
+            "query_id": "Q001",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+            "source_line": 42,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "appdate",
+                    "apptime",
+                    "doctor"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "doctor",
+                    "sources": [
+                        "_POST.doctor"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "appdate",
+                    "sources": [
+                        "_POST.appdate"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "apptime",
+                    "sources": [
+                        "_POST.apptime"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q002",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+            "source_line": 45,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "appdate",
+                    "apptime",
+                    "contact",
+                    "docFees",
+                    "doctor",
+                    "email",
+                    "fname",
+                    "gender",
+                    "lname",
+                    "pid"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "pid",
+                    "sources": [
+                        "_SESSION.pid"
+                    ],
+                    "user_controlled": false,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "fname",
+                    "sources": [
+                        "_SESSION.fname"
+                    ],
+                    "user_controlled": false,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "lname",
+                    "sources": [
+                        "_SESSION.lname"
+                    ],
+                    "user_controlled": false,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "gender",
+                    "sources": [
+                        "_SESSION.gender"
+                    ],
+                    "user_controlled": false,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "email",
+                    "sources": [
+                        "_SESSION.email"
+                    ],
+                    "user_controlled": false,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "contact",
+                    "sources": [
+                        "_SESSION.contact"
+                    ],
+                    "user_controlled": false,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "doctor",
+                    "sources": [
+                        "_POST.doctor"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "docFees",
+                    "sources": [
+                        "_POST.docFees"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "appdate",
+                    "sources": [
+                        "_POST.appdate"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "apptime",
+                    "sources": [
+                        "_POST.apptime"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q003",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+            "source_line": 71,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "ID",
+                    "sources": [
+                        "_GET.ID"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "UNHANDLED_IN_CONVERTED_CODE"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": false
+        },
+        {
+            "query_id": "Q004",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+            "source_line": 86,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "pid"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "pid",
+                    "sources": [
+                        "_SESSION.pid"
+                    ],
+                    "user_controlled": false,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "ID",
+                    "sources": [
+                        "_GET.ID"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "UNHANDLED_IN_CONVERTED_CODE"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": false
+        },
+        {
+            "query_id": "Q005",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+            "source_line": 144,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q006",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+            "source_line": 313,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q007",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+            "source_line": 473,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "fname",
+                    "lname"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "fname",
+                    "sources": [
+                        "_SESSION.fname"
+                    ],
+                    "user_controlled": false,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "lname",
+                    "sources": [
+                        "_SESSION.lname"
+                    ],
+                    "user_controlled": false,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q008",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel.php",
+            "source_line": 550,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "pid"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "pid",
+                    "sources": [
+                        "_SESSION.pid"
+                    ],
+                    "user_controlled": false,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q009",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+            "source_line": 15,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "demail",
+                    "docFees",
+                    "doctor",
+                    "dpassword",
+                    "spec"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "doctor",
+                    "sources": [
+                        "_POST.doctor"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "dpassword",
+                    "sources": [
+                        "_POST.dpassword"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "demail",
+                    "sources": [
+                        "_POST.demail"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "spec",
+                    "sources": [
+                        "_POST.special"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "docFees",
+                    "sources": [
+                        "_POST.docFees"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q010",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+            "source_line": 27,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "demail"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "demail",
+                    "sources": [
+                        "_POST.demail"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q011",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+            "source_line": 278,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q012",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+            "source_line": 329,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q013",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+            "source_line": 385,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q014",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+            "source_line": 458,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q015",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\admin-panel1.php",
+            "source_line": 568,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q016",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\appsearch.php",
+            "source_line": 17,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "contact"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "contact",
+                    "sources": [
+                        "_POST.app_contact"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q017",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\contact.php",
+            "source_line": 11,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "contact",
+                    "email",
+                    "message",
+                    "name"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "name",
+                    "sources": [
+                        "_POST.txtName"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "email",
+                    "sources": [
+                        "_POST.txtEmail"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "contact",
+                    "sources": [
+                        "_POST.txtPhone"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "message",
+                    "sources": [
+                        "_POST.txtMsg"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q018",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+            "source_line": 8,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "ID",
+                    "sources": [
+                        "_GET.ID"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "UNHANDLED_IN_CONVERTED_CODE"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": false
+        },
+        {
+            "query_id": "Q019",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+            "source_line": 186,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "dname"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "dname",
+                    "sources": [
+                        "_SESSION.dname"
+                    ],
+                    "user_controlled": false,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q020",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+            "source_line": 280,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "doctor"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "doctor",
+                    "sources": [
+                        "_SESSION.dname"
+                    ],
+                    "user_controlled": false,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q021",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctor-panel.php",
+            "source_line": 332,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q022",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\doctorsearch.php",
+            "source_line": 16,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "contact"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "contact",
+                    "sources": [
+                        "_POST.doctor_contact"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q023",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func.php",
+            "source_line": 8,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "email",
+                    "password"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "email",
+                    "sources": [
+                        "_POST.email"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "password",
+                    "sources": [
+                        "_POST.password2"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q024",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func.php",
+            "source_line": 34,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "contact",
+                    "status"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "status",
+                    "sources": [
+                        "_POST.status"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "contact",
+                    "sources": [
+                        "_POST.contact"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q025",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func.php",
+            "source_line": 62,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "demail",
+                    "docFees",
+                    "doctor",
+                    "dpassword"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "doctor",
+                    "sources": [
+                        "_POST.doctor"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "dpassword",
+                    "sources": [
+                        "_POST.dpassword"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "demail",
+                    "sources": [
+                        "_POST.demail"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "docFees",
+                    "sources": [
+                        "_POST.docFees"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q026",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func1.php",
+            "source_line": 8,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "dname",
+                    "dpass"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "dname",
+                    "sources": [
+                        "_POST.username3"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "dpass",
+                    "sources": [
+                        "_POST.password3"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q027",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func1.php",
+            "source_line": 43,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q028",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+            "source_line": 14,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "contact",
+                    "cpassword",
+                    "email",
+                    "fname",
+                    "gender",
+                    "lname",
+                    "password"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "fname",
+                    "sources": [
+                        "_POST.fname"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "lname",
+                    "sources": [
+                        "_POST.lname"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "gender",
+                    "sources": [
+                        "_POST.gender"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "email",
+                    "sources": [
+                        "_POST.email"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "contact",
+                    "sources": [
+                        "_POST.contact"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "password",
+                    "sources": [
+                        "_POST.password"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "cpassword",
+                    "sources": [
+                        "_POST.cpassword"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q029",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+            "source_line": 26,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q030",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+            "source_line": 41,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "contact",
+                    "status"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "status",
+                    "sources": [
+                        "_POST.status"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "contact",
+                    "sources": [
+                        "_POST.contact"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q031",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func2.php",
+            "source_line": 66,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "name"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "name",
+                    "sources": [
+                        "_POST.name"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q032",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+            "source_line": 8,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "password",
+                    "username"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "username",
+                    "sources": [
+                        "_POST.username1"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "password",
+                    "sources": [
+                        "_POST.password2"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q033",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+            "source_line": 24,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "contact",
+                    "status"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "status",
+                    "sources": [
+                        "_POST.status"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "contact",
+                    "sources": [
+                        "_POST.contact"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q034",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+            "source_line": 36,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q035",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\func3.php",
+            "source_line": 49,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "name"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "name",
+                    "sources": [
+                        "_POST.name"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q036",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\include\\header.php",
+            "source_line": 35,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "id",
+                    "sources": [
+                        "_SESSION.id"
+                    ],
+                    "user_controlled": false,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "UNHANDLED_IN_CONVERTED_CODE"
+                }
+            ],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q037",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\messearch.php",
+            "source_line": 15,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "contact"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "contact",
+                    "sources": [
+                        "_POST.mes_contact"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q038",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+            "source_line": 23,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "contact",
+                    "status"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "status",
+                    "sources": [
+                        "_POST.status"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "contact",
+                    "sources": [
+                        "_POST.contact"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q039",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+            "source_line": 45,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q040",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+            "source_line": 57,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [],
+                "structural_positions": []
+            },
+            "user_inputs": [],
+            "legacy_injection_site": false,
+            "remediated": false
+        },
+        {
+            "query_id": "Q041",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\newfunc.php",
+            "source_line": 84,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "username"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "username",
+                    "sources": [
+                        "_POST.username"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q042",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\patientsearch.php",
+            "source_line": 15,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "contact"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "contact",
+                    "sources": [
+                        "_POST.patient_contact"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q043",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\prescribe.php",
+            "source_line": 33,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "ID",
+                    "allergy",
+                    "appdate",
+                    "apptime",
+                    "disease",
+                    "doctor",
+                    "fname",
+                    "lname",
+                    "pid",
+                    "prescription"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "doctor",
+                    "sources": [
+                        "_SESSION.dname"
+                    ],
+                    "user_controlled": false,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "pid",
+                    "sources": [
+                        "_POST.pid"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "ID",
+                    "sources": [
+                        "_POST.ID"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "fname",
+                    "sources": [
+                        "_POST.fname"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "lname",
+                    "sources": [
+                        "_POST.lname"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "appdate",
+                    "sources": [
+                        "_POST.appdate"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "apptime",
+                    "sources": [
+                        "_POST.apptime"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "disease",
+                    "sources": [
+                        "_POST.disease"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "allergy",
+                    "sources": [
+                        "_POST.allergy"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "prescription",
+                    "sources": [
+                        "_POST.prescription"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        },
+        {
+            "query_id": "Q044",
+            "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\_app_only\\hms_kishan0725\\search.php",
+            "source_line": 8,
+            "recovery_status": "RECOVERED",
+            "conversion_status": "CONVERTED",
+            "conversion_rule": "general",
+            "placeholders": {
+                "value_positions": [
+                    "contact",
+                    "docname"
+                ],
+                "structural_positions": []
+            },
+            "user_inputs": [
+                {
+                    "variable": "contact",
+                    "sources": [
+                        "_POST.contact"
+                    ],
+                    "user_controlled": true,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                },
+                {
+                    "variable": "docname",
+                    "sources": [
+                        "_SESSION.dname"
+                    ],
+                    "user_controlled": false,
+                    "sanitizers": [],
+                    "legacy_risk": "injectable_unsanitized",
+                    "generated_handling": "bound_parameter"
+                }
+            ],
+            "legacy_injection_site": true,
+            "remediated": true
+        }
+    ],
+    "generated_code_scan": []
+}

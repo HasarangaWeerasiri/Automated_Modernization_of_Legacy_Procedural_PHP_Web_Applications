@@ -13,6 +13,10 @@ def insert_user_q001(session, name, email, *, commit: bool = True):
     """
     Migrated from create_user.php:9.
     Original query ID: Q001.
+
+    Parameters (PHP value at the call):
+        name: $name
+        email: $email
     """
 
     statement = text("INSERT INTO users (name, email, status) VALUES (:name, :email, 'active')")
@@ -34,6 +38,9 @@ def delete_user_q002(session, id, *, commit: bool = True):
     """
     Migrated from delete_user.php:8.
     Original query ID: Q002.
+
+    Parameters (PHP value at the call):
+        id: $id
     """
 
     statement = text('DELETE FROM users WHERE id = :id')
@@ -54,6 +61,10 @@ def update_user_q003(session, name, id, *, commit: bool = True):
     """
     Migrated from update_user.php:8.
     Original query ID: Q003.
+
+    Parameters (PHP value at the call):
+        name: $name
+        id: $id
     """
 
     statement = text('UPDATE users SET name = :name WHERE id = :id')

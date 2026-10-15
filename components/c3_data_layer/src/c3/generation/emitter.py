@@ -81,6 +81,24 @@ def _function_name(query: dict) -> str:
     )
 
 
+def _parameter_doc_lines(query: dict, parameters: list[str]) -> list[str]:
+    """Docstring lines naming the PHP value behind each parameter."""
+
+    sources = query.get("parameter_sources") or {}
+    if not parameters:
+        return []
+    lines = ["", "    Parameters (PHP value at the call):"]
+    for name in parameters:
+        if name in sources:
+            origin = sources[name]
+        elif name.startswith("param_") and query.get("prepared_statement_parameters"):
+            origin = f"prepared-statement placeholder {name.split('_', 1)[1]}"
+        else:
+            origin = f"${name}"
+        lines.append(f"        {name}: {origin}")
+    return lines
+
+
 ROW_COUNT_PARAMETER_PATTERN = re.compile(
     r"\b(?:LIMIT\s+:(\w+)(?:\s*,\s*:(\w+))?|OFFSET\s+:(\w+))",
     re.IGNORECASE,
@@ -166,6 +184,7 @@ def _build_function(query: dict) -> str:
             f"    Original query ID: "
             f"{query['query_id']}."
         ),
+        *_parameter_doc_lines(query, parameters),
         '    """',
         "",
         f"    statement = text({sql!r})",
