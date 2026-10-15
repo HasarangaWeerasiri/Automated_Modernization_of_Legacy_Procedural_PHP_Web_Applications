@@ -179,6 +179,7 @@ Branch: `database-migration` (user override: no `pp1-c3-complete`). Starting poi
 | HMS H1 unresolved review | **done** | `evidence/hms/H1_unresolved_review/`, register 61 | 3 missed recoveries fixed by a general array-element rule; header.php:35 is GT-ambiguous and a schema mismatch. HMS 44/44/44. |
 | HMS item 2 (E2/E4/E1 dry) | **done** (E2 live pending, student) | `evidence/hms/E_checks/`, register 62 | E2 offline MATCH, drift 7 site-columns, E4 44/44 SAFE, E1 dry 44/44 READY. |
 | HMS H2 tables without PK | **proposal done**; decision with student | `evidence/hms/H2_tables_without_pk/proposal.md`, register 63 | Recommend A (keep Core Table): no function changes. B/C need owner confirmation plus the duplicate check. |
+| HMS item 5 E1 on MySQL | **fill-in table ready; waiting for student values and the MySQL run** | `benchmarks/equivalence_cases/HMS_E1_FILL_GUIDE.md`, register 65 | 46 inputs × (normal, empty_result); 7 drift sites expected INCONCLUSIVE. |
 | Baseline comparison | not started | — | |
 | Demo | not started | — | |
 | Docs + evidence register | started | `evidence/evidence_register.md` | Register created with the pre-dev test run. |
