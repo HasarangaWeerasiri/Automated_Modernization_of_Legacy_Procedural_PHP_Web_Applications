@@ -81,11 +81,11 @@ CATALOGUE = {
         "`header(\"Content-Type: text/xml\")`: an RSS feed, a sitemap. Not a page; an API route owned by C1. "
         "Nothing is generated; the unit is listed under `notGenerated`."),
     "abstain:exit_arm_not_covered": (
-        "A", "Exit arm where R-I8's written text does not fit", CANDIDATE,
+        "A", "Exit arm that R-I8 does not cover", "existing: section 5 `exit_arm_not_covered` (rules v0.14)",
         "An arm that ends in `exit` / `die` after output that is not a redirect, where \"the rest of the "
         "enclosing block is its implicit else\" is not the whole truth: the arm is nested in another `if` or "
-        "loop, or stands in a function or an included file (the exit also ends what encloses the block), or it "
-        "is not the `then` arm, or the rest closes tags opened before the `if`."),
+        "loop, or it is not the `then` arm, or the rest closes tags opened before the `if` (in a function or an "
+        "included file R-I8c applies instead)."),
     "abstain:partial_attribute_output": (
         "A", "An `if` that starts inside a tag and also prints elements", "existing: section 5 (no rule matches)",
         "R-I3 covers an `if` that stays inside one attribute value. This one starts in a tag and goes on."),
@@ -244,9 +244,9 @@ CATALOGUE = {
         "No output, no component; flagged (info) for C1 with the target and the guarding condition. A file that "
         "prints nothing has no unit: its redirects are listed in `index.json` (`silentFileRedirects`)."),
     "seen:json_echo": (
-        "C", "`echo json_encode(...)` in a unit with no `Content-Type` header and no markup of its own", CANDIDATE,
-        "The unit answers with JSON (an AJAX endpoint), but nothing marks it as not HTML: section 5 "
-        "`non_html_response` needs a literal `header('Content-Type: ...')`. It is generated as a page."),
+        "E", "`echo json_encode(...)` in a unit with no `Content-Type` header and no markup of its own",
+        "existing: `non_html_response`, subtype `ajax_endpoint` (rules v1.0 section 5)",
+        "An AJAX endpoint: not generated, listed under `notGenerated` with the `.js` lines that call it."),
     "seen:filter_in_loop": (
         "A", "Loop whose whole body is one `if` (filter-in-loop)",
         "\u00a78 \"not yet seen: filter-in-loop\" \u2192 **now seen**",
@@ -680,35 +680,28 @@ ATTENDANCE_GAPS = (
 )
 
 
-# Warehouse (roadmap Phase 3, app 5, the reserve app): the decision input for the freeze. Nothing here is decided.
+# Warehouse (roadmap Phase 3, app 5, the reserve app): the owner's verdict (rules v1.0 section 8): no new pattern,
+# counter 2 / 2, the rules are frozen. What each construct is after the step-5 changes.
 WAREHOUSE = {
-    "abstain:cross_file_output": ("a", "\u00a75 cross_file_output fires as written; **candidate**: an include whose "
-        "only output is whitespace",
-        "37 of the 40 are `require_once('includes/load.php')`: `load.php` line 1 is an empty line before `<?php`, so "
-        "the file prints one newline and nothing else. That newline comes before `<!DOCTYPE html>`, where an HTML5 "
-        "parser ignores whitespace, so no page renders it. The same newline makes 9 pages that print nothing "
-        "themselves (`delete_*.php`, `auth.php`, `auth_v2.php`, `logout.php`) units. The other 3 are the menu "
-        "includes in `layouts/header.php` 59\u201367 (an existing row: an include of a printing file)."),
-    "abstain:unresolved_call": ("a", "Data flow (Member 01 Q11) for 70; **candidate (doubtful)**: 6 includes whose "
-        "path is a `define()`d constant",
-        "70 are calls through the `MySqli_DB` / `Session` objects (`$db->query`, `$session->msg`) or helpers of "
-        "`includes/sql.php` that call them (`page_require_level`, `find_by_id`): unresolved by design. 6 are "
-        "`require_once(LIB_PATH_INC.'config.php')` in `includes/load.php` 17\u201322: the path is built from a "
-        "constant set by `define()`, so the include has no literal path (INCLUDES_NOTE). Likely data flow "
-        "(a constant's value), not a boundary pattern."),
-    "seen:json_echo": ("a", "**Candidate NEW**: no \u00a75 reason covers it (`non_html_response` needs a "
-        "`Content-Type` header)",
-        "`ajax.php` 26, 63: `echo json_encode($html)`, called by jQuery `$.ajax` in `libs/js/functions.js` 15, 53 "
-        "(autocomplete in `add_sale.php`). The legacy unit is a JSON / AJAX endpoint (C1's, like a Route Handler); "
-        "here it is generated as an HTML page whose content is C2Todos. Not wrong content, but the wrong kind of "
-        "unit. AJAX is out of scope (CONTEXT \u00a72): detect and flag; there is no detection for it without a header."),
+    "seen:json_echo": ("a", "Not new (owner, v1.0, a judgement call): \u00a75 `non_html_response`, subtype "
+        "`ajax_endpoint`",
+        "`ajax.php` 26, 63 `echo json_encode($html)`, called from `libs/js/functions.js` 15, 53: an AJAX endpoint, "
+        "out of scope since CONTEXT v1. Not generated; the `notGenerated` entry names the two callers. A strict "
+        "reading that ties `non_html_response` to a Content-Type header would count it as new; the report states "
+        "both readings."),
+    "abstain:cross_file_output": ("b", "\u00a75 cross_file_output (existing)",
+        "The menu includes in `layouts/header.php` 59\u201367. The 37 includes of `includes/load.php`, whose only "
+        "output is an empty line, are no longer here: whitespace-only included output is text at the include "
+        "site (rules v1.0 \u00a74)."),
+    "abstain:unresolved_call": ("d", "Data flow (Member 01 Q11)",
+        "Calls through the `MySqli_DB` / `Session` objects (`$db->query`, `$session->msg`) and the helpers of "
+        "`includes/sql.php` that use them. The include of `includes/load.php` is one of them: its six "
+        "`LIB_PATH_INC.'\u2026'` includes now resolve (rules v1.0 \u00a74), and `session.php` calls `$session` "
+        "methods at its top level."),
     "abstain:output_outside_shell": ("b", "R-F2 `output_outside_shell` (existing reason)",
         "A POST handler before `include_once('layouts/header.php')` (`edit_user.php`, before its line 67): its calls "
         "(`$session->msg`, `redirect`, `$db->query`) may print, so they are page output before the header. The "
         "cause is the unresolved calls above."),
-    "abstain:tag_crosses_function": ("b", "R-F2: a page that includes the header without the footer",
-        "`login_v2.php`: its form comes **before** `include_once('layouts/header.php')` and it never includes "
-        "the footer."),
     "note:markup_in_assigned_string": ("b", "Not new (owner, v0.13): data flow, Member 01's DFG",
         "`display_msg()` (`includes/functions.php`) builds `<div class=\"alert\">\u2026` in `$output` and returns it."),
     "note:output_buffering": ("b", "Not new (owner, v0.15)", "`ob_start()` in `index.php`, `login_v2.php`."),
@@ -718,7 +711,7 @@ WAREHOUSE = {
     "note:row_read_not_traced": ("d", "data (Member 01 Q1, Q3, Q17)", "Unresolved reads; the DFG's job."),
 }
 WAREHOUSE_CLASSES = {
-    "a": "(a) Candidate new patterns (the owner decides)",
+    "a": "(a) Candidates the owner judged (rules v1.0)",
     "b": "(b) Existing patterns with new instances",
     "d": "(d) Unresolved reads, missing labels, no endpoint only",
 }
@@ -726,8 +719,13 @@ WAREHOUSE_GAPS = (
     "The app was supplied as a `git archive` and a sha256 manifest (the agent had no network): the harness reads "
     "the folder directly after checking all 63 files against `legacy-apps/warehouse-69fdd1c.sha256` "
     "(`tools/harness/app.py`, `verify_manifest`). An input change, not a rule change.",
-    "No other gap was fixed: nothing in this app needed a code change to run.",
+    "Step 5 (rules v1.0, written by the owner for these cases): include paths built from constants resolve "
+    "statically (\u00a74); an included file that prints only whitespace hands it to the spec \u00a75 whitespace rules at "
+    "the include site (\u00a74); an AJAX endpoint is `non_html_response`, subtype `ajax_endpoint` (\u00a75).",
 )
+WAREHOUSE_DECIDED = ("the owner did (rules v1.0: no new pattern, saturation counter 2 / 2, **frozen**; the "
+                     "`ajax_endpoint` reading is recorded as a judgement call). It shows what each construct is "
+                     "after the step-5 changes.")
 
 
 PHPBLOG_DECIDED = ("the owner did (rules v0.13: 4 new patterns, saturation counter 0 / 2). It shows what each "
@@ -853,7 +851,7 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
                             decided=ATTENDANCE_DECIDED)
     number += 1
     lines += phase3_section(number, "warehouse", data, ordered, WAREHOUSE, WAREHOUSE_CLASSES, WAREHOUSE_GAPS,
-                            decided=None)
+                            decided=WAREHOUSE_DECIDED)
     number += 1
 
     shells = [(app, s) for app in APPS for s in summary[app].get("shells", [])]

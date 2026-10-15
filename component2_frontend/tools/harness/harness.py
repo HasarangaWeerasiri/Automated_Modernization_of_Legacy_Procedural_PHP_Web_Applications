@@ -65,6 +65,7 @@ FETCH_ALL = ("mysqli_fetch_all",)
 SUPERGLOBALS = {"$_SESSION": "session", "$_GET": "request", "$_POST": "request", "$_REQUEST": "request",
                 "$_COOKIE": "request", "$_SERVER": "server"}
 ESCAPE_WRAPPERS = ("h", "htmlspecialchars", "htmlentities")
+HTML_SPACE = " \t\n\f\r"  # HTML5 whitespace (not str.strip()'s Unicode set)
 OUTPUT_FUNCTIONS = ("printf", "vprintf", "print_r", "var_dump", "var_export", "readfile", "fpassthru", "passthru")
 RETURNING_FUNCTIONS = ("print_r", "var_export")  # with a second argument `true` they return their text
 _MARKUP_TEXT = re.compile(r"<[A-Za-z!/]|\b[a-z-]+=\"")  # a tag, or an attribute written out
@@ -143,6 +144,15 @@ INCLUDES_NOTE = ("Harness extension, pending Member 01 Q4: an include / require 
                  "that is not in the repository). A literal path is looked up from the including file's own "
                  "directory, then from the app's root. outputsInside is true, false or \"unknown\", as for a call: "
                  "what the included file's top level prints, itself or through what it includes and calls.")
+FOLDED_INCLUDE_NOTE = ("boundary-rules v1.0 section 4 (include paths): an include whose path is not one literal but is "
+                       "built only from string literals, __DIR__, __FILE__, dirname() / realpath() of those, "
+                       "DIRECTORY_SEPARATOR and constants define()d once in the app with such a value is resolved "
+                       "statically: its `includes` item carries `folded`, the path from the app's root, starting "
+                       "with \"/\".")
+WHITESPACE_INCLUDE_NOTE = ("boundary-rules v1.0 section 4 (whitespace-only included output): a file whose top level prints "
+                           "only whitespace (outside arms that exit) does not print for its includers: its include "
+                           "entry has outputsInside false and `whitespace`, the text, which stands at the include "
+                           "site as text (spec section 5 whitespace rules). Such a file has no timeline of its own.")
 RESOLUTION_NOTE = ("boundary-rules v0.11 section 4: a name defined in several files resolves only through the calling "
                    "file's own literal includes, followed transitively; exactly one reachable definition -> that "
                    "function, otherwise callee null.")
@@ -968,16 +978,32 @@ class FileHarness:
                 enclosure["fetchNodeId"] = filled.node.id
         return enclosure
 
+    def whitespace_text(self, scope: _Scope) -> str | None:
+        """What a file's top level prints when all of it (outside arms that exit) is whitespace inline HTML
+        (boundary-rules v1.0 section 4, e.g. warehouse `includes/load.php`, an empty line before `<?php`); else
+        None. Function scopes are not looked at."""
+        if scope.name is not None or scope.prints_by_function:
+            return None
+        printed = [(node, kind) for node, kind, _, enclosures in scope.outputs
+                   if not any(e.get("exits") for e in enclosures)]
+        if not printed or any(kind != "Stmt_InlineHTML" or self.node_text(node).strip(HTML_SPACE)
+                              for node, kind in printed):
+            return None
+        return "".join(self.node_text(node) for node, _ in printed)
+
     def direct_output(self, scope: _Scope) -> bool:
         """Whether a scope prints by itself (what it includes and calls is followed by function_resolver).
-        Output inside an arm that always exits does not count (R-I8c): it is an error stop."""
+        Output inside an arm that always exits does not count (R-I8c): it is an error stop. Nor does a file's
+        top level that prints only whitespace (boundary-rules v1.0 section 4): that text stands at its includes."""
+        if self.whitespace_text(scope) is not None:
+            return False
         return scope.prints_by_function or any(
             not any(e.get("exits") for e in enclosures) for _, _, _, enclosures in scope.outputs)
 
     def slots_print(self, scope: _Scope, resolve) -> bool:
         """Whether a scope has a timeline: it prints itself, or it is a file's top level whose calls or includes
         certainly print (a page made only of `include header; show(); include footer`)."""
-        if scope.outputs:
+        if scope.outputs and self.whitespace_text(scope) is None:
             return True
         if scope.name is not None:
             return False
@@ -1029,10 +1055,12 @@ class FileHarness:
         for include, (node, enclosures) in zip(scope.includes, scope.include_nodes):
             target, outputs_inside = own_resolve.include(include, self)
             exits = own_resolve.include_exits(include, self)
+            whitespace = own_resolve.include_whitespace(include, self)
             sequence.append((node.start, {
                 "id": node.id, "kind": "include", "path": target, "outputsInside": outputs_inside,
                 "enclosedBy": [self.loop_enclosure(e) if e["role"] == "iteration" else e for e in enclosures],
-                "loc": loc_dict(node.loc), **({"exitOutput": exits} if exits else {})}))
+                "loc": loc_dict(node.loc), **({"exitOutput": exits} if exits else {}),
+                **({"whitespace": whitespace} if whitespace else {})}))
         sequence.sort(key=lambda item: (item[0], item[1]["id"]))
         entrypoint = self.entrypoint if scope.name is None else f"{self.entrypoint}#{scope.name}"
         notes = [dict(items) for items in dict.fromkeys(tuple(n.items()) for n in notes)]  # a read made twice
@@ -1060,6 +1088,7 @@ class FileHarness:
                 "callResolution": RESOLUTION_NOTE, "includesExtension": INCLUDES_NOTE,
                 "exitExtension": EXIT_NOTE, "contentTypeExtension": CONTENT_TYPE_NOTE,
                 "exitOutputExtension": EXIT_OUTPUT_NOTE, "fetchExtension": FETCH_NOTE,
+                "foldedIncludes": FOLDED_INCLUDE_NOTE, "whitespaceIncludes": WHITESPACE_INCLUDE_NOTE,
                 "redirectsExtension": REDIRECTS_NOTE, "builtinMethods": BUILTIN_METHODS_NOTE,
                 "selectStarConvention": SELECT_STAR_NOTE,
                 "partsExtension": PARTS_NOTE, "copyPropagationExtension": COPY_NOTE,
@@ -1072,7 +1101,7 @@ class FileHarness:
 def _connection(rhs) -> bool:
     while _is(rhs, "Expr_ErrorSuppress"):
         rhs = rhs.get("expr")
-    return (_is(rhs, "Expr_New") and (_name(rhs.get("class")) or "").lower() in ("mysqli", "\mysqli")
+    return (_is(rhs, "Expr_New") and (_name(rhs.get("class")) or "").lower() in ("mysqli", "\\mysqli")
             or _is(rhs, "Expr_FuncCall") and _callee(rhs) == "mysqli_connect")
 
 
@@ -1103,6 +1132,52 @@ def drop_builtin_methods(harnesses: dict) -> None:
             scope.calls[:] = kept
 
 
+def _fold(node, key: str, constants: dict, seen: tuple = ()) -> str | None:
+    """The value of an include path expression written in app file `key`, when it is statically certain
+    (boundary-rules v1.0 section 4); a path from the app's root starts with "/". None otherwise."""
+    if _is(node, "Scalar_String"):
+        return node.get("value")
+    if _is(node, "Expr_BinaryOp_Concat"):
+        left, right = _fold(node.get("left"), key, constants, seen), _fold(node.get("right"), key, constants, seen)
+        return None if left is None or right is None else left + right
+    if _is(node, "Scalar_MagicConst_File"):
+        return "/" + key
+    if _is(node, "Scalar_MagicConst_Dir"):
+        return posixpath.dirname("/" + key)
+    if _is(node, "Expr_FuncCall") and _callee(node) in ("dirname", "realpath") and len(_args(node)) == 1:
+        value = _fold(_args(node)[0], key, constants, seen)
+        if value is None or not value.startswith("/"):
+            return None  # relative to the working directory, which the source does not fix
+        return posixpath.dirname(value) if _callee(node) == "dirname" else posixpath.normpath(value)
+    if _is(node, "Expr_ConstFetch"):
+        name = _name(node.get("name"))
+        if name == "DIRECTORY_SEPARATOR":
+            return "/"
+        if name in constants and name not in seen:
+            where, value = constants[name]
+            return _fold(value, where, constants, seen + (name,))
+    return None
+
+
+def fold_include_paths(harnesses: dict) -> None:
+    """Gives every include whose path is not one literal its statically certain path, if it has one
+    (`folded`): constants count only when the app define()s them exactly once."""
+    defines: dict[str, list] = {}
+    for key in sorted(harnesses):
+        for node in harnesses[key].nodes.values():
+            if _is(node, "Expr_FuncCall") and _callee(node) == "define" and len(_args(node)) >= 2 \
+                    and _is(_args(node)[0], "Scalar_String"):
+                defines.setdefault(_args(node)[0].get("value"), []).append((key, _args(node)[1]))
+    constants = {name: found[0] for name, found in defines.items() if len(found) == 1}
+    for key, harness in harnesses.items():
+        for scope in harness.scopes():
+            for include, (node, _) in zip(scope.includes, scope.include_nodes):
+                if include["literal"] is None:
+                    folded = _fold(node.get("expr"), key, constants)
+                    if folded is not None and folded.startswith("/"):
+                        include["folded"] = posixpath.normpath(folded)
+
+
 def function_resolver(harnesses: dict):
     """resolve(name, harness) for a set of files that form one app, keyed by their path in the app.
 
@@ -1119,6 +1194,7 @@ def function_resolver(harnesses: dict):
     entry of a scope's `includes` (see INCLUDES_NOTE).
     """
     drop_builtin_methods(harnesses)
+    fold_include_paths(harnesses)
     definitions: dict[str, list] = {}  # lower-case name -> [(file key, harness, scope)]
     for key in sorted(harnesses):
         for name, scope in harnesses[key].functions.items():
@@ -1129,7 +1205,10 @@ def function_resolver(harnesses: dict):
     reach: dict[str, set] = {}
 
     def include_target(include: dict, key: str) -> str | None:
-        """The app file a literal include written in file `key` names, or None."""
+        """The app file a literal (or statically folded) include written in file `key` names, or None."""
+        if include.get("folded"):  # a path from the app's root (boundary-rules v1.0 section 4)
+            target = include["folded"].lstrip("/")
+            return target if target in harnesses else None
         if include["literal"] is None:
             return None
         for target in (posixpath.normpath(posixpath.join(posixpath.dirname(key), include["literal"])),
@@ -1220,6 +1299,25 @@ def function_resolver(harnesses: dict):
         found = targets(name, key_of[id(harness)])
         return listed(set().union(*(exits[id(scope)] for _, _, scope in found))) if found else []
 
+    def whitespace(key: str, seen: frozenset = frozenset()) -> str:
+        """The whitespace a file prints for its includers: its own, and that of the whitespace-only files it
+        includes, in source order. Empty when the file prints anything else."""
+        top = harnesses[key].top
+        if state[id(top)] is not False:
+            return ""
+        own = harnesses[key].whitespace_text(top) or ""
+        pieces = [(node.start, harnesses[key].node_text(node)) for node, kind, _, enclosures in top.outputs
+                  if own and not any(e.get("exits") for e in enclosures)]
+        for include, (node, _) in zip(top.includes, top.include_nodes):
+            target = include_target(include, key)
+            if target is not None and target not in seen:
+                pieces.append((node.start, whitespace(target, seen | {key})))
+        return "".join(text for _, text in sorted(pieces, key=lambda p: p[0]))
+
+    def resolve_include_whitespace(include: dict, harness) -> str:
+        target = include_target(include, key_of[id(harness)])
+        return "" if target is None else whitespace(target)
+
     def resolve_include_exits(include: dict, harness) -> list:
         target = include_target(include, key_of[id(harness)])
         return [] if target is None else listed(exits[id(harnesses[target].top)])
@@ -1227,6 +1325,7 @@ def function_resolver(harnesses: dict):
     resolve.include = resolve_include
     resolve.exits = resolve_exits
     resolve.include_exits = resolve_include_exits
+    resolve.include_whitespace = resolve_include_whitespace
     return resolve
 
 

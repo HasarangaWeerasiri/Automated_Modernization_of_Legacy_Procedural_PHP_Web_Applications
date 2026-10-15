@@ -196,6 +196,9 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, bu
                                  layout)
             if result.not_generated is not None:  # spec v0.8 section 6a: not a page (e.g. non_html_response)
                 entry["notGenerated"] = result.not_generated
+                if result.not_generated.get("subtype") == "ajax_endpoint":  # spec v0.12: the JS that calls it
+                    entry["notGenerated"] = result.not_generated | {
+                        "calledFrom": (timelines.js_references or {}).get(entry["path"], [])}
                 continue
             if entry["role"] == "page":
                 entry["group"] = units.shells[tree.root.shell.header].group if tree.root.shell else PLAIN_GROUP

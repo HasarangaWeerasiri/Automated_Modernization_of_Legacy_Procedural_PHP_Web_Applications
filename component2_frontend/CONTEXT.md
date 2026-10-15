@@ -1,6 +1,6 @@
 # Component 2 — Agent Context (read this first, every task)
 
-_Version 21 — 14 Oct 2026 (step 4 part A accepted; part B = warehouse from the owner's archive; freeze if it adds nothing)._
+_Version 22 — 15 Oct 2026 (warehouse judged: no new pattern → **boundary rules FROZEN (v1.0)**; step 5 = last pre-freeze fixes + freeze commit)._
 
 This file is the handoff between the research chat and the coding agent. It records decisions
 already made. **Do not change a decision recorded here.** If something here looks wrong or a task
@@ -117,7 +117,9 @@ harness, not Member 01's core** (`_provenance.generator = "c2-harness"`).
 - WackoPicko mocks: `{timeline,labels}_wp_{guestbook,view,login,header,thumbnails}.json` (generated). Their **labels are generator placeholders**, not C1 output, and every WackoPicko read is `unresolved` (data comes through class methods in `include/*.php`). Use them for Stage 2 only.
 - Deliberate contract gap: field **`contact`** (flagged on list pages only). `sku` appears in no schema.
 - `undecided` nodes: edge_cases (1, `auth_or_display`), wp_login (1, placeholder `logic_or_display`), wp_thumbnails (1, placeholder `logic_or_display`).
-- Tests: 981 passing, 2 skipped (after step 4 part A). phpBlog abstains 57 → 15, `unresolved_call` 20 → 0, `exit_arm_not_covered` 24 → 0; `header_redirect` HMS 13, attendance 15 (files that print nothing → `index.json` `silentFileRedirects`); R-I8c flags at attendance's 12 `connect.php` includes.
+- **Rules frozen** (boundary-rules v1.0, spec v0.12) by the owner's commit of Phase 3 step 5 — write its hash here after committing: `________`. No rule or spec change after it without a *post-freeze* entry in boundary-rules §10.
+- Tests: 988 passing, 0 skipped (after step 4 part B). Warehouse: 48 PHP files, 41 pages, 1 shell (`layouts/header.php` + `footer.php`), 138 abstains (`unresolved_call` 76 — the wrapper, Q11; `cross_file_output` 40 — mostly the whitespace-only `load.php`), 0 tsc errors, `next build` ok. Manifest `legacy-apps/warehouse-69fdd1c.sha256` committed; the harness verifies it before reading.
+- Earlier: 981 passing, 2 skipped (after step 4 part A). phpBlog abstains 57 → 15, `unresolved_call` 20 → 0, `exit_arm_not_covered` 24 → 0; `header_redirect` HMS 13, attendance 15 (files that print nothing → `index.json` `silentFileRedirects`); R-I8c flags at attendance's 12 `connect.php` includes.
 - Earlier: 957 passing (after Phase 3 step 3). Attendance: 19 files, 14 pages, 0 shells, abstains 11 (`try_catch_enclosure` 6), 0 tsc errors, `next build` ok. R-I8c flags on WackoPicko login / register / similar; phpBlog `cross_file_output` 24 → 0.
 - Earlier: 938 passing (after Phase 3 step 2). phpBlog: abstains 101 → 52, all 9 previously-lost units generated, admin header/footer pair (route group `(admin-header)`), `rss.php` / `sitemap.php` not generated (`non_html_response`). `config.php` analysed from `install/config.tpl` (PINS.md). Rules fired in phpBlog: R-I3b 58, R-I2b 1, R-I8 37 (all redirect guards).
 - Earlier: 886 passing (after Phase 3 step 1). phpBlog: 52 units (49 pages, 1 function component, 2 shells), 0 crashes, 0 tsc errors, `next build` ok; abstains 101 (tag_crosses_function 48 — fixed by the R-F2 refinement; unresolved_call 23; cross_file_output 18; …). Includes are timeline entries (`{kind: "include", path, loc}`, harness extension pending Member 01 Q4). phpBlog's clone is git-ignored like the other apps; `PINS.md` records how to restore it.

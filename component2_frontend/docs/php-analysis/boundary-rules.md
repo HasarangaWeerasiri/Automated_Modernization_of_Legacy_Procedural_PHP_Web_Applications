@@ -1,12 +1,12 @@
-# Component 2 — UI Boundary Rules (DRAFT v0.16)
+# Component 2 — UI Boundary Rules (v1.0 — FROZEN)
 
 | Item | Value |
 |---|---|
-| Status | **Draft** — not frozen. Freeze when 2 consecutive new rule-discovery apps add no new pattern (saturation) |
-| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note · v0.6, 10 Oct: Q2 note gives the exact condExpr form · v0.7, 11 Oct: R-L3 scope clarified; filter-in-loop added to the checklist as not yet seen · v0.8, 12 Oct: corpus extended — 2 discovery apps queued, 3 evaluation apps added by random split · v0.9, 12 Oct: after the Phase 1 whole-app run — echo-string parts (§1), R-L3b, R-F1/R-F2 written in full, R-I5 evidence re-opened, Q16 · v0.10, 12 Oct: Member 01's answers recorded in §9 · v0.11, 13 Oct: R-I5 hits classified, R-I7 added, R-F1/R-F2 completed for Phase 2b, record-guard candidate, Q18 · v0.12, 13 Oct: Phase 2b accepted; §8 defines "new pattern" for saturation; Q19; phpBlog opened for Phase 3 · v0.13, 13 Oct: phpBlog judged — 4 new patterns (R-I3b, R-I2b, R-I8, `non_html_response`), R-L4 and R-F2 refined, saturation counter 0 / 2 · v0.14, 14 Oct: step-2 corrections (R-F2 end-tag scope, R-I3b later attribute, R-I8 scope + R-I8c, R-L4 reads); attendance opened · v0.15, 14 Oct: attendance judged — no new pattern, counter 1 / 2; R-I8 case (1) scope corrected; `or die` normalisation; built-in mysqli methods; reserve app opened · v0.16, 14 Oct: step-4 part A accepted — R-I8 before R-I1, mysqli receiver condition made exact; no new rule) |
+| Status | **Frozen** on 15 Oct 2026 (saturation reached: attendance and warehouse, the 4th and 5th discovery apps, added no new pattern — §8). Freeze commit: the owner's commit of Phase 3 step 5 (hash recorded in CONTEXT §6). **From here, no rule changes before the evaluation (Phase 5) is complete.** Any later change is logged in §10 as *post-freeze* with its reason, and every evaluation result is re-run and reported both before and after it |
+| Date | 7 October 2026 (v0.2: source spot-check corrections · v0.3: owner decisions after the first Stage 2 run · v0.4: wording fixes after the v0.3 run · v0.5, 10 Oct: Member 01 Q14–Q15 added, Q2 note · v0.6, 10 Oct: Q2 note gives the exact condExpr form · v0.7, 11 Oct: R-L3 scope clarified; filter-in-loop added to the checklist as not yet seen · v0.8, 12 Oct: corpus extended — 2 discovery apps queued, 3 evaluation apps added by random split · v0.9, 12 Oct: after the Phase 1 whole-app run — echo-string parts (§1), R-L3b, R-F1/R-F2 written in full, R-I5 evidence re-opened, Q16 · v0.10, 12 Oct: Member 01's answers recorded in §9 · v0.11, 13 Oct: R-I5 hits classified, R-I7 added, R-F1/R-F2 completed for Phase 2b, record-guard candidate, Q18 · v0.12, 13 Oct: Phase 2b accepted; §8 defines "new pattern" for saturation; Q19; phpBlog opened for Phase 3 · v0.13, 13 Oct: phpBlog judged — 4 new patterns (R-I3b, R-I2b, R-I8, `non_html_response`), R-L4 and R-F2 refined, saturation counter 0 / 2 · v0.14, 14 Oct: step-2 corrections (R-F2 end-tag scope, R-I3b later attribute, R-I8 scope + R-I8c, R-L4 reads); attendance opened · v0.15, 14 Oct: attendance judged — no new pattern, counter 1 / 2; R-I8 case (1) scope corrected; `or die` normalisation; built-in mysqli methods; reserve app opened · v0.16, 14 Oct: step-4 part A accepted — R-I8 before R-I1, mysqli receiver condition made exact · **v1.0, 15 Oct: warehouse judged — no new pattern, counter 2 / 2 → FROZEN**; §5 non-HTML wording made class-level; whitespace-only include output; include-path constants) |
 | Owner | Jayawardhana R D L L (IT23213876) — Component 2, Frontend Migration |
 | Rule-discovery corpus | HMS (`kishan0725/Hospital-Management-System`, commit `777fda4`), WackoPicko (`adamdoupe/WackoPicko`, commit `cabc1b3`, MIT) |
-| Evaluation corpus | **Locked — do not open** (see §7) |
+| Evaluation corpus | Locked until the freeze commit **and** the owner's gold standard are committed (see §7, CONTEXT §5) |
 
 > Rule IDs here (`R-L*`, `R-I*`, `R-F*`) are Component 2 boundary rules. They are **not** the
 > `R01`-style `ruleId` values in `labels_*.json`, which are Component 1 concern-rule placeholders.
@@ -115,6 +115,16 @@ no other assignment to it on any path in between** (v0.16 — the definition dom
 `core.php` 30 → 34, one `else` deeper) — these are documented PHP built-ins and
 never print → no call entry (like built-in functions). Everything else stays `unresolved_call`.
 
+**Include paths (v1.0).** An include path built only from string literals, `__DIR__`, `__FILE__`, `dirname(...)` /
+`realpath(...)` of those, `DIRECTORY_SEPARATOR`, and constants `define()`d **once** in the app with such a value is
+resolved statically (it cannot differ at run time). Anything else stays unresolved (warehouse `includes/load.php`
+17–22).
+
+**Whitespace-only included output (v1.0).** If an included file's only output is whitespace, that whitespace is
+treated as text at the include site and the spec §5 whitespace rules decide it (dropped before `<!DOCTYPE>` and
+between blocks, `{" "}` between inline nodes, kept in `<pre>` / `<textarea>`); the include is not
+`cross_file_output`.
+
 | Call entry | Generated at the call site |
 |---|---|
 | `callee` resolved, `outputsInside: true` | the R-F1 component |
@@ -175,7 +185,7 @@ layout from repeated per-page markup would be a similarity guess → not done.
 - Node enclosed by `switch_case` or `try_catch` (no rule yet).
 - Output comes from an **included file** that prints and is not half of a shell pair → abstain `cross_file_output` (v0.13 name). (Function calls are handled by R-F1 and the call-entry table in §4.)
 - An exit-terminated arm that R-I8 does not cover (nested, `else` arm, rest closes earlier tags) → abstain `exit_arm_not_covered` (v0.14).
-- The unit is **not an HTML response** (`header('Content-Type: …xml…')`, RSS, sitemap) → abstain `non_html_response` for the whole unit; it is an API route (Next.js Route Handler), owned by C1, not a page (v0.13; phpBlog `rss.php`, `sitemap.php`).
+- The unit is **not an HTML response** → abstain `non_html_response` for the whole unit; it is an API route (Next.js Route Handler), owned by C1, not a page (v0.13). Signals (v1.0, class-level wording): a literal non-HTML `header('Content-Type: …')` (phpBlog `rss.php`, `sitemap.php`), **or** a unit with no markup of its own whose only output is `json_encode(...)` — an AJAX endpoint (warehouse `ajax.php`), which CONTEXT §2 has put out of scope ("detect and flag") since day 1; subtype `ajax_endpoint`.
 - A content `if` labelled `business_logic` (authorization guard), whether or not it holds a loop → abstain `cuts_across_business_logic`. Candidate rule, **not adopted** (one hand-written mock only): render the content normally and delegate the condition to C1 (server-side 403 / no data). Decide after C1 confirms how authorization appears in the contract.
 
 ---
@@ -262,7 +272,25 @@ more abstains for an existing reason, an implementation gap for a rule that is a
 included files), and unresolved reads (the DFG's job) are **not** new patterns. Saturation: two consecutive
 discovery apps add no new pattern → the rules are frozen.
 
-**Saturation counter: 1 / 2** (14 Oct 2026). **Attendance (app 4) added no new pattern.** Judged candidates:
+**Saturation counter: 2 / 2 — FROZEN** (15 Oct 2026). **Warehouse (app 5) added no new pattern.** Judged candidates:
+(1) `echo json_encode($html)` with no Content-Type and no markup (`ajax.php` 26, 63) — an AJAX endpoint: the
+class "not an HTML response" exists (§5, phpBlog) and AJAX has been out of scope since CONTEXT v1; the §5 wording
+is made class-level and the endpoint gets subtype `ajax_endpoint`. **Judgement call, recorded:** a strict reading
+that ties `non_html_response` to its v0.13 signal (a Content-Type header) would count it as new.
+(2) An include whose only output is whitespace (`includes/load.php` starts with a newline, 37 includes) — the
+existing `cross_file_output` fired as written; that output is whitespace text, which spec §5 already drops
+between blocks / before `<!DOCTYPE>` → whitespace-only included output is handed to those whitespace rules at the
+include site (implementation consistency, not a rule).
+(3) Include paths built from `define()`d constants (`LIB_PATH_INC.'config.php'`, `SITE_ROOT = realpath(dirname(__FILE__))`)
+— constant folding is data flow; the harness folds only what is statically certain (§4 note).
+Everything else in warehouse mapped to existing rows (R-F2 shell pair fired 47 times; R-I3b 7).
+
+**Both readings, for the report:** under the §8 definition with the two recorded judgement calls (attendance
+`or die`, warehouse `json_encode`), attendance and warehouse each added no new pattern → saturation after 5
+discovery apps. Under the strictest reading, both would count as new and saturation is **not** shown. The report
+states both, and the evaluation (Phase 5) — on 5 locked apps never used for rules — is the real test.
+
+**Earlier — saturation counter 1 / 2** (14 Oct 2026). **Attendance (app 4) added no new pattern.** Judged candidates:
 (1) `try/catch` around output (6) — §5 already abstains; `try` moves from "not yet seen" to seen; not new.
 (2) `X or die(m)` in included `connect.php` (8) — **judgement call, recorded**: semantically an exit arm
 (PHP short-circuit), so it is normalised into R-I8c (§1), not a new rule. Before the fix it was dropped
@@ -376,6 +404,8 @@ the call site (`callee`, `outputsInside`), no inlining — R-F1/R-F2 will read c
 | 12 Oct 2026 | 5 new licensed procedural apps split at random: 3 evaluation, 2 discovery | Avoids picking easy evaluation apps; seed recorded so the split is reproducible |
 | 12 Oct 2026 | Saturation is judged on **whole apps** run through the harness, not on excerpts | Excerpts were chosen by us and hide patterns |
 | 13 Oct 2026 | phpBlog adds 4 new patterns → R-I3b, R-I2b, R-I8, `non_html_response`; counter 0 / 2 | Judged by the §8 definition fixed before the app was opened |
+| 15 Oct 2026 | Warehouse: no new pattern → counter 2 / 2 → **rules frozen (v1.0)** | Judged by the §8 definition fixed on 13 Oct; one judgement call recorded with both readings |
+| 15 Oct 2026 | Post-freeze changes are logged, never silent; evaluation reported before and after any of them | Keeps the train/test split honest |
 | 14 Oct 2026 | Attendance: no new pattern → counter 1 / 2 | Judged by the §8 definition; the `or die` normalisation is recorded as a judgement call with both readings |
 | 14 Oct 2026 | R-I8 redirect guards at any depth (corrects v0.14) | Nesting does not change what a redirect guard means; restricting it made 24 sound cases abstain |
 | 14 Oct 2026 | Built-in mysqli methods are not calls | PHP built-ins never print; same treatment as built-in functions; matches Member 01's proposed Q11 v1 |

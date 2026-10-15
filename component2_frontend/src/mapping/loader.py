@@ -282,10 +282,16 @@ def load_timeline_json(path: Path) -> dict:
                                  '"unknown"')
         elif entry.get("kind") == INCLUDE_KIND:
             required = {"id", "kind", "enclosedBy", "path", "outputsInside"}
-            if not required <= set(entry) <= required | {"loc", "exitOutput"}:
+            if not required <= set(entry) <= required | {"loc", "exitOutput", "whitespace"}:
                 raise ValueError(f"{where}: include keys {sorted(entry)}; expected {sorted(required)} and "
-                                 "optionally loc / exitOutput")
+                                 "optionally loc / exitOutput / whitespace")
             _check_exit_output(entry.get("exitOutput", []), where)
+            if "whitespace" in entry:  # boundary-rules v1.0 section 4: whitespace-only included output
+                text = entry["whitespace"]
+                if not isinstance(text, str) or not text or text.strip(" \t\n\f\r") \
+                        or entry["outputsInside"] is not False:
+                    raise ValueError(f"{where}: whitespace must be non-empty HTML whitespace, on an include that "
+                                     "does not print otherwise")
             if entry["path"] is not None and (not isinstance(entry["path"], str) or not entry["path"]):
                 raise ValueError(f"{where}: include path {entry['path']!r}, expected a file's entrypoint or null")
             if not isinstance(entry["outputsInside"], bool) and entry["outputsInside"] != "unknown":
@@ -394,7 +400,8 @@ def load_timeline(path: Path) -> Timeline:
                   outputs_inside=e["outputsInside"],
                   enclosed_by=tuple(_enclosure(x) for x in e["enclosedBy"]), loc=_loc(e.get("loc")),
                   args=None if "args" not in e else tuple(_argument(a) for a in e["args"]), kind=e["kind"],
-                  exit_output=tuple((x["file"], x["line"]) for x in e.get("exitOutput", ())))
+                  exit_output=tuple((x["file"], x["line"]) for x in e.get("exitOutput", ())),
+                  whitespace=e.get("whitespace", ""))
         for e in doc["sequence"] if e["kind"] in SLOT_KINDS
     )
     function = doc.get("function")

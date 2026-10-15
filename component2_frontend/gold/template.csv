@@ -1,0 +1,6 @@
+app,file,line,construct,decision,container,item_root,binding,notes
+example-app,list.php,1,unit,page,,,,
+example-app,list.php,24,loop,list,table@18,tr,,rows of students
+example-app,list.php,26,read,,,,students.name,
+example-app,list.php,30,if,inline,,,,status badge (2 elements)
+example-app,list.php,12,if,list_guard,,,,"if (mysqli_num_rows($r) > 0) ... else No records"

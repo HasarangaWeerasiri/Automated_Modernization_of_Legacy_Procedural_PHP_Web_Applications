@@ -1598,8 +1598,10 @@ class Generator:
         """Section 5 / spec v0.8 section 6a: a unit that is not an HTML response is no page. Nothing is written
         for it; it is listed under notGenerated, with one entry that counts as a gap."""
         media_type = self.timeline.content_type
-        detail = (f"Content-Type {media_type}: not an HTML page. An API route (Next.js Route Handler), owned by "
-                  "Component 1")
+        ajax = "ajax_endpoint" in self.tree.root.flags  # spec v0.12: no markup, only json_encode(...)
+        detail = (("an AJAX endpoint: no markup of its own, its only output is json_encode(...)" if ajax else
+                   f"Content-Type {media_type}: not an HTML page") + ". An API route (Next.js Route Handler), "
+                  "owned by Component 1")
         entry = GenerationEntry(
             kind="flag", flag="non_html_response", reason="non_html_response", status=REVIEW, file="", line=0,
             node_id="page", detail=detail, function="", in_abstained=False, source_line=None, severity="todo",
@@ -1607,6 +1609,7 @@ class Generator:
         return GenerationResult(entrypoint=self.timeline.entrypoint, route=self.route, files=(), components=(),
                                 todos=(), flags=(entry,),
                                 not_generated={"reason": "non_html_response", "contentType": media_type,
+                                               **({"subtype": "ajax_endpoint"} if ajax else {}),
                                                "owner": "Component 1 (Route Handler)"})
 
     def run(self) -> GenerationResult:

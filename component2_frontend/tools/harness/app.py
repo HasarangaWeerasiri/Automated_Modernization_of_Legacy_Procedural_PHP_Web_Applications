@@ -8,6 +8,8 @@ and whether it prints, directly or through a function it calls.
 
 import hashlib
 import json
+import posixpath
+import re
 import shutil
 import subprocess
 import tarfile
@@ -68,6 +70,7 @@ class AppTimelines:
     prefix: str = ""  # what an entrypoint starts with before the file's path, e.g. "legacy-apps/hms"
     silent_notes: dict = None  # file -> the harness notes of its top level, for files that print nothing
     silent_redirects: dict = None  # file -> its literal header("Location: ...") calls, for files that print nothing
+    js_references: dict = None  # PHP file -> [{file, line}] of the app's .js lines that name it (spec v0.12)
 
 
 def head_commit(root: Path) -> str:
@@ -157,6 +160,31 @@ def safe_function_name(name: str) -> str:
     return name.replace("::", ".")
 
 
+def js_references(tree: Path, php_files: list, docroot: str = "", exclude: tuple = ()) -> dict:
+    """PHP file -> [{file, line}]: the app's own .js lines with a quoted string naming that file (its path from
+    the document root, or its file name when no other PHP file has that name). Generation-spec v0.12: the JS that
+    calls an AJAX endpoint is named in its notGenerated entry."""
+    served = {posixpath.relpath(f, docroot) if docroot else f: f for f in php_files
+              if not docroot or f.startswith(docroot + "/")}
+    names: dict[str, list] = {}
+    for path in served.values():
+        names.setdefault(posixpath.basename(path), []).append(path)
+    found: dict[str, list] = {}
+    scripts = sorted(p.relative_to(tree).as_posix() for p in tree.rglob("*.js"))
+    for script in scripts:
+        if any(script.startswith(prefix) for prefix in exclude):
+            continue
+        text = (tree / script).read_bytes().decode("utf-8", errors="replace")
+        for number, line in enumerate(text.splitlines(), start=1):
+            for quoted in re.findall(r"""['"]([^'"\s]+\.php)(?:\?[^'"]*)?['"]""", line):
+                target = served.get(posixpath.normpath(quoted.lstrip("./")))
+                if target is None and len(names.get(posixpath.basename(quoted), [])) == 1:
+                    target = names[posixpath.basename(quoted)][0]
+                if target is not None:
+                    found.setdefault(target, []).append({"file": script, "line": number})
+    return found
+
+
 def silent_redirects(harnesses: dict, silent) -> dict:
     """The literal header("Location: ...") calls of files that print nothing (they have no unit, so no Stage 5
     flag): file -> [{line, target, guarded}] (generation-spec v0.10, header_redirect)."""
@@ -210,6 +238,7 @@ def app_timelines(app: str) -> AppTimelines:
                 raise RuntimeError(f"{app}: {missing} exists at {commit}; its substitution is out of date")
             shutil.copyfile(tree / source, tree / missing)
         files = app_files(app, tree)
+        scripts = js_references(tree, files, config["docroot"], config["exclude"])
         schema, schema_files = load_schema(tree)
         sources = [SourceFile(tree / path, f"f{index:03d}", f"{config['prefix']}/{path}")
                    for index, path in enumerate(files, start=1)]
@@ -237,7 +266,7 @@ def app_timelines(app: str) -> AppTimelines:
                     for path in silent if harnesses[path].top.notes}
     return AppTimelines(app, tuple(pages), tuple(silent), errors, len(files), tuple(schema_files),
                         function_table(harnesses), config["docroot"], config["prefix"], silent_notes,
-                        silent_redirects(harnesses, silent))
+                        silent_redirects(harnesses, silent), scripts)
 
 
 def dump_timeline(timeline: dict) -> str:

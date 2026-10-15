@@ -690,7 +690,9 @@ def test_every_page_of_both_apps_runs_without_a_crash(apps_output):
     # config.php is analysed from install/config.tpl, a 51st file)
     expected = {"hms": (29, (26, 2, 0, 5, 0)), "wackopicko": (49, (30, 2, 1, 0, 2)),
                 "phpblog": (51, (47, 1, 3, 0, 6)), "attendance": (19, (18, 0, 0, 0, 0)),
-                "warehouse": (48, (41, 0, 1, 0, 2))}  # step 4 part B: the reserve app
+                "warehouse": (48, (30, 0, 1, 0, 2))}  # step 4 part B: the reserve app
+    # (step 5, rules v1.0 section 4: the 9 warehouse pages that were units only because includes/load.php printed
+    # a newline, and load.php / sql.php themselves, are silent now)
     # (step 4: attendance's four connect.php print their `or die` messages (rules v0.15 section 1), so they
     # are units, like phpBlog's core.php; their arms are R-I8c)
     assert {app: (index["files"], roles(index)) for app, index in indexes.items()} == {
@@ -750,7 +752,9 @@ def test_whole_app_totals(apps_output):
     # Warehouse: first run.
     expected = {"hms": (269, 68, 5, 174, 192, 391, 292), "wackopicko": (384, 58, 7, 307, 159, 301, 126),
                 "phpblog": (801, 186, 15, 832, 591, 1046, 464), "attendance": (176, 34, 11, 95, 85, 167, 287),
-                "warehouse": (419, 75, 138, 250, 377, 277, 380)}
+                "warehouse": (418, 64, 62, 243, 270, 270, 378)}
+    # Step 5 (rules v1.0, freeze): warehouse only. Include paths from constants resolve (load.php 6/6), the
+    # whitespace-only load.php is no cross_file_output (40 -> 3), ajax.php is an ajax_endpoint (not generated).
     assert totals == {app: expected[app] for app in totals}
     hms = [apps_results_table.page_row(output / "hms", entry) for entry in indexes["hms"]["pages"]]
     assert (sum(r["review_unlabelled"] for r in hms), sum(r["review_other"] for r in hms)) == (171, 3)

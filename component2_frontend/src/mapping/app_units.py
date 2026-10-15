@@ -83,10 +83,18 @@ def slots(timeline: Timeline) -> list[CallEntry]:
     return [c for c in timeline.calls if c.kind == CHILDREN or c.outputs_inside is not False]
 
 
+def include_text(timeline: Timeline) -> list[OutputNode]:
+    """boundary-rules v1.0 section 4: the whitespace of an included file that prints only whitespace, as inline
+    HTML at the include site (the include's id), so the spec section 5 whitespace rules decide it."""
+    return [OutputNode(c.id, "Stmt_InlineHTML", c.whitespace, (), c.enclosed_by, c.loc)
+            for c in timeline.calls if c.kind == INCLUDE and c.whitespace]
+
+
 def outputs_with_slots(timeline: Timeline) -> list[OutputNode]:
-    """The timeline's output statements, with one empty pseudo node (kind "call" / "children") per slot,
-    in sequence order. A slot prints nothing here: what stands in its place is decided by Stage 2."""
-    pseudo = [OutputNode(c.id, c.kind, "", (), c.enclosed_by, c.loc) for c in slots(timeline)]
+    """The timeline's output statements, with one empty pseudo node (kind "call" / "children") per slot and
+    the text of whitespace-only includes, in sequence order. A slot prints nothing here: what stands in its
+    place is decided by Stage 2."""
+    pseudo = [OutputNode(c.id, c.kind, "", (), c.enclosed_by, c.loc) for c in slots(timeline)] + include_text(timeline)
     if not pseudo:
         return list(timeline.sequence)
     order = {node_id: index for index, node_id in enumerate(timeline.order)}

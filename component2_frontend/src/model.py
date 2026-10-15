@@ -157,6 +157,9 @@ class CallEntry:
     args: tuple["CallArg", ...] | None = None  # optional (harness extension): the arguments, in order
     # R-I8c (harness extension): exit arms that print, reached through this call / include: ((file, line), ...)
     exit_output: tuple = ()
+    # boundary-rules v1.0 section 4: an include of a file that prints only whitespace: that text, which stands at
+    # the include site as text (its outputs_inside is False)
+    whitespace: str = ""
     # "call" | "include" (harness extension, pending Member 01 Q4: an include / require at its position) |
     # "children" for the place where a shell component puts its page (never from a file)
     kind: str = "call"

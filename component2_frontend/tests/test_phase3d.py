@@ -310,9 +310,13 @@ def test_warehouse_runs_whole_without_a_crash_and_compiles(warehouse):
     output, index = warehouse
     assert index["files"] == 48 and index["parseErrors"] == {} and index["collisions"] == []
     assert [p["key"] for p in index["pages"] if p["crash"]] == []
-    assert len([p for p in index["pages"] if p["role"] == "page"]) == 41
+    # step 5 (rules v1.0 section 4): 11 units fewer (the newline of includes/load.php); ajax.php is not generated
+    assert len([p for p in index["pages"] if p["role"] == "page"]) == 30
     assert [s["name"] for s in index["shells"]] == ["LayoutsHeaderShell"]
-    assert index["schemaFiles"] == ["oswa_inv.sql"] and index["notGenerated"] == []
+    assert index["schemaFiles"] == ["oswa_inv.sql"]
+    assert [(n["path"], n["reason"], n["subtype"], n["calledFrom"]) for n in index["notGenerated"]] == [
+        ("ajax.php", "non_html_response", "ajax_endpoint",
+         [{"file": "libs/js/functions.js", "line": 15}, {"file": "libs/js/functions.js", "line": 53}])]
     if compile_check.unavailable() is None:
         assert index["tscRan"] and index["tscUnattributed"] == 0, index["tscOutput"]
         # (shell parts have no result of their own: they are checked in their shell)
@@ -322,5 +326,5 @@ def test_warehouse_runs_whole_without_a_crash_and_compiles(warehouse):
     for row in rows:
         for reason, n in row["abstains"].items():
             reasons[reason] = reasons.get(reason, 0) + n
-    assert reasons == {"unresolved_call": 76, "cross_file_output": 40, "output_outside_shell": 21,
-                       "tag_crosses_function": 1}
+    assert reasons == {"unresolved_call": 36, "cross_file_output": 3, "output_outside_shell": 21,
+                       "tag_crosses_function": 1, "non_html_response": 1}

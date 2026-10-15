@@ -85,6 +85,7 @@ from src.model import (
 
 COMPONENT_TYPES = ("Page", "Layout", "List", "Item", "Empty", "ConditionalComponent")
 HTML_MEDIA_TYPES = ("text/html", "application/xhtml+xml")
+HTML_SPACE = " \t\n\f\r"
 BLOCKING_CONCERNS = (Concern.BUSINESS_LOGIC, Concern.DATA_ACCESS, Concern.MIXED)
 
 
@@ -187,6 +188,7 @@ class _Builder:
         self.calls = {c.id: c for c in timeline.calls} if timeline is not None else {}
         self.in_function = timeline is not None and timeline.function is not None
         self.content_type = timeline.content_type if timeline is not None else None
+        self.is_function = timeline is not None and timeline.function is not None
         # A file that other files include is not certainly the whole response: an `exit` in it ends the
         # including page too, so R-I8's "rest of the enclosing block" is not all that stops.
         self.included = bool(timeline is not None and units is not None and timeline.entrypoint in units.functions)
@@ -617,10 +619,25 @@ class _Builder:
 
     # ---- page
 
+    def ajax_endpoint(self) -> bool:
+        """Section 5 (v1.0), subtype ajax_endpoint: a file's top level with no markup of its own whose only output
+        is `json_encode(...)` (whitespace aside), e.g. warehouse `ajax.php`. Calls and includes are not looked at:
+        they are flagged where they stand."""
+        own = [k.output for k in self.outputs if not app_units.is_slot(k.output)]
+        echoes = [n for n in own if n.kind != "Stmt_InlineHTML"]
+        return bool(not self.is_function and echoes
+                    and all((n.raw or "").strip(HTML_SPACE) == "" for n in own if n.kind == "Stmt_InlineHTML")
+                    and all(n.kind in ("Stmt_Echo", "Expr_Print") and n.reads and all(
+                        r.expr.replace(" ", "").lower().startswith("json_encode(") for r in n.reads)
+                        for n in echoes))
+
     def page(self) -> ComponentNode:
         if self.content_type is not None and self.content_type not in HTML_MEDIA_TYPES:
             # Section 5: the unit is not an HTML response (RSS, a sitemap). It is an API route, owned by C1.
             return self.node("Page", (), "non_html_response", self.outputs, (), (), abstain=True)
+        if self.ajax_endpoint():  # section 5 (v1.0): an AJAX endpoint, also an API route owned by C1
+            return self.node("Page", (), "non_html_response", self.outputs, (), (), abstain=True,
+                             flags=("ajax_endpoint",))
         items = _regions(self.outputs)
         regions = [item for item in items if not isinstance(item, KeptNode)]
         others_blank = all(_blank(item) for item in items if isinstance(item, KeptNode))
@@ -650,8 +667,9 @@ def infer_boundaries(stage1_result: PresentationResult, timeline: Timeline, conf
     not looked at, as for a timeline on its own."""
     order = {node.id: index for index, node in enumerate(timeline.sequence)}
     outputs = sorted((k for k in stage1_result.kept if k.node_type == "output"), key=lambda k: order[k.node_id])
-    if units is not None and app_units.slots(timeline):
-        # Every call that may print gets an empty slot among the output nodes, at its place in the sequence.
+    if units is not None and (app_units.slots(timeline) or app_units.include_text(timeline)):
+        # Every call that may print gets an empty slot among the output nodes, at its place in the sequence; the
+        # include of a whitespace-only file stands there as its text (rules v1.0 section 4)
         labels = {e.node_id: e.label for k in outputs for e in k.enclosed_by}
         order = {node_id: index for index, node_id in enumerate(timeline.order)}
         for slot in app_units.slots(timeline):
@@ -659,6 +677,11 @@ def infer_boundaries(stage1_result: PresentationResult, timeline: Timeline, conf
             outputs.append(KeptNode(
                 node_id=slot.id, node_type="call", kind=slot.kind, status=Status.OK, reason="call", label=None,
                 enclosed_by=enclosed, output=OutputNode(slot.id, slot.kind, "", (), enclosed, slot.loc)))
+        for text in app_units.include_text(timeline):
+            enclosed = tuple(replace(e, label=labels.get(e.node_id)) for e in text.enclosed_by)
+            outputs.append(KeptNode(
+                node_id=text.id, node_type="output", kind=text.kind, status=Status.OK, reason="include_whitespace",
+                label=None, enclosed_by=enclosed, output=replace(text, enclosed_by=enclosed)))
         outputs.sort(key=lambda k: order[k.node_id])
     # Reviews that carry from an enclosing if or loop to the node built from it. `mixed` is left out:
     # it is information only (section 4a) and is recorded as loop_concern instead. A review on an
