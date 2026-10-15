@@ -46,8 +46,10 @@ $Component = Join-Path $Root "components\c3_data_layer"
 $Python = Join-Path $Component ".venv\Scripts\python.exe"
 $MySql = "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe"
 $Clinic = Join-Path $Root "benchmarks\apps\clinic_inventory_legacy_hard"
-$Stamp = Get-Date -Format "yyyy-MM-dd"
-$EvidenceDir = Join-Path $Root "evidence\mysql_$Stamp"
+# One timestamped folder per run, so earlier logs are never overwritten.
+$Stamp = Get-Date -Format "yyyy-MM-dd_HHmmss"
+$EvidenceDir = Join-Path $Root "evidence\mysql_runs\$Stamp"
+if (Test-Path $EvidenceDir) { throw "Evidence folder already exists: $EvidenceDir" }
 
 if (-not $env:C3_DB_PASSWORD) {
     throw 'C3_DB_PASSWORD is not set. Run: $env:C3_DB_PASSWORD = Read-Host "c3_tester password"'
