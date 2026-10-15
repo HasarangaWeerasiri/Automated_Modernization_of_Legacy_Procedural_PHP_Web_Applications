@@ -239,3 +239,45 @@ def test_known_gap_swapped_fields_are_not_detected_without_labels(stub, judge):
     stub("swaps_first_and_last_name")
 
     assert judge(LIST).verdict == PASS
+
+
+# ---------------------------------------------------------------- injection rubric
+
+from c4.compare import IMPROVEMENT, SAFE_AS_BEFORE, UNHANDLED, VULNERABILITY_KEPT  # noqa: E402
+from c4.verdict import evaluate_injection  # noqa: E402
+
+
+def test_a_parameterised_migrated_system_handles_every_probe_safely(stub, at_baseline, baselines):
+    report = evaluate_injection(at_baseline, baselines)
+
+    assert report["probes"]
+    assert set(report["summary"]) <= {IMPROVEMENT, SAFE_AS_BEFORE}
+
+
+def test_the_legacy_search_leak_is_recorded_as_closed(stub, at_baseline, baselines):
+    probes = {p["scenario_id"]: p for p in evaluate_injection(at_baseline, baselines)["probes"]}
+
+    tautology = probes["patient_search_injection_contact_02"]
+    assert tautology["legacy"]["behaviour"] == "vulnerable"
+    assert tautology["legacy"]["effects"][0]["kind"] == "leak"
+    assert tautology["label"] == IMPROVEMENT
+
+
+def test_a_migrated_system_that_pastes_input_into_sql_is_caught(stub, at_baseline, baselines):
+    stub("concatenates_input")
+
+    probes = {p["scenario_id"]: p for p in evaluate_injection(at_baseline, baselines)["probes"]}
+
+    assert probes["patient_search_injection_contact_02"]["label"] == VULNERABILITY_KEPT
+    assert probes["contact_form_injection_name_02"]["label"] == VULNERABILITY_KEPT
+    assert probes["contact_form_injection_name_01"]["label"] == UNHANDLED  # a lone quote crashes it
+
+
+def test_injection_probes_never_change_an_endpoints_verdict(stub, at_baseline, baselines):
+    stub("concatenates_input")
+
+    report = evaluate(at_baseline, baselines)
+
+    judged = [s["scenario_id"] for entry in report["endpoints"].values() for s in entry["scenarios"]]
+    assert not [scenario_id for scenario_id in judged if "_injection_" in scenario_id]
+    assert len(report["injection_probes_not_judged_here"]) == 15

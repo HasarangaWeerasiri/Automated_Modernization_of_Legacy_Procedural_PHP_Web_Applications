@@ -11,6 +11,9 @@ their own (FR13), not by equivalence.
 Every verdict is written with the path of the oracle record it rests on and the
 differences that were found, so it can be traced back to its evidence (NFR3).
 
+Injection probes are replayed too, and each gets a label of its own (see compare.py)
+in a separate injection-safety report. They never change an endpoint's verdict.
+
     python -m c4.verdict
 """
 
@@ -27,7 +30,7 @@ import requests
 
 from c4 import containers, dbstate, scenarios
 from c4.capture import CaptureError
-from c4.compare import FAIL, INCONCLUSIVE, PASS, compare
+from c4.compare import FAIL, INCONCLUSIVE, PASS, compare, judge_probe
 from c4.config import Config, ConfigError, load_config
 from c4.replay import Replay, ReplayError, replay
 
@@ -128,9 +131,30 @@ def evaluate(config: Config, baselines: dict[str, dbstate.Snapshot]) -> dict[str
     }
 
 
-def write_report(config: Config, report: dict[str, Any]) -> Path:
+def evaluate_injection(config: Config, baselines: dict[str, dbstate.Snapshot]) -> dict[str, Any]:
+    """Replay every captured injection probe and label what it did (FR13)."""
+    probes = []
+    for scenario in scenarios.load_all(config):
+        if scenario["scenario_type"] != "injection":
+            continue
+        stored = config.oracle_dir / f"{scenario['scenario_id']}.json"
+        if not stored.is_file():
+            continue
+        record = json.loads(stored.read_text(encoding="utf-8"))
+        judged = judge_probe(record, scenario, replay(config, scenario, record, baselines))
+        judged["oracle_record"] = stored.relative_to(config.root).as_posix()
+        probes.append(judged)
+    labels = sorted({probe["label"] for probe in probes})
+    return {
+        "benchmark": config.benchmark,
+        "summary": {label: sum(probe["label"] == label for probe in probes) for label in labels},
+        "probes": probes,
+    }
+
+
+def write_report(config: Config, report: dict[str, Any], name: str = "verdicts.json") -> Path:
     config.report_dir.mkdir(parents=True, exist_ok=True)
-    path = config.report_dir / "verdicts.json"
+    path = config.report_dir / name
     text = json.dumps(report, indent=2, ensure_ascii=False, default=str) + "\n"
     path.write_text(text, encoding="utf-8", newline="\n")
     return path
@@ -194,7 +218,9 @@ def main(argv: list[str] | None = None) -> int:
         containers.wait_until_ready(config, timeout=0)
         baselines = {system.name: dbstate.reset(system) for system in config.systems}
         report = evaluate(config, baselines)
+        injection = evaluate_injection(config, baselines)
         path = write_report(config, report)
+        injection_path = write_report(config, injection, "injection_safety.json")
     except (
         CaptureError, ConfigError, ReplayError,
         scenarios.EndpointMapError, scenarios.ScenarioError,
@@ -214,9 +240,16 @@ def main(argv: list[str] | None = None) -> int:
             print(f"      {scenario['verdict']:<13}{scenario['scenario_id']}")
             for finding in (*scenario["differences"], *scenario["abstentions"]):
                 print(f"          {finding['where']}: {_describe(finding)}")
-    if report["injection_probes_not_judged_here"]:
-        print(f"  {len(report['injection_probes_not_judged_here'])} injection probes are judged by their own rubric")
     print(f"report: {path.relative_to(config.root).as_posix()}")
+
+    if injection["probes"]:
+        print(f"injection probes: {len(injection['probes'])}")
+        for label, count in injection["summary"].items():
+            print(f"  {count:>3}  {label}")
+        for probe in injection["probes"]:
+            if probe["label"] not in ("security improvement", "safe, as before"):
+                print(f"      {probe['label']}: {probe['scenario_id']} ({probe['probe']!r})")
+        print(f"report: {injection_path.relative_to(config.root).as_posix()}")
 
     failed = any(entry["verdict"] == FAIL for entry in report["endpoints"].values())
     return 1 if failed else 0

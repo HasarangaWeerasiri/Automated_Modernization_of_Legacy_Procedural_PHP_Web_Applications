@@ -274,3 +274,88 @@ def compare(record: dict[str, Any], replayed: Replay) -> Comparison:
     else:
         verdict = PASS
     return Comparison(verdict, differences, abstentions)
+
+
+# ------------------------------------------------------------- injection probes
+#
+# Injection probes are not judged by equivalence (FR13). A migrated system that
+# reproduced a legacy injection hole would be equivalent and dangerous, and one that
+# closed it would differ. Each probe is judged instead by what it made each system do.
+#
+# A probe's text is never a value in the seed data. A system that treats it as plain
+# text can therefore only find nothing (or records that really contain the text),
+# store the text exactly as sent, or reject the request. Anything else means the input
+# changed what the query did:
+#
+#     leak        records shown that do not contain the probe text
+#     alteration  a row written or changed without the probe text, or a row deleted
+#
+# Limit: a probe that changes several rows to its own literal text, as a widened
+# UPDATE would, is not detected; only single changes that lose the text are.
+
+IMPROVEMENT = "security improvement"
+SAFE_AS_BEFORE = "safe, as before"
+VULNERABILITY_KEPT = "vulnerability kept"
+VULNERABILITY_INTRODUCED = "vulnerability introduced"
+UNHANDLED = "unhandled input"
+
+
+def injection_effects(probe: Any, records: Iterable[dict[str, Any]], delta: dict[str, Any]) -> list[dict[str, Any]]:
+    """What a probe made a system do beyond treating it as plain text."""
+    text = normalise(probe)
+    effects: list[dict[str, Any]] = []
+    for item in records:
+        if text not in {normalise(value) for value in _leaves(item)}:
+            effects.append({"kind": "leak", "record": item})
+    for table, changes in delta.items():
+        for row in changes["inserted"]:
+            if text not in {normalise(value) for value in row.values()}:
+                effects.append({"kind": "alteration", "table": table, "inserted": row})
+        for item in changes["updated"]:
+            if text not in {normalise(change["after"]) for change in item["changes"].values()}:
+                effects.append({"kind": "alteration", "table": table, "updated": item})
+        for row in changes["deleted"]:
+            effects.append({"kind": "alteration", "table": table, "deleted": row})
+    return effects
+
+
+def judge_probe(record: dict[str, Any], scenario: dict[str, Any], replayed: Replay) -> dict[str, Any]:
+    """Label one injection probe from what the legacy and the migrated system did."""
+    probe = scenario["values"][scenario["parameter"]]
+    legacy = record["legacy_response"]
+
+    legacy_effects = injection_effects(probe, legacy["records"], record["db_state"]["delta"])
+    writes = scenario.get("legacy_table") == "none"
+    if legacy_effects:
+        legacy_label = "vulnerable"
+    elif writes and legacy["outcome"] == "no_effect":
+        # A page that should store what it is sent stored nothing: the input broke it.
+        legacy_label = "broken"
+    else:
+        # Nothing visible. For a page that reads, a query broken by the input and a
+        # literal search that finds nothing look the same from outside.
+        legacy_label = "no sign of injection"
+
+    migrated_effects = injection_effects(probe, replayed.records or (), replayed.delta)
+    if replayed.outcome == "error":
+        migrated_label, label = "server error", UNHANDLED
+    elif migrated_effects:
+        migrated_label = "vulnerable"
+        label = VULNERABILITY_INTRODUCED if legacy_label == "no sign of injection" else VULNERABILITY_KEPT
+    else:
+        migrated_label = "safe"
+        label = SAFE_AS_BEFORE if legacy_label == "no sign of injection" else IMPROVEMENT
+
+    return {
+        "scenario_id": record["scenario_id"],
+        "endpoint_id": record["endpoint_id"],
+        "parameter": scenario["parameter"],
+        "probe": probe,
+        "label": label,
+        "legacy": {"behaviour": legacy_label, "outcome": legacy["outcome"], "effects": legacy_effects},
+        "migrated": {
+            "behaviour": migrated_label,
+            "status_code": replayed.status_code,
+            "effects": migrated_effects,
+        },
+    }

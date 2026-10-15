@@ -425,3 +425,11 @@ def test_written_scenarios_replace_the_old_files(config):
     assert "hand_written" not in files
     assert files == sorted(s["scenario_id"] for s in scenarios)
     assert [s["scenario_id"] for s in load_all(config)] == files
+
+
+def test_a_resolved_scenario_carries_its_parameter_and_values_for_judging_probes(endpoint_map):
+    probe = {**scenario(q="' OR '1'='1"), "case": "probe", "parameter": "q"}
+
+    resolved = resolve(endpoint_map, probe)
+
+    assert (resolved["case"], resolved["parameter"], resolved["values"]) == ("probe", "q", {"q": "' OR '1'='1"})

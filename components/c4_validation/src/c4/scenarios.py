@@ -229,6 +229,11 @@ def resolve(endpoint_map: EndpointMap, scenario: Mapping[str, Any]) -> dict[str,
     resolved: dict[str, Any] = {
         "scenario_id": scenario_id,
         "scenario_type": scenario["scenario_type"],
+        "case": scenario.get("case"),
+        # Which parameter the scenario varies, and all its values: needed to judge
+        # what an injection probe did.
+        "parameter": scenario.get("parameter"),
+        "values": values,
         "endpoint_id": endpoint.endpoint_id,
         "legacy_request": {
             "method": source.legacy_method,

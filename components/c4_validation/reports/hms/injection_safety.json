@@ -1,0 +1,345 @@
+{
+  "benchmark": "hms",
+  "summary": {
+    "safe, as before": 1,
+    "security improvement": 14
+  },
+  "probes": [
+    {
+      "scenario_id": "contact_form_injection_contact_01",
+      "endpoint_id": "POST /api/contact",
+      "parameter": "contact",
+      "probe": "'",
+      "label": "security improvement",
+      "legacy": {
+        "behaviour": "broken",
+        "outcome": "no_effect",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/hms/contact_form_injection_contact_01.json"
+    },
+    {
+      "scenario_id": "contact_form_injection_contact_02",
+      "endpoint_id": "POST /api/contact",
+      "parameter": "contact",
+      "probe": "' OR '1'='1",
+      "label": "security improvement",
+      "legacy": {
+        "behaviour": "vulnerable",
+        "outcome": "success",
+        "effects": [
+          {
+            "kind": "alteration",
+            "table": "contact",
+            "inserted": {
+              "name": "Mark Shah",
+              "email": "zachary99@example.com",
+              "contact": "1",
+              "message": "Katherine Barnes"
+            }
+          }
+        ]
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 422,
+        "effects": []
+      },
+      "oracle_record": "oracles/hms/contact_form_injection_contact_02.json"
+    },
+    {
+      "scenario_id": "contact_form_injection_contact_03",
+      "endpoint_id": "POST /api/contact",
+      "parameter": "contact",
+      "probe": "' OR 1=1 -- ",
+      "label": "security improvement",
+      "legacy": {
+        "behaviour": "broken",
+        "outcome": "no_effect",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 422,
+        "effects": []
+      },
+      "oracle_record": "oracles/hms/contact_form_injection_contact_03.json"
+    },
+    {
+      "scenario_id": "contact_form_injection_email_01",
+      "endpoint_id": "POST /api/contact",
+      "parameter": "email",
+      "probe": "'",
+      "label": "security improvement",
+      "legacy": {
+        "behaviour": "broken",
+        "outcome": "no_effect",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/hms/contact_form_injection_email_01.json"
+    },
+    {
+      "scenario_id": "contact_form_injection_email_02",
+      "endpoint_id": "POST /api/contact",
+      "parameter": "email",
+      "probe": "' OR '1'='1",
+      "label": "security improvement",
+      "legacy": {
+        "behaviour": "vulnerable",
+        "outcome": "success",
+        "effects": [
+          {
+            "kind": "alteration",
+            "table": "contact",
+            "inserted": {
+              "name": "Mark Shah",
+              "email": "1",
+              "contact": "8546936914",
+              "message": "Katherine Barnes"
+            }
+          }
+        ]
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/hms/contact_form_injection_email_02.json"
+    },
+    {
+      "scenario_id": "contact_form_injection_email_03",
+      "endpoint_id": "POST /api/contact",
+      "parameter": "email",
+      "probe": "' OR 1=1 -- ",
+      "label": "security improvement",
+      "legacy": {
+        "behaviour": "broken",
+        "outcome": "no_effect",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/hms/contact_form_injection_email_03.json"
+    },
+    {
+      "scenario_id": "contact_form_injection_message_01",
+      "endpoint_id": "POST /api/contact",
+      "parameter": "message",
+      "probe": "'",
+      "label": "security improvement",
+      "legacy": {
+        "behaviour": "broken",
+        "outcome": "no_effect",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/hms/contact_form_injection_message_01.json"
+    },
+    {
+      "scenario_id": "contact_form_injection_message_02",
+      "endpoint_id": "POST /api/contact",
+      "parameter": "message",
+      "probe": "' OR '1'='1",
+      "label": "security improvement",
+      "legacy": {
+        "behaviour": "vulnerable",
+        "outcome": "success",
+        "effects": [
+          {
+            "kind": "alteration",
+            "table": "contact",
+            "inserted": {
+              "name": "Mark Shah",
+              "email": "zachary99@example.com",
+              "contact": "8546936914",
+              "message": "1"
+            }
+          }
+        ]
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/hms/contact_form_injection_message_02.json"
+    },
+    {
+      "scenario_id": "contact_form_injection_message_03",
+      "endpoint_id": "POST /api/contact",
+      "parameter": "message",
+      "probe": "' OR 1=1 -- ",
+      "label": "security improvement",
+      "legacy": {
+        "behaviour": "broken",
+        "outcome": "no_effect",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/hms/contact_form_injection_message_03.json"
+    },
+    {
+      "scenario_id": "contact_form_injection_name_01",
+      "endpoint_id": "POST /api/contact",
+      "parameter": "name",
+      "probe": "'",
+      "label": "security improvement",
+      "legacy": {
+        "behaviour": "broken",
+        "outcome": "no_effect",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/hms/contact_form_injection_name_01.json"
+    },
+    {
+      "scenario_id": "contact_form_injection_name_02",
+      "endpoint_id": "POST /api/contact",
+      "parameter": "name",
+      "probe": "' OR '1'='1",
+      "label": "security improvement",
+      "legacy": {
+        "behaviour": "vulnerable",
+        "outcome": "success",
+        "effects": [
+          {
+            "kind": "alteration",
+            "table": "contact",
+            "inserted": {
+              "name": "1",
+              "email": "zachary99@example.com",
+              "contact": "8546936914",
+              "message": "Katherine Barnes"
+            }
+          }
+        ]
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/hms/contact_form_injection_name_02.json"
+    },
+    {
+      "scenario_id": "contact_form_injection_name_03",
+      "endpoint_id": "POST /api/contact",
+      "parameter": "name",
+      "probe": "' OR 1=1 -- ",
+      "label": "security improvement",
+      "legacy": {
+        "behaviour": "broken",
+        "outcome": "no_effect",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/hms/contact_form_injection_name_03.json"
+    },
+    {
+      "scenario_id": "patient_search_injection_contact_01",
+      "endpoint_id": "GET /api/patients",
+      "parameter": "contact",
+      "probe": "'",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "no_effect",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 200,
+        "effects": []
+      },
+      "oracle_record": "oracles/hms/patient_search_injection_contact_01.json"
+    },
+    {
+      "scenario_id": "patient_search_injection_contact_02",
+      "endpoint_id": "GET /api/patients",
+      "parameter": "contact",
+      "probe": "' OR '1'='1",
+      "label": "security improvement",
+      "legacy": {
+        "behaviour": "vulnerable",
+        "outcome": "success",
+        "effects": [
+          {
+            "kind": "leak",
+            "record": {
+              "First Name": "Ram",
+              "Last Name": "Kumar",
+              "Email": "ram@gmail.com",
+              "Contact": "9876543210",
+              "Password": "ram123"
+            }
+          }
+        ]
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 200,
+        "effects": []
+      },
+      "oracle_record": "oracles/hms/patient_search_injection_contact_02.json"
+    },
+    {
+      "scenario_id": "patient_search_injection_contact_03",
+      "endpoint_id": "GET /api/patients",
+      "parameter": "contact",
+      "probe": "' OR 1=1 -- ",
+      "label": "security improvement",
+      "legacy": {
+        "behaviour": "vulnerable",
+        "outcome": "success",
+        "effects": [
+          {
+            "kind": "leak",
+            "record": {
+              "First Name": "Ram",
+              "Last Name": "Kumar",
+              "Email": "ram@gmail.com",
+              "Contact": "9876543210",
+              "Password": "ram123"
+            }
+          }
+        ]
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 200,
+        "effects": []
+      },
+      "oracle_record": "oracles/hms/patient_search_injection_contact_03.json"
+    }
+  ]
+}

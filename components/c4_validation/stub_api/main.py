@@ -59,6 +59,8 @@ OTHER_FAULTS = (
     "suppresses_contact_insert",
     "stores_wrong_message",
     "inserts_contact_twice",
+    # Builds its SQL by pasting the input into the statement, as the legacy pages do.
+    "concatenates_input",
 )
 
 active_fault: str | None = None
@@ -99,6 +101,9 @@ def patients(contact: str | None = None) -> dict[str, Patients]:
     with engine.connect() as connection:
         if contact is None or active_fault == "ignores_contact_filter":
             rows = connection.execute(text(f"SELECT {columns} FROM patreg")).mappings().all()
+        elif active_fault == "concatenates_input":
+            unsafe = f"SELECT {columns} FROM patreg WHERE contact = '{contact}' LIMIT 1"
+            rows = connection.exec_driver_sql(unsafe).mappings().all()
         else:
             rows = connection.execute(
                 text(f"SELECT {columns} FROM patreg WHERE contact = :contact LIMIT 1"),
@@ -138,6 +143,13 @@ def create_contact(body: ContactMessage) -> dict[str, str]:
         "VALUES (:name, :email, :contact, :message)"
     )
     with engine.begin() as connection:
+        if active_fault == "concatenates_input":
+            unsafe = (
+                "INSERT INTO contact (name, email, contact, message) VALUES "
+                f"('{row['name']}', '{row['email']}', '{row['contact']}', '{row['message']}')"
+            )
+            connection.exec_driver_sql(unsafe)
+            return {"message": "Contact saved"}
         for _ in range(copies):
             connection.execute(insert, row)
     return {"message": "Contact saved"}

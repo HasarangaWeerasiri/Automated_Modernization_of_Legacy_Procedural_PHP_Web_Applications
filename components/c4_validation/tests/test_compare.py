@@ -391,3 +391,107 @@ def test_a_rejection_of_a_request_the_legacy_system_completed_fails():
 
     assert result.verdict == FAIL
     assert [d["kind"] for d in result.differences] == ["outcome_differs", "delta_differs"]
+
+
+# ---------------------------------------------------------------- injection probes
+
+from c4.compare import (  # noqa: E402
+    IMPROVEMENT, SAFE_AS_BEFORE, UNHANDLED, VULNERABILITY_INTRODUCED, VULNERABILITY_KEPT,
+    injection_effects, judge_probe,
+)
+
+PROBE = "' OR '1'='1"
+
+
+def probe_scenario(writes=False):
+    scenario = {"parameter": "q", "values": {"q": PROBE, "other": "x"}}
+    if writes:
+        scenario["legacy_table"] = "none"
+    return scenario
+
+
+def probe_record(*records, delta=None, outcome="success"):
+    return {**oracle(*records, delta=delta, outcome=outcome), "endpoint_id": "GET /api/things"}
+
+
+def test_records_that_do_not_contain_the_probe_are_a_leak():
+    effects = injection_effects(PROBE, [{"Name": "Ram"}], {})
+
+    assert effects == [{"kind": "leak", "record": {"Name": "Ram"}}]
+
+
+def test_records_that_do_contain_the_probe_text_are_a_literal_match():
+    assert injection_effects(PROBE, [{"Name": PROBE, "Id": "3"}], {}) == []
+
+
+def test_a_row_stored_without_the_probe_text_is_an_alteration():
+    delta = inserted("contact", {"name": "1", "email": "a@b.c"})
+
+    (effect,) = injection_effects(PROBE, [], delta)
+
+    assert (effect["kind"], effect["table"]) == ("alteration", "contact")
+
+
+def test_a_row_storing_the_probe_text_exactly_is_plain_text_handling():
+    assert injection_effects("' OR 1=1 -- ", [], inserted("contact", {"name": "' OR 1=1 -- "})) == []
+
+
+def test_a_change_that_loses_the_probe_text_and_any_deletion_are_alterations():
+    delta = {"things": {
+        "inserted": [],
+        "updated": [{"key": {"id": 1}, "changes": {"name": {"before": "Ram", "after": "1"}}}],
+        "deleted": [{"id": 2, "name": "Alia"}],
+    }}
+
+    assert [effect["kind"] for effect in injection_effects(PROBE, [], delta)] == ["alteration", "alteration"]
+
+
+def test_a_leak_closed_by_the_migrated_system_is_a_security_improvement():
+    judged = judge_probe(probe_record({"Name": "Ram"}), probe_scenario(), migrated())
+
+    assert judged["label"] == IMPROVEMENT
+    assert judged["legacy"]["behaviour"] == "vulnerable"
+    assert (judged["migrated"]["behaviour"], judged["migrated"]["effects"]) == ("safe", [])
+    assert (judged["parameter"], judged["probe"]) == ("q", PROBE)
+
+
+def test_a_write_the_probe_broke_and_the_migrated_system_stores_literally_is_an_improvement():
+    record = probe_record(outcome="no_effect")
+    stored = inserted("contact", {"name": PROBE})
+
+    judged = judge_probe(record, probe_scenario(writes=True), migrated(status=201, delta=stored))
+
+    assert judged["legacy"]["behaviour"] == "broken"
+    assert judged["label"] == IMPROVEMENT
+
+
+def test_a_rejection_of_the_probe_is_safe():
+    judged = judge_probe(probe_record({"Name": "Ram"}), probe_scenario(), migrated(status=422, outcome="rejection", problem="no records"))
+
+    assert judged["label"] == IMPROVEMENT
+
+
+def test_no_visible_effect_on_either_side_is_safe_as_before():
+    judged = judge_probe(probe_record(outcome="no_effect"), probe_scenario(), migrated())
+
+    assert judged["legacy"]["behaviour"] == "no sign of injection"
+    assert judged["label"] == SAFE_AS_BEFORE
+
+
+def test_a_leak_on_both_sides_is_a_vulnerability_kept():
+    judged = judge_probe(probe_record({"Name": "Ram"}), probe_scenario(), migrated({"name": "Alia"}))
+
+    assert judged["label"] == VULNERABILITY_KEPT
+    assert judged["migrated"]["effects"] == [{"kind": "leak", "record": {"name": "Alia"}}]
+
+
+def test_a_leak_only_on_the_migrated_side_is_a_vulnerability_introduced():
+    judged = judge_probe(probe_record(outcome="no_effect"), probe_scenario(), migrated({"name": "Alia"}))
+
+    assert judged["label"] == VULNERABILITY_INTRODUCED
+
+
+def test_a_server_error_is_unhandled_input_not_safe():
+    judged = judge_probe(probe_record({"Name": "Ram"}), probe_scenario(), migrated(status=500, outcome="error", problem="not JSON"))
+
+    assert judged["label"] == UNHANDLED
