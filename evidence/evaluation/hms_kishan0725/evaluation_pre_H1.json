@@ -1,0 +1,792 @@
+{
+  "matching": "ground truth (file, line) = C3 (source_file relative to the PHP root, source_line)",
+  "gt_entries": 52,
+  "gt_live_sites": 44,
+  "detection": {
+    "live_detected": 44,
+    "recall": 100.0,
+    "false_detections_commented_out": [],
+    "c3_sites_not_in_gt": []
+  },
+  "recovery": {
+    "excluded_ambiguous": 1,
+    "evaluated": 43,
+    "TP": 40,
+    "FN": 3,
+    "FP": 0,
+    "TN": 0,
+    "precision": 100.0,
+    "recall": 93.0,
+    "accuracy": 93.0,
+    "false_abstentions": [
+      "admin-panel.php:71",
+      "admin-panel.php:86",
+      "doctor-panel.php:8"
+    ],
+    "false_recoveries": []
+  },
+  "column_use_accuracy": {
+    "operation": 100.0,
+    "tables": 100.0,
+    "read": 100.0,
+    "write": 100.0,
+    "filter": 100.0,
+    "sites": 34
+  },
+  "schema_mismatch": {
+    "sites": [
+      {
+        "site": "func.php:34",
+        "problems": [
+          "column payment not in ['appointmenttb']"
+        ]
+      },
+      {
+        "site": "func2.php:41",
+        "problems": [
+          "column payment not in ['appointmenttb']"
+        ]
+      },
+      {
+        "site": "func2.php:66",
+        "problems": [
+          "column name not in ['doctb']"
+        ]
+      },
+      {
+        "site": "func3.php:24",
+        "problems": [
+          "column payment not in ['appointmenttb']"
+        ]
+      },
+      {
+        "site": "func3.php:49",
+        "problems": [
+          "column name not in ['doctb']"
+        ]
+      },
+      {
+        "site": "newfunc.php:23",
+        "problems": [
+          "column payment not in ['appointmenttb']"
+        ]
+      }
+    ],
+    "column_use_accuracy": {
+      "operation": 100.0,
+      "tables": 100.0,
+      "read": 100.0,
+      "write": 100.0,
+      "filter": 100.0,
+      "sites": 6
+    }
+  },
+  "ambiguous_sites": [
+    {
+      "gt_id": "G041",
+      "site": "include/header.php:35",
+      "expected_recoverable": "ambiguous",
+      "c3_query_id": "Q036",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "UNKNOWN_EXPR",
+      "outcome": "EXCLUDED_AMBIGUOUS"
+    }
+  ],
+  "details": [
+    {
+      "gt_id": "G001",
+      "site": "admin-panel.php:42",
+      "expected_recoverable": true,
+      "c3_query_id": "Q001",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G002",
+      "site": "admin-panel.php:45",
+      "expected_recoverable": true,
+      "c3_query_id": "Q002",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G003",
+      "site": "admin-panel.php:71",
+      "expected_recoverable": true,
+      "c3_query_id": "Q003",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "UNKNOWN_EXPR",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G004",
+      "site": "admin-panel.php:86",
+      "expected_recoverable": true,
+      "c3_query_id": "Q004",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "UNKNOWN_EXPR",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G005",
+      "site": "admin-panel.php:144",
+      "expected_recoverable": true,
+      "c3_query_id": "Q005",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G006",
+      "site": "admin-panel.php:313",
+      "expected_recoverable": true,
+      "c3_query_id": "Q006",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G007",
+      "site": "admin-panel.php:473",
+      "expected_recoverable": true,
+      "c3_query_id": "Q007",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G008",
+      "site": "admin-panel.php:550",
+      "expected_recoverable": true,
+      "c3_query_id": "Q008",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G009",
+      "site": "admin-panel1.php:15",
+      "expected_recoverable": true,
+      "c3_query_id": "Q009",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G010",
+      "site": "admin-panel1.php:27",
+      "expected_recoverable": true,
+      "c3_query_id": "Q010",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G011",
+      "site": "admin-panel1.php:278",
+      "expected_recoverable": true,
+      "c3_query_id": "Q011",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G012",
+      "site": "admin-panel1.php:329",
+      "expected_recoverable": true,
+      "c3_query_id": "Q012",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G013",
+      "site": "admin-panel1.php:385",
+      "expected_recoverable": true,
+      "c3_query_id": "Q013",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G014",
+      "site": "admin-panel1.php:458",
+      "expected_recoverable": true,
+      "c3_query_id": "Q014",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G015",
+      "site": "admin-panel1.php:568",
+      "expected_recoverable": true,
+      "c3_query_id": "Q015",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G016",
+      "site": "appsearch.php:17",
+      "expected_recoverable": true,
+      "c3_query_id": "Q016",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G017",
+      "site": "contact.php:11",
+      "expected_recoverable": true,
+      "c3_query_id": "Q017",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G018",
+      "site": "doctor-panel.php:8",
+      "expected_recoverable": true,
+      "c3_query_id": "Q018",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "UNKNOWN_EXPR",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G020",
+      "site": "doctor-panel.php:186",
+      "expected_recoverable": true,
+      "c3_query_id": "Q019",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G021",
+      "site": "doctor-panel.php:280",
+      "expected_recoverable": true,
+      "c3_query_id": "Q020",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G022",
+      "site": "doctor-panel.php:332",
+      "expected_recoverable": true,
+      "c3_query_id": "Q021",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G023",
+      "site": "doctorsearch.php:16",
+      "expected_recoverable": true,
+      "c3_query_id": "Q022",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G024",
+      "site": "func.php:8",
+      "expected_recoverable": true,
+      "c3_query_id": "Q023",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G025",
+      "site": "func.php:34",
+      "expected_recoverable": true,
+      "c3_query_id": "Q024",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "column payment not in ['appointmenttb']"
+      ]
+    },
+    {
+      "gt_id": "G027",
+      "site": "func.php:62",
+      "expected_recoverable": true,
+      "c3_query_id": "Q025",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G028",
+      "site": "func1.php:8",
+      "expected_recoverable": true,
+      "c3_query_id": "Q026",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G030",
+      "site": "func1.php:43",
+      "expected_recoverable": true,
+      "c3_query_id": "Q027",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G032",
+      "site": "func2.php:14",
+      "expected_recoverable": true,
+      "c3_query_id": "Q028",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G033",
+      "site": "func2.php:26",
+      "expected_recoverable": true,
+      "c3_query_id": "Q029",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G034",
+      "site": "func2.php:41",
+      "expected_recoverable": true,
+      "c3_query_id": "Q030",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "column payment not in ['appointmenttb']"
+      ]
+    },
+    {
+      "gt_id": "G036",
+      "site": "func2.php:66",
+      "expected_recoverable": true,
+      "c3_query_id": "Q031",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "column name not in ['doctb']"
+      ]
+    },
+    {
+      "gt_id": "G037",
+      "site": "func3.php:8",
+      "expected_recoverable": true,
+      "c3_query_id": "Q032",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G038",
+      "site": "func3.php:24",
+      "expected_recoverable": true,
+      "c3_query_id": "Q033",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "column payment not in ['appointmenttb']"
+      ]
+    },
+    {
+      "gt_id": "G039",
+      "site": "func3.php:36",
+      "expected_recoverable": true,
+      "c3_query_id": "Q034",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G040",
+      "site": "func3.php:49",
+      "expected_recoverable": true,
+      "c3_query_id": "Q035",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "column name not in ['doctb']"
+      ]
+    },
+    {
+      "gt_id": "G041",
+      "site": "include/header.php:35",
+      "expected_recoverable": "ambiguous",
+      "c3_query_id": "Q036",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "UNKNOWN_EXPR",
+      "outcome": "EXCLUDED_AMBIGUOUS"
+    },
+    {
+      "gt_id": "G042",
+      "site": "messearch.php:15",
+      "expected_recoverable": true,
+      "c3_query_id": "Q037",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G044",
+      "site": "newfunc.php:23",
+      "expected_recoverable": true,
+      "c3_query_id": "Q038",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "column payment not in ['appointmenttb']"
+      ]
+    },
+    {
+      "gt_id": "G046",
+      "site": "newfunc.php:45",
+      "expected_recoverable": true,
+      "c3_query_id": "Q039",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G047",
+      "site": "newfunc.php:57",
+      "expected_recoverable": true,
+      "c3_query_id": "Q040",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G049",
+      "site": "newfunc.php:84",
+      "expected_recoverable": true,
+      "c3_query_id": "Q041",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G050",
+      "site": "patientsearch.php:15",
+      "expected_recoverable": true,
+      "c3_query_id": "Q042",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G051",
+      "site": "prescribe.php:33",
+      "expected_recoverable": true,
+      "c3_query_id": "Q043",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G052",
+      "site": "search.php:8",
+      "expected_recoverable": true,
+      "c3_query_id": "Q044",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    }
+  ],
+  "ground_truth_file": "../../benchmarks/ground truth/hms_kishan0725/queries.json"
+}

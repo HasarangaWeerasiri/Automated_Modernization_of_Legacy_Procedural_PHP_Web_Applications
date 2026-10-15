@@ -125,11 +125,15 @@ def evaluate_queries(
 
             expected_table = expected.get("expected_table")
 
-            table_match = (
-                expected_table in actual_tables
-                if expected_table is not None
-                else len(actual_tables) == 0
-            )
+            if "expected_tables" in expected:
+                # S15: ground truth may list every table (hard_crud format).
+                table_match = set(expected["expected_tables"] or []) == set(actual_tables)
+            else:
+                table_match = (
+                    expected_table in actual_tables
+                    if expected_table is not None
+                    else len(actual_tables) == 0
+                )
 
             if table_match:
                 table_correct += 1
