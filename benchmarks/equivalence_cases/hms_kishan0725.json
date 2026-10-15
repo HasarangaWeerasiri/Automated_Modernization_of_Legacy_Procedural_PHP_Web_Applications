@@ -1,0 +1,1927 @@
+{
+  "app": "hms_kishan0725",
+  "generated": "2026-10-15",
+  "instructions": "Fill the null values of normal / empty_result / boundary by hand from the schema and seed data (not from C3 output). Superglobal inputs are strings; an 'array' input is an object with the listed keys. Delete a case you do not want; a case with any null value is skipped. hostile_* and type_mismatch are pre-filled from docs/E1_equivalence_plan.md section 3; review or delete them.",
+  "sites": [
+    {
+      "site_id": "S001",
+      "file": "admin-panel.php",
+      "line": 42,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['apptime']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['appdate']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['doctor']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['apptime']": null,
+          "$_POST['appdate']": null,
+          "$_POST['doctor']": null
+        },
+        "empty_result": {
+          "$_POST['apptime']": null,
+          "$_POST['appdate']": null,
+          "$_POST['doctor']": null
+        },
+        "boundary": {
+          "$_POST['apptime']": null,
+          "$_POST['appdate']": null,
+          "$_POST['doctor']": null
+        },
+        "hostile_quote": {
+          "$_POST['apptime']": "' OR '1'='1",
+          "$_POST['appdate']": "' OR '1'='1",
+          "$_POST['doctor']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['apptime']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['appdate']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['doctor']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['apptime']": "%_",
+          "$_POST['appdate']": "%_",
+          "$_POST['doctor']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['apptime']": "’ OR 1=1 -- é",
+          "$_POST['appdate']": "’ OR 1=1 -- é",
+          "$_POST['doctor']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['apptime']": "abc",
+          "$_POST['appdate']": "abc",
+          "$_POST['doctor']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S002",
+      "file": "admin-panel.php",
+      "line": 45,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['apptime']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['appdate']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['docFees']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_SESSION['email']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['doctor']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_SESSION['contact']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_SESSION['gender']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_SESSION['lname']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_SESSION['fname']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_SESSION['pid']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['apptime']": null,
+          "$_POST['appdate']": null,
+          "$_POST['docFees']": null,
+          "$_SESSION['email']": null,
+          "$_POST['doctor']": null,
+          "$_SESSION['contact']": null,
+          "$_SESSION['gender']": null,
+          "$_SESSION['lname']": null,
+          "$_SESSION['fname']": null,
+          "$_SESSION['pid']": null
+        },
+        "empty_result": {
+          "$_POST['apptime']": null,
+          "$_POST['appdate']": null,
+          "$_POST['docFees']": null,
+          "$_SESSION['email']": null,
+          "$_POST['doctor']": null,
+          "$_SESSION['contact']": null,
+          "$_SESSION['gender']": null,
+          "$_SESSION['lname']": null,
+          "$_SESSION['fname']": null,
+          "$_SESSION['pid']": null
+        },
+        "boundary": {
+          "$_POST['apptime']": null,
+          "$_POST['appdate']": null,
+          "$_POST['docFees']": null,
+          "$_SESSION['email']": null,
+          "$_POST['doctor']": null,
+          "$_SESSION['contact']": null,
+          "$_SESSION['gender']": null,
+          "$_SESSION['lname']": null,
+          "$_SESSION['fname']": null,
+          "$_SESSION['pid']": null
+        },
+        "hostile_quote": {
+          "$_POST['apptime']": "' OR '1'='1",
+          "$_POST['appdate']": "' OR '1'='1",
+          "$_POST['docFees']": "' OR '1'='1",
+          "$_SESSION['email']": "' OR '1'='1",
+          "$_POST['doctor']": "' OR '1'='1",
+          "$_SESSION['contact']": "' OR '1'='1",
+          "$_SESSION['gender']": "' OR '1'='1",
+          "$_SESSION['lname']": "' OR '1'='1",
+          "$_SESSION['fname']": "' OR '1'='1",
+          "$_SESSION['pid']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['apptime']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['appdate']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['docFees']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_SESSION['email']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['doctor']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_SESSION['contact']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_SESSION['gender']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_SESSION['lname']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_SESSION['fname']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_SESSION['pid']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['apptime']": "%_",
+          "$_POST['appdate']": "%_",
+          "$_POST['docFees']": "%_",
+          "$_SESSION['email']": "%_",
+          "$_POST['doctor']": "%_",
+          "$_SESSION['contact']": "%_",
+          "$_SESSION['gender']": "%_",
+          "$_SESSION['lname']": "%_",
+          "$_SESSION['fname']": "%_",
+          "$_SESSION['pid']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['apptime']": "’ OR 1=1 -- é",
+          "$_POST['appdate']": "’ OR 1=1 -- é",
+          "$_POST['docFees']": "’ OR 1=1 -- é",
+          "$_SESSION['email']": "’ OR 1=1 -- é",
+          "$_POST['doctor']": "’ OR 1=1 -- é",
+          "$_SESSION['contact']": "’ OR 1=1 -- é",
+          "$_SESSION['gender']": "’ OR 1=1 -- é",
+          "$_SESSION['lname']": "’ OR 1=1 -- é",
+          "$_SESSION['fname']": "’ OR 1=1 -- é",
+          "$_SESSION['pid']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['apptime']": "abc",
+          "$_POST['appdate']": "abc",
+          "$_POST['docFees']": "abc",
+          "$_SESSION['email']": "abc",
+          "$_POST['doctor']": "abc",
+          "$_SESSION['contact']": "abc",
+          "$_SESSION['gender']": "abc",
+          "$_SESSION['lname']": "abc",
+          "$_SESSION['fname']": "abc",
+          "$_SESSION['pid']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S003",
+      "file": "admin-panel.php",
+      "line": 71,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['ID']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S004",
+      "file": "admin-panel.php",
+      "line": 86,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['ID']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_SESSION['pid']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S005",
+      "file": "admin-panel.php",
+      "line": 144,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S006",
+      "file": "admin-panel.php",
+      "line": 313,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S007",
+      "file": "admin-panel.php",
+      "line": 473,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$fname",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_If at line 18 (control flow); value supplied by the case"
+        },
+        {
+          "name": "$lname",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_If at line 18 (control flow); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$fname": null,
+          "$lname": null
+        },
+        "empty_result": {
+          "$fname": null,
+          "$lname": null
+        },
+        "boundary": {
+          "$fname": null,
+          "$lname": null
+        },
+        "hostile_quote": {
+          "$fname": "' OR '1'='1",
+          "$lname": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$fname": "1; DROP TABLE c3_e1_canary;-- ",
+          "$lname": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$fname": "%_",
+          "$lname": "%_"
+        },
+        "hostile_unicode": {
+          "$fname": "’ OR 1=1 -- é",
+          "$lname": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$fname": "abc",
+          "$lname": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S008",
+      "file": "admin-panel.php",
+      "line": 550,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$pid",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_If at line 18 (control flow); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$pid": null
+        },
+        "empty_result": {
+          "$pid": null
+        },
+        "boundary": {
+          "$pid": null
+        },
+        "hostile_quote": {
+          "$pid": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$pid": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$pid": "%_"
+        },
+        "hostile_unicode": {
+          "$pid": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$pid": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S009",
+      "file": "admin-panel1.php",
+      "line": 15,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['docFees']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['special']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['demail']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['dpassword']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['doctor']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['docFees']": null,
+          "$_POST['special']": null,
+          "$_POST['demail']": null,
+          "$_POST['dpassword']": null,
+          "$_POST['doctor']": null
+        },
+        "empty_result": {
+          "$_POST['docFees']": null,
+          "$_POST['special']": null,
+          "$_POST['demail']": null,
+          "$_POST['dpassword']": null,
+          "$_POST['doctor']": null
+        },
+        "boundary": {
+          "$_POST['docFees']": null,
+          "$_POST['special']": null,
+          "$_POST['demail']": null,
+          "$_POST['dpassword']": null,
+          "$_POST['doctor']": null
+        },
+        "hostile_quote": {
+          "$_POST['docFees']": "' OR '1'='1",
+          "$_POST['special']": "' OR '1'='1",
+          "$_POST['demail']": "' OR '1'='1",
+          "$_POST['dpassword']": "' OR '1'='1",
+          "$_POST['doctor']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['docFees']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['special']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['demail']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['dpassword']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['doctor']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['docFees']": "%_",
+          "$_POST['special']": "%_",
+          "$_POST['demail']": "%_",
+          "$_POST['dpassword']": "%_",
+          "$_POST['doctor']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['docFees']": "’ OR 1=1 -- é",
+          "$_POST['special']": "’ OR 1=1 -- é",
+          "$_POST['demail']": "’ OR 1=1 -- é",
+          "$_POST['dpassword']": "’ OR 1=1 -- é",
+          "$_POST['doctor']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['docFees']": "abc",
+          "$_POST['special']": "abc",
+          "$_POST['demail']": "abc",
+          "$_POST['dpassword']": "abc",
+          "$_POST['doctor']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S010",
+      "file": "admin-panel1.php",
+      "line": 27,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['demail']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['demail']": null
+        },
+        "empty_result": {
+          "$_POST['demail']": null
+        },
+        "boundary": {
+          "$_POST['demail']": null
+        },
+        "hostile_quote": {
+          "$_POST['demail']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['demail']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['demail']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['demail']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['demail']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S011",
+      "file": "admin-panel1.php",
+      "line": 278,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S012",
+      "file": "admin-panel1.php",
+      "line": 329,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S013",
+      "file": "admin-panel1.php",
+      "line": 385,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S014",
+      "file": "admin-panel1.php",
+      "line": 458,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S015",
+      "file": "admin-panel1.php",
+      "line": 568,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S016",
+      "file": "appsearch.php",
+      "line": 17,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['app_contact']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['app_contact']": null
+        },
+        "empty_result": {
+          "$_POST['app_contact']": null
+        },
+        "boundary": {
+          "$_POST['app_contact']": null
+        },
+        "hostile_quote": {
+          "$_POST['app_contact']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['app_contact']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['app_contact']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['app_contact']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['app_contact']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S017",
+      "file": "contact.php",
+      "line": 11,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['txtMsg']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['txtPhone']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['txtEmail']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['txtName']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['txtMsg']": null,
+          "$_POST['txtPhone']": null,
+          "$_POST['txtEmail']": null,
+          "$_POST['txtName']": null
+        },
+        "empty_result": {
+          "$_POST['txtMsg']": null,
+          "$_POST['txtPhone']": null,
+          "$_POST['txtEmail']": null,
+          "$_POST['txtName']": null
+        },
+        "boundary": {
+          "$_POST['txtMsg']": null,
+          "$_POST['txtPhone']": null,
+          "$_POST['txtEmail']": null,
+          "$_POST['txtName']": null
+        },
+        "hostile_quote": {
+          "$_POST['txtMsg']": "' OR '1'='1",
+          "$_POST['txtPhone']": "' OR '1'='1",
+          "$_POST['txtEmail']": "' OR '1'='1",
+          "$_POST['txtName']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['txtMsg']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['txtPhone']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['txtEmail']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['txtName']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['txtMsg']": "%_",
+          "$_POST['txtPhone']": "%_",
+          "$_POST['txtEmail']": "%_",
+          "$_POST['txtName']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['txtMsg']": "’ OR 1=1 -- é",
+          "$_POST['txtPhone']": "’ OR 1=1 -- é",
+          "$_POST['txtEmail']": "’ OR 1=1 -- é",
+          "$_POST['txtName']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['txtMsg']": "abc",
+          "$_POST['txtPhone']": "abc",
+          "$_POST['txtEmail']": "abc",
+          "$_POST['txtName']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S018",
+      "file": "doctor-panel.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['ID']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S020",
+      "file": "doctor-panel.php",
+      "line": 186,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_SESSION['dname']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_SESSION['dname']": null
+        },
+        "empty_result": {
+          "$_SESSION['dname']": null
+        },
+        "boundary": {
+          "$_SESSION['dname']": null
+        },
+        "hostile_quote": {
+          "$_SESSION['dname']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_SESSION['dname']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_SESSION['dname']": "%_"
+        },
+        "hostile_unicode": {
+          "$_SESSION['dname']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_SESSION['dname']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S021",
+      "file": "doctor-panel.php",
+      "line": 280,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_SESSION['dname']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_SESSION['dname']": null
+        },
+        "empty_result": {
+          "$_SESSION['dname']": null
+        },
+        "boundary": {
+          "$_SESSION['dname']": null
+        },
+        "hostile_quote": {
+          "$_SESSION['dname']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_SESSION['dname']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_SESSION['dname']": "%_"
+        },
+        "hostile_unicode": {
+          "$_SESSION['dname']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_SESSION['dname']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S022",
+      "file": "doctor-panel.php",
+      "line": 332,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S023",
+      "file": "doctorsearch.php",
+      "line": 16,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['doctor_contact']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['doctor_contact']": null
+        },
+        "empty_result": {
+          "$_POST['doctor_contact']": null
+        },
+        "boundary": {
+          "$_POST['doctor_contact']": null
+        },
+        "hostile_quote": {
+          "$_POST['doctor_contact']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['doctor_contact']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['doctor_contact']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['doctor_contact']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['doctor_contact']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S024",
+      "file": "func.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['password2']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['email']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['password2']": null,
+          "$_POST['email']": null
+        },
+        "empty_result": {
+          "$_POST['password2']": null,
+          "$_POST['email']": null
+        },
+        "boundary": {
+          "$_POST['password2']": null,
+          "$_POST['email']": null
+        },
+        "hostile_quote": {
+          "$_POST['password2']": "' OR '1'='1",
+          "$_POST['email']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['password2']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['email']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['password2']": "%_",
+          "$_POST['email']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['password2']": "’ OR 1=1 -- é",
+          "$_POST['email']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['password2']": "abc",
+          "$_POST['email']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S025",
+      "file": "func.php",
+      "line": 34,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['status']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['contact']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['status']": null,
+          "$_POST['contact']": null
+        },
+        "empty_result": {
+          "$_POST['status']": null,
+          "$_POST['contact']": null
+        },
+        "boundary": {
+          "$_POST['status']": null,
+          "$_POST['contact']": null
+        },
+        "hostile_quote": {
+          "$_POST['status']": "' OR '1'='1",
+          "$_POST['contact']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['status']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['contact']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['status']": "%_",
+          "$_POST['contact']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['status']": "’ OR 1=1 -- é",
+          "$_POST['contact']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['status']": "abc",
+          "$_POST['contact']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S027",
+      "file": "func.php",
+      "line": 62,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['docFees']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['demail']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['dpassword']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['doctor']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['docFees']": null,
+          "$_POST['demail']": null,
+          "$_POST['dpassword']": null,
+          "$_POST['doctor']": null
+        },
+        "empty_result": {
+          "$_POST['docFees']": null,
+          "$_POST['demail']": null,
+          "$_POST['dpassword']": null,
+          "$_POST['doctor']": null
+        },
+        "boundary": {
+          "$_POST['docFees']": null,
+          "$_POST['demail']": null,
+          "$_POST['dpassword']": null,
+          "$_POST['doctor']": null
+        },
+        "hostile_quote": {
+          "$_POST['docFees']": "' OR '1'='1",
+          "$_POST['demail']": "' OR '1'='1",
+          "$_POST['dpassword']": "' OR '1'='1",
+          "$_POST['doctor']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['docFees']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['demail']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['dpassword']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['doctor']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['docFees']": "%_",
+          "$_POST['demail']": "%_",
+          "$_POST['dpassword']": "%_",
+          "$_POST['doctor']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['docFees']": "’ OR 1=1 -- é",
+          "$_POST['demail']": "’ OR 1=1 -- é",
+          "$_POST['dpassword']": "’ OR 1=1 -- é",
+          "$_POST['doctor']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['docFees']": "abc",
+          "$_POST['demail']": "abc",
+          "$_POST['dpassword']": "abc",
+          "$_POST['doctor']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S028",
+      "file": "func1.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['password3']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['username3']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['password3']": null,
+          "$_POST['username3']": null
+        },
+        "empty_result": {
+          "$_POST['password3']": null,
+          "$_POST['username3']": null
+        },
+        "boundary": {
+          "$_POST['password3']": null,
+          "$_POST['username3']": null
+        },
+        "hostile_quote": {
+          "$_POST['password3']": "' OR '1'='1",
+          "$_POST['username3']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['password3']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['username3']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['password3']": "%_",
+          "$_POST['username3']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['password3']": "’ OR 1=1 -- é",
+          "$_POST['username3']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['password3']": "abc",
+          "$_POST['username3']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S030",
+      "file": "func1.php",
+      "line": 43,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S032",
+      "file": "func2.php",
+      "line": 14,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['cpassword']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['password']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['contact']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['email']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['gender']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['lname']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['fname']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['cpassword']": null,
+          "$_POST['password']": null,
+          "$_POST['contact']": null,
+          "$_POST['email']": null,
+          "$_POST['gender']": null,
+          "$_POST['lname']": null,
+          "$_POST['fname']": null
+        },
+        "empty_result": {
+          "$_POST['cpassword']": null,
+          "$_POST['password']": null,
+          "$_POST['contact']": null,
+          "$_POST['email']": null,
+          "$_POST['gender']": null,
+          "$_POST['lname']": null,
+          "$_POST['fname']": null
+        },
+        "boundary": {
+          "$_POST['cpassword']": null,
+          "$_POST['password']": null,
+          "$_POST['contact']": null,
+          "$_POST['email']": null,
+          "$_POST['gender']": null,
+          "$_POST['lname']": null,
+          "$_POST['fname']": null
+        },
+        "hostile_quote": {
+          "$_POST['cpassword']": "' OR '1'='1",
+          "$_POST['password']": "' OR '1'='1",
+          "$_POST['contact']": "' OR '1'='1",
+          "$_POST['email']": "' OR '1'='1",
+          "$_POST['gender']": "' OR '1'='1",
+          "$_POST['lname']": "' OR '1'='1",
+          "$_POST['fname']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['cpassword']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['password']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['contact']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['email']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['gender']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['lname']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['fname']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['cpassword']": "%_",
+          "$_POST['password']": "%_",
+          "$_POST['contact']": "%_",
+          "$_POST['email']": "%_",
+          "$_POST['gender']": "%_",
+          "$_POST['lname']": "%_",
+          "$_POST['fname']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['cpassword']": "’ OR 1=1 -- é",
+          "$_POST['password']": "’ OR 1=1 -- é",
+          "$_POST['contact']": "’ OR 1=1 -- é",
+          "$_POST['email']": "’ OR 1=1 -- é",
+          "$_POST['gender']": "’ OR 1=1 -- é",
+          "$_POST['lname']": "’ OR 1=1 -- é",
+          "$_POST['fname']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['cpassword']": "abc",
+          "$_POST['password']": "abc",
+          "$_POST['contact']": "abc",
+          "$_POST['email']": "abc",
+          "$_POST['gender']": "abc",
+          "$_POST['lname']": "abc",
+          "$_POST['fname']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S033",
+      "file": "func2.php",
+      "line": 26,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S034",
+      "file": "func2.php",
+      "line": 41,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['status']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['contact']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['status']": null,
+          "$_POST['contact']": null
+        },
+        "empty_result": {
+          "$_POST['status']": null,
+          "$_POST['contact']": null
+        },
+        "boundary": {
+          "$_POST['status']": null,
+          "$_POST['contact']": null
+        },
+        "hostile_quote": {
+          "$_POST['status']": "' OR '1'='1",
+          "$_POST['contact']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['status']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['contact']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['status']": "%_",
+          "$_POST['contact']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['status']": "’ OR 1=1 -- é",
+          "$_POST['contact']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['status']": "abc",
+          "$_POST['contact']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S036",
+      "file": "func2.php",
+      "line": 66,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['name']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['name']": null
+        },
+        "empty_result": {
+          "$_POST['name']": null
+        },
+        "boundary": {
+          "$_POST['name']": null
+        },
+        "hostile_quote": {
+          "$_POST['name']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['name']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['name']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['name']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['name']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S037",
+      "file": "func3.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['password2']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['username1']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['password2']": null,
+          "$_POST['username1']": null
+        },
+        "empty_result": {
+          "$_POST['password2']": null,
+          "$_POST['username1']": null
+        },
+        "boundary": {
+          "$_POST['password2']": null,
+          "$_POST['username1']": null
+        },
+        "hostile_quote": {
+          "$_POST['password2']": "' OR '1'='1",
+          "$_POST['username1']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['password2']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['username1']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['password2']": "%_",
+          "$_POST['username1']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['password2']": "’ OR 1=1 -- é",
+          "$_POST['username1']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['password2']": "abc",
+          "$_POST['username1']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S038",
+      "file": "func3.php",
+      "line": 24,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['status']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['contact']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['status']": null,
+          "$_POST['contact']": null
+        },
+        "empty_result": {
+          "$_POST['status']": null,
+          "$_POST['contact']": null
+        },
+        "boundary": {
+          "$_POST['status']": null,
+          "$_POST['contact']": null
+        },
+        "hostile_quote": {
+          "$_POST['status']": "' OR '1'='1",
+          "$_POST['contact']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['status']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['contact']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['status']": "%_",
+          "$_POST['contact']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['status']": "’ OR 1=1 -- é",
+          "$_POST['contact']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['status']": "abc",
+          "$_POST['contact']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S039",
+      "file": "func3.php",
+      "line": 36,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S040",
+      "file": "func3.php",
+      "line": 49,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['name']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['name']": null
+        },
+        "empty_result": {
+          "$_POST['name']": null
+        },
+        "boundary": {
+          "$_POST['name']": null
+        },
+        "hostile_quote": {
+          "$_POST['name']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['name']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['name']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['name']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['name']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S041",
+      "file": "include/header.php",
+      "line": 35,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_SESSION['id']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S042",
+      "file": "messearch.php",
+      "line": 15,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['mes_contact']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['mes_contact']": null
+        },
+        "empty_result": {
+          "$_POST['mes_contact']": null
+        },
+        "boundary": {
+          "$_POST['mes_contact']": null
+        },
+        "hostile_quote": {
+          "$_POST['mes_contact']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['mes_contact']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['mes_contact']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['mes_contact']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['mes_contact']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S044",
+      "file": "newfunc.php",
+      "line": 23,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['status']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['contact']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['status']": null,
+          "$_POST['contact']": null
+        },
+        "empty_result": {
+          "$_POST['status']": null,
+          "$_POST['contact']": null
+        },
+        "boundary": {
+          "$_POST['status']": null,
+          "$_POST['contact']": null
+        },
+        "hostile_quote": {
+          "$_POST['status']": "' OR '1'='1",
+          "$_POST['contact']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['status']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['contact']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['status']": "%_",
+          "$_POST['contact']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['status']": "’ OR 1=1 -- é",
+          "$_POST['contact']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['status']": "abc",
+          "$_POST['contact']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S046",
+      "file": "newfunc.php",
+      "line": 45,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S047",
+      "file": "newfunc.php",
+      "line": 57,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S049",
+      "file": "newfunc.php",
+      "line": 84,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['username']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['username']": null
+        },
+        "empty_result": {
+          "$_POST['username']": null
+        },
+        "boundary": {
+          "$_POST['username']": null
+        },
+        "hostile_quote": {
+          "$_POST['username']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['username']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['username']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['username']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['username']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S050",
+      "file": "patientsearch.php",
+      "line": 15,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['patient_contact']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['patient_contact']": null
+        },
+        "empty_result": {
+          "$_POST['patient_contact']": null
+        },
+        "boundary": {
+          "$_POST['patient_contact']": null
+        },
+        "hostile_quote": {
+          "$_POST['patient_contact']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['patient_contact']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['patient_contact']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['patient_contact']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['patient_contact']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S051",
+      "file": "prescribe.php",
+      "line": 33,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['prescription']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['ID']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['pid']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['lname']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['fname']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['allergy']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['disease']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['apptime']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['appdate']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_SESSION['dname']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['prescription']": null,
+          "$_POST['ID']": null,
+          "$_POST['pid']": null,
+          "$_POST['lname']": null,
+          "$_POST['fname']": null,
+          "$_POST['allergy']": null,
+          "$_POST['disease']": null,
+          "$_POST['apptime']": null,
+          "$_POST['appdate']": null,
+          "$_SESSION['dname']": null
+        },
+        "empty_result": {
+          "$_POST['prescription']": null,
+          "$_POST['ID']": null,
+          "$_POST['pid']": null,
+          "$_POST['lname']": null,
+          "$_POST['fname']": null,
+          "$_POST['allergy']": null,
+          "$_POST['disease']": null,
+          "$_POST['apptime']": null,
+          "$_POST['appdate']": null,
+          "$_SESSION['dname']": null
+        },
+        "boundary": {
+          "$_POST['prescription']": null,
+          "$_POST['ID']": null,
+          "$_POST['pid']": null,
+          "$_POST['lname']": null,
+          "$_POST['fname']": null,
+          "$_POST['allergy']": null,
+          "$_POST['disease']": null,
+          "$_POST['apptime']": null,
+          "$_POST['appdate']": null,
+          "$_SESSION['dname']": null
+        },
+        "hostile_quote": {
+          "$_POST['prescription']": "' OR '1'='1",
+          "$_POST['ID']": "' OR '1'='1",
+          "$_POST['pid']": "' OR '1'='1",
+          "$_POST['lname']": "' OR '1'='1",
+          "$_POST['fname']": "' OR '1'='1",
+          "$_POST['allergy']": "' OR '1'='1",
+          "$_POST['disease']": "' OR '1'='1",
+          "$_POST['apptime']": "' OR '1'='1",
+          "$_POST['appdate']": "' OR '1'='1",
+          "$_SESSION['dname']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['prescription']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['ID']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['pid']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['lname']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['fname']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['allergy']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['disease']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['apptime']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['appdate']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_SESSION['dname']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['prescription']": "%_",
+          "$_POST['ID']": "%_",
+          "$_POST['pid']": "%_",
+          "$_POST['lname']": "%_",
+          "$_POST['fname']": "%_",
+          "$_POST['allergy']": "%_",
+          "$_POST['disease']": "%_",
+          "$_POST['apptime']": "%_",
+          "$_POST['appdate']": "%_",
+          "$_SESSION['dname']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['prescription']": "’ OR 1=1 -- é",
+          "$_POST['ID']": "’ OR 1=1 -- é",
+          "$_POST['pid']": "’ OR 1=1 -- é",
+          "$_POST['lname']": "’ OR 1=1 -- é",
+          "$_POST['fname']": "’ OR 1=1 -- é",
+          "$_POST['allergy']": "’ OR 1=1 -- é",
+          "$_POST['disease']": "’ OR 1=1 -- é",
+          "$_POST['apptime']": "’ OR 1=1 -- é",
+          "$_POST['appdate']": "’ OR 1=1 -- é",
+          "$_SESSION['dname']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['prescription']": "abc",
+          "$_POST['ID']": "abc",
+          "$_POST['pid']": "abc",
+          "$_POST['lname']": "abc",
+          "$_POST['fname']": "abc",
+          "$_POST['allergy']": "abc",
+          "$_POST['disease']": "abc",
+          "$_POST['apptime']": "abc",
+          "$_POST['appdate']": "abc",
+          "$_SESSION['dname']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S052",
+      "file": "search.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_SESSION['dname']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['contact']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_SESSION['dname']": null,
+          "$_POST['contact']": null
+        },
+        "empty_result": {
+          "$_SESSION['dname']": null,
+          "$_POST['contact']": null
+        },
+        "boundary": {
+          "$_SESSION['dname']": null,
+          "$_POST['contact']": null
+        },
+        "hostile_quote": {
+          "$_SESSION['dname']": "' OR '1'='1",
+          "$_POST['contact']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_SESSION['dname']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['contact']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_SESSION['dname']": "%_",
+          "$_POST['contact']": "%_"
+        },
+        "hostile_unicode": {
+          "$_SESSION['dname']": "’ OR 1=1 -- é",
+          "$_POST['contact']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_SESSION['dname']": "abc",
+          "$_POST['contact']": "abc"
+        }
+      }
+    }
+  ]
+}

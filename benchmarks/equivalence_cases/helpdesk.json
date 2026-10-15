@@ -1,0 +1,378 @@
+{
+  "app": "helpdesk",
+  "generated": "2026-10-15",
+  "instructions": "Fill the null values of normal / empty_result / boundary by hand from the schema and seed data (not from C3 output). Superglobal inputs are strings; an 'array' input is an object with the listed keys. Delete a case you do not want; a case with any null value is skipped. hostile_* and type_mismatch are pre-filled from docs/E1_equivalence_plan.md section 3; review or delete them.",
+  "sites": [
+    {
+      "site_id": "S001",
+      "file": "agents.php",
+      "line": 5,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S002",
+      "file": "create.php",
+      "line": 13,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['priority']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['agent_id']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['description']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['subject']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['priority']": null,
+          "$_POST['agent_id']": null,
+          "$_POST['description']": null,
+          "$_POST['subject']": null
+        },
+        "empty_result": {
+          "$_POST['priority']": null,
+          "$_POST['agent_id']": null,
+          "$_POST['description']": null,
+          "$_POST['subject']": null
+        },
+        "boundary": {
+          "$_POST['priority']": null,
+          "$_POST['agent_id']": null,
+          "$_POST['description']": null,
+          "$_POST['subject']": null
+        },
+        "hostile_quote": {
+          "$_POST['priority']": "' OR '1'='1",
+          "$_POST['agent_id']": "' OR '1'='1",
+          "$_POST['description']": "' OR '1'='1",
+          "$_POST['subject']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['priority']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['agent_id']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['description']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['subject']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['priority']": "%_",
+          "$_POST['agent_id']": "%_",
+          "$_POST['description']": "%_",
+          "$_POST['subject']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['priority']": "’ OR 1=1 -- é",
+          "$_POST['agent_id']": "’ OR 1=1 -- é",
+          "$_POST['description']": "’ OR 1=1 -- é",
+          "$_POST['subject']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['priority']": "abc",
+          "$_POST['agent_id']": "abc",
+          "$_POST['description']": "abc",
+          "$_POST['subject']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S003",
+      "file": "delete.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['id']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['id']": null
+        },
+        "empty_result": {
+          "$_POST['id']": null
+        },
+        "boundary": {
+          "$_POST['id']": null
+        },
+        "hostile_quote": {
+          "$_POST['id']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['id']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['id']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['id']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['id']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S004",
+      "file": "edit.php",
+      "line": 10,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['priority']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['status']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_GET['id']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['id']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['priority']": null,
+          "$_POST['status']": null,
+          "$_GET['id']": null,
+          "$_POST['id']": null
+        },
+        "empty_result": {
+          "$_POST['priority']": null,
+          "$_POST['status']": null,
+          "$_GET['id']": null,
+          "$_POST['id']": null
+        },
+        "boundary": {
+          "$_POST['priority']": null,
+          "$_POST['status']": null,
+          "$_GET['id']": null,
+          "$_POST['id']": null
+        },
+        "hostile_quote": {
+          "$_POST['priority']": "' OR '1'='1",
+          "$_POST['status']": "' OR '1'='1",
+          "$_GET['id']": "' OR '1'='1",
+          "$_POST['id']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['priority']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['status']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_GET['id']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['id']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['priority']": "%_",
+          "$_POST['status']": "%_",
+          "$_GET['id']": "%_",
+          "$_POST['id']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['priority']": "’ OR 1=1 -- é",
+          "$_POST['status']": "’ OR 1=1 -- é",
+          "$_GET['id']": "’ OR 1=1 -- é",
+          "$_POST['id']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['priority']": "abc",
+          "$_POST['status']": "abc",
+          "$_GET['id']": "abc",
+          "$_POST['id']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S005",
+      "file": "edit.php",
+      "line": 15,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['id']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['id']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['id']": null,
+          "$_POST['id']": null
+        },
+        "empty_result": {
+          "$_GET['id']": null,
+          "$_POST['id']": null
+        },
+        "boundary": {
+          "$_GET['id']": null,
+          "$_POST['id']": null
+        },
+        "hostile_quote": {
+          "$_GET['id']": "' OR '1'='1",
+          "$_POST['id']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['id']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['id']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['id']": "%_",
+          "$_POST['id']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['id']": "’ OR 1=1 -- é",
+          "$_POST['id']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['id']": "abc",
+          "$_POST['id']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S006",
+      "file": "index.php",
+      "line": 5,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S007",
+      "file": "report.php",
+      "line": 5,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S008",
+      "file": "search.php",
+      "line": 6,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['term']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['term']": null
+        },
+        "empty_result": {
+          "$_GET['term']": null
+        },
+        "boundary": {
+          "$_GET['term']": null
+        },
+        "hostile_quote": {
+          "$_GET['term']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['term']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['term']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['term']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['term']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S009",
+      "file": "view.php",
+      "line": 6,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['id']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['id']": null
+        },
+        "empty_result": {
+          "$_GET['id']": null
+        },
+        "boundary": {
+          "$_GET['id']": null
+        },
+        "hostile_quote": {
+          "$_GET['id']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['id']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['id']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['id']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['id']": "abc"
+        }
+      }
+    }
+  ]
+}

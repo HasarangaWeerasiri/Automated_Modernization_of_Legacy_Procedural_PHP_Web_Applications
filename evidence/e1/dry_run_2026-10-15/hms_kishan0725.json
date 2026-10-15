@@ -1,0 +1,1444 @@
+{
+  "app": "hms_kishan0725",
+  "sites": 44,
+  "verdicts": {
+    "READY": 40,
+    "INCONCLUSIVE": 4
+  },
+  "redacted": true,
+  "results": [
+    {
+      "site_id": "S001",
+      "file": "admin-panel.php",
+      "line": 42,
+      "call": "mysqli_query",
+      "c3_query_id": "Q001",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_appointmenttb_q001",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S002",
+      "file": "admin-panel.php",
+      "line": 45,
+      "call": "mysqli_query",
+      "c3_query_id": "Q002",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "insert_appointmenttb_q002",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S003",
+      "file": "admin-panel.php",
+      "line": 71,
+      "call": "mysqli_query",
+      "c3_query_id": "Q003",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED UNKNOWN_EXPR"
+    },
+    {
+      "site_id": "S004",
+      "file": "admin-panel.php",
+      "line": 86,
+      "call": "mysqli_query",
+      "c3_query_id": "Q004",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED UNKNOWN_EXPR"
+    },
+    {
+      "site_id": "S005",
+      "file": "admin-panel.php",
+      "line": 144,
+      "call": "mysqli_query",
+      "c3_query_id": "Q005",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_doctb_q005",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S006",
+      "file": "admin-panel.php",
+      "line": 313,
+      "call": "mysqli_query",
+      "c3_query_id": "Q006",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_doctb_q006",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S007",
+      "file": "admin-panel.php",
+      "line": 473,
+      "call": "mysqli_query",
+      "c3_query_id": "Q007",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_appointmenttb_q007",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S008",
+      "file": "admin-panel.php",
+      "line": 550,
+      "call": "mysqli_query",
+      "c3_query_id": "Q008",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_prestb_q008",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S009",
+      "file": "admin-panel1.php",
+      "line": 15,
+      "call": "mysqli_query",
+      "c3_query_id": "Q009",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "insert_doctb_q009",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S010",
+      "file": "admin-panel1.php",
+      "line": 27,
+      "call": "mysqli_query",
+      "c3_query_id": "Q010",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "delete_doctb_q010",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S011",
+      "file": "admin-panel1.php",
+      "line": 278,
+      "call": "mysqli_query",
+      "c3_query_id": "Q011",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_doctb_q011",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S012",
+      "file": "admin-panel1.php",
+      "line": 329,
+      "call": "mysqli_query",
+      "c3_query_id": "Q012",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_patreg_q012",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S013",
+      "file": "admin-panel1.php",
+      "line": 385,
+      "call": "mysqli_query",
+      "c3_query_id": "Q013",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_prestb_q013",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S014",
+      "file": "admin-panel1.php",
+      "line": 458,
+      "call": "mysqli_query",
+      "c3_query_id": "Q014",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_appointmenttb_q014",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S015",
+      "file": "admin-panel1.php",
+      "line": 568,
+      "call": "mysqli_query",
+      "c3_query_id": "Q015",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_contact_q015",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S016",
+      "file": "appsearch.php",
+      "line": 17,
+      "call": "mysqli_query",
+      "c3_query_id": "Q016",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_appointmenttb_q016",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S017",
+      "file": "contact.php",
+      "line": 11,
+      "call": "mysqli_query",
+      "c3_query_id": "Q017",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "insert_contact_q017",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S018",
+      "file": "doctor-panel.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_query_id": "Q018",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED UNKNOWN_EXPR"
+    },
+    {
+      "site_id": "S020",
+      "file": "doctor-panel.php",
+      "line": 186,
+      "call": "mysqli_query",
+      "c3_query_id": "Q019",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_appointmenttb_q019",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S021",
+      "file": "doctor-panel.php",
+      "line": 280,
+      "call": "mysqli_query",
+      "c3_query_id": "Q020",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_prestb_q020",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S022",
+      "file": "doctor-panel.php",
+      "line": 332,
+      "call": "mysqli_query",
+      "c3_query_id": "Q021",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_appointmenttb_q021",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S023",
+      "file": "doctorsearch.php",
+      "line": 16,
+      "call": "mysqli_query",
+      "c3_query_id": "Q022",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_doctb_q022",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S024",
+      "file": "func.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_query_id": "Q023",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_patreg_q023",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S025",
+      "file": "func.php",
+      "line": 34,
+      "call": "mysqli_query",
+      "c3_query_id": "Q024",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "update_appointmenttb_q024",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S027",
+      "file": "func.php",
+      "line": 62,
+      "call": "mysqli_query",
+      "c3_query_id": "Q025",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "insert_doctb_q025",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S028",
+      "file": "func1.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_query_id": "Q026",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_doctb_q026",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S030",
+      "file": "func1.php",
+      "line": 43,
+      "call": "mysqli_query",
+      "c3_query_id": "Q027",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_doctb_q027",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S032",
+      "file": "func2.php",
+      "line": 14,
+      "call": "mysqli_query",
+      "c3_query_id": "Q028",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "insert_patreg_q028",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S033",
+      "file": "func2.php",
+      "line": 26,
+      "call": "mysqli_query",
+      "c3_query_id": "Q029",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_patreg_q029",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S034",
+      "file": "func2.php",
+      "line": 41,
+      "call": "mysqli_query",
+      "c3_query_id": "Q030",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "update_appointmenttb_q030",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S036",
+      "file": "func2.php",
+      "line": 66,
+      "call": "mysqli_query",
+      "c3_query_id": "Q031",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "insert_doctb_q031",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S037",
+      "file": "func3.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_query_id": "Q032",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_admintb_q032",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S038",
+      "file": "func3.php",
+      "line": 24,
+      "call": "mysqli_query",
+      "c3_query_id": "Q033",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "update_appointmenttb_q033",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S039",
+      "file": "func3.php",
+      "line": 36,
+      "call": "mysqli_query",
+      "c3_query_id": "Q034",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_doctb_q034",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S040",
+      "file": "func3.php",
+      "line": 49,
+      "call": "mysqli_query",
+      "c3_query_id": "Q035",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "insert_doctb_q035",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S041",
+      "file": "include/header.php",
+      "line": 35,
+      "call": "mysqli_query",
+      "c3_query_id": "Q036",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED UNKNOWN_EXPR"
+    },
+    {
+      "site_id": "S042",
+      "file": "messearch.php",
+      "line": 15,
+      "call": "mysqli_query",
+      "c3_query_id": "Q037",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_contact_q037",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S044",
+      "file": "newfunc.php",
+      "line": 23,
+      "call": "mysqli_query",
+      "c3_query_id": "Q038",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "update_appointmenttb_q038",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S046",
+      "file": "newfunc.php",
+      "line": 45,
+      "call": "mysqli_query",
+      "c3_query_id": "Q039",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_doctb_q039",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S047",
+      "file": "newfunc.php",
+      "line": 57,
+      "call": "mysqli_query",
+      "c3_query_id": "Q040",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_doctb_q040",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S049",
+      "file": "newfunc.php",
+      "line": 84,
+      "call": "mysqli_query",
+      "c3_query_id": "Q041",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "insert_doctb_q041",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S050",
+      "file": "patientsearch.php",
+      "line": 15,
+      "call": "mysqli_query",
+      "c3_query_id": "Q042",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_patreg_q042",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S051",
+      "file": "prescribe.php",
+      "line": 33,
+      "call": "mysqli_query",
+      "c3_query_id": "Q043",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "insert_prestb_q043",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S052",
+      "file": "search.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_query_id": "Q044",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": []
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": []
+        }
+      ],
+      "generated_function": "select_appointmenttb_q044",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    }
+  ],
+  "c3_output": "regenerated from the current code into a temp folder (not kept)"
+}

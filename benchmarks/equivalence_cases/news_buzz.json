@@ -1,0 +1,1445 @@
+{
+  "app": "news_buzz",
+  "generated": "2026-10-15",
+  "instructions": "Fill the null values of normal / empty_result / boundary by hand from the schema and seed data (not from C3 output). Superglobal inputs are strings; an 'array' input is an object with the listed keys. Delete a case you do not want; a case with any null value is skipped. hostile_* and type_mismatch are pre-filled from docs/E1_equivalence_plan.md section 3; review or delete them.",
+  "sites": [
+    {
+      "site_id": "S001",
+      "file": "admin/adduser.php",
+      "line": 51,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['role']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$password",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to password_hash() at line 49; value supplied by the case"
+        },
+        {
+          "name": "$validated_data",
+          "kind": "array",
+          "keys": [
+            "email",
+            "lastname",
+            "firstname",
+            "username"
+          ],
+          "note": "assigned from method call ->run at line 31; value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['role']": null,
+          "$password": null,
+          "$validated_data": null
+        },
+        "empty_result": {
+          "$_POST['role']": null,
+          "$password": null,
+          "$validated_data": null
+        },
+        "boundary": {
+          "$_POST['role']": null,
+          "$password": null,
+          "$validated_data": null
+        },
+        "hostile_quote": {
+          "$_POST['role']": "' OR '1'='1",
+          "$password": "' OR '1'='1",
+          "$validated_data": {
+            "email": "' OR '1'='1",
+            "lastname": "' OR '1'='1",
+            "firstname": "' OR '1'='1",
+            "username": "' OR '1'='1"
+          }
+        },
+        "hostile_stacked": {
+          "$_POST['role']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$password": "1; DROP TABLE c3_e1_canary;-- ",
+          "$validated_data": {
+            "email": "1; DROP TABLE c3_e1_canary;-- ",
+            "lastname": "1; DROP TABLE c3_e1_canary;-- ",
+            "firstname": "1; DROP TABLE c3_e1_canary;-- ",
+            "username": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        "hostile_wildcard": {
+          "$_POST['role']": "%_",
+          "$password": "%_",
+          "$validated_data": {
+            "email": "%_",
+            "lastname": "%_",
+            "firstname": "%_",
+            "username": "%_"
+          }
+        },
+        "hostile_unicode": {
+          "$_POST['role']": "’ OR 1=1 -- é",
+          "$password": "’ OR 1=1 -- é",
+          "$validated_data": {
+            "email": "’ OR 1=1 -- é",
+            "lastname": "’ OR 1=1 -- é",
+            "firstname": "’ OR 1=1 -- é",
+            "username": "’ OR 1=1 -- é"
+          }
+        },
+        "type_mismatch": {
+          "$_POST['role']": "abc",
+          "$password": "abc",
+          "$validated_data": {
+            "email": "abc",
+            "lastname": "abc",
+            "firstname": "abc",
+            "username": "abc"
+          }
+        }
+      }
+    },
+    {
+      "site_id": "S002",
+      "file": "admin/editposts.php",
+      "line": 17,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$query",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_If at line 11 (control flow); value supplied by the case"
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S003",
+      "file": "admin/editposts.php",
+      "line": 88,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$picture",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_If at line 66 (control flow); value supplied by the case"
+        },
+        {
+          "name": "$post_status",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_If at line 55 (control flow); value supplied by the case"
+        },
+        {
+          "name": "$post_date",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to date() at line 54; value supplied by the case"
+        },
+        {
+          "name": "$validated_data",
+          "kind": "array",
+          "keys": [
+            "content",
+            "tags",
+            "title"
+          ],
+          "note": "assigned from method call ->run at line 43; value supplied by the case"
+        },
+        {
+          "name": "$row",
+          "kind": "array",
+          "keys": [
+            "id"
+          ],
+          "note": "not assigned before the call in this file (include, global or earlier request); value supplied by the case"
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S004",
+      "file": "admin/index.php",
+      "line": 34,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S005",
+      "file": "admin/index.php",
+      "line": 64,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S006",
+      "file": "admin/post.php",
+      "line": 17,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$query",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_If at line 11 (control flow); value supplied by the case"
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S007",
+      "file": "admin/posts.php",
+      "line": 51,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S008",
+      "file": "admin/posts.php",
+      "line": 98,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['del']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['del']": null
+        },
+        "empty_result": {
+          "$_GET['del']": null
+        },
+        "boundary": {
+          "$_GET['del']": null
+        },
+        "hostile_quote": {
+          "$_GET['del']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['del']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['del']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['del']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['del']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S009",
+      "file": "admin/posts.php",
+      "line": 110,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['pub']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['pub']": null
+        },
+        "empty_result": {
+          "$_GET['pub']": null
+        },
+        "boundary": {
+          "$_GET['pub']": null
+        },
+        "hostile_quote": {
+          "$_GET['pub']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['pub']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['pub']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['pub']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['pub']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S010",
+      "file": "admin/posts.php",
+      "line": 153,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_SESSION['firstname']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_SESSION['firstname']": null
+        },
+        "empty_result": {
+          "$_SESSION['firstname']": null
+        },
+        "boundary": {
+          "$_SESSION['firstname']": null
+        },
+        "hostile_quote": {
+          "$_SESSION['firstname']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_SESSION['firstname']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_SESSION['firstname']": "%_"
+        },
+        "hostile_unicode": {
+          "$_SESSION['firstname']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_SESSION['firstname']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S011",
+      "file": "admin/posts.php",
+      "line": 200,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['del']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['del']": null
+        },
+        "empty_result": {
+          "$_GET['del']": null
+        },
+        "boundary": {
+          "$_GET['del']": null
+        },
+        "hostile_quote": {
+          "$_GET['del']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['del']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['del']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['del']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['del']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S012",
+      "file": "admin/posts.php",
+      "line": 212,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['pub']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['pub']": null
+        },
+        "empty_result": {
+          "$_GET['pub']": null
+        },
+        "boundary": {
+          "$_GET['pub']": null
+        },
+        "hostile_quote": {
+          "$_GET['pub']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['pub']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['pub']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['pub']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['pub']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S013",
+      "file": "admin/posts.php",
+      "line": 251,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_SESSION['firstname']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_SESSION['firstname']": null
+        },
+        "empty_result": {
+          "$_SESSION['firstname']": null
+        },
+        "boundary": {
+          "$_SESSION['firstname']": null
+        },
+        "hostile_quote": {
+          "$_SESSION['firstname']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_SESSION['firstname']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_SESSION['firstname']": "%_"
+        },
+        "hostile_unicode": {
+          "$_SESSION['firstname']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_SESSION['firstname']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S014",
+      "file": "admin/posts.php",
+      "line": 292,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['del']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_SESSION['firstname']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['del']": null,
+          "$_SESSION['firstname']": null
+        },
+        "empty_result": {
+          "$_GET['del']": null,
+          "$_SESSION['firstname']": null
+        },
+        "boundary": {
+          "$_GET['del']": null,
+          "$_SESSION['firstname']": null
+        },
+        "hostile_quote": {
+          "$_GET['del']": "' OR '1'='1",
+          "$_SESSION['firstname']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['del']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_SESSION['firstname']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['del']": "%_",
+          "$_SESSION['firstname']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['del']": "’ OR 1=1 -- é",
+          "$_SESSION['firstname']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['del']": "abc",
+          "$_SESSION['firstname']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S015",
+      "file": "admin/profile.php",
+      "line": 7,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_SESSION['username']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_SESSION['username']": null
+        },
+        "empty_result": {
+          "$_SESSION['username']": null
+        },
+        "boundary": {
+          "$_SESSION['username']": null
+        },
+        "hostile_quote": {
+          "$_SESSION['username']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_SESSION['username']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_SESSION['username']": "%_"
+        },
+        "hostile_unicode": {
+          "$_SESSION['username']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_SESSION['username']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S016",
+      "file": "admin/profile.php",
+      "line": 55,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$validated_data",
+          "kind": "array",
+          "keys": [
+            "email",
+            "lastname",
+            "firstname"
+          ],
+          "note": "assigned from method call ->run at line 39; value supplied by the case"
+        },
+        {
+          "name": "$userid",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_If at line 8 (control flow); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$validated_data": null,
+          "$userid": null
+        },
+        "empty_result": {
+          "$validated_data": null,
+          "$userid": null
+        },
+        "boundary": {
+          "$validated_data": null,
+          "$userid": null
+        },
+        "hostile_quote": {
+          "$validated_data": {
+            "email": "' OR '1'='1",
+            "lastname": "' OR '1'='1",
+            "firstname": "' OR '1'='1"
+          },
+          "$userid": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$validated_data": {
+            "email": "1; DROP TABLE c3_e1_canary;-- ",
+            "lastname": "1; DROP TABLE c3_e1_canary;-- ",
+            "firstname": "1; DROP TABLE c3_e1_canary;-- "
+          },
+          "$userid": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$validated_data": {
+            "email": "%_",
+            "lastname": "%_",
+            "firstname": "%_"
+          },
+          "$userid": "%_"
+        },
+        "hostile_unicode": {
+          "$validated_data": {
+            "email": "’ OR 1=1 -- é",
+            "lastname": "’ OR 1=1 -- é",
+            "firstname": "’ OR 1=1 -- é"
+          },
+          "$userid": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$validated_data": {
+            "email": "abc",
+            "lastname": "abc",
+            "firstname": "abc"
+          },
+          "$userid": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S017",
+      "file": "admin/profile.php",
+      "line": 76,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$userpassword",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to password_hash() at line 73; value supplied by the case"
+        },
+        {
+          "name": "$validated_data",
+          "kind": "array",
+          "keys": [
+            "email",
+            "lastname",
+            "firstname"
+          ],
+          "note": "assigned from method call ->run at line 39; value supplied by the case"
+        },
+        {
+          "name": "$userid",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_If at line 8 (control flow); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$userpassword": null,
+          "$validated_data": null,
+          "$userid": null
+        },
+        "empty_result": {
+          "$userpassword": null,
+          "$validated_data": null,
+          "$userid": null
+        },
+        "boundary": {
+          "$userpassword": null,
+          "$validated_data": null,
+          "$userid": null
+        },
+        "hostile_quote": {
+          "$userpassword": "' OR '1'='1",
+          "$validated_data": {
+            "email": "' OR '1'='1",
+            "lastname": "' OR '1'='1",
+            "firstname": "' OR '1'='1"
+          },
+          "$userid": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$userpassword": "1; DROP TABLE c3_e1_canary;-- ",
+          "$validated_data": {
+            "email": "1; DROP TABLE c3_e1_canary;-- ",
+            "lastname": "1; DROP TABLE c3_e1_canary;-- ",
+            "firstname": "1; DROP TABLE c3_e1_canary;-- "
+          },
+          "$userid": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$userpassword": "%_",
+          "$validated_data": {
+            "email": "%_",
+            "lastname": "%_",
+            "firstname": "%_"
+          },
+          "$userid": "%_"
+        },
+        "hostile_unicode": {
+          "$userpassword": "’ OR 1=1 -- é",
+          "$validated_data": {
+            "email": "’ OR 1=1 -- é",
+            "lastname": "’ OR 1=1 -- é",
+            "firstname": "’ OR 1=1 -- é"
+          },
+          "$userid": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$userpassword": "abc",
+          "$validated_data": {
+            "email": "abc",
+            "lastname": "abc",
+            "firstname": "abc"
+          },
+          "$userid": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S018",
+      "file": "admin/profile1.php",
+      "line": 7,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_SESSION['username']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_SESSION['username']": null
+        },
+        "empty_result": {
+          "$_SESSION['username']": null
+        },
+        "boundary": {
+          "$_SESSION['username']": null
+        },
+        "hostile_quote": {
+          "$_SESSION['username']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_SESSION['username']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_SESSION['username']": "%_"
+        },
+        "hostile_unicode": {
+          "$_SESSION['username']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_SESSION['username']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S019",
+      "file": "admin/profile1.php",
+      "line": 68,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$userpassword",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to password_hash() at line 65; value supplied by the case"
+        },
+        {
+          "name": "$validated_data",
+          "kind": "array",
+          "keys": [
+            "email",
+            "lastname",
+            "firstname"
+          ],
+          "note": "assigned from method call ->run at line 39; value supplied by the case"
+        },
+        {
+          "name": "$userid",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_If at line 8 (control flow); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$userpassword": null,
+          "$validated_data": null,
+          "$userid": null
+        },
+        "empty_result": {
+          "$userpassword": null,
+          "$validated_data": null,
+          "$userid": null
+        },
+        "boundary": {
+          "$userpassword": null,
+          "$validated_data": null,
+          "$userid": null
+        },
+        "hostile_quote": {
+          "$userpassword": "' OR '1'='1",
+          "$validated_data": {
+            "email": "' OR '1'='1",
+            "lastname": "' OR '1'='1",
+            "firstname": "' OR '1'='1"
+          },
+          "$userid": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$userpassword": "1; DROP TABLE c3_e1_canary;-- ",
+          "$validated_data": {
+            "email": "1; DROP TABLE c3_e1_canary;-- ",
+            "lastname": "1; DROP TABLE c3_e1_canary;-- ",
+            "firstname": "1; DROP TABLE c3_e1_canary;-- "
+          },
+          "$userid": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$userpassword": "%_",
+          "$validated_data": {
+            "email": "%_",
+            "lastname": "%_",
+            "firstname": "%_"
+          },
+          "$userid": "%_"
+        },
+        "hostile_unicode": {
+          "$userpassword": "’ OR 1=1 -- é",
+          "$validated_data": {
+            "email": "’ OR 1=1 -- é",
+            "lastname": "’ OR 1=1 -- é",
+            "firstname": "’ OR 1=1 -- é"
+          },
+          "$userid": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$userpassword": "abc",
+          "$validated_data": {
+            "email": "abc",
+            "lastname": "abc",
+            "firstname": "abc"
+          },
+          "$userid": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S020",
+      "file": "admin/publishnews.php",
+      "line": 73,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$picture",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to rand() at line 70; value supplied by the case"
+        },
+        {
+          "name": "$post_date",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to date() at line 49; value supplied by the case"
+        },
+        {
+          "name": "$post_author",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_If at line 46 (control flow); value supplied by the case"
+        },
+        {
+          "name": "$validated_data",
+          "kind": "array",
+          "keys": [
+            "content",
+            "tags",
+            "title"
+          ],
+          "note": "assigned from method call ->run at line 32; value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$picture": null,
+          "$post_date": null,
+          "$post_author": null,
+          "$validated_data": null
+        },
+        "empty_result": {
+          "$picture": null,
+          "$post_date": null,
+          "$post_author": null,
+          "$validated_data": null
+        },
+        "boundary": {
+          "$picture": null,
+          "$post_date": null,
+          "$post_author": null,
+          "$validated_data": null
+        },
+        "hostile_quote": {
+          "$picture": "' OR '1'='1",
+          "$post_date": "' OR '1'='1",
+          "$post_author": "' OR '1'='1",
+          "$validated_data": {
+            "content": "' OR '1'='1",
+            "tags": "' OR '1'='1",
+            "title": "' OR '1'='1"
+          }
+        },
+        "hostile_stacked": {
+          "$picture": "1; DROP TABLE c3_e1_canary;-- ",
+          "$post_date": "1; DROP TABLE c3_e1_canary;-- ",
+          "$post_author": "1; DROP TABLE c3_e1_canary;-- ",
+          "$validated_data": {
+            "content": "1; DROP TABLE c3_e1_canary;-- ",
+            "tags": "1; DROP TABLE c3_e1_canary;-- ",
+            "title": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        "hostile_wildcard": {
+          "$picture": "%_",
+          "$post_date": "%_",
+          "$post_author": "%_",
+          "$validated_data": {
+            "content": "%_",
+            "tags": "%_",
+            "title": "%_"
+          }
+        },
+        "hostile_unicode": {
+          "$picture": "’ OR 1=1 -- é",
+          "$post_date": "’ OR 1=1 -- é",
+          "$post_author": "’ OR 1=1 -- é",
+          "$validated_data": {
+            "content": "’ OR 1=1 -- é",
+            "tags": "’ OR 1=1 -- é",
+            "title": "’ OR 1=1 -- é"
+          }
+        },
+        "type_mismatch": {
+          "$picture": "abc",
+          "$post_date": "abc",
+          "$post_author": "abc",
+          "$validated_data": {
+            "content": "abc",
+            "tags": "abc",
+            "title": "abc"
+          }
+        }
+      }
+    },
+    {
+      "site_id": "S021",
+      "file": "admin/users.php",
+      "line": 53,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S022",
+      "file": "admin/users.php",
+      "line": 84,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['delete']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['delete']": null
+        },
+        "empty_result": {
+          "$_GET['delete']": null
+        },
+        "boundary": {
+          "$_GET['delete']": null
+        },
+        "hostile_quote": {
+          "$_GET['delete']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['delete']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['delete']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['delete']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['delete']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S023",
+      "file": "admin/users.php",
+      "line": 96,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['delete']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['delete']": null
+        },
+        "empty_result": {
+          "$_GET['delete']": null
+        },
+        "boundary": {
+          "$_GET['delete']": null
+        },
+        "hostile_quote": {
+          "$_GET['delete']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['delete']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['delete']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['delete']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['delete']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S024",
+      "file": "admin/users.php",
+      "line": 109,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['change_to_admin']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['change_to_admin']": null
+        },
+        "empty_result": {
+          "$_GET['change_to_admin']": null
+        },
+        "boundary": {
+          "$_GET['change_to_admin']": null
+        },
+        "hostile_quote": {
+          "$_GET['change_to_admin']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['change_to_admin']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['change_to_admin']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['change_to_admin']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['change_to_admin']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S025",
+      "file": "admin/users.php",
+      "line": 123,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['change_to_admin']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['change_to_admin']": null
+        },
+        "empty_result": {
+          "$_GET['change_to_admin']": null
+        },
+        "boundary": {
+          "$_GET['change_to_admin']": null
+        },
+        "hostile_quote": {
+          "$_GET['change_to_admin']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['change_to_admin']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['change_to_admin']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['change_to_admin']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['change_to_admin']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S026",
+      "file": "admin/users.php",
+      "line": 176,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S027",
+      "file": "index.php",
+      "line": 15,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S028",
+      "file": "login.php",
+      "line": 10,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['user_name']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['user_name']": null
+        },
+        "empty_result": {
+          "$_POST['user_name']": null
+        },
+        "boundary": {
+          "$_POST['user_name']": null
+        },
+        "hostile_quote": {
+          "$_POST['user_name']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['user_name']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['user_name']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['user_name']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['user_name']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S029",
+      "file": "publicposts.php",
+      "line": 16,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$post",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_If at line 5 (control flow); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$post": null
+        },
+        "empty_result": {
+          "$post": null
+        },
+        "boundary": {
+          "$post": null
+        },
+        "hostile_quote": {
+          "$post": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$post": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$post": "%_"
+        },
+        "hostile_unicode": {
+          "$post": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$post": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S030",
+      "file": "registerprocess.php",
+      "line": 38,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$validated_data",
+          "kind": "array",
+          "keys": [
+            "username"
+          ],
+          "note": "assigned from method call ->run at line 22; value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$validated_data": null
+        },
+        "empty_result": {
+          "$validated_data": null
+        },
+        "boundary": {
+          "$validated_data": null
+        },
+        "hostile_quote": {
+          "$validated_data": {
+            "username": "' OR '1'='1"
+          }
+        },
+        "hostile_stacked": {
+          "$validated_data": {
+            "username": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        "hostile_wildcard": {
+          "$validated_data": {
+            "username": "%_"
+          }
+        },
+        "hostile_unicode": {
+          "$validated_data": {
+            "username": "’ OR 1=1 -- é"
+          }
+        },
+        "type_mismatch": {
+          "$validated_data": {
+            "username": "abc"
+          }
+        }
+      }
+    },
+    {
+      "site_id": "S031",
+      "file": "registerprocess.php",
+      "line": 51,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$password",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to password_hash() at line 49; value supplied by the case"
+        },
+        {
+          "name": "$validated_data",
+          "kind": "array",
+          "keys": [
+            "email",
+            "lastname",
+            "firstname",
+            "username"
+          ],
+          "note": "assigned from method call ->run at line 22; value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$password": null,
+          "$validated_data": null
+        },
+        "empty_result": {
+          "$password": null,
+          "$validated_data": null
+        },
+        "boundary": {
+          "$password": null,
+          "$validated_data": null
+        },
+        "hostile_quote": {
+          "$password": "' OR '1'='1",
+          "$validated_data": {
+            "email": "' OR '1'='1",
+            "lastname": "' OR '1'='1",
+            "firstname": "' OR '1'='1",
+            "username": "' OR '1'='1"
+          }
+        },
+        "hostile_stacked": {
+          "$password": "1; DROP TABLE c3_e1_canary;-- ",
+          "$validated_data": {
+            "email": "1; DROP TABLE c3_e1_canary;-- ",
+            "lastname": "1; DROP TABLE c3_e1_canary;-- ",
+            "firstname": "1; DROP TABLE c3_e1_canary;-- ",
+            "username": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        "hostile_wildcard": {
+          "$password": "%_",
+          "$validated_data": {
+            "email": "%_",
+            "lastname": "%_",
+            "firstname": "%_",
+            "username": "%_"
+          }
+        },
+        "hostile_unicode": {
+          "$password": "’ OR 1=1 -- é",
+          "$validated_data": {
+            "email": "’ OR 1=1 -- é",
+            "lastname": "’ OR 1=1 -- é",
+            "firstname": "’ OR 1=1 -- é",
+            "username": "’ OR 1=1 -- é"
+          }
+        },
+        "type_mismatch": {
+          "$password": "abc",
+          "$validated_data": {
+            "email": "abc",
+            "lastname": "abc",
+            "firstname": "abc",
+            "username": "abc"
+          }
+        }
+      }
+    },
+    {
+      "site_id": "S032",
+      "file": "search.php",
+      "line": 19,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['search']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['search']": null
+        },
+        "empty_result": {
+          "$_POST['search']": null
+        },
+        "boundary": {
+          "$_POST['search']": null
+        },
+        "hostile_quote": {
+          "$_POST['search']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['search']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['search']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['search']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['search']": "abc"
+        }
+      }
+    }
+  ]
+}

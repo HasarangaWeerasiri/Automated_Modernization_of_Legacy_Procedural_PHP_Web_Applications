@@ -1,0 +1,63 @@
+{
+  "experiment": "E1 PHP vs generated SQLAlchemy equivalence (dry run: no database)",
+  "date_utc": "2026-10-15T10:24:47.216328+00:00",
+  "git_head": "162b60c451ba555b83eda8d7553a6a374f487e79",
+  "mysql": null,
+  "apps": {
+    "simple_crud": {
+      "sites": 4,
+      "verdicts": {
+        "READY": 4
+      }
+    },
+    "mixed_crud": {
+      "sites": 6,
+      "verdicts": {
+        "READY": 5,
+        "INCONCLUSIVE": 1
+      }
+    },
+    "hard_crud": {
+      "sites": 5,
+      "verdicts": {
+        "READY": 2,
+        "INCONCLUSIVE": 3
+      }
+    },
+    "helpdesk": {
+      "sites": 9,
+      "verdicts": {
+        "READY": 8,
+        "INCONCLUSIVE": 1
+      }
+    },
+    "hms_kishan0725": {
+      "sites": 44,
+      "verdicts": {
+        "READY": 40,
+        "INCONCLUSIVE": 4
+      }
+    },
+    "news_buzz": {
+      "sites": 32,
+      "verdicts": {
+        "READY": 29,
+        "INCONCLUSIVE": 3
+      }
+    },
+    "fee_rainbow": {
+      "sites": 22,
+      "verdicts": {
+        "READY": 19,
+        "INCONCLUSIVE": 3
+      }
+    },
+    "dignity_dev_hms": {
+      "sites": 14,
+      "verdicts": {
+        "INCONCLUSIVE": 10,
+        "READY": 4
+      }
+    }
+  }
+}

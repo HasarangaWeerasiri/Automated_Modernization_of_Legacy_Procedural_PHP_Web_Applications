@@ -1,0 +1,168 @@
+{
+  "app": "simple_crud",
+  "generated": "2026-10-15",
+  "instructions": "Fill the null values of normal / empty_result / boundary by hand from the schema and seed data (not from C3 output). Superglobal inputs are strings; an 'array' input is an object with the listed keys. Delete a case you do not want; a case with any null value is skipped. hostile_* and type_mismatch are pre-filled from docs/E1_equivalence_plan.md section 3; review or delete them.",
+  "sites": [
+    {
+      "site_id": "S001",
+      "file": "create_user.php",
+      "line": 9,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['email']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['name']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['email']": null,
+          "$_POST['name']": null
+        },
+        "empty_result": {
+          "$_POST['email']": null,
+          "$_POST['name']": null
+        },
+        "boundary": {
+          "$_POST['email']": null,
+          "$_POST['name']": null
+        },
+        "hostile_quote": {
+          "$_POST['email']": "' OR '1'='1",
+          "$_POST['name']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['email']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['name']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['email']": "%_",
+          "$_POST['name']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['email']": "’ OR 1=1 -- é",
+          "$_POST['name']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['email']": "abc",
+          "$_POST['name']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S002",
+      "file": "delete_user.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['id']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['id']": null
+        },
+        "empty_result": {
+          "$_GET['id']": null
+        },
+        "boundary": {
+          "$_GET['id']": null
+        },
+        "hostile_quote": {
+          "$_GET['id']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['id']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['id']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['id']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['id']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S003",
+      "file": "update_user.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_POST['name']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$_POST['id']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_POST['name']": null,
+          "$_POST['id']": null
+        },
+        "empty_result": {
+          "$_POST['name']": null,
+          "$_POST['id']": null
+        },
+        "boundary": {
+          "$_POST['name']": null,
+          "$_POST['id']": null
+        },
+        "hostile_quote": {
+          "$_POST['name']": "' OR '1'='1",
+          "$_POST['id']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_POST['name']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$_POST['id']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_POST['name']": "%_",
+          "$_POST['id']": "%_"
+        },
+        "hostile_unicode": {
+          "$_POST['name']": "’ OR 1=1 -- é",
+          "$_POST['id']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_POST['name']": "abc",
+          "$_POST['id']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S004",
+      "file": "users.php",
+      "line": 4,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    }
+  ]
+}

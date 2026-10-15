@@ -174,7 +174,7 @@ Branch: `database-migration` (user override: no `pp1-c3-complete`). Starting poi
 | Fresh holdout (Dignity-Dev) | **done** | `evidence/fresh_holdout/dignity_dev_hms/` | First untouched run on current rules: 14 / 7 / 4, detection 14/14, models map, conversions sound. Shows the taint-analysis limit (function parameters). |
 | S14 prepared statements | not started | — | |
 | S15 evaluator + GT | **GT candidates ready; annotation by the student** | `benchmarks/ground truth/`, register row 45 | Candidate sites come from an independent grep (`scripts/ground_truth/grep_sql_sites.py`), with blank annotation fields. HMS uses a stratified sample of 33 out of 44. Evaluator CSV reader, `c3 evaluate`, and the `expected_tables` fix are still to do. |
-| E1–E7 | E1 planned | `docs/E1_equivalence_plan.md` | Clinic has real-MySQL evidence. E1 adds simple/mixed/hard, Helpdesk and the 3 unseen apps → `php_vs_sqlalchemy_equivalence.json` (PASS/FAIL/INCONCLUSIVE). The legacy SQL is built by PHP from the verbatim source (no circularity). Runs after S13/S4/S5. |
+| E1–E7 | **E1 harness done; MySQL run pending (student)**; E3 done | `0642416`; `evidence/e1/dry_run_2026-10-15/`; register rows 46–47 | E1: dry run shows every converted site READY on 8 apps. The student fills `benchmarks/equivalence_cases/<app>.json` (normal/empty/boundary) and runs `scripts/run_e1_mysql.ps1`, which gives `php_vs_sqlalchemy_equivalence.json`. Clinic keeps its own 61 MySQL tests. E2/E4 next. Tests: 657 / 61 skipped. |
 | Baseline comparison | not started | — | |
 | Demo | not started | — | |
 | Docs + evidence register | started | `evidence/evidence_register.md` | Register created with the pre-dev test run. |

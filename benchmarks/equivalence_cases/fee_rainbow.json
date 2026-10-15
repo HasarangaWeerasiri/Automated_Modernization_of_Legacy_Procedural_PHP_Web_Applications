@@ -1,0 +1,1186 @@
+{
+  "app": "fee_rainbow",
+  "generated": "2026-10-15",
+  "instructions": "Fill the null values of normal / empty_result / boundary by hand from the schema and seed data (not from C3 output). Superglobal inputs are strings; an 'array' input is an object with the listed keys. Delete a case you do not want; a case with any null value is skipped. hostile_* and type_mismatch are pre-filled from docs/E1_equivalence_plan.md section 3; review or delete them.",
+  "sites": [
+    {
+      "site_id": "S001",
+      "file": "admin/app/models/auth.php",
+      "line": 9,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_COOKIE['id']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_COOKIE['id']": null
+        },
+        "empty_result": {
+          "$_COOKIE['id']": null
+        },
+        "boundary": {
+          "$_COOKIE['id']": null
+        },
+        "hostile_quote": {
+          "$_COOKIE['id']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_COOKIE['id']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_COOKIE['id']": "%_"
+        },
+        "hostile_unicode": {
+          "$_COOKIE['id']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_COOKIE['id']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S002",
+      "file": "admin/app/models/auth.php",
+      "line": 28,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$username",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function login before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$username": null
+        },
+        "empty_result": {
+          "$username": null
+        },
+        "boundary": {
+          "$username": null
+        },
+        "hostile_quote": {
+          "$username": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$username": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$username": "%_"
+        },
+        "hostile_unicode": {
+          "$username": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$username": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S003",
+      "file": "admin/app/models/categories.php",
+      "line": 34,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$data",
+          "kind": "array",
+          "keys": [
+            "name"
+          ],
+          "note": "not assigned in function addCategories before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$data": null
+        },
+        "empty_result": {
+          "$data": null
+        },
+        "boundary": {
+          "$data": null
+        },
+        "hostile_quote": {
+          "$data": {
+            "name": "' OR '1'='1"
+          }
+        },
+        "hostile_stacked": {
+          "$data": {
+            "name": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        "hostile_wildcard": {
+          "$data": {
+            "name": "%_"
+          }
+        },
+        "hostile_unicode": {
+          "$data": {
+            "name": "’ OR 1=1 -- é"
+          }
+        },
+        "type_mismatch": {
+          "$data": {
+            "name": "abc"
+          }
+        }
+      }
+    },
+    {
+      "site_id": "S004",
+      "file": "admin/app/models/categories.php",
+      "line": 57,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$data",
+          "kind": "array",
+          "keys": [
+            "name",
+            "id"
+          ],
+          "note": "not assigned in function editCategories before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$data": null
+        },
+        "empty_result": {
+          "$data": null
+        },
+        "boundary": {
+          "$data": null
+        },
+        "hostile_quote": {
+          "$data": {
+            "name": "' OR '1'='1",
+            "id": "' OR '1'='1"
+          }
+        },
+        "hostile_stacked": {
+          "$data": {
+            "name": "1; DROP TABLE c3_e1_canary;-- ",
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        "hostile_wildcard": {
+          "$data": {
+            "name": "%_",
+            "id": "%_"
+          }
+        },
+        "hostile_unicode": {
+          "$data": {
+            "name": "’ OR 1=1 -- é",
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        "type_mismatch": {
+          "$data": {
+            "name": "abc",
+            "id": "abc"
+          }
+        }
+      }
+    },
+    {
+      "site_id": "S005",
+      "file": "admin/app/models/categories.php",
+      "line": 76,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$id",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function deleteCategories before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$id": null
+        },
+        "empty_result": {
+          "$id": null
+        },
+        "boundary": {
+          "$id": null
+        },
+        "hostile_quote": {
+          "$id": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$id": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$id": "%_"
+        },
+        "hostile_unicode": {
+          "$id": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$id": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S006",
+      "file": "admin/app/models/categories.php",
+      "line": 80,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$id",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function deleteCategories before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$id": null
+        },
+        "empty_result": {
+          "$id": null
+        },
+        "boundary": {
+          "$id": null
+        },
+        "hostile_quote": {
+          "$id": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$id": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$id": "%_"
+        },
+        "hostile_unicode": {
+          "$id": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$id": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S007",
+      "file": "admin/app/models/categories.php",
+      "line": 100,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$keyword",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to escape() at line 89; value supplied by the case"
+        },
+        {
+          "name": "$limit",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function searchCategories before the call (parameter or global); value supplied by the case"
+        },
+        {
+          "name": "$offset",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function searchCategories before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S008",
+      "file": "admin/app/models/occasions.php",
+      "line": 27,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$data",
+          "kind": "array",
+          "keys": [
+            "name"
+          ],
+          "note": "not assigned in function addOccasion before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$data": null
+        },
+        "empty_result": {
+          "$data": null
+        },
+        "boundary": {
+          "$data": null
+        },
+        "hostile_quote": {
+          "$data": {
+            "name": "' OR '1'='1"
+          }
+        },
+        "hostile_stacked": {
+          "$data": {
+            "name": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        "hostile_wildcard": {
+          "$data": {
+            "name": "%_"
+          }
+        },
+        "hostile_unicode": {
+          "$data": {
+            "name": "’ OR 1=1 -- é"
+          }
+        },
+        "type_mismatch": {
+          "$data": {
+            "name": "abc"
+          }
+        }
+      }
+    },
+    {
+      "site_id": "S009",
+      "file": "admin/app/models/occasions.php",
+      "line": 52,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$data",
+          "kind": "array",
+          "keys": [
+            "name",
+            "id"
+          ],
+          "note": "not assigned in function editOccasion before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$data": null
+        },
+        "empty_result": {
+          "$data": null
+        },
+        "boundary": {
+          "$data": null
+        },
+        "hostile_quote": {
+          "$data": {
+            "name": "' OR '1'='1",
+            "id": "' OR '1'='1"
+          }
+        },
+        "hostile_stacked": {
+          "$data": {
+            "name": "1; DROP TABLE c3_e1_canary;-- ",
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        "hostile_wildcard": {
+          "$data": {
+            "name": "%_",
+            "id": "%_"
+          }
+        },
+        "hostile_unicode": {
+          "$data": {
+            "name": "’ OR 1=1 -- é",
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        "type_mismatch": {
+          "$data": {
+            "name": "abc",
+            "id": "abc"
+          }
+        }
+      }
+    },
+    {
+      "site_id": "S010",
+      "file": "admin/app/models/occasions.php",
+      "line": 72,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$id",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function deleteOccasion before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$id": null
+        },
+        "empty_result": {
+          "$id": null
+        },
+        "boundary": {
+          "$id": null
+        },
+        "hostile_quote": {
+          "$id": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$id": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$id": "%_"
+        },
+        "hostile_unicode": {
+          "$id": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$id": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S011",
+      "file": "admin/app/models/occasions.php",
+      "line": 92,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$keyword",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to escape() at line 83; value supplied by the case"
+        },
+        {
+          "name": "$limit",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function searchOccasion before the call (parameter or global); value supplied by the case"
+        },
+        {
+          "name": "$offset",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function searchOccasion before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$keyword": null,
+          "$limit": null,
+          "$offset": null
+        },
+        "empty_result": {
+          "$keyword": null,
+          "$limit": null,
+          "$offset": null
+        },
+        "boundary": {
+          "$keyword": null,
+          "$limit": null,
+          "$offset": null
+        },
+        "hostile_quote": {
+          "$keyword": "' OR '1'='1",
+          "$limit": "' OR '1'='1",
+          "$offset": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$keyword": "1; DROP TABLE c3_e1_canary;-- ",
+          "$limit": "1; DROP TABLE c3_e1_canary;-- ",
+          "$offset": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$keyword": "%_",
+          "$limit": "%_",
+          "$offset": "%_"
+        },
+        "hostile_unicode": {
+          "$keyword": "’ OR 1=1 -- é",
+          "$limit": "’ OR 1=1 -- é",
+          "$offset": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$keyword": "abc",
+          "$limit": "abc",
+          "$offset": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S012",
+      "file": "admin/app/models/products.php",
+      "line": 82,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$gambar",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to upload() at line 73; value supplied by the case"
+        },
+        {
+          "name": "$description",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to nl2br() at line 68; value supplied by the case"
+        },
+        {
+          "name": "$price",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to cleancurrencyinput() at line 67; value supplied by the case"
+        },
+        {
+          "name": "$data",
+          "kind": "array",
+          "keys": [
+            "occasion",
+            "subcategory",
+            "category",
+            "name"
+          ],
+          "note": "not assigned in function addProducts before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$gambar": null,
+          "$description": null,
+          "$price": null,
+          "$data": null
+        },
+        "empty_result": {
+          "$gambar": null,
+          "$description": null,
+          "$price": null,
+          "$data": null
+        },
+        "boundary": {
+          "$gambar": null,
+          "$description": null,
+          "$price": null,
+          "$data": null
+        },
+        "hostile_quote": {
+          "$gambar": "' OR '1'='1",
+          "$description": "' OR '1'='1",
+          "$price": "' OR '1'='1",
+          "$data": {
+            "occasion": "' OR '1'='1",
+            "subcategory": "' OR '1'='1",
+            "category": "' OR '1'='1",
+            "name": "' OR '1'='1"
+          }
+        },
+        "hostile_stacked": {
+          "$gambar": "1; DROP TABLE c3_e1_canary;-- ",
+          "$description": "1; DROP TABLE c3_e1_canary;-- ",
+          "$price": "1; DROP TABLE c3_e1_canary;-- ",
+          "$data": {
+            "occasion": "1; DROP TABLE c3_e1_canary;-- ",
+            "subcategory": "1; DROP TABLE c3_e1_canary;-- ",
+            "category": "1; DROP TABLE c3_e1_canary;-- ",
+            "name": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        "hostile_wildcard": {
+          "$gambar": "%_",
+          "$description": "%_",
+          "$price": "%_",
+          "$data": {
+            "occasion": "%_",
+            "subcategory": "%_",
+            "category": "%_",
+            "name": "%_"
+          }
+        },
+        "hostile_unicode": {
+          "$gambar": "’ OR 1=1 -- é",
+          "$description": "’ OR 1=1 -- é",
+          "$price": "’ OR 1=1 -- é",
+          "$data": {
+            "occasion": "’ OR 1=1 -- é",
+            "subcategory": "’ OR 1=1 -- é",
+            "category": "’ OR 1=1 -- é",
+            "name": "’ OR 1=1 -- é"
+          }
+        },
+        "type_mismatch": {
+          "$gambar": "abc",
+          "$description": "abc",
+          "$price": "abc",
+          "$data": {
+            "occasion": "abc",
+            "subcategory": "abc",
+            "category": "abc",
+            "name": "abc"
+          }
+        }
+      }
+    },
+    {
+      "site_id": "S013",
+      "file": "admin/app/models/products.php",
+      "line": 133,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$gambar",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_If at line 106 (control flow); value supplied by the case"
+        },
+        {
+          "name": "$description",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to nl2br() at line 102; value supplied by the case"
+        },
+        {
+          "name": "$price",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to cleancurrencyinput() at line 101; value supplied by the case"
+        },
+        {
+          "name": "$data",
+          "kind": "array",
+          "keys": [
+            "occasion",
+            "subcategory",
+            "category",
+            "name",
+            "id"
+          ],
+          "note": "not assigned in function editProducts before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$gambar": null,
+          "$description": null,
+          "$price": null,
+          "$data": null
+        },
+        "empty_result": {
+          "$gambar": null,
+          "$description": null,
+          "$price": null,
+          "$data": null
+        },
+        "boundary": {
+          "$gambar": null,
+          "$description": null,
+          "$price": null,
+          "$data": null
+        },
+        "hostile_quote": {
+          "$gambar": "' OR '1'='1",
+          "$description": "' OR '1'='1",
+          "$price": "' OR '1'='1",
+          "$data": {
+            "occasion": "' OR '1'='1",
+            "subcategory": "' OR '1'='1",
+            "category": "' OR '1'='1",
+            "name": "' OR '1'='1",
+            "id": "' OR '1'='1"
+          }
+        },
+        "hostile_stacked": {
+          "$gambar": "1; DROP TABLE c3_e1_canary;-- ",
+          "$description": "1; DROP TABLE c3_e1_canary;-- ",
+          "$price": "1; DROP TABLE c3_e1_canary;-- ",
+          "$data": {
+            "occasion": "1; DROP TABLE c3_e1_canary;-- ",
+            "subcategory": "1; DROP TABLE c3_e1_canary;-- ",
+            "category": "1; DROP TABLE c3_e1_canary;-- ",
+            "name": "1; DROP TABLE c3_e1_canary;-- ",
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        "hostile_wildcard": {
+          "$gambar": "%_",
+          "$description": "%_",
+          "$price": "%_",
+          "$data": {
+            "occasion": "%_",
+            "subcategory": "%_",
+            "category": "%_",
+            "name": "%_",
+            "id": "%_"
+          }
+        },
+        "hostile_unicode": {
+          "$gambar": "’ OR 1=1 -- é",
+          "$description": "’ OR 1=1 -- é",
+          "$price": "’ OR 1=1 -- é",
+          "$data": {
+            "occasion": "’ OR 1=1 -- é",
+            "subcategory": "’ OR 1=1 -- é",
+            "category": "’ OR 1=1 -- é",
+            "name": "’ OR 1=1 -- é",
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        "type_mismatch": {
+          "$gambar": "abc",
+          "$description": "abc",
+          "$price": "abc",
+          "$data": {
+            "occasion": "abc",
+            "subcategory": "abc",
+            "category": "abc",
+            "name": "abc",
+            "id": "abc"
+          }
+        }
+      }
+    },
+    {
+      "site_id": "S014",
+      "file": "admin/app/models/products.php",
+      "line": 152,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$id",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function deleteProducts before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$id": null
+        },
+        "empty_result": {
+          "$id": null
+        },
+        "boundary": {
+          "$id": null
+        },
+        "hostile_quote": {
+          "$id": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$id": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$id": "%_"
+        },
+        "hostile_unicode": {
+          "$id": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$id": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S015",
+      "file": "admin/app/models/products.php",
+      "line": 165,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$id",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function deleteProducts before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$id": null
+        },
+        "empty_result": {
+          "$id": null
+        },
+        "boundary": {
+          "$id": null
+        },
+        "hostile_quote": {
+          "$id": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$id": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$id": "%_"
+        },
+        "hostile_unicode": {
+          "$id": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$id": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S016",
+      "file": "admin/app/models/register.php",
+      "line": 30,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$data",
+          "kind": "array",
+          "keys": [
+            "username"
+          ],
+          "note": "not assigned in function addUser before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$data": null
+        },
+        "empty_result": {
+          "$data": null
+        },
+        "boundary": {
+          "$data": null
+        },
+        "hostile_quote": {
+          "$data": {
+            "username": "' OR '1'='1"
+          }
+        },
+        "hostile_stacked": {
+          "$data": {
+            "username": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        "hostile_wildcard": {
+          "$data": {
+            "username": "%_"
+          }
+        },
+        "hostile_unicode": {
+          "$data": {
+            "username": "’ OR 1=1 -- é"
+          }
+        },
+        "type_mismatch": {
+          "$data": {
+            "username": "abc"
+          }
+        }
+      }
+    },
+    {
+      "site_id": "S017",
+      "file": "admin/app/models/register.php",
+      "line": 44,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$hashed_password",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to password_hash() at line 38; value supplied by the case"
+        },
+        {
+          "name": "$data",
+          "kind": "array",
+          "keys": [
+            "username"
+          ],
+          "note": "not assigned in function addUser before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$hashed_password": null,
+          "$data": null
+        },
+        "empty_result": {
+          "$hashed_password": null,
+          "$data": null
+        },
+        "boundary": {
+          "$hashed_password": null,
+          "$data": null
+        },
+        "hostile_quote": {
+          "$hashed_password": "' OR '1'='1",
+          "$data": {
+            "username": "' OR '1'='1"
+          }
+        },
+        "hostile_stacked": {
+          "$hashed_password": "1; DROP TABLE c3_e1_canary;-- ",
+          "$data": {
+            "username": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        "hostile_wildcard": {
+          "$hashed_password": "%_",
+          "$data": {
+            "username": "%_"
+          }
+        },
+        "hostile_unicode": {
+          "$hashed_password": "’ OR 1=1 -- é",
+          "$data": {
+            "username": "’ OR 1=1 -- é"
+          }
+        },
+        "type_mismatch": {
+          "$hashed_password": "abc",
+          "$data": {
+            "username": "abc"
+          }
+        }
+      }
+    },
+    {
+      "site_id": "S018",
+      "file": "admin/app/models/subcategories.php",
+      "line": 40,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['id']",
+          "kind": "superglobal",
+          "note": ""
+        },
+        {
+          "name": "$data",
+          "kind": "array",
+          "keys": [
+            "name"
+          ],
+          "note": "not assigned in function addSubCategories before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['id']": null,
+          "$data": null
+        },
+        "empty_result": {
+          "$_GET['id']": null,
+          "$data": null
+        },
+        "boundary": {
+          "$_GET['id']": null,
+          "$data": null
+        },
+        "hostile_quote": {
+          "$_GET['id']": "' OR '1'='1",
+          "$data": {
+            "name": "' OR '1'='1"
+          }
+        },
+        "hostile_stacked": {
+          "$_GET['id']": "1; DROP TABLE c3_e1_canary;-- ",
+          "$data": {
+            "name": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        "hostile_wildcard": {
+          "$_GET['id']": "%_",
+          "$data": {
+            "name": "%_"
+          }
+        },
+        "hostile_unicode": {
+          "$_GET['id']": "’ OR 1=1 -- é",
+          "$data": {
+            "name": "’ OR 1=1 -- é"
+          }
+        },
+        "type_mismatch": {
+          "$_GET['id']": "abc",
+          "$data": {
+            "name": "abc"
+          }
+        }
+      }
+    },
+    {
+      "site_id": "S019",
+      "file": "admin/app/models/subcategories.php",
+      "line": 65,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$data",
+          "kind": "array",
+          "keys": [
+            "name",
+            "id"
+          ],
+          "note": "not assigned in function editSubCategories before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$data": null
+        },
+        "empty_result": {
+          "$data": null
+        },
+        "boundary": {
+          "$data": null
+        },
+        "hostile_quote": {
+          "$data": {
+            "name": "' OR '1'='1",
+            "id": "' OR '1'='1"
+          }
+        },
+        "hostile_stacked": {
+          "$data": {
+            "name": "1; DROP TABLE c3_e1_canary;-- ",
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        "hostile_wildcard": {
+          "$data": {
+            "name": "%_",
+            "id": "%_"
+          }
+        },
+        "hostile_unicode": {
+          "$data": {
+            "name": "’ OR 1=1 -- é",
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        "type_mismatch": {
+          "$data": {
+            "name": "abc",
+            "id": "abc"
+          }
+        }
+      }
+    },
+    {
+      "site_id": "S020",
+      "file": "admin/app/models/subcategories.php",
+      "line": 85,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$id",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function deleteSubCategories before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$id": null
+        },
+        "empty_result": {
+          "$id": null
+        },
+        "boundary": {
+          "$id": null
+        },
+        "hostile_quote": {
+          "$id": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$id": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$id": "%_"
+        },
+        "hostile_unicode": {
+          "$id": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$id": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S021",
+      "file": "admin/config/helpers.php",
+      "line": 4,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$query",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function query before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S022",
+      "file": "config/helpers.php",
+      "line": 4,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$query",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function query before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    }
+  ]
+}

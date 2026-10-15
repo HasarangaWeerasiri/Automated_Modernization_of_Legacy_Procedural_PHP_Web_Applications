@@ -1,0 +1,138 @@
+{
+  "app": "hard_crud",
+  "generated": "2026-10-15",
+  "instructions": "Fill the null values of normal / empty_result / boundary by hand from the schema and seed data (not from C3 output). Superglobal inputs are strings; an 'array' input is an object with the listed keys. Delete a case you do not want; a case with any null value is skipped. hostile_* and type_mismatch are pre-filled from docs/E1_equivalence_plan.md section 3; review or delete them.",
+  "sites": [
+    {
+      "site_id": "S001",
+      "file": "01_like_search.php",
+      "line": 9,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['q']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['q']": null
+        },
+        "empty_result": {
+          "$_GET['q']": null
+        },
+        "boundary": {
+          "$_GET['q']": null
+        },
+        "hostile_quote": {
+          "$_GET['q']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['q']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['q']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['q']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['q']": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S002",
+      "file": "02_dynamic_order.php",
+      "line": 9,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['sort']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S003",
+      "file": "03_dynamic_in.php",
+      "line": 9,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['ids']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S004",
+      "file": "04_conditional_append.php",
+      "line": 11,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$sql",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_If at line 7 (control flow); value supplied by the case"
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S005",
+      "file": "05_join.php",
+      "line": 13,
+      "call": "mysqli_query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$_GET['user_id']",
+          "kind": "superglobal",
+          "note": ""
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$_GET['user_id']": null
+        },
+        "empty_result": {
+          "$_GET['user_id']": null
+        },
+        "boundary": {
+          "$_GET['user_id']": null
+        },
+        "hostile_quote": {
+          "$_GET['user_id']": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$_GET['user_id']": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$_GET['user_id']": "%_"
+        },
+        "hostile_unicode": {
+          "$_GET['user_id']": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$_GET['user_id']": "abc"
+        }
+      }
+    }
+  ]
+}

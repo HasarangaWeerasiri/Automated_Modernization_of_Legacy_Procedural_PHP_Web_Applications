@@ -1,0 +1,1310 @@
+{
+  "app": "fee_rainbow",
+  "sites": 22,
+  "verdicts": {
+    "READY": 19,
+    "INCONCLUSIVE": 3
+  },
+  "redacted": false,
+  "results": [
+    {
+      "site_id": "S001",
+      "file": "admin/app/models/auth.php",
+      "line": 9,
+      "call": "mysqli_query",
+      "c3_query_id": "Q001",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT username FROM admin WHERE id = ' OR '1'='1",
+          "arguments": {
+            "id": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT username FROM admin WHERE id = 1; DROP TABLE c3_e1_canary;-- ",
+          "arguments": {
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT username FROM admin WHERE id = %_",
+          "arguments": {
+            "id": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT username FROM admin WHERE id = ’ OR 1=1 -- é",
+          "arguments": {
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT username FROM admin WHERE id = abc",
+          "arguments": {
+            "id": "abc"
+          }
+        }
+      ],
+      "generated_function": "select_admin_q001",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S002",
+      "file": "admin/app/models/auth.php",
+      "line": 28,
+      "call": "mysqli_query",
+      "c3_query_id": "Q002",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT * FROM admin WHERE username = '\\' OR \\'1\\'=\\'1'",
+          "arguments": {
+            "username": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT * FROM admin WHERE username = '1; DROP TABLE c3_e1_canary;-- '",
+          "arguments": {
+            "username": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT * FROM admin WHERE username = '%_'",
+          "arguments": {
+            "username": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT * FROM admin WHERE username = '’ OR 1=1 -- é'",
+          "arguments": {
+            "username": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT * FROM admin WHERE username = 'abc'",
+          "arguments": {
+            "username": "abc"
+          }
+        }
+      ],
+      "generated_function": "select_admin_q002",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S003",
+      "file": "admin/app/models/categories.php",
+      "line": 34,
+      "call": "mysqli_query",
+      "c3_query_id": "Q003",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO categories (name, created_at, updated_at) \r\n              VALUES ('&#039; OR &#039;1&#039;=&#039;1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "&#039; OR &#039;1&#039;=&#039;1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO categories (name, created_at, updated_at) \r\n              VALUES ('1; DROP TABLE c3_e1_canary;-- ', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO categories (name, created_at, updated_at) \r\n              VALUES ('%_', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO categories (name, created_at, updated_at) \r\n              VALUES ('’ OR 1=1 -- é', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO categories (name, created_at, updated_at) \r\n              VALUES ('abc', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "abc"
+          }
+        }
+      ],
+      "generated_function": "insert_category_q003",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S004",
+      "file": "admin/app/models/categories.php",
+      "line": 57,
+      "call": "mysqli_query",
+      "c3_query_id": "Q004",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE categories SET \r\n            name = '&#039; OR &#039;1&#039;=&#039;1',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = ' OR '1'='1\r\n            ",
+          "arguments": {
+            "name": "&#039; OR &#039;1&#039;=&#039;1",
+            "id": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE categories SET \r\n            name = '1; DROP TABLE c3_e1_canary;-- ',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = 1; DROP TABLE c3_e1_canary;-- \r\n            ",
+          "arguments": {
+            "name": "1; DROP TABLE c3_e1_canary;-- ",
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE categories SET \r\n            name = '%_',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = %_\r\n            ",
+          "arguments": {
+            "name": "%_",
+            "id": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE categories SET \r\n            name = '’ OR 1=1 -- é',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = ’ OR 1=1 -- é\r\n            ",
+          "arguments": {
+            "name": "’ OR 1=1 -- é",
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE categories SET \r\n            name = 'abc',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = abc\r\n            ",
+          "arguments": {
+            "name": "abc",
+            "id": "abc"
+          }
+        }
+      ],
+      "generated_function": "update_category_q004",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S005",
+      "file": "admin/app/models/categories.php",
+      "line": 76,
+      "call": "mysqli_query",
+      "c3_query_id": "Q005",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM subcategories WHERE category_id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM subcategories WHERE category_id = 1",
+          "arguments": {
+            "id": 1
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM subcategories WHERE category_id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM subcategories WHERE category_id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM subcategories WHERE category_id = 0",
+          "arguments": {
+            "id": 0
+          }
+        }
+      ],
+      "generated_function": "delete_subcategory_q005",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S006",
+      "file": "admin/app/models/categories.php",
+      "line": 80,
+      "call": "mysqli_query",
+      "c3_query_id": "Q006",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM categories WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM categories WHERE id = 1",
+          "arguments": {
+            "id": 1
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM categories WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM categories WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM categories WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        }
+      ],
+      "generated_function": "delete_category_q006",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S007",
+      "file": "admin/app/models/categories.php",
+      "line": 100,
+      "call": "mysqli_query",
+      "c3_query_id": "Q007",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: RECOVERED/UNRESOLVED Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported."
+    },
+    {
+      "site_id": "S008",
+      "file": "admin/app/models/occasions.php",
+      "line": 27,
+      "call": "mysqli_query",
+      "c3_query_id": "Q008",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO occasions (name, created_at, updated_at) \r\n              VALUES ('&#039; OR &#039;1&#039;=&#039;1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "&#039; OR &#039;1&#039;=&#039;1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO occasions (name, created_at, updated_at) \r\n              VALUES ('1; DROP TABLE c3_e1_canary;-- ', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO occasions (name, created_at, updated_at) \r\n              VALUES ('%_', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO occasions (name, created_at, updated_at) \r\n              VALUES ('’ OR 1=1 -- é', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO occasions (name, created_at, updated_at) \r\n              VALUES ('abc', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "abc"
+          }
+        }
+      ],
+      "generated_function": "insert_occasion_q008",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S009",
+      "file": "admin/app/models/occasions.php",
+      "line": 52,
+      "call": "mysqli_query",
+      "c3_query_id": "Q009",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE occasions SET \r\n            name = '&#039; OR &#039;1&#039;=&#039;1',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = ' OR '1'='1\r\n            ",
+          "arguments": {
+            "name": "&#039; OR &#039;1&#039;=&#039;1",
+            "id": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE occasions SET \r\n            name = '1; DROP TABLE c3_e1_canary;-- ',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = 1; DROP TABLE c3_e1_canary;-- \r\n            ",
+          "arguments": {
+            "name": "1; DROP TABLE c3_e1_canary;-- ",
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE occasions SET \r\n            name = '%_',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = %_\r\n            ",
+          "arguments": {
+            "name": "%_",
+            "id": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE occasions SET \r\n            name = '’ OR 1=1 -- é',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = ’ OR 1=1 -- é\r\n            ",
+          "arguments": {
+            "name": "’ OR 1=1 -- é",
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE occasions SET \r\n            name = 'abc',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = abc\r\n            ",
+          "arguments": {
+            "name": "abc",
+            "id": "abc"
+          }
+        }
+      ],
+      "generated_function": "update_occasion_q009",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S010",
+      "file": "admin/app/models/occasions.php",
+      "line": 72,
+      "call": "mysqli_query",
+      "c3_query_id": "Q010",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM occasions WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM occasions WHERE id = 1",
+          "arguments": {
+            "id": 1
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM occasions WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM occasions WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM occasions WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        }
+      ],
+      "generated_function": "delete_occasion_q010",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S011",
+      "file": "admin/app/models/occasions.php",
+      "line": 92,
+      "call": "mysqli_query",
+      "c3_query_id": "Q011",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, name \r\n              FROM occasions\r\n              WHERE name LIKE '%' OR '1'='1%'\r\n              ORDER BY id ASC\r\n              LIMIT ' OR '1'='1 OFFSET ' OR '1'='1",
+          "arguments": {
+            "keyword": "' OR '1'='1",
+            "limit": "' OR '1'='1",
+            "offset": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, name \r\n              FROM occasions\r\n              WHERE name LIKE '%1; DROP TABLE c3_e1_canary;-- %'\r\n              ORDER BY id ASC\r\n              LIMIT 1; DROP TABLE c3_e1_canary;--  OFFSET 1; DROP TABLE c3_e1_canary;-- ",
+          "arguments": {
+            "keyword": "1; DROP TABLE c3_e1_canary;-- ",
+            "limit": "1; DROP TABLE c3_e1_canary;-- ",
+            "offset": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, name \r\n              FROM occasions\r\n              WHERE name LIKE '%%_%'\r\n              ORDER BY id ASC\r\n              LIMIT %_ OFFSET %_",
+          "arguments": {
+            "keyword": "%_",
+            "limit": "%_",
+            "offset": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, name \r\n              FROM occasions\r\n              WHERE name LIKE '%’ OR 1=1 -- é%'\r\n              ORDER BY id ASC\r\n              LIMIT ’ OR 1=1 -- é OFFSET ’ OR 1=1 -- é",
+          "arguments": {
+            "keyword": "’ OR 1=1 -- é",
+            "limit": "’ OR 1=1 -- é",
+            "offset": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, name \r\n              FROM occasions\r\n              WHERE name LIKE '%abc%'\r\n              ORDER BY id ASC\r\n              LIMIT abc OFFSET abc",
+          "arguments": {
+            "keyword": "abc",
+            "limit": "abc",
+            "offset": "abc"
+          }
+        }
+      ],
+      "generated_function": "select_occasions_q011",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S012",
+      "file": "admin/app/models/products.php",
+      "line": 82,
+      "call": "mysqli_query",
+      "c3_query_id": "Q012",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO products (name, category_id, subcategory_id, occasion_id, price, description, image, created_at, updated_at) \r\n             VALUES ('&#039; OR &#039;1&#039;=&#039;1', '&#039; OR &#039;1&#039;=&#039;1', '&#039; OR &#039;1&#039;=&#039;1', '&#039; OR &#039;1&#039;=&#039;1', '' OR '1'='1', '' OR '1'='1', '' OR '1'='1',  CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "&#039; OR &#039;1&#039;=&#039;1",
+            "category_id": "&#039; OR &#039;1&#039;=&#039;1",
+            "subcategory_id": "&#039; OR &#039;1&#039;=&#039;1",
+            "occasion_id": "&#039; OR &#039;1&#039;=&#039;1",
+            "price": "' OR '1'='1",
+            "description": "' OR '1'='1",
+            "gambar": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO products (name, category_id, subcategory_id, occasion_id, price, description, image, created_at, updated_at) \r\n             VALUES ('1; DROP TABLE c3_e1_canary;-- ', '1; DROP TABLE c3_e1_canary;-- ', '1; DROP TABLE c3_e1_canary;-- ', '1; DROP TABLE c3_e1_canary;-- ', '1; DROP TABLE c3_e1_canary;-- ', '1; DROP TABLE c3_e1_canary;-- ', '1; DROP TABLE c3_e1_canary;-- ',  CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "1; DROP TABLE c3_e1_canary;-- ",
+            "category_id": "1; DROP TABLE c3_e1_canary;-- ",
+            "subcategory_id": "1; DROP TABLE c3_e1_canary;-- ",
+            "occasion_id": "1; DROP TABLE c3_e1_canary;-- ",
+            "price": "1; DROP TABLE c3_e1_canary;-- ",
+            "description": "1; DROP TABLE c3_e1_canary;-- ",
+            "gambar": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO products (name, category_id, subcategory_id, occasion_id, price, description, image, created_at, updated_at) \r\n             VALUES ('%_', '%_', '%_', '%_', '%_', '%_', '%_',  CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "%_",
+            "category_id": "%_",
+            "subcategory_id": "%_",
+            "occasion_id": "%_",
+            "price": "%_",
+            "description": "%_",
+            "gambar": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO products (name, category_id, subcategory_id, occasion_id, price, description, image, created_at, updated_at) \r\n             VALUES ('’ OR 1=1 -- é', '’ OR 1=1 -- é', '’ OR 1=1 -- é', '’ OR 1=1 -- é', '’ OR 1=1 -- é', '’ OR 1=1 -- é', '’ OR 1=1 -- é',  CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "’ OR 1=1 -- é",
+            "category_id": "’ OR 1=1 -- é",
+            "subcategory_id": "’ OR 1=1 -- é",
+            "occasion_id": "’ OR 1=1 -- é",
+            "price": "’ OR 1=1 -- é",
+            "description": "’ OR 1=1 -- é",
+            "gambar": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO products (name, category_id, subcategory_id, occasion_id, price, description, image, created_at, updated_at) \r\n             VALUES ('abc', 'abc', 'abc', 'abc', 'abc', 'abc', 'abc',  CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "abc",
+            "category_id": "abc",
+            "subcategory_id": "abc",
+            "occasion_id": "abc",
+            "price": "abc",
+            "description": "abc",
+            "gambar": "abc"
+          }
+        }
+      ],
+      "generated_function": "insert_product_q012",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S013",
+      "file": "admin/app/models/products.php",
+      "line": 133,
+      "call": "mysqli_query",
+      "c3_query_id": "Q013",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE products SET \r\n            name = '&#039; OR &#039;1&#039;=&#039;1',\r\n            category_id = '&#039; OR &#039;1&#039;=&#039;1',\r\n            subcategory_id = '&#039; OR &#039;1&#039;=&#039;1',\r\n            occasion_id = '&#039; OR &#039;1&#039;=&#039;1',\r\n            price = '' OR '1'='1',\r\n            image = '' OR '1'='1',\r\n            description = '' OR '1'='1',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = ' OR '1'='1\r\n            ",
+          "arguments": {
+            "name": "&#039; OR &#039;1&#039;=&#039;1",
+            "category_id": "&#039; OR &#039;1&#039;=&#039;1",
+            "subcategory_id": "&#039; OR &#039;1&#039;=&#039;1",
+            "occasion_id": "&#039; OR &#039;1&#039;=&#039;1",
+            "price": "' OR '1'='1",
+            "gambar": "' OR '1'='1",
+            "description": "' OR '1'='1",
+            "id": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE products SET \r\n            name = '1; DROP TABLE c3_e1_canary;-- ',\r\n            category_id = '1; DROP TABLE c3_e1_canary;-- ',\r\n            subcategory_id = '1; DROP TABLE c3_e1_canary;-- ',\r\n            occasion_id = '1; DROP TABLE c3_e1_canary;-- ',\r\n            price = '1; DROP TABLE c3_e1_canary;-- ',\r\n            image = '1; DROP TABLE c3_e1_canary;-- ',\r\n            description = '1; DROP TABLE c3_e1_canary;-- ',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = 1; DROP TABLE c3_e1_canary;-- \r\n            ",
+          "arguments": {
+            "name": "1; DROP TABLE c3_e1_canary;-- ",
+            "category_id": "1; DROP TABLE c3_e1_canary;-- ",
+            "subcategory_id": "1; DROP TABLE c3_e1_canary;-- ",
+            "occasion_id": "1; DROP TABLE c3_e1_canary;-- ",
+            "price": "1; DROP TABLE c3_e1_canary;-- ",
+            "gambar": "1; DROP TABLE c3_e1_canary;-- ",
+            "description": "1; DROP TABLE c3_e1_canary;-- ",
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE products SET \r\n            name = '%_',\r\n            category_id = '%_',\r\n            subcategory_id = '%_',\r\n            occasion_id = '%_',\r\n            price = '%_',\r\n            image = '%_',\r\n            description = '%_',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = %_\r\n            ",
+          "arguments": {
+            "name": "%_",
+            "category_id": "%_",
+            "subcategory_id": "%_",
+            "occasion_id": "%_",
+            "price": "%_",
+            "gambar": "%_",
+            "description": "%_",
+            "id": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE products SET \r\n            name = '’ OR 1=1 -- é',\r\n            category_id = '’ OR 1=1 -- é',\r\n            subcategory_id = '’ OR 1=1 -- é',\r\n            occasion_id = '’ OR 1=1 -- é',\r\n            price = '’ OR 1=1 -- é',\r\n            image = '’ OR 1=1 -- é',\r\n            description = '’ OR 1=1 -- é',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = ’ OR 1=1 -- é\r\n            ",
+          "arguments": {
+            "name": "’ OR 1=1 -- é",
+            "category_id": "’ OR 1=1 -- é",
+            "subcategory_id": "’ OR 1=1 -- é",
+            "occasion_id": "’ OR 1=1 -- é",
+            "price": "’ OR 1=1 -- é",
+            "gambar": "’ OR 1=1 -- é",
+            "description": "’ OR 1=1 -- é",
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE products SET \r\n            name = 'abc',\r\n            category_id = 'abc',\r\n            subcategory_id = 'abc',\r\n            occasion_id = 'abc',\r\n            price = 'abc',\r\n            image = 'abc',\r\n            description = 'abc',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = abc\r\n            ",
+          "arguments": {
+            "name": "abc",
+            "category_id": "abc",
+            "subcategory_id": "abc",
+            "occasion_id": "abc",
+            "price": "abc",
+            "gambar": "abc",
+            "description": "abc",
+            "id": "abc"
+          }
+        }
+      ],
+      "generated_function": "update_product_q013",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S014",
+      "file": "admin/app/models/products.php",
+      "line": 152,
+      "call": "mysqli_query",
+      "c3_query_id": "Q014",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT image FROM products WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT image FROM products WHERE id = 1",
+          "arguments": {
+            "id": 1
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT image FROM products WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT image FROM products WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT image FROM products WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        }
+      ],
+      "generated_function": "select_products_q014",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S015",
+      "file": "admin/app/models/products.php",
+      "line": 165,
+      "call": "mysqli_query",
+      "c3_query_id": "Q015",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM products WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM products WHERE id = 1",
+          "arguments": {
+            "id": 1
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM products WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM products WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM products WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        }
+      ],
+      "generated_function": "delete_product_q015",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S016",
+      "file": "admin/app/models/register.php",
+      "line": 30,
+      "call": "mysqli_query",
+      "c3_query_id": "Q016",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id FROM admin WHERE username = '&#039; OR &#039;1&#039;=&#039;1'",
+          "arguments": {
+            "username": "&#039; OR &#039;1&#039;=&#039;1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id FROM admin WHERE username = '1; DROP TABLE c3_e1_canary;-- '",
+          "arguments": {
+            "username": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id FROM admin WHERE username = '%_'",
+          "arguments": {
+            "username": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id FROM admin WHERE username = '’ OR 1=1 -- é'",
+          "arguments": {
+            "username": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id FROM admin WHERE username = 'abc'",
+          "arguments": {
+            "username": "abc"
+          }
+        }
+      ],
+      "generated_function": "select_admin_q016",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S017",
+      "file": "admin/app/models/register.php",
+      "line": 44,
+      "call": "mysqli_query",
+      "c3_query_id": "Q017",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO admin (username, password, created_at, updated_at) \r\n              VALUES ('&#039; OR &#039;1&#039;=&#039;1', '' OR '1'='1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "username": "&#039; OR &#039;1&#039;=&#039;1",
+            "hashed_password": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO admin (username, password, created_at, updated_at) \r\n              VALUES ('1; DROP TABLE c3_e1_canary;-- ', '1; DROP TABLE c3_e1_canary;-- ', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "username": "1; DROP TABLE c3_e1_canary;-- ",
+            "hashed_password": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO admin (username, password, created_at, updated_at) \r\n              VALUES ('%_', '%_', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "username": "%_",
+            "hashed_password": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO admin (username, password, created_at, updated_at) \r\n              VALUES ('’ OR 1=1 -- é', '’ OR 1=1 -- é', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "username": "’ OR 1=1 -- é",
+            "hashed_password": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO admin (username, password, created_at, updated_at) \r\n              VALUES ('abc', 'abc', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "username": "abc",
+            "hashed_password": "abc"
+          }
+        }
+      ],
+      "generated_function": "insert_admin_q017",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S018",
+      "file": "admin/app/models/subcategories.php",
+      "line": 40,
+      "call": "mysqli_query",
+      "c3_query_id": "Q018",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO subcategories (name, category_id, created_at, updated_at) \r\n              VALUES ('&#039; OR &#039;1&#039;=&#039;1', '' OR '1'='1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "&#039; OR &#039;1&#039;=&#039;1",
+            "id": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO subcategories (name, category_id, created_at, updated_at) \r\n              VALUES ('1; DROP TABLE c3_e1_canary;-- ', '1; DROP TABLE c3_e1_canary;-- ', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "1; DROP TABLE c3_e1_canary;-- ",
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO subcategories (name, category_id, created_at, updated_at) \r\n              VALUES ('%_', '%_', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "%_",
+            "id": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO subcategories (name, category_id, created_at, updated_at) \r\n              VALUES ('’ OR 1=1 -- é', '’ OR 1=1 -- é', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "’ OR 1=1 -- é",
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO subcategories (name, category_id, created_at, updated_at) \r\n              VALUES ('abc', 'abc', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "arguments": {
+            "name": "abc",
+            "id": "abc"
+          }
+        }
+      ],
+      "generated_function": "insert_subcategory_q018",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S019",
+      "file": "admin/app/models/subcategories.php",
+      "line": 65,
+      "call": "mysqli_query",
+      "c3_query_id": "Q019",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE subcategories SET \r\n            name = '&#039; OR &#039;1&#039;=&#039;1',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = ' OR '1'='1\r\n            ",
+          "arguments": {
+            "name": "&#039; OR &#039;1&#039;=&#039;1",
+            "id": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE subcategories SET \r\n            name = '1; DROP TABLE c3_e1_canary;-- ',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = 1; DROP TABLE c3_e1_canary;-- \r\n            ",
+          "arguments": {
+            "name": "1; DROP TABLE c3_e1_canary;-- ",
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE subcategories SET \r\n            name = '%_',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = %_\r\n            ",
+          "arguments": {
+            "name": "%_",
+            "id": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE subcategories SET \r\n            name = '’ OR 1=1 -- é',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = ’ OR 1=1 -- é\r\n            ",
+          "arguments": {
+            "name": "’ OR 1=1 -- é",
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE subcategories SET \r\n            name = 'abc',\r\n            updated_at = CURRENT_TIMESTAMP\r\n            WHERE id = abc\r\n            ",
+          "arguments": {
+            "name": "abc",
+            "id": "abc"
+          }
+        }
+      ],
+      "generated_function": "update_subcategory_q019",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S020",
+      "file": "admin/app/models/subcategories.php",
+      "line": 85,
+      "call": "mysqli_query",
+      "c3_query_id": "Q020",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM subcategories WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM subcategories WHERE id = 1",
+          "arguments": {
+            "id": 1
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM subcategories WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM subcategories WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM subcategories WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        }
+      ],
+      "generated_function": "delete_subcategory_q020",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S021",
+      "file": "admin/config/helpers.php",
+      "line": 4,
+      "call": "mysqli_query",
+      "c3_query_id": "Q021",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED No recoverable assignment chain found."
+    },
+    {
+      "site_id": "S022",
+      "file": "config/helpers.php",
+      "line": 4,
+      "call": "mysqli_query",
+      "c3_query_id": "Q022",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED No recoverable assignment chain found."
+    }
+  ],
+  "c3_output": "regenerated from the current code into a temp folder (not kept)"
+}

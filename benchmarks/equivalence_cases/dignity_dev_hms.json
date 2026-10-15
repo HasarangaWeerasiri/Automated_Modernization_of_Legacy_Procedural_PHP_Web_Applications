@@ -1,0 +1,415 @@
+{
+  "app": "dignity_dev_hms",
+  "generated": "2026-10-15",
+  "instructions": "Fill the null values of normal / empty_result / boundary by hand from the schema and seed data (not from C3 output). Superglobal inputs are strings; an 'array' input is an object with the listed keys. Delete a case you do not want; a case with any null value is skipped. hostile_* and type_mismatch are pre-filled from docs/E1_equivalence_plan.md section 3; review or delete them.",
+  "sites": [
+    {
+      "site_id": "S001",
+      "file": "library.php",
+      "line": 31,
+      "call": "->query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$password",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to secure() at line 27; value supplied by the case"
+        },
+        {
+          "name": "$email_id",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to secure() at line 26; value supplied by the case"
+        },
+        {
+          "name": "$table",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function login before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S002",
+      "file": "library.php",
+      "line": 53,
+      "call": "->query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$password",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to secure() at line 27; value supplied by the case"
+        },
+        {
+          "name": "$email_id",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to secure() at line 26; value supplied by the case"
+        },
+        {
+          "name": "$table",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function login before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S003",
+      "file": "library.php",
+      "line": 96,
+      "call": "->query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$sql",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_Switch at line 81 (control flow); value supplied by the case"
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S004",
+      "file": "library.php",
+      "line": 158,
+      "call": "->query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$address",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to secure() at line 154; value supplied by the case"
+        },
+        {
+          "name": "$phone_no",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to secure() at line 153; value supplied by the case"
+        },
+        {
+          "name": "$weight",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to secure() at line 152; value supplied by the case"
+        },
+        {
+          "name": "$age",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to secure() at line 151; value supplied by the case"
+        },
+        {
+          "name": "$full_name",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to secure() at line 150; value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$address": null,
+          "$phone_no": null,
+          "$weight": null,
+          "$age": null,
+          "$full_name": null
+        },
+        "empty_result": {
+          "$address": null,
+          "$phone_no": null,
+          "$weight": null,
+          "$age": null,
+          "$full_name": null
+        },
+        "boundary": {
+          "$address": null,
+          "$phone_no": null,
+          "$weight": null,
+          "$age": null,
+          "$full_name": null
+        },
+        "hostile_quote": {
+          "$address": "' OR '1'='1",
+          "$phone_no": "' OR '1'='1",
+          "$weight": "' OR '1'='1",
+          "$age": "' OR '1'='1",
+          "$full_name": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$address": "1; DROP TABLE c3_e1_canary;-- ",
+          "$phone_no": "1; DROP TABLE c3_e1_canary;-- ",
+          "$weight": "1; DROP TABLE c3_e1_canary;-- ",
+          "$age": "1; DROP TABLE c3_e1_canary;-- ",
+          "$full_name": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$address": "%_",
+          "$phone_no": "%_",
+          "$weight": "%_",
+          "$age": "%_",
+          "$full_name": "%_"
+        },
+        "hostile_unicode": {
+          "$address": "’ OR 1=1 -- é",
+          "$phone_no": "’ OR 1=1 -- é",
+          "$weight": "’ OR 1=1 -- é",
+          "$age": "’ OR 1=1 -- é",
+          "$full_name": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$address": "abc",
+          "$phone_no": "abc",
+          "$weight": "abc",
+          "$age": "abc",
+          "$full_name": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S005",
+      "file": "library.php",
+      "line": 178,
+      "call": "->query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$medical_condition",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to secure() at line 174; value supplied by the case"
+        },
+        {
+          "name": "$specialist",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to secure() at line 173; value supplied by the case"
+        },
+        {
+          "name": "$patient_id",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to secure() at line 172; value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$medical_condition": null,
+          "$specialist": null,
+          "$patient_id": null
+        },
+        "empty_result": {
+          "$medical_condition": null,
+          "$specialist": null,
+          "$patient_id": null
+        },
+        "boundary": {
+          "$medical_condition": null,
+          "$specialist": null,
+          "$patient_id": null
+        },
+        "hostile_quote": {
+          "$medical_condition": "' OR '1'='1",
+          "$specialist": "' OR '1'='1",
+          "$patient_id": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$medical_condition": "1; DROP TABLE c3_e1_canary;-- ",
+          "$specialist": "1; DROP TABLE c3_e1_canary;-- ",
+          "$patient_id": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$medical_condition": "%_",
+          "$specialist": "%_",
+          "$patient_id": "%_"
+        },
+        "hostile_unicode": {
+          "$medical_condition": "’ OR 1=1 -- é",
+          "$specialist": "’ OR 1=1 -- é",
+          "$patient_id": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$medical_condition": "abc",
+          "$specialist": "abc",
+          "$patient_id": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S006",
+      "file": "library.php",
+      "line": 203,
+      "call": "->query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$sql",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned inside Stmt_If at line 196 (control flow); value supplied by the case"
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S007",
+      "file": "library.php",
+      "line": 219,
+      "call": "->query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$doctor",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function getPatientsFor before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S008",
+      "file": "library.php",
+      "line": 226,
+      "call": "->query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S009",
+      "file": "library.php",
+      "line": 233,
+      "call": "->query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$appointment_no",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function getAllPatientDetail before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S010",
+      "file": "library.php",
+      "line": 249,
+      "call": "->query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S011",
+      "file": "library.php",
+      "line": 292,
+      "call": "->query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$appointment_no",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to secure() at line 289; value supplied by the case"
+        }
+      ],
+      "cases": {
+        "normal": {
+          "$appointment_no": null
+        },
+        "empty_result": {
+          "$appointment_no": null
+        },
+        "boundary": {
+          "$appointment_no": null
+        },
+        "hostile_quote": {
+          "$appointment_no": "' OR '1'='1"
+        },
+        "hostile_stacked": {
+          "$appointment_no": "1; DROP TABLE c3_e1_canary;-- "
+        },
+        "hostile_wildcard": {
+          "$appointment_no": "%_"
+        },
+        "hostile_unicode": {
+          "$appointment_no": "’ OR 1=1 -- é"
+        },
+        "type_mismatch": {
+          "$appointment_no": "abc"
+        }
+      }
+    },
+    {
+      "site_id": "S012",
+      "file": "library.php",
+      "line": 299,
+      "call": "->query",
+      "c3_conversion_status (information only)": "CONVERTED",
+      "legacy_slice_status": "ok",
+      "inputs": [],
+      "cases": {
+        "normal": {}
+      }
+    },
+    {
+      "site_id": "S013",
+      "file": "library.php",
+      "line": 313,
+      "call": "->query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$id",
+          "kind": "variable",
+          "keys": [],
+          "note": "assigned from call to secure() at line 311; value supplied by the case"
+        },
+        {
+          "name": "$table",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function delete before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    },
+    {
+      "site_id": "S014",
+      "file": "library.php",
+      "line": 320,
+      "call": "->query",
+      "c3_conversion_status (information only)": "UNRESOLVED",
+      "legacy_slice_status": "ok",
+      "inputs": [
+        {
+          "name": "$table",
+          "kind": "variable",
+          "keys": [],
+          "note": "not assigned in function getListOfEmails before the call (parameter or global); value supplied by the case"
+        }
+      ],
+      "cases": "not needed: C3 did not convert this site, so it is INCONCLUSIVE by rule"
+    }
+  ]
+}

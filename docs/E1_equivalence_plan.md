@@ -1,6 +1,6 @@
 # E1: MySQL equivalence for all benchmark apps (plan)
 
-**Status:** planned. Clinic already has real-MySQL evidence (61 tests, 2026-10-15, register rows 19–20). This plan covers what is missing: **simple_crud, mixed_crud, hard_crud, Helpdesk, HMS, NEWS-BUZZ, Fee-Rainbow**.
+**Status (2026-10-15):** harness implemented and dry-run checked (section 8). Waiting for the student to fill the normal/empty/boundary inputs and to run it on MySQL. Clinic already has real-MySQL evidence (61 tests, register rows 19–20). This plan covers **simple_crud, mixed_crud, hard_crud, Helpdesk, HMS, NEWS-BUZZ, Fee-Rainbow and Dignity-Dev**.
 **Output:** `evidence/php_vs_sqlalchemy_equivalence.json` (one record per SQL site) plus raw logs under `evidence/mysql_<date>/e1/`.
 
 ## 1. Verdicts (per SQL site, per input case)
@@ -70,3 +70,37 @@ Run after S13 + S4 + S5 so the evidence reflects the code that will be frozen. B
 - Query-level equivalence on selected inputs only, not application-level equivalence. Level C (running ≥2 legacy pages via `php -S`) is optional.
 - Statements that call app functions are INCONCLUSIVE by design.
 - Single MySQL version (8.0.39), single annotator for the case files.
+
+## 8. Implementation (2026-10-15)
+
+| File | Role |
+|---|---|
+| `scripts/equivalence/legacy_runner.php` | Slices and builds the legacy SQL with PHP. It finds the call at file:line with nikic/php-parser and keeps the straight-line assignments in the same scope verbatim. A needed variable assigned from anything else (an app function, a query result, a constant), assigned inside a preceding control-flow statement, or not assigned in scope (a parameter, global or include) becomes a **case input**. The script then `eval`s the slice with the case inputs and runs the SQL with mysqli. |
+| `scripts/equivalence/migrated_runner.py` | Calls the generated function for the same (file, line) with SQLAlchemy. Each parameter is bound **by name** to the PHP variable at the call. Its value is computed in "raw" mode, where `mysqli_real_escape_string`, `addslashes` and `->real_escape_string` are the identity (binding replaces escaping); `intval`, `trim`, `htmlspecialchars`, `md5` and similar are kept. A parameter with no PHP variable of that name gives INCONCLUSIVE and is never guessed. |
+| `scripts/equivalence/compare.py` | Compares rows (generated values normalised to the MySQL text form that mysqli returns; ordered only when the SQL has `ORDER BY`), affected rows, insert id, and `CHECKSUM TABLE` of every table after the call. |
+| `scripts/equivalence/run_e1.py` | `skeleton` writes the case files; `dry-run` builds every SQL and binds every parameter with no database; `run` uses MySQL. |
+| `scripts/run_e1_mysql.ps1` | Student entry point. Writes `evidence/mysql_runs/<stamp>/e1/` (per-app JSON, `php_vs_sqlalchemy_equivalence.json`, log). |
+
+**Decisions made while implementing**
+- **Site list.** It comes from the same independent grep as the ground truth (`scripts/ground_truth/grep_sql_sites.py`); commented-out lines are excluded.
+- **Reset before every case.** Both databases are rebuilt from schema + seed before every case, not only before write cases. This is simpler and leaves no state shared between cases. `CREATE DATABASE`/`USE` lines in the dumps are skipped.
+- **Seeds.** The fixture seeds (`benchmarks/equivalence_cases/<app>.seed.sql`) were written by hand. The other apps use the INSERT rows already in their dumps.
+- **Affected rows.** The legacy connection uses `MYSQLI_CLIENT_FOUND_ROWS`, so "affected rows" means matched rows on both sides, as in SQLAlchemy's MySQL dialect.
+- **Hostile cases.** `hostile_*` and `type_mismatch` inputs are pre-filled from section 3. `normal`, `empty_result` and `boundary` are left `null` for the student. Sites with constant SQL get one `normal` case with no inputs.
+- **`LEGACY_INJECTABLE` (case-level).** A hostile case where the results differ (or the legacy SQL fails) and the payload appears verbatim in the legacy SQL. It does not count as FAIL against the generated code. A site is PASS when every case is PASS or LEGACY_INJECTABLE.
+- **HMS (no licence).** For HMS, only verdicts, counts and digests are written: no SQL text, no values. Generated code is written to a temp folder, never to `evidence/`.
+
+**Dry run (no database), 2026-10-15.** Every converted site on all 8 apps is READY: PHP rebuilt the legacy SQL and every generated parameter bound to a PHP variable.
+
+| App | Sites | READY | INCONCLUSIVE by rule (not converted) |
+|---|---|---|---|
+| simple_crud | 4 | 4 | 0 |
+| mixed_crud | 6 | 5 | 1 |
+| hard_crud | 5 | 2 | 3 |
+| Helpdesk | 9 | 8 | 1 |
+| HMS | 44 | 40 | 4 |
+| NEWS-BUZZ | 32 | 29 | 3 |
+| Fee-Rainbow | 22 | 19 | 3 |
+| Dignity-Dev | 14 | 4 | 10 |
+
+Evidence: `evidence/e1/dry_run_2026-10-15/`.

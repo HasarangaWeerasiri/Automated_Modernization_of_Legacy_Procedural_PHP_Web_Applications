@@ -1,0 +1,378 @@
+{
+  "app": "dignity_dev_hms",
+  "sites": 14,
+  "verdicts": {
+    "INCONCLUSIVE": 10,
+    "READY": 4
+  },
+  "redacted": false,
+  "results": [
+    {
+      "site_id": "S001",
+      "file": "library.php",
+      "line": 31,
+      "call": "->query",
+      "c3_query_id": "Q001",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED STRUCTURAL"
+    },
+    {
+      "site_id": "S002",
+      "file": "library.php",
+      "line": 53,
+      "call": "->query",
+      "c3_query_id": "Q002",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED STRUCTURAL"
+    },
+    {
+      "site_id": "S003",
+      "file": "library.php",
+      "line": 96,
+      "call": "->query",
+      "c3_query_id": "Q003",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED LOOP_OR_SWITCH_CONTROL_FLOW"
+    },
+    {
+      "site_id": "S004",
+      "file": "library.php",
+      "line": 158,
+      "call": "->query",
+      "c3_query_id": "Q004",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO `patient_info` VALUES (NULL, '' OR '1'='1', ' OR '1'='1,' OR '1'='1, '' OR '1'='1','' OR '1'='1');",
+          "arguments": {
+            "full_name": "' OR '1'='1",
+            "age": "' OR '1'='1",
+            "weight": "' OR '1'='1",
+            "phone_no": "' OR '1'='1",
+            "address": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO `patient_info` VALUES (NULL, '1; DROP TABLE c3_e1_canary;-- ', 1; DROP TABLE c3_e1_canary;-- ,1; DROP TABLE c3_e1_canary;-- , '1; DROP TABLE c3_e1_canary;-- ','1; DROP TABLE c3_e1_canary;-- ');",
+          "arguments": {
+            "full_name": "1; DROP TABLE c3_e1_canary;-- ",
+            "age": "1; DROP TABLE c3_e1_canary;-- ",
+            "weight": "1; DROP TABLE c3_e1_canary;-- ",
+            "phone_no": "1; DROP TABLE c3_e1_canary;-- ",
+            "address": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO `patient_info` VALUES (NULL, '%_', %_,%_, '%_','%_');",
+          "arguments": {
+            "full_name": "%_",
+            "age": "%_",
+            "weight": "%_",
+            "phone_no": "%_",
+            "address": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO `patient_info` VALUES (NULL, '’ OR 1=1 -- é', ’ OR 1=1 -- é,’ OR 1=1 -- é, '’ OR 1=1 -- é','’ OR 1=1 -- é');",
+          "arguments": {
+            "full_name": "’ OR 1=1 -- é",
+            "age": "’ OR 1=1 -- é",
+            "weight": "’ OR 1=1 -- é",
+            "phone_no": "’ OR 1=1 -- é",
+            "address": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO `patient_info` VALUES (NULL, 'abc', abc,abc, 'abc','abc');",
+          "arguments": {
+            "full_name": "abc",
+            "age": "abc",
+            "weight": "abc",
+            "phone_no": "abc",
+            "address": "abc"
+          }
+        }
+      ],
+      "generated_function": "insert_patient_info_q004",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S005",
+      "file": "library.php",
+      "line": 178,
+      "call": "->query",
+      "c3_query_id": "Q005",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO appointments VALUES (NULL, ' OR '1'='1, '' OR '1'='1', '' OR '1'='1', NULL, NULL, 'no')",
+          "arguments": {
+            "patient_id": "' OR '1'='1",
+            "specialist": "' OR '1'='1",
+            "medical_condition": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO appointments VALUES (NULL, 1; DROP TABLE c3_e1_canary;-- , '1; DROP TABLE c3_e1_canary;-- ', '1; DROP TABLE c3_e1_canary;-- ', NULL, NULL, 'no')",
+          "arguments": {
+            "patient_id": "1; DROP TABLE c3_e1_canary;-- ",
+            "specialist": "1; DROP TABLE c3_e1_canary;-- ",
+            "medical_condition": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO appointments VALUES (NULL, %_, '%_', '%_', NULL, NULL, 'no')",
+          "arguments": {
+            "patient_id": "%_",
+            "specialist": "%_",
+            "medical_condition": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO appointments VALUES (NULL, ’ OR 1=1 -- é, '’ OR 1=1 -- é', '’ OR 1=1 -- é', NULL, NULL, 'no')",
+          "arguments": {
+            "patient_id": "’ OR 1=1 -- é",
+            "specialist": "’ OR 1=1 -- é",
+            "medical_condition": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO appointments VALUES (NULL, abc, 'abc', 'abc', NULL, NULL, 'no')",
+          "arguments": {
+            "patient_id": "abc",
+            "specialist": "abc",
+            "medical_condition": "abc"
+          }
+        }
+      ],
+      "generated_function": "insert_appointment_q005",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S006",
+      "file": "library.php",
+      "line": 203,
+      "call": "->query",
+      "c3_query_id": "Q006",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED BRANCHING"
+    },
+    {
+      "site_id": "S007",
+      "file": "library.php",
+      "line": 219,
+      "call": "->query",
+      "c3_query_id": "Q007",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: RECOVERED/UNRESOLVED Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported."
+    },
+    {
+      "site_id": "S008",
+      "file": "library.php",
+      "line": 226,
+      "call": "->query",
+      "c3_query_id": "Q008",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: RECOVERED/UNRESOLVED Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported."
+    },
+    {
+      "site_id": "S009",
+      "file": "library.php",
+      "line": 233,
+      "call": "->query",
+      "c3_query_id": "Q009",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: RECOVERED/UNRESOLVED Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported."
+    },
+    {
+      "site_id": "S010",
+      "file": "library.php",
+      "line": 249,
+      "call": "->query",
+      "c3_query_id": "Q010",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED UNSUPPORTED_SHAPE"
+    },
+    {
+      "site_id": "S011",
+      "file": "library.php",
+      "line": 292,
+      "call": "->query",
+      "c3_query_id": "Q011",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT doctors_suggestion FROM appointments WHERE appointment_no=' OR '1'='1;",
+          "arguments": {
+            "appointment_no": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT doctors_suggestion FROM appointments WHERE appointment_no=1; DROP TABLE c3_e1_canary;-- ;",
+          "arguments": {
+            "appointment_no": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT doctors_suggestion FROM appointments WHERE appointment_no=%_;",
+          "arguments": {
+            "appointment_no": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT doctors_suggestion FROM appointments WHERE appointment_no=’ OR 1=1 -- é;",
+          "arguments": {
+            "appointment_no": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT doctors_suggestion FROM appointments WHERE appointment_no=abc;",
+          "arguments": {
+            "appointment_no": "abc"
+          }
+        }
+      ],
+      "generated_function": "select_appointments_q011",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S012",
+      "file": "library.php",
+      "line": 299,
+      "call": "->query",
+      "c3_query_id": "Q012",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT payment_amount FROM appointments WHERE appointment_no=appointment_no;",
+          "arguments": {}
+        }
+      ],
+      "generated_function": "select_appointments_q012",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S013",
+      "file": "library.php",
+      "line": 313,
+      "call": "->query",
+      "c3_query_id": "Q013",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED STRUCTURAL"
+    },
+    {
+      "site_id": "S014",
+      "file": "library.php",
+      "line": 320,
+      "call": "->query",
+      "c3_query_id": "Q014",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED STRUCTURAL"
+    }
+  ],
+  "c3_output": "regenerated from the current code into a temp folder (not kept)"
+}

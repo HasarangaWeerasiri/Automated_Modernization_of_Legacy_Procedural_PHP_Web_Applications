@@ -1,0 +1,173 @@
+{
+  "app": "hard_crud",
+  "sites": 5,
+  "verdicts": {
+    "READY": 2,
+    "INCONCLUSIVE": 3
+  },
+  "redacted": false,
+  "results": [
+    {
+      "site_id": "S001",
+      "file": "01_like_search.php",
+      "line": 9,
+      "call": "mysqli_query",
+      "c3_query_id": "Q001",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, name, email\r\n        FROM users\r\n        WHERE name LIKE '%' OR '1'='1%'",
+          "arguments": {
+            "q": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, name, email\r\n        FROM users\r\n        WHERE name LIKE '%1; DROP TABLE c3_e1_canary;-- %'",
+          "arguments": {
+            "q": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, name, email\r\n        FROM users\r\n        WHERE name LIKE '%%_%'",
+          "arguments": {
+            "q": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, name, email\r\n        FROM users\r\n        WHERE name LIKE '%’ OR 1=1 -- é%'",
+          "arguments": {
+            "q": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, name, email\r\n        FROM users\r\n        WHERE name LIKE '%abc%'",
+          "arguments": {
+            "q": "abc"
+          }
+        }
+      ],
+      "generated_function": "select_users_q001",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S002",
+      "file": "02_dynamic_order.php",
+      "line": 9,
+      "call": "mysqli_query",
+      "c3_query_id": "Q002",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED STRUCTURAL"
+    },
+    {
+      "site_id": "S003",
+      "file": "03_dynamic_in.php",
+      "line": 9,
+      "call": "mysqli_query",
+      "c3_query_id": "Q003",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED STRUCTURAL"
+    },
+    {
+      "site_id": "S004",
+      "file": "04_conditional_append.php",
+      "line": 11,
+      "call": "mysqli_query",
+      "c3_query_id": "Q004",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED BRANCHING"
+    },
+    {
+      "site_id": "S005",
+      "file": "05_join.php",
+      "line": 13,
+      "call": "mysqli_query",
+      "c3_query_id": "Q005",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT orders.id,\r\n               orders.total,\r\n               orders.status,\r\n               users.name\r\n        FROM orders\r\n        JOIN users ON orders.user_id = users.id\r\n        WHERE users.id = ' OR '1'='1",
+          "arguments": {
+            "userId": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT orders.id,\r\n               orders.total,\r\n               orders.status,\r\n               users.name\r\n        FROM orders\r\n        JOIN users ON orders.user_id = users.id\r\n        WHERE users.id = 1; DROP TABLE c3_e1_canary;-- ",
+          "arguments": {
+            "userId": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT orders.id,\r\n               orders.total,\r\n               orders.status,\r\n               users.name\r\n        FROM orders\r\n        JOIN users ON orders.user_id = users.id\r\n        WHERE users.id = %_",
+          "arguments": {
+            "userId": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT orders.id,\r\n               orders.total,\r\n               orders.status,\r\n               users.name\r\n        FROM orders\r\n        JOIN users ON orders.user_id = users.id\r\n        WHERE users.id = ’ OR 1=1 -- é",
+          "arguments": {
+            "userId": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT orders.id,\r\n               orders.total,\r\n               orders.status,\r\n               users.name\r\n        FROM orders\r\n        JOIN users ON orders.user_id = users.id\r\n        WHERE users.id = abc",
+          "arguments": {
+            "userId": "abc"
+          }
+        }
+      ],
+      "generated_function": "select_orders_q005",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    }
+  ],
+  "c3_output": "regenerated from the current code into a temp folder (not kept)"
+}

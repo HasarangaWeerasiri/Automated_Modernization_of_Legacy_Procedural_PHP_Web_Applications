@@ -1,0 +1,264 @@
+{
+  "app": "mixed_crud",
+  "sites": 6,
+  "verdicts": {
+    "READY": 5,
+    "INCONCLUSIVE": 1
+  },
+  "redacted": false,
+  "results": [
+    {
+      "site_id": "S001",
+      "file": "01_select.php",
+      "line": 4,
+      "call": "mysqli_query",
+      "c3_query_id": "Q001",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, title, price FROM products",
+          "arguments": {}
+        }
+      ],
+      "generated_function": "select_products_q001",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S002",
+      "file": "02_interpolation.php",
+      "line": 7,
+      "call": "mysqli_query",
+      "c3_query_id": "Q002",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, title, price FROM products WHERE id = ' OR '1'='1",
+          "arguments": {
+            "id": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, title, price FROM products WHERE id = 1; DROP TABLE c3_e1_canary;-- ",
+          "arguments": {
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, title, price FROM products WHERE id = %_",
+          "arguments": {
+            "id": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, title, price FROM products WHERE id = ’ OR 1=1 -- é",
+          "arguments": {
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, title, price FROM products WHERE id = abc",
+          "arguments": {
+            "id": "abc"
+          }
+        }
+      ],
+      "generated_function": "select_products_q002",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S003",
+      "file": "03_concat.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_query_id": "Q003",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM products WHERE id = ' OR '1'='1",
+          "arguments": {
+            "id": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM products WHERE id = 1; DROP TABLE c3_e1_canary;-- ",
+          "arguments": {
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM products WHERE id = %_",
+          "arguments": {
+            "id": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM products WHERE id = ’ OR 1=1 -- é",
+          "arguments": {
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM products WHERE id = abc",
+          "arguments": {
+            "id": "abc"
+          }
+        }
+      ],
+      "generated_function": "delete_product_q003",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S004",
+      "file": "04_reassignment.php",
+      "line": 7,
+      "call": "mysqli_query",
+      "c3_query_id": "Q004",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, title, price FROM products",
+          "arguments": {}
+        }
+      ],
+      "generated_function": "select_products_q004",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S005",
+      "file": "05_update.php",
+      "line": 11,
+      "call": "mysqli_query",
+      "c3_query_id": "Q005",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE products\r\n        SET title = '' OR '1'='1', price = ' OR '1'='1\r\n        WHERE id = ' OR '1'='1",
+          "arguments": {
+            "title": "' OR '1'='1",
+            "price": "' OR '1'='1",
+            "id": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE products\r\n        SET title = '1; DROP TABLE c3_e1_canary;-- ', price = 1; DROP TABLE c3_e1_canary;-- \r\n        WHERE id = 1; DROP TABLE c3_e1_canary;-- ",
+          "arguments": {
+            "title": "1; DROP TABLE c3_e1_canary;-- ",
+            "price": "1; DROP TABLE c3_e1_canary;-- ",
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE products\r\n        SET title = '%_', price = %_\r\n        WHERE id = %_",
+          "arguments": {
+            "title": "%_",
+            "price": "%_",
+            "id": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE products\r\n        SET title = '’ OR 1=1 -- é', price = ’ OR 1=1 -- é\r\n        WHERE id = ’ OR 1=1 -- é",
+          "arguments": {
+            "title": "’ OR 1=1 -- é",
+            "price": "’ OR 1=1 -- é",
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE products\r\n        SET title = 'abc', price = abc\r\n        WHERE id = abc",
+          "arguments": {
+            "title": "abc",
+            "price": "abc",
+            "id": "abc"
+          }
+        }
+      ],
+      "generated_function": "update_product_q005",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S006",
+      "file": "06_dynamic_function.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_query_id": "Q006",
+      "c3_recovery_status": "UNRESOLVED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: UNRESOLVED/UNRESOLVED UNKNOWN_EXPR"
+    }
+  ],
+  "c3_output": "regenerated from the current code into a temp folder (not kept)"
+}

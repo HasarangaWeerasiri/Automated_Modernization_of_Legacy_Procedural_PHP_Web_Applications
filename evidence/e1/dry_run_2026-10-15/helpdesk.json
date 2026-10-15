@@ -1,0 +1,462 @@
+{
+  "app": "helpdesk",
+  "sites": 9,
+  "verdicts": {
+    "READY": 8,
+    "INCONCLUSIVE": 1
+  },
+  "redacted": false,
+  "results": [
+    {
+      "site_id": "S001",
+      "file": "agents.php",
+      "line": 5,
+      "call": "mysqli_query",
+      "c3_query_id": "Q001",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT a.id, a.full_name, m.team_name FROM agents a INNER JOIN teams m ON m.id = a.team_id ORDER BY a.id",
+          "arguments": {}
+        }
+      ],
+      "generated_function": "select_agents_q001",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S002",
+      "file": "create.php",
+      "line": 13,
+      "call": "mysqli_query",
+      "c3_query_id": "Q002",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO tickets (agent_id, subject, description, priority) VALUES (0, '\\' OR \\'1\\'=\\'1', '\\' OR \\'1\\'=\\'1', '\\' OR \\'1\\'=\\'1')",
+          "arguments": {
+            "agent_id": 0,
+            "subject": "' OR '1'='1",
+            "description": "' OR '1'='1",
+            "priority": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO tickets (agent_id, subject, description, priority) VALUES (1, '1; DROP TABLE c3_e1_canary;-- ', '1; DROP TABLE c3_e1_canary;-- ', '1; DROP TABLE c3_e1_canary;-- ')",
+          "arguments": {
+            "agent_id": 1,
+            "subject": "1; DROP TABLE c3_e1_canary;-- ",
+            "description": "1; DROP TABLE c3_e1_canary;-- ",
+            "priority": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO tickets (agent_id, subject, description, priority) VALUES (0, '%_', '%_', '%_')",
+          "arguments": {
+            "agent_id": 0,
+            "subject": "%_",
+            "description": "%_",
+            "priority": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO tickets (agent_id, subject, description, priority) VALUES (0, '’ OR 1=1 -- é', '’ OR 1=1 -- é', '’ OR 1=1 -- é')",
+          "arguments": {
+            "agent_id": 0,
+            "subject": "’ OR 1=1 -- é",
+            "description": "’ OR 1=1 -- é",
+            "priority": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO tickets (agent_id, subject, description, priority) VALUES (0, 'abc', 'abc', 'abc')",
+          "arguments": {
+            "agent_id": 0,
+            "subject": "abc",
+            "description": "abc",
+            "priority": "abc"
+          }
+        }
+      ],
+      "generated_function": "insert_ticket_q002",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S003",
+      "file": "delete.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_query_id": "Q003",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM tickets WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM tickets WHERE id = 1",
+          "arguments": {
+            "id": 1
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM tickets WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM tickets WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM tickets WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        }
+      ],
+      "generated_function": "delete_ticket_q003",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S004",
+      "file": "edit.php",
+      "line": 10,
+      "call": "mysqli_query",
+      "c3_query_id": "Q004",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE tickets SET status = '\\' OR \\'1\\'=\\'1', priority = '\\' OR \\'1\\'=\\'1' WHERE id = 0",
+          "arguments": {
+            "status": "' OR '1'='1",
+            "priority": "' OR '1'='1",
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE tickets SET status = '1; DROP TABLE c3_e1_canary;-- ', priority = '1; DROP TABLE c3_e1_canary;-- ' WHERE id = 1",
+          "arguments": {
+            "status": "1; DROP TABLE c3_e1_canary;-- ",
+            "priority": "1; DROP TABLE c3_e1_canary;-- ",
+            "id": 1
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE tickets SET status = '%_', priority = '%_' WHERE id = 0",
+          "arguments": {
+            "status": "%_",
+            "priority": "%_",
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE tickets SET status = '’ OR 1=1 -- é', priority = '’ OR 1=1 -- é' WHERE id = 0",
+          "arguments": {
+            "status": "’ OR 1=1 -- é",
+            "priority": "’ OR 1=1 -- é",
+            "id": 0
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE tickets SET status = 'abc', priority = 'abc' WHERE id = 0",
+          "arguments": {
+            "status": "abc",
+            "priority": "abc",
+            "id": 0
+          }
+        }
+      ],
+      "generated_function": "update_ticket_q004",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S005",
+      "file": "edit.php",
+      "line": 15,
+      "call": "mysqli_query",
+      "c3_query_id": "Q005",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, subject, priority, status FROM tickets WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, subject, priority, status FROM tickets WHERE id = 1",
+          "arguments": {
+            "id": 1
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, subject, priority, status FROM tickets WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, subject, priority, status FROM tickets WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, subject, priority, status FROM tickets WHERE id = 0",
+          "arguments": {
+            "id": 0
+          }
+        }
+      ],
+      "generated_function": "select_tickets_q005",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S006",
+      "file": "index.php",
+      "line": 5,
+      "call": "mysqli_query",
+      "c3_query_id": "Q006",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT t.id, t.subject, t.priority, t.status, a.full_name, m.team_name FROM tickets t JOIN agents a ON a.id = t.agent_id JOIN teams m ON m.id = a.team_id ORDER BY t.id DESC",
+          "arguments": {}
+        }
+      ],
+      "generated_function": "select_tickets_q006",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    },
+    {
+      "site_id": "S007",
+      "file": "report.php",
+      "line": 5,
+      "call": "mysqli_query",
+      "c3_query_id": "Q007",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "UNRESOLVED",
+      "c3_conversion_rule": null,
+      "cases": [],
+      "verdict": "INCONCLUSIVE",
+      "reason": "C3 did not convert: RECOVERED/UNRESOLVED Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported."
+    },
+    {
+      "site_id": "S008",
+      "file": "search.php",
+      "line": 6,
+      "call": "mysqli_query",
+      "c3_query_id": "Q008",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, subject, status FROM tickets WHERE subject LIKE '%\\' OR \\'1\\'=\\'1%' ORDER BY id DESC",
+          "arguments": {
+            "term": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, subject, status FROM tickets WHERE subject LIKE '%1; DROP TABLE c3_e1_canary;-- %' ORDER BY id DESC",
+          "arguments": {
+            "term": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, subject, status FROM tickets WHERE subject LIKE '%%_%' ORDER BY id DESC",
+          "arguments": {
+            "term": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, subject, status FROM tickets WHERE subject LIKE '%’ OR 1=1 -- é%' ORDER BY id DESC",
+          "arguments": {
+            "term": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, subject, status FROM tickets WHERE subject LIKE '%abc%' ORDER BY id DESC",
+          "arguments": {
+            "term": "abc"
+          }
+        }
+      ],
+      "generated_function": "select_tickets_q008",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S009",
+      "file": "view.php",
+      "line": 6,
+      "call": "mysqli_query",
+      "c3_query_id": "Q009",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, subject, description, priority, status, agent_id FROM tickets WHERE id = ' OR '1'='1",
+          "arguments": {
+            "id": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, subject, description, priority, status, agent_id FROM tickets WHERE id = 1; DROP TABLE c3_e1_canary;-- ",
+          "arguments": {
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, subject, description, priority, status, agent_id FROM tickets WHERE id = %_",
+          "arguments": {
+            "id": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, subject, description, priority, status, agent_id FROM tickets WHERE id = ’ OR 1=1 -- é",
+          "arguments": {
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, subject, description, priority, status, agent_id FROM tickets WHERE id = abc",
+          "arguments": {
+            "id": "abc"
+          }
+        }
+      ],
+      "generated_function": "select_tickets_q009",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    }
+  ],
+  "c3_output": "regenerated from the current code into a temp folder (not kept)"
+}

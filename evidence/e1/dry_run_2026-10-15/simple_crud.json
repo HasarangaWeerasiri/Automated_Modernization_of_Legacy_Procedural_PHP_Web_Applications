@@ -1,0 +1,227 @@
+{
+  "app": "simple_crud",
+  "sites": 4,
+  "verdicts": {
+    "READY": 4
+  },
+  "redacted": false,
+  "results": [
+    {
+      "site_id": "S001",
+      "file": "create_user.php",
+      "line": 9,
+      "call": "mysqli_query",
+      "c3_query_id": "Q001",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO users (name, email, status)\r\n        VALUES ('' OR '1'='1', '' OR '1'='1', 'active')",
+          "arguments": {
+            "name": "' OR '1'='1",
+            "email": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO users (name, email, status)\r\n        VALUES ('1; DROP TABLE c3_e1_canary;-- ', '1; DROP TABLE c3_e1_canary;-- ', 'active')",
+          "arguments": {
+            "name": "1; DROP TABLE c3_e1_canary;-- ",
+            "email": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO users (name, email, status)\r\n        VALUES ('%_', '%_', 'active')",
+          "arguments": {
+            "name": "%_",
+            "email": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO users (name, email, status)\r\n        VALUES ('’ OR 1=1 -- é', '’ OR 1=1 -- é', 'active')",
+          "arguments": {
+            "name": "’ OR 1=1 -- é",
+            "email": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "INSERT INTO users (name, email, status)\r\n        VALUES ('abc', 'abc', 'active')",
+          "arguments": {
+            "name": "abc",
+            "email": "abc"
+          }
+        }
+      ],
+      "generated_function": "insert_user_q001",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S002",
+      "file": "delete_user.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_query_id": "Q002",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM users WHERE id = ' OR '1'='1",
+          "arguments": {
+            "id": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM users WHERE id = 1; DROP TABLE c3_e1_canary;-- ",
+          "arguments": {
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM users WHERE id = %_",
+          "arguments": {
+            "id": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM users WHERE id = ’ OR 1=1 -- é",
+          "arguments": {
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "DELETE FROM users WHERE id = abc",
+          "arguments": {
+            "id": "abc"
+          }
+        }
+      ],
+      "generated_function": "delete_user_q002",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S003",
+      "file": "update_user.php",
+      "line": 8,
+      "call": "mysqli_query",
+      "c3_query_id": "Q003",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "hostile_quote",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE users SET name = '' OR '1'='1' WHERE id = ' OR '1'='1",
+          "arguments": {
+            "name": "' OR '1'='1",
+            "id": "' OR '1'='1"
+          }
+        },
+        {
+          "case": "hostile_stacked",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE users SET name = '1; DROP TABLE c3_e1_canary;-- ' WHERE id = 1; DROP TABLE c3_e1_canary;-- ",
+          "arguments": {
+            "name": "1; DROP TABLE c3_e1_canary;-- ",
+            "id": "1; DROP TABLE c3_e1_canary;-- "
+          }
+        },
+        {
+          "case": "hostile_wildcard",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE users SET name = '%_' WHERE id = %_",
+          "arguments": {
+            "name": "%_",
+            "id": "%_"
+          }
+        },
+        {
+          "case": "hostile_unicode",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE users SET name = '’ OR 1=1 -- é' WHERE id = ’ OR 1=1 -- é",
+          "arguments": {
+            "name": "’ OR 1=1 -- é",
+            "id": "’ OR 1=1 -- é"
+          }
+        },
+        {
+          "case": "type_mismatch",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "UPDATE users SET name = 'abc' WHERE id = abc",
+          "arguments": {
+            "name": "abc",
+            "id": "abc"
+          }
+        }
+      ],
+      "generated_function": "update_user_q003",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": false
+    },
+    {
+      "site_id": "S004",
+      "file": "users.php",
+      "line": 4,
+      "call": "mysqli_query",
+      "c3_query_id": "Q004",
+      "c3_recovery_status": "RECOVERED",
+      "c3_conversion_status": "CONVERTED",
+      "c3_conversion_rule": "general",
+      "cases": [
+        {
+          "case": "normal",
+          "verdict": "READY",
+          "unbound_parameters": [],
+          "legacy_sql": "SELECT id, name, email, status FROM users",
+          "arguments": {}
+        }
+      ],
+      "generated_function": "select_users_q004",
+      "verdict": "READY",
+      "legacy_injectable": false,
+      "normal_case_run": true
+    }
+  ],
+  "c3_output": "regenerated from the current code into a temp folder (not kept)"
+}
