@@ -8,6 +8,7 @@ from pathlib import Path
 from c3.mapping.sql_locator import analyze_php_ast
 from c3.mapping.sql_recovery import recover_queries_from_ast
 from c3.analysis.security_report import generate_security_report
+from c3.generation.alembic_emitter import generate_alembic
 from c3.conversion.model_builder import generate_models
 from c3.conversion.query_converter import (
     convert_queries,
@@ -104,7 +105,7 @@ def run_pipeline(
     column_usage_file = output_dir / "column_usage.json"
     unresolved_file = output_dir / "unresolved_queries.json"
 
-    print("[1/6] Recovering legacy SQL...")
+    print("[1/7] Recovering legacy SQL...")
     ast_data = analyze_php_ast(
         php_path,
         php_executable=php_executable,
@@ -115,7 +116,7 @@ def run_pipeline(
         encoding="utf-8",
     )
 
-    print("[2/6] Converting recovered queries...")
+    print("[2/7] Converting recovered queries...")
     # The schema is parsed before conversion so that identifier allowlists
     # are derived from it (stage 3 writes schema.json and the models).
     schema = read_schema(schema_file)
@@ -123,7 +124,7 @@ def run_pipeline(
     write_converted_queries(converted, converted_file)
 
 
-    print("[3/6] Parsing schema and generating SQLAlchemy models...")
+    print("[3/7] Parsing schema and generating SQLAlchemy models...")
 
     schema_json_file = output_dir / "schema.json"
 
@@ -135,13 +136,13 @@ def run_pipeline(
         notes_file=output_dir / "migration_notes.md",
     )
 
-    print("[4/6] Generating data-access functions...")
+    print("[4/7] Generating data-access functions...")
     generate_data_access(converted_file, data_access_file)
 
-    print("[5/6] Generating column-use report...")
+    print("[5/7] Generating column-use report...")
     generate_column_usage(queries_file, column_usage_file)
 
-    print("[6/6] Generating unresolved-query and security reports...")
+    print("[6/7] Generating unresolved-query and security reports...")
     generate_unresolved_report(
         queries_file,
         unresolved_file,
@@ -155,13 +156,16 @@ def run_pipeline(
         output_dir / "security_report.json",
     )
 
+    print("[7/7] Generating Alembic migration environment...")
+    generate_alembic(schema_json_file, output_dir / "alembic")
+
     summary = build_summary(queries, converted)
     summary["primary_outputs"] = list(PRIMARY_OUTPUTS)
     summary["supporting_artifacts"] = sorted(
         path.name
         for path in output_dir.iterdir()
         if path.is_file() and path.name not in PRIMARY_OUTPUTS
-    ) + ["summary.json"]
+    ) + ["summary.json", "alembic/"]
     summary["output_directory"] = str(output_dir)
 
     (output_dir / "summary.json").write_text(

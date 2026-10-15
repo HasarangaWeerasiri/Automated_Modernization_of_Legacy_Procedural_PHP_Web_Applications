@@ -495,6 +495,31 @@ def collect_unsupported_columns(
     return unsupported
 
 
+MYSQL_ONLY_DEFAULT = re.compile(r"\w+\s*\(\s*\d*\s*\)", re.IGNORECASE)
+
+
+def mysql_only_defaults(schema: dict) -> list[dict]:
+    """
+    Columns whose server default is MySQL-only DDL: DEFAULT ... ON UPDATE ...,
+    or a function-call default such as current_timestamp() / now().
+    """
+
+    found = []
+
+    for table in schema.get("tables", []):
+        for column in table.get("columns", []):
+            default = column.get("default") or ""
+            if column.get("on_update") and default:
+                ddl = f"DEFAULT {default} ON UPDATE {column['on_update']}"
+            elif MYSQL_ONLY_DEFAULT.fullmatch(default.strip()):
+                ddl = f"DEFAULT {default}"
+            else:
+                continue
+            found.append({"table": table.get("name"), "column": column.get("name"), "ddl": ddl})
+
+    return found
+
+
 def build_migration_notes(
     schema: dict,
 ) -> str:
@@ -562,6 +587,20 @@ def build_migration_notes(
 
     if features:
         lines.extend(f"- `{table}`: {feature}" for table, feature in features)
+    else:
+        lines.append("None.")
+
+    lines.extend(["", "## MySQL-specific DDL (kept as-is)", ""])
+
+    mysql_only = mysql_only_defaults(schema)
+
+    if mysql_only:
+        lines.append(
+            "These server defaults are valid MySQL and are emitted unchanged. They do not "
+            "run on other databases (e.g. SQLite), so a SQLite round trip is not applicable."
+        )
+        lines.append("")
+        lines.extend(f"- `{item['table']}.{item['column']}`: `{item['ddl']}`" for item in mysql_only)
     else:
         lines.append("None.")
 
