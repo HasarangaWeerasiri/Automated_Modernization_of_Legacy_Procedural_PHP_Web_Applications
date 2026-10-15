@@ -34,6 +34,33 @@ PHP_VARIABLE_PATTERN = re.compile(
     r"|\$([A-Za-z_][A-Za-z0-9_]*)"
 )
 
+# One array element with a literal key: $_GET['ID'], $row["id"], $a[0].
+# Its value is a scalar like a plain variable, so it becomes a placeholder
+# named <array>_<key> (leading underscores dropped: $_GET['ID'] -> GET_ID).
+ARRAY_ELEMENT = (
+    r"\$([A-Za-z_][A-Za-z0-9_]*)\[\s*(?:'([A-Za-z_][A-Za-z0-9_]*)'"
+    r"|\"([A-Za-z_][A-Za-z0-9_]*)\"|([0-9]+))\s*\]"
+)
+ARRAY_ELEMENT_PATTERN = re.compile(ARRAY_ELEMENT)
+# Inside double-quoted strings the printer writes array elements as {$a['k']}.
+INTERPOLATED_ARRAY_ELEMENT_PATTERN = re.compile(r"\{" + ARRAY_ELEMENT + r"\}")
+
+
+def array_element_name(match: re.Match) -> str:
+    key = match.group(2) or match.group(3) or match.group(4)
+    return f"{match.group(1).lstrip('_')}_{key}"
+
+
+def array_element_sources(expression: str) -> dict[str, str]:
+    """Placeholder name -> PHP array element, for traceability and callers."""
+
+    if not isinstance(expression, str):
+        return {}
+    return {
+        array_element_name(match): match.group(0)
+        for match in ARRAY_ELEMENT_PATTERN.finditer(expression)
+    }
+
 
 def _variable_placeholder(match: re.Match) -> str:
     """
@@ -217,6 +244,23 @@ def _expression_to_template(
                 content
             )
 
+            if part[0] == "'":
+                # Single-quoted PHP strings do not interpolate: "$x" in
+                # them is literal SQL text, not a variable.
+                output_parts.append(content)
+                continue
+
+            def _array_placeholder(match):
+                name = array_element_name(match)
+                if name not in dynamic_variables:
+                    dynamic_variables.append(name)
+                return "{{" + name + "}}"
+
+            content = INTERPOLATED_ARRAY_ELEMENT_PATTERN.sub(
+                _array_placeholder,
+                content,
+            )
+
             variables = (
                 PHP_VARIABLE_PATTERN.findall(
                     content
@@ -271,6 +315,19 @@ def _expression_to_template(
                 + variable_name
                 + "}}"
             )
+
+            continue
+
+        # Array element with a literal key: "... id = '" . $_GET['ID'] . "'"
+        element_match = ARRAY_ELEMENT_PATTERN.fullmatch(part)
+
+        if element_match:
+            variable_name = array_element_name(element_match)
+
+            if variable_name not in dynamic_variables:
+                dynamic_variables.append(variable_name)
+
+            output_parts.append("{{" + variable_name + "}}")
 
             continue
 
@@ -1407,6 +1464,16 @@ def recover_queries_from_ast(
                 "operation": operation,
                 "dynamic_variables": (
                     dynamic_variables
+                ),
+                **(
+                    {"dynamic_variable_sources": sources}
+                    if (sources := {
+                        name: source
+                        for assignment in assignment_chain
+                        for name, source in array_element_sources(assignment.get("expression")).items()
+                        if name in dynamic_variables
+                    })
+                    else {}
                 ),
                 **(
                     {

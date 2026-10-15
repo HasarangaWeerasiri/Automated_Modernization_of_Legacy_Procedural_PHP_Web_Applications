@@ -14,9 +14,12 @@ FILTERED_SQL = (
     "WHERE 1=1 AND department_id = :department_id"
 )
 
+# Since H1 (2026-10-15) recovery names array elements ($_GET['department_id']
+# -> {{GET_department_id}}) instead of leaving them unresolved; the gate
+# checks the new, more precise representation (template audit: Sunday).
 EXPECTED_RECOVERED_SQL = (
     "SELECT id, full_name FROM patients WHERE 1=1 AND "
-    "department_id = {{UNRESOLVED:$_GET['department_id']}}"
+    "department_id = {{GET_department_id}}"
 )
 
 
@@ -33,7 +36,7 @@ def convert_q016_conditional_concat(query: dict) -> dict | None:
         or query.get("executor") != "mysqli_query"
         or query.get("sql_argument") != "$sql"
         or query.get("recovered_sql") != EXPECTED_RECOVERED_SQL
-        or query.get("dynamic_variables") != []
+        or query.get("dynamic_variables") != ["GET_department_id"]
     ):
         return None
 
@@ -45,10 +48,7 @@ def convert_q016_conditional_concat(query: dict) -> dict | None:
     expected_base_variant = (
         "SELECT id, full_name FROM patients WHERE 1=1"
     )
-    expected_filtered_variant = (
-        "SELECT id, full_name FROM patients WHERE 1=1 AND "
-        "department_id = {{UNRESOLVED:$_GET['department_id']}}"
-    )
+    expected_filtered_variant = EXPECTED_RECOVERED_SQL
 
     if not all(isinstance(v, dict) for v in variants):
         return None
@@ -58,7 +58,7 @@ def convert_q016_conditional_concat(query: dict) -> dict | None:
         or variants[0].get("fully_supported") is not True
         or variants[0].get("sql") != expected_base_variant
         or variants[1].get("control_flow") != ["IF"]
-        or variants[1].get("fully_supported") is not False
+        or variants[1].get("fully_supported") is not True
         or variants[1].get("sql") != expected_filtered_variant
     ):
         return None

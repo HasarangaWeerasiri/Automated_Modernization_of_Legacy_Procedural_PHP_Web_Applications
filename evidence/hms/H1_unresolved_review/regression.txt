@@ -1,0 +1,15 @@
+== simple_crud: total 4, recovered 4, converted 4
+== mixed_crud: total 6, recovered 5, converted 5
+== hard_crud: total 5, recovered 2, converted 2
+== clinic: total 22, recovered 17, converted 22
+== helpdesk: total 9, recovered 9, converted 8
+== hms_kishan0725: total 44, recovered 44, converted 44
+   CHANGED Q003 admin-panel.php:71: ('UNRESOLVED', 'UNKNOWN_EXPR', 'UNRESOLVED') -> ('RECOVERED', None, 'CONVERTED')
+   CHANGED Q004 admin-panel.php:86: ('UNRESOLVED', 'UNKNOWN_EXPR', 'UNRESOLVED') -> ('RECOVERED', None, 'CONVERTED')
+   CHANGED Q018 doctor-panel.php:8: ('UNRESOLVED', 'UNKNOWN_EXPR', 'UNRESOLVED') -> ('RECOVERED', None, 'CONVERTED')
+   CHANGED Q036 header.php:35: ('UNRESOLVED', 'UNKNOWN_EXPR', 'UNRESOLVED') -> ('RECOVERED', None, 'CONVERTED')
+== news_buzz: total 32, recovered 30, converted 29
+== fee_rainbow: total 22, recovered 20, converted 19
+== dignity_dev_hms: total 14, recovered 7, converted 4
+
+Total changed queries: 4

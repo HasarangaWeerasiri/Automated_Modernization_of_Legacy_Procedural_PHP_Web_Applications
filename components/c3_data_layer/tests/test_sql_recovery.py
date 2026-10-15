@@ -269,9 +269,9 @@ def test_q016_preserves_conditional_append_variants():
         "sql": (
             "SELECT id, full_name FROM patients WHERE 1=1 "
             "AND department_id = "
-            "{{UNRESOLVED:$_GET['department_id']}}"
+            "{{GET_department_id}}"  # array element named since H1
         ),
-        "fully_supported": False,
+        "fully_supported": True,
     }
 
 
