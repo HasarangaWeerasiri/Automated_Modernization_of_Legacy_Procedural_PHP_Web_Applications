@@ -1,0 +1,11 @@
+{
+  "scenario_id": "patient_search_injection_contact_03",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "contact",
+  "endpoint_id": "GET /api/patients",
+  "source_id": "patient_search",
+  "values": {
+    "contact": "' OR 1=1 -- "
+  }
+}

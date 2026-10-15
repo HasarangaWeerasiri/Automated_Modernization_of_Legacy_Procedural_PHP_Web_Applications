@@ -1,0 +1,14 @@
+{
+  "scenario_id": "contact_form_boundary_email_empty",
+  "scenario_type": "boundary",
+  "case": "empty",
+  "parameter": "email",
+  "endpoint_id": "POST /api/contact",
+  "source_id": "contact_form",
+  "values": {
+    "name": "Mark Shah",
+    "email": "",
+    "contact": "8546936914",
+    "message": "Katherine Barnes"
+  }
+}

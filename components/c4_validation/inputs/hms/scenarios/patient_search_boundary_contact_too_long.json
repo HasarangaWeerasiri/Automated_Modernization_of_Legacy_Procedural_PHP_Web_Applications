@@ -1,0 +1,11 @@
+{
+  "scenario_id": "patient_search_boundary_contact_too_long",
+  "scenario_type": "boundary",
+  "case": "too_long",
+  "parameter": "contact",
+  "endpoint_id": "GET /api/patients",
+  "source_id": "patient_search",
+  "values": {
+    "contact": "99999999999"
+  }
+}

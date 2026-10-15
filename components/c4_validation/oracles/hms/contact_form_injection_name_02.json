@@ -1,0 +1,45 @@
+{
+  "endpoint_id": "POST /api/contact",
+  "legacy_url": "/contact.php",
+  "scenario_id": "contact_form_injection_name_02",
+  "scenario_type": "injection",
+  "input": {
+    "method": "POST",
+    "params": {},
+    "body": {
+      "btnSubmit": "1",
+      "txtName": "' OR '1'='1",
+      "txtEmail": "zachary99@example.com",
+      "txtPhone": "8546936914",
+      "txtMsg": "Katherine Barnes"
+    }
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [],
+    "messages": [
+      "Message sent successfully!"
+    ]
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:618f6c3494ef998537f46a38ec04979c93b592cda9a2e7d6eb7cf38989864f90",
+    "delta": {
+      "contact": {
+        "inserted": [
+          {
+            "name": "1",
+            "email": "zachary99@example.com",
+            "contact": "8546936914",
+            "message": "Katherine Barnes"
+          }
+        ],
+        "updated": [],
+        "deleted": []
+      }
+    }
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-15T06:42:16+00:00"
+}

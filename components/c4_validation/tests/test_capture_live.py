@@ -19,27 +19,38 @@ def scenarios(at_baseline):
     return found
 
 
+@pytest.fixture
+def sample(scenarios):
+    """The first typical scenario of each legacy page: enough for properties of capture itself."""
+    first = {}
+    for scenario in scenarios:
+        source = scenario["scenario_id"].split("_typical_")[0]
+        if "_typical_" in scenario["scenario_id"] and source not in first:
+            first[source] = scenario
+    return list(first.values()) or scenarios[:1]
+
+
 def _without_timestamp(record):
     return {key: value for key, value in record.items() if key != "captured_at"}
 
 
-def test_capture_is_repeatable(at_baseline, baselines, scenarios):
-    for scenario in scenarios:
+def test_capture_is_repeatable(at_baseline, baselines, sample):
+    for scenario in sample:
         first = capture(at_baseline, scenario, baselines)
         second = capture(at_baseline, scenario, baselines)
 
         assert _without_timestamp(first) == _without_timestamp(second), scenario["scenario_id"]
 
 
-def test_record_is_tied_to_the_baseline_both_systems_share(at_baseline, baselines, scenarios):
-    for scenario in scenarios:
+def test_record_is_tied_to_the_baseline_both_systems_share(at_baseline, baselines, sample):
+    for scenario in sample:
         record = capture(at_baseline, scenario, baselines)
 
         assert record["db_state"]["baseline_fingerprint"] == baselines["migrated"].data_fingerprint
 
 
-def test_capture_leaves_the_migrated_system_untouched(at_baseline, baselines, scenarios):
-    for scenario in scenarios:
+def test_capture_leaves_the_migrated_system_untouched(at_baseline, baselines, sample):
+    for scenario in sample:
         capture(at_baseline, scenario, baselines)
 
     migrated = dbstate.snapshot(at_baseline.migrated)

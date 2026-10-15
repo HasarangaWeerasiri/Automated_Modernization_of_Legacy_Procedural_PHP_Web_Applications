@@ -279,3 +279,149 @@ def test_a_benchmark_without_an_endpoint_map_is_reported(config):
 
     with pytest.raises(EndpointMapError, match="No endpoint map"):
         load_all(config)
+
+
+# --------------------------------------------------------------------- generation
+
+from c4.scenarios import INJECTION_PROBES, ColumnFacts, SeedFacts, generate, write_scenarios  # noqa: E402
+
+PEOPLE = [
+    {"id": n, "name": name, "phone": phone}
+    for n, (name, phone) in enumerate(
+        [("Ann", "0711111111"), ("Ben", "0722222222"), ("Cal", "0733333333"), ("Dee", "0744444444"), ("Eve", "0755555555")],
+        start=1,
+    )
+]
+SEED = SeedFacts(
+    columns={
+        "people.name": ColumnFacts("text", 30, tuple(sorted(p["name"] for p in PEOPLE))),
+        "people.phone": ColumnFacts("text", 10, tuple(sorted(p["phone"] for p in PEOPLE))),
+        "people.age": ColumnFacts("integer", None, (21, 34, 58)),
+        "notes.body": ColumnFacts("text", None, ("Good service", "Call me back")),
+    },
+    rows={"people": tuple(PEOPLE), "notes": ()},
+)
+
+
+def _map(tmp_path, sources, method="GET", records_at="people"):
+    document = {"format": "c4-stand-in/1", "endpoints": [{
+        "endpoint_id": f"{method} /api/people", "method": method, "path": "/api/people",
+        "records_at": records_at, "sources": sources,
+    }]}
+    return load_endpoint_map(write_map(tmp_path, document))
+
+
+def _param(name, column, where="query"):
+    return {"name": name, "in": where, "legacy_name": f"txt_{name}", "legacy_in": "body", "column": column}
+
+
+SEARCH = {"source_id": "search", "legacy": {"method": "POST", "path": "/search.php", "records": "only"},
+          "parameters": [_param("phone", "people.phone")]}
+LISTING = {"source_id": "listing", "legacy": {"method": "GET", "path": "/list.php", "records": "only"},
+           "parameters": []}
+FORM = {"source_id": "form", "legacy": {"method": "POST", "path": "/add.php", "records": "none"},
+        "parameters": [_param("name", "people.name", "body"), _param("age", "people.age", "body"),
+                       _param("note", "notes.body", "body")]}
+
+
+def by_id(scenarios):
+    return {scenario["scenario_id"]: scenario for scenario in scenarios}
+
+
+def test_a_page_that_reads_gets_three_seed_values_spread_from_first_to_last(tmp_path):
+    scenarios = by_id(generate(_map(tmp_path, [SEARCH]), SEED))
+
+    values = [scenarios[f"search_typical_0{n}"]["values"]["phone"] for n in (1, 2, 3)]
+    assert values == ["0711111111", "0733333333", "0755555555"]
+
+
+def test_values_for_several_parameters_of_one_table_come_from_the_same_row(tmp_path):
+    both = {**SEARCH, "parameters": [_param("name", "people.name"), _param("phone", "people.phone")]}
+
+    scenarios = by_id(generate(_map(tmp_path, [both]), SEED))
+
+    assert scenarios["search_typical_02"]["values"] == {"name": "Cal", "phone": "0733333333"}
+
+
+def test_a_page_that_searches_also_gets_a_value_the_seed_data_lacks(tmp_path):
+    scenario = by_id(generate(_map(tmp_path, [SEARCH]), SEED))["search_not_found_01"]
+
+    assert scenario["scenario_type"] == "typical" and scenario["case"] == "not_found"
+    assert scenario["values"]["phone"] == "0000000000"
+    assert scenario["values"]["phone"] not in SEED.columns["people.phone"].seed_values
+
+
+def test_a_page_without_parameters_gets_one_typical_scenario_and_nothing_else(tmp_path):
+    scenarios = generate(_map(tmp_path, [LISTING]), SEED)
+
+    assert [(s["scenario_id"], s["values"]) for s in scenarios] == [("listing_typical_01", {})]
+
+
+def test_a_page_that_writes_gets_new_values_that_fit_their_columns(tmp_path):
+    scenarios = by_id(generate(_map(tmp_path, [FORM], method="POST", records_at=None), SEED))
+
+    typical = [scenarios[f"form_typical_0{n}"]["values"] for n in (1, 2, 3)]
+    assert len({json.dumps(values, sort_keys=True) for values in typical}) == 3  # three different sets
+    for values in typical:
+        assert isinstance(values["name"], str) and 0 < len(values["name"]) <= 30
+        assert isinstance(values["age"], int) and 21 <= values["age"] <= 58
+        assert isinstance(values["note"], str) and values["note"]
+    assert "form_not_found_01" not in scenarios  # nothing to search for in a form that writes
+
+
+def test_boundaries_follow_each_columns_type_and_length(tmp_path):
+    scenarios = by_id(generate(_map(tmp_path, [FORM, SEARCH], method="POST", records_at=None), SEED))
+
+    def value(scenario_id, name):
+        return scenarios[scenario_id]["values"].get(name, "<left out>")
+
+    assert value("form_boundary_name_empty", "name") == ""
+    assert value("form_boundary_name_longest", "name") == "x" * 30
+    assert value("form_boundary_name_too_long", "name") == "x" * 31
+    assert value("form_boundary_name_missing", "name") == "<left out>"
+    assert value("search_boundary_phone_longest", "phone") == "9" * 10  # digits, like the column's values
+    assert value("form_boundary_age_largest", "age") == 2147483647
+    assert value("form_boundary_age_negative", "age") == -1
+    assert value("form_boundary_note_very_long", "note") == "x" * 1000
+
+
+def test_each_boundary_varies_one_parameter_and_keeps_the_others_typical(tmp_path):
+    scenarios = by_id(generate(_map(tmp_path, [FORM], method="POST", records_at=None), SEED))
+    base = scenarios["form_typical_01"]["values"]
+
+    edge = scenarios["form_boundary_age_zero"]
+
+    assert edge["parameter"] == "age"
+    assert edge["values"] == {**base, "age": 0}
+
+
+def test_every_parameter_gets_every_injection_probe(tmp_path):
+    scenarios = generate(_map(tmp_path, [FORM], method="POST", records_at=None), SEED)
+
+    probes = [(s["parameter"], s["values"][s["parameter"]]) for s in scenarios if s["scenario_type"] == "injection"]
+    assert probes == [(name, probe) for name in ("name", "age", "note") for probe in INJECTION_PROBES]
+
+
+def test_generating_twice_gives_identical_scenarios(tmp_path):
+    endpoint_map = _map(tmp_path, [SEARCH, LISTING])
+
+    assert json.dumps(generate(endpoint_map, SEED)) == json.dumps(generate(endpoint_map, SEED))
+
+
+def test_every_generated_scenario_resolves_against_its_map(tmp_path):
+    endpoint_map = _map(tmp_path, [FORM, SEARCH, LISTING], method="POST", records_at=None)
+
+    for scenario in generate(endpoint_map, SEED):
+        resolve(endpoint_map, scenario)
+
+
+def test_written_scenarios_replace_the_old_files(config):
+    (config.scenario_dir / "hand_written.json").write_text("{}")
+    scenarios = generate(load_endpoint_map(config.endpoint_map_file), SEED)
+
+    write_scenarios(config, scenarios)
+
+    files = sorted(path.stem for path in config.scenario_dir.glob("*.json"))
+    assert "hand_written" not in files
+    assert files == sorted(s["scenario_id"] for s in scenarios)
+    assert [s["scenario_id"] for s in load_all(config)] == files

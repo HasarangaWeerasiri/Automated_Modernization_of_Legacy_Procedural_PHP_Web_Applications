@@ -1,0 +1,14 @@
+{
+  "scenario_id": "contact_form_boundary_message_longest",
+  "scenario_type": "boundary",
+  "case": "longest",
+  "parameter": "message",
+  "endpoint_id": "POST /api/contact",
+  "source_id": "contact_form",
+  "values": {
+    "name": "Mark Shah",
+    "email": "zachary99@example.com",
+    "contact": "8546936914",
+    "message": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  }
+}

@@ -1,6 +1,8 @@
 {
   "scenario_id": "patient_list_typical_01",
   "scenario_type": "typical",
+  "case": "typical",
+  "parameter": null,
   "endpoint_id": "GET /api/patients",
   "source_id": "patient_list",
   "values": {}

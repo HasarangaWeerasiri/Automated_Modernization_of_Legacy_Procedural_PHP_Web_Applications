@@ -1,7 +1,8 @@
 """Stage 6 — verdict.
 
 Replays every scenario that has an oracle record, compares it, and gives each
-endpoint one verdict:
+endpoint one verdict. Injection probes are kept apart: they are judged by a rubric of
+their own (FR13), not by equivalence.
 
     FAIL          if any of its scenarios failed
     INCONCLUSIVE  otherwise, if any of its scenarios could not be judged
@@ -28,7 +29,7 @@ from c4 import containers, dbstate, scenarios
 from c4.capture import CaptureError
 from c4.compare import FAIL, INCONCLUSIVE, PASS, compare
 from c4.config import Config, ConfigError, load_config
-from c4.replay import ReplayError, replay
+from c4.replay import Replay, ReplayError, replay
 
 
 def endpoint_verdict(scenario_verdicts: Iterable[str]) -> str:
@@ -40,22 +41,79 @@ def endpoint_verdict(scenario_verdicts: Iterable[str]) -> str:
     return PASS
 
 
+def _as_replay(record: dict[str, Any]) -> Replay:
+    """What the legacy system did, presented as if a migrated system had done it."""
+    response = record["legacy_response"]
+    outcome = "success" if response["outcome"] == "no_effect" else response["outcome"]
+    return Replay(response["status_code"], outcome, tuple(response["records"]), None, record["db_state"]["delta"])
+
+
+def _compatible(a: dict[str, Any], b: dict[str, Any]) -> bool:
+    """Whether one answer can satisfy both oracle records.
+
+    If what one legacy page did would pass against the other's record, a migrated
+    system that does the same satisfies both.
+    """
+    return compare(a, _as_replay(b)).verdict != FAIL or compare(b, _as_replay(a)).verdict != FAIL
+
+
+def conflicts(cases: list[tuple[dict[str, Any], dict[str, Any]]]) -> dict[str, list[str]]:
+    """Scenarios whose identical request is expected to give incompatible results.
+
+    One endpoint can replace several legacy pages. Two of its scenarios may then send
+    exactly the same request to the migrated system while the pages they came from
+    did different things. No migrated system can satisfy both, so neither scenario
+    can be judged. Returns, per scenario, the scenarios it conflicts with.
+    """
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for scenario, record in cases:
+        request = json.dumps([scenario["endpoint_id"], scenario["migrated_request"]], sort_keys=True)
+        groups.setdefault(request, []).append(record)
+    found: dict[str, list[str]] = {}
+    for records in groups.values():
+        for a in records:
+            for b in records:
+                if a is not b and not _compatible(a, b):
+                    found.setdefault(a["scenario_id"], []).append(b["scenario_id"])
+    return found
+
+
 def evaluate(config: Config, baselines: dict[str, dbstate.Snapshot]) -> dict[str, Any]:
     """Replay and compare every captured scenario of the benchmark."""
     endpoints: dict[str, dict[str, Any]] = {}
+    injection_probes: list[str] = []
+    cases: list[tuple[dict[str, Any], dict[str, Any]]] = []
     for scenario in scenarios.load_all(config):
+        if scenario["scenario_type"] == "injection":
+            injection_probes.append(scenario["scenario_id"])
+            continue
         stored = config.oracle_dir / f"{scenario['scenario_id']}.json"
         if not stored.is_file():
             continue  # not captured yet: there is no expectation to hold it to
-        record = json.loads(stored.read_text(encoding="utf-8"))
+        cases.append((scenario, json.loads(stored.read_text(encoding="utf-8"))))
+
+    conflicting = conflicts(cases)
+    for scenario, record in cases:
         result = compare(record, replay(config, scenario, record, baselines))
+        verdict, differences, abstentions = result.verdict, list(result.differences), list(result.abstentions)
+        if record["scenario_id"] in conflicting:
+            # The comparison still ran; what it found is kept for the reader, but it
+            # cannot count against the migrated system.
+            verdict, differences = INCONCLUSIVE, []
+            abstentions.append({
+                "where": "scenario",
+                "kind": "conflicting_expectations",
+                "with": sorted(conflicting[record["scenario_id"]]),
+                "detail": "two legacy pages expect different results for the same request to this endpoint",
+                "differences_seen": list(result.differences),
+            })
         endpoints.setdefault(record["endpoint_id"], {"scenarios": []})["scenarios"].append({
             "scenario_id": record["scenario_id"],
             "scenario_type": record["scenario_type"],
-            "verdict": result.verdict,
-            "oracle_record": stored.relative_to(config.root).as_posix(),
-            "differences": list(result.differences),
-            "abstentions": list(result.abstentions),
+            "verdict": verdict,
+            "oracle_record": Path(config.oracle_dir / f"{record['scenario_id']}.json").relative_to(config.root).as_posix(),
+            "differences": differences,
+            "abstentions": abstentions,
         })
     return {
         "benchmark": config.benchmark,
@@ -66,6 +124,7 @@ def evaluate(config: Config, baselines: dict[str, dbstate.Snapshot]) -> dict[str
             }
             for endpoint, entry in sorted(endpoints.items())
         },
+        "injection_probes_not_judged_here": sorted(injection_probes),
     }
 
 
@@ -107,6 +166,8 @@ def _describe(finding: dict[str, Any]) -> str:
     kind = finding["kind"]
     if kind in ("delta_differs", "excluded_field_differs") and "detail" in finding:
         prefix = "excluded field differs: " if kind == "excluded_field_differs" else ""
+        if finding.get("note"):
+            prefix = f"{finding['note']}: "
         return prefix + _describe_delta(finding["detail"])
     if kind == "record_not_reproduced":
         return f"values not reproduced: {json.dumps(finding['values_not_found'], ensure_ascii=False)}"
@@ -114,6 +175,8 @@ def _describe(finding: dict[str, Any]) -> str:
         return f"record the legacy system did not show: {json.dumps(finding['migrated_record'], ensure_ascii=False, default=str)}"
     if kind == "outcome_differs":
         return f"legacy {finding['legacy']}, migrated {finding['migrated']} (status {finding['migrated_status_code']})"
+    if kind == "conflicting_expectations":
+        return f"{finding['detail']} (also: {', '.join(finding['with'])})"
     if kind == "excluded_field_differs" and "field" in finding:
         return f"excluded field '{finding['field']}' differs"
     if kind == "unreadable":
@@ -151,6 +214,8 @@ def main(argv: list[str] | None = None) -> int:
             print(f"      {scenario['verdict']:<13}{scenario['scenario_id']}")
             for finding in (*scenario["differences"], *scenario["abstentions"]):
                 print(f"          {finding['where']}: {_describe(finding)}")
+    if report["injection_probes_not_judged_here"]:
+        print(f"  {len(report['injection_probes_not_judged_here'])} injection probes are judged by their own rubric")
     print(f"report: {path.relative_to(config.root).as_posix()}")
 
     failed = any(entry["verdict"] == FAIL for entry in report["endpoints"].values())

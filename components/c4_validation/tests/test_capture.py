@@ -206,11 +206,30 @@ def test_the_only_table_of_a_page_is_used(config, page):
     assert capture(config, SCENARIO, BASELINES)["legacy_response"]["records"] == [{"Name": "Ram"}]
 
 
-def test_a_page_with_no_table_is_refused_not_recorded_as_empty(config, page):
-    page("<script>alert('No entries found!')</script>")
+def test_a_message_in_place_of_the_expected_records_means_no_data_was_shown(config, page):
+    page("<script>alert('No entries found! Please enter valid details');</script>")
 
-    with pytest.raises(CaptureError, match="0 tables"):
+    response = capture(config, SCENARIO, BASELINES)["legacy_response"]
+
+    assert response["records"] == []
+    assert response["messages"] == ["No entries found! Please enter valid details"]
+    assert response["outcome"] == "no_effect"
+
+
+def test_a_page_with_neither_table_nor_message_is_refused_not_recorded_as_empty(config, page):
+    # The engine cannot tell "no data" from data it is unable to read, so it abstains.
+    page("<div class='result'><span>Ram</span><span>Kumar</span></div>")
+
+    with pytest.raises(CaptureError, match="neither a table nor a message"):
         capture(config, SCENARIO, BASELINES)
+
+
+def test_a_page_that_shows_its_table_is_a_success_even_when_the_table_is_empty(config, page):
+    page("<table><tr><th>Name</th></tr></table>")
+
+    response = capture(config, SCENARIO, BASELINES)["legacy_response"]
+
+    assert (response["records"], response["outcome"]) == ([], "success")
 
 
 def test_several_tables_without_a_pointer_are_refused(config, page):
@@ -247,19 +266,36 @@ def test_an_endpoint_that_shows_no_records_is_captured_with_its_pop_up_message(c
     assert response["messages"] == ["Message sent successfully!"]
 
 
-def test_a_page_that_answers_with_nothing_at_all_is_recorded_as_such(config, page):
-    # What a legacy page does when its write fails silently: no table, no message.
+def test_a_write_that_fails_silently_is_a_request_with_no_effect(config, page):
+    # What a legacy page does when its insert fails: status 200, no table, no message,
+    # no change to the database.
     page("")
 
     response = capture(config, {**SCENARIO, "legacy_table": "none"}, BASELINES)["legacy_response"]
 
-    assert response == {"status_code": 200, "outcome": "success", "records": [], "messages": []}
+    assert response == {"status_code": 200, "outcome": "no_effect", "records": [], "messages": []}
 
 
-def test_a_pop_up_alone_does_not_stand_in_for_a_table_the_scenario_expects(config, page):
-    page(POP_UP)
+def test_a_write_that_changes_the_database_is_a_success_whatever_it_shows(config, monkeypatch):
+    delta = {"contact": {"inserted": [{"name": "Anu"}], "updated": [], "deleted": []}}
+    written = Observation(200, (), delta, (), shown=False)
+    replay_observations(monkeypatch, written, written)
 
-    with pytest.raises(CaptureError, match="0 tables"):
+    assert capture(config, SCENARIO, BASELINES)["legacy_response"]["outcome"] == "success"
+
+
+@pytest.mark.parametrize(("status", "outcome"), [(404, "rejection"), (500, "error")])
+def test_a_status_of_400_or_more_decides_the_outcome_on_its_own(config, monkeypatch, status, outcome):
+    quiet = Observation(status, (), {}, (), shown=False)
+    replay_observations(monkeypatch, quiet, quiet)
+
+    assert capture(config, SCENARIO, BASELINES)["legacy_response"]["outcome"] == outcome
+
+
+def test_whether_records_were_shown_must_be_the_same_in_every_capture(config, monkeypatch):
+    replay_observations(monkeypatch, Observation(200, (), {}, (), shown=True), Observation(200, (), {}, (), shown=False))
+
+    with pytest.raises(CaptureError, match="did not behave the same way"):
         capture(config, SCENARIO, BASELINES)
 
 

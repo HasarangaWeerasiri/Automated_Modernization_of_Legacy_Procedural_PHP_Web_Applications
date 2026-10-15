@@ -1,0 +1,14 @@
+{
+  "scenario_id": "contact_form_injection_name_01",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "name",
+  "endpoint_id": "POST /api/contact",
+  "source_id": "contact_form",
+  "values": {
+    "name": "'",
+    "email": "zachary99@example.com",
+    "contact": "8546936914",
+    "message": "Katherine Barnes"
+  }
+}

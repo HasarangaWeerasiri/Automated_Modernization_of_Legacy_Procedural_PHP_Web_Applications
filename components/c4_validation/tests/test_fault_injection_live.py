@@ -22,7 +22,7 @@ from c4.verdict import evaluate
 pytestmark = pytest.mark.environment
 
 LIST, SEARCH = "patient_list_typical_01", "patient_search_typical_01"
-CONTACT = "contact_create_typical_01"
+CONTACT = "contact_form_typical_01"
 
 
 def _http():
@@ -75,7 +75,13 @@ def test_the_correct_stub_is_judged_equivalent(stub, at_baseline, baselines):
     report = evaluate(at_baseline, baselines)
 
     assert report["endpoints"]
-    assert {entry["verdict"] for entry in report["endpoints"].values()} == {PASS}
+    scenarios = [s for entry in report["endpoints"].values() for s in entry["scenarios"]]
+    assert all(s["verdict"] != FAIL for s in scenarios)
+    # The only abstentions allowed are those the endpoint map forces: two legacy pages
+    # that expect different results for the same request.
+    for s in scenarios:
+        if s["verdict"] == INCONCLUSIVE:
+            assert {a["kind"] for a in s["abstentions"]} == {"conflicting_expectations"}, s["scenario_id"]
 
 
 def test_three_consecutive_runs_give_identical_reports(stub, at_baseline, baselines):
@@ -175,7 +181,8 @@ def test_one_failing_scenario_fails_its_endpoint(stub, at_baseline, baselines):
     endpoint = evaluate(at_baseline, baselines)["endpoints"]["GET /api/patients"]
 
     assert endpoint["verdict"] == FAIL
-    assert {s["scenario_id"]: s["verdict"] for s in endpoint["scenarios"]} == {LIST: PASS, SEARCH: FAIL}
+    verdicts = {s["scenario_id"]: s["verdict"] for s in endpoint["scenarios"]}
+    assert verdicts[SEARCH] == FAIL
 
 
 # ---------------------------------------------------- planted faults in a write

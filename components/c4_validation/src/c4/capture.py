@@ -18,6 +18,18 @@ it carries the legacy request to send. Its `legacy_table` says where the endpoin
 records are on the page: left out, the page must hold exactly one table; a number
 picks one table of several; "none" means the endpoint shows no records, as a form
 submission that only writes to the database does.
+
+The outcome of a legacy request is judged by its effect, not by its status code:
+procedural PHP answers 200 to almost everything, success or failure.
+
+    success    the page showed records, or the database changed
+    no_effect  neither: the page showed only a message, or nothing at all
+    rejection  status 4xx
+    error      status 5xx
+
+A page expected to show records that shows a message instead, such as "No entries
+found", showed no data. A page that shows neither a table nor a message is refused:
+the engine cannot tell "no data" from data it is unable to read.
 """
 
 from __future__ import annotations
@@ -51,6 +63,8 @@ class Observation:
     records: tuple[dict[str, str], ...]
     delta: dict[str, dict[str, list]]
     messages: tuple[str, ...] = ()
+    # Whether the page showed the endpoint's records, even an empty list of them.
+    shown: bool = True
 
 
 def _observe(
@@ -79,9 +93,18 @@ def _observe(
     after = dbstate.snapshot(config.legacy)
 
     tables = extract_tables(response.content)
+    messages = tuple(extract_messages(response.content))
     chosen = scenario.get("legacy_table", "only")
+    shown = chosen != "none"
     if chosen == "none":
         records: tuple[dict[str, str], ...] = ()
+    elif not tables:
+        if not messages:
+            raise CaptureError(
+                f"{scenario['scenario_id']}: the page shows neither a table nor a message, "
+                "so it cannot be told apart from a page whose data could not be read."
+            )
+        records, shown = (), False  # a message in place of the records: no data shown
     elif chosen == "only":
         if len(tables) != 1:
             # Sound-or-abstain: with no table, or several and no pointer to the
@@ -103,7 +126,8 @@ def _observe(
         status_code=response.status_code,
         records=records,
         delta=dbstate.delta(before, after),
-        messages=tuple(extract_messages(response.content)),
+        messages=messages,
+        shown=shown,
     )
 
 
@@ -120,6 +144,7 @@ def _volatile_labels(scenario_id: str, observations: list[Observation]) -> list[
             or not same_shape
             or other.delta != first.delta
             or other.messages != first.messages
+            or other.shown != first.shown
         ):
             # More than single values differ, so there is no stable behaviour to record.
             raise CaptureError(
@@ -135,12 +160,21 @@ def _volatile_labels(scenario_id: str, observations: list[Observation]) -> list[
 def outcome_of(status_code: int) -> str:
     """The class of result a status code stands for.
 
+    Used as it is for the migrated system, whose status codes are deliberate.
     Outcomes are compared, not status codes: a legacy 200 or 302 and a migrated 201
     are the same outcome.
     """
     if status_code < 400:
         return "success"
     return "rejection" if status_code < 500 else "error"
+
+
+def legacy_outcome(observation: Observation) -> str:
+    """The outcome of a legacy request, judged by what it did."""
+    by_status = outcome_of(observation.status_code)
+    if by_status != "success":
+        return by_status
+    return "success" if observation.shown or observation.delta else "no_effect"
 
 
 def capture(
@@ -163,7 +197,7 @@ def capture(
         },
         "legacy_response": {
             "status_code": observed.status_code,
-            "outcome": outcome_of(observed.status_code),
+            "outcome": legacy_outcome(observed),
             "records": list(observed.records),
             # What the page told the user in a pop-up. Kept for the reader; its
             # wording is presentation and is not compared.

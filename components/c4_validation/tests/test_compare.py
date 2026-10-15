@@ -344,3 +344,50 @@ def test_a_matching_database_change_does_not_excuse_a_wrong_response():
 
     assert result.verdict == FAIL
     assert [d["where"] for d in result.differences] == ["response"]
+
+
+# ------------------------------------------------- a legacy request with no effect
+
+
+def nothing(*records, delta=None):
+    return oracle(*records, delta=delta, outcome="no_effect")
+
+
+@pytest.mark.parametrize(("status", "outcome"), [(200, "success"), (404, "rejection"), (422, "rejection")])
+def test_doing_nothing_agrees_with_any_answer_that_also_does_nothing(status, outcome):
+    assert compare(nothing(), migrated(status=status, outcome=outcome)).verdict == PASS
+
+
+def test_a_rejection_without_readable_records_agrees_with_doing_nothing():
+    replayed = migrated(status=404, outcome="rejection", problem="the response has nothing at 'things'")
+
+    assert compare(nothing(), replayed).verdict == PASS
+
+
+def test_a_server_error_does_not_agree_with_doing_nothing():
+    result = compare(nothing(), migrated(status=500, outcome="error"))
+
+    assert result.verdict == FAIL
+    assert result.differences[0]["kind"] == "outcome_differs"
+
+
+def test_returning_records_where_the_legacy_system_showed_none_fails():
+    assert compare(nothing(), migrated(ram)).verdict == FAIL
+
+
+def test_writing_where_the_legacy_system_wrote_nothing_fails_and_says_so():
+    result = compare(nothing(), migrated(status=201, delta=inserted("contact", {"name": "O'Brien"})))
+
+    assert result.verdict == FAIL
+    (difference,) = result.differences
+    assert difference["where"] == "database"
+    assert difference["note"] == "the legacy system changed nothing for this input; the migrated system did"
+
+
+def test_a_rejection_of_a_request_the_legacy_system_completed_fails():
+    record = oracle(delta=inserted("contact", {"name": "Anu"}))
+
+    result = compare(record, migrated(status=422, outcome="rejection", problem="no records"))
+
+    assert result.verdict == FAIL
+    assert [d["kind"] for d in result.differences] == ["outcome_differs", "delta_differs"]

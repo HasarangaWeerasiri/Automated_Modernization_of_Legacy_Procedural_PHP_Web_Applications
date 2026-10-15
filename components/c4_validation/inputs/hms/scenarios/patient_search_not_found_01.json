@@ -1,0 +1,11 @@
+{
+  "scenario_id": "patient_search_not_found_01",
+  "scenario_type": "typical",
+  "case": "not_found",
+  "parameter": "contact",
+  "endpoint_id": "GET /api/patients",
+  "source_id": "patient_search",
+  "values": {
+    "contact": "0000000000"
+  }
+}

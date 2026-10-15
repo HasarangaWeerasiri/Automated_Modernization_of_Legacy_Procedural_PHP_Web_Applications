@@ -123,15 +123,25 @@ def _compare_response(record: dict[str, Any], replayed: Replay) -> tuple[list, l
     abstentions: list[dict[str, Any]] = []
     legacy = record["legacy_response"]
 
-    if replayed.outcome != legacy["outcome"]:
+    if legacy["outcome"] == "no_effect":
+        # The legacy system did nothing. Any migrated answer that also does nothing
+        # agrees, whether 2xx or a deliberate 4xx rejection; a server error does not.
+        agrees = replayed.outcome != "error"
+    else:
+        agrees = replayed.outcome == legacy["outcome"]
+    if not agrees:
         differences.append({
             "where": "response", "kind": "outcome_differs",
             "legacy": legacy["outcome"], "migrated": replayed.outcome,
             "migrated_status_code": replayed.status_code,
         })
     if replayed.records is None:
-        differences.append({"where": "response", "kind": "unreadable", "detail": replayed.problem})
-        return differences, abstentions
+        if replayed.outcome == "success":
+            differences.append({"where": "response", "kind": "unreadable", "detail": replayed.problem})
+            return differences, abstentions
+        # A rejection or error carries no records; whether that outcome is right was
+        # decided above.
+        replayed = Replay(replayed.status_code, replayed.outcome, (), None, replayed.delta)
 
     excluded = {
         entry["field"] for entry in record["excluded_fields"] if entry["scope"] == "response"
@@ -234,7 +244,10 @@ def _compare_database(record: dict[str, Any], replayed: Replay) -> tuple[list, l
     kept = _plain_delta(legacy, excluded)
     compared = diff(kept, _plain_delta(migrated, excluded))
     if compared:
-        return [{"where": "database", "kind": "delta_differs", "detail": json.loads(compared.to_json())}], []
+        difference = {"where": "database", "kind": "delta_differs", "detail": json.loads(compared.to_json())}
+        if not legacy:
+            difference["note"] = "the legacy system changed nothing for this input; the migrated system did"
+        return [difference], []
     rows = [row for changes in kept.values() for row in (*changes["inserted"], *changes["deleted"])]
     if rows and not any(rows) and not any(changes["updated"] for changes in kept.values()):
         return [], [{"where": "database", "kind": "nothing_to_compare"}]

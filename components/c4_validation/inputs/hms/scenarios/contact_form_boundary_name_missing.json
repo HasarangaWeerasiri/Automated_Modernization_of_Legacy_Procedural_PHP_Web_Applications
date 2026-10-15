@@ -1,0 +1,13 @@
+{
+  "scenario_id": "contact_form_boundary_name_missing",
+  "scenario_type": "boundary",
+  "case": "missing",
+  "parameter": "name",
+  "endpoint_id": "POST /api/contact",
+  "source_id": "contact_form",
+  "values": {
+    "email": "zachary99@example.com",
+    "contact": "8546936914",
+    "message": "Katherine Barnes"
+  }
+}

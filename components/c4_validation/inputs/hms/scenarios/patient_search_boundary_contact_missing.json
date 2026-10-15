@@ -1,0 +1,9 @@
+{
+  "scenario_id": "patient_search_boundary_contact_missing",
+  "scenario_type": "boundary",
+  "case": "missing",
+  "parameter": "contact",
+  "endpoint_id": "GET /api/patients",
+  "source_id": "patient_search",
+  "values": {}
+}

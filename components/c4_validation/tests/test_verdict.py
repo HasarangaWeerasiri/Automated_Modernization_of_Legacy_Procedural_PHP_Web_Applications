@@ -70,6 +70,8 @@ def outcomes(monkeypatch):
         verdict_module, "compare",
         lambda record, replayed: decided.get(record["scenario_id"], Comparison(PASS, (), ())),
     )
+    # The scenarios written here hold no oracle content to check for conflicts.
+    monkeypatch.setattr(verdict_module, "conflicts", lambda cases: {})
     return decided
 
 
@@ -151,3 +153,80 @@ def test_a_database_difference_is_described_by_table_row_and_column(detail, expe
     finding = {"where": "database", "kind": "delta_differs", "detail": detail}
 
     assert _describe(finding) == expected
+
+
+# -------------------------------------------------------- conflicting expectations
+
+from c4.verdict import conflicts  # noqa: E402
+
+
+def _case(scenario_id, request, *, outcome="success", records=(), delta=None):
+    scenario = {"scenario_id": scenario_id, "endpoint_id": "GET /api/things", "migrated_request": request}
+    record = {
+        "scenario_id": scenario_id,
+        "legacy_response": {"status_code": 200, "outcome": outcome, "records": list(records), "messages": []},
+        "db_state": {"baseline_fingerprint": "sha256:x", "delta": delta or {}},
+        "excluded_fields": [],
+    }
+    return scenario, record
+
+
+ALL = {"method": "GET", "path": "/api/things", "params": {}, "body": None, "records_at": "things"}
+ONE = {**ALL, "params": {"q": "ram"}}
+EVERYONE = [{"Name": "Ram"}, {"Name": "Alia"}]
+
+
+def test_the_same_request_expected_to_show_everything_and_nothing_is_a_conflict():
+    found = conflicts([
+        _case("list_01", ALL, records=EVERYONE),
+        _case("search_missing", ALL, outcome="no_effect"),
+    ])
+
+    assert found == {"list_01": ["search_missing"], "search_missing": ["list_01"]}
+
+
+def test_different_requests_never_conflict():
+    assert conflicts([
+        _case("list_01", ALL, records=EVERYONE),
+        _case("search_01", ONE, outcome="no_effect"),
+    ]) == {}
+
+
+def test_two_pages_that_agree_on_the_data_do_not_conflict():
+    # One page shows more columns than the other: an answer with all of them satisfies both.
+    assert conflicts([
+        _case("panel_01", ALL, records=[{"Name": "Ram", "Age": "30"}, {"Name": "Alia", "Age": "25"}]),
+        _case("list_01", ALL, records=EVERYONE),
+    ]) == {}
+
+
+def test_two_pages_that_write_differently_for_the_same_request_conflict():
+    written = {"things": {"inserted": [{"name": "Ram"}], "updated": [], "deleted": []}}
+
+    found = conflicts([
+        _case("form_a", ALL, delta=written),
+        _case("form_b", ALL, outcome="no_effect"),
+    ])
+
+    assert set(found) == {"form_a", "form_b"}
+
+
+def test_a_conflict_makes_both_scenarios_inconclusive_and_keeps_what_was_seen(config, outcomes, monkeypatch):
+    _add(config, "list_01", "GET /api/things")
+    _add(config, "search_01", "GET /api/things")
+    difference = {"where": "response", "kind": "unexpected_record", "migrated_record": {"id": 9}}
+    outcomes["search_01"] = Comparison(FAIL, (difference,), ())
+    monkeypatch.setattr(verdict_module, "conflicts", lambda cases: {"list_01": ["search_01"], "search_01": ["list_01"]})
+
+    endpoint = evaluate(config, {})["endpoints"]["GET /api/things"]
+
+    assert endpoint["verdict"] == INCONCLUSIVE
+    search = endpoint["scenarios"][1]
+    assert (search["verdict"], search["differences"]) == (INCONCLUSIVE, [])
+    (abstention,) = search["abstentions"]
+    assert abstention["kind"] == "conflicting_expectations"
+    assert abstention["with"] == ["list_01"]
+    assert abstention["differences_seen"] == [difference]
+    assert _describe(abstention) == (
+        "two legacy pages expect different results for the same request to this endpoint (also: list_01)"
+    )

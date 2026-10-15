@@ -20,7 +20,7 @@ import os
 from typing import Any, Callable
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import create_engine, text
 
 app = FastAPI(title="C4 stub API")
@@ -112,10 +112,13 @@ def patients(contact: str | None = None) -> dict[str, Patients]:
 
 
 class ContactMessage(BaseModel):
-    name: str
-    email: str
-    contact: str
-    message: str
+    # As on the legacy page: a field that is not sent is stored as an empty value,
+    # and a value longer than its column is refused, so nothing is stored. The legacy
+    # page refuses it silently; this endpoint says so with a 422.
+    name: str = Field("", max_length=30)
+    email: str = ""
+    contact: str = Field("", max_length=10)
+    message: str = Field("", max_length=200)
 
 
 @app.post("/api/contact", status_code=201)
