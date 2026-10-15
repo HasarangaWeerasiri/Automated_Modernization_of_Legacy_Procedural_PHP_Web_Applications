@@ -308,6 +308,10 @@ def evaluate_app(app: str, out_dir: Path, execute: bool) -> dict:
     return {"app": app, "sites": len(results), "verdicts": counts, "redacted": redact, "results": results}
 
 
+def benign_inputs(inputs: dict) -> dict:
+    return {k: ({kk: "1" for kk in v} if isinstance(v, dict) else "1") for k, v in inputs.items()}
+
+
 def run_case(app, entry, name, inputs, function, engines, execute, redact) -> dict:
     raw = legacy(app, entry, inputs, "raw", execute=False)
     if raw.get("status") != "built":
@@ -330,8 +334,13 @@ def run_case(app, entry, name, inputs, function, engines, execute, redact) -> di
 
     legacy_result = legacy(app, entry, inputs, "legacy", execute=True, database=f"c3_e1_{app}_legacy")
     legacy_result["checksums_after"] = checksums(legacy_engine)
+    if name.startswith("hostile"):
+        # Same statement with a harmless value: lets compare.py see whether the
+        # payload changed the SQL structure (build only, no database).
+        legacy_result["benign_sql"] = legacy(app, entry, benign_inputs(inputs), "legacy", execute=False).get("sql")
     migrated_result = migrated_runner.call(function, migrated_engine, raw["variables"], sources, raw.get("arrays"))
     migrated_result["checksums_after"] = checksums(migrated_engine)
+    migrated_result["state_changed"] = before != migrated_result["checksums_after"]
 
     record = compare.compare_case(name, legacy_result, migrated_result, inputs)
     record["migrated_state_changed"] = before != migrated_result["checksums_after"]

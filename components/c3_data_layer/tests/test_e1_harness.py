@@ -164,9 +164,13 @@ def test_compare_writes_use_affected_rows_and_table_state():
 
 def test_compare_hostile_and_inconclusive_cases():
     payload = {"$_GET['id']": "' OR '1'='1"}
-    legacy = _legacy([["1"], ["2"]], sql="SELECT a FROM t WHERE id = '' OR '1'='1'")
+    legacy = _legacy([["1"], ["2"]], sql="SELECT a FROM t WHERE id = '' OR '1'='1'",
+                     benign_sql="SELECT a FROM t WHERE id = '1'")
 
     assert compare.compare_case("hostile_quote", legacy, _migrated([]), payload)["verdict"] == "LEGACY_INJECTABLE"
+    # Without structural evidence a difference on a hostile case is a FAIL, not an injection.
+    no_evidence = _legacy([["1"], ["2"]], sql="SELECT a FROM t WHERE id = '' OR '1'='1'")
+    assert compare.compare_case("hostile_quote", no_evidence, _migrated([]), payload)["verdict"] == "FAIL"
     assert compare.compare_case("normal", {"status": "sql_error", "error": "1054"}, _migrated([]), {})["verdict"] == "INCONCLUSIVE"
     assert compare.compare_case("normal", _legacy([]), {"status": "unbound_parameter", "missing": ["x"]}, {})["verdict"] == "INCONCLUSIVE"
     assert compare.compare_case("normal", _legacy([["1"]]), {"status": "error", "error": "boom"}, {})["verdict"] == "FAIL"
@@ -199,3 +203,39 @@ def test_generated_function_is_called_with_bound_php_variables(tmp_path):
     assert migrated_runner.call(function, engine, {"name": "b", "other": 1})["rows"] == [[2]]
     assert migrated_runner.call(function, engine, {})["status"] == "unbound_parameter"
     engine.dispose()
+
+
+def test_structure_change_ignores_literal_contents():
+    benign = "INSERT INTO c (a) VALUES ('1')"
+
+    assert not compare.structure_changed("INSERT INTO c (a) VALUES ('1; DROP TABLE x;-- ')", benign)
+    assert compare.structure_changed("INSERT INTO c (a) VALUES ('' OR '1'='1')", benign)
+    assert compare.structure_changed("UPDATE t SET s = 0 WHERE id = 1; DROP TABLE x;-- ", "UPDATE t SET s = 0 WHERE id = 1")
+    assert compare.structure_changed("SELECT a FROM t WHERE id = 'abc", "SELECT a FROM t WHERE id = '1'")  # broken quote
+
+
+def test_injected_legacy_and_rejected_generated_side():
+    payload = {"$_GET['ID']": "' OR '1'='1"}
+    legacy = {"status": "executed", "sql": "UPDATE t SET s='0' WHERE ID = '' OR '1'='1'",
+              "benign_sql": "UPDATE t SET s='0' WHERE ID = '1'", "affected_rows": 12, "insert_id": 0,
+              "checksums_after": {"t": 9}}
+    rejected = {"status": "error", "error": "OperationalError: (1292, 'Truncated incorrect DOUBLE value')",
+                "state_changed": False, "checksums_after": {"t": 1}}
+
+    record = compare.compare_case("hostile_quote", legacy, rejected, payload)
+    assert record["verdict"] == "LEGACY_INJECTABLE" and record["migrated_error_code"] == 1292
+
+    # If the generated side changed the database, it is a FAIL.
+    assert compare.compare_case("hostile_quote", legacy, rejected | {"state_changed": True}, payload)["verdict"] == "FAIL"
+
+
+def test_both_rejected_without_injection_stays_inconclusive_with_codes():
+    legacy = {"status": "sql_error", "sql": "INSERT INTO c (a) VALUES ('1; DROP TABLE x;-- ')",
+              "benign_sql": "INSERT INTO c (a) VALUES ('1')", "error": "1406: Data too long for column 'a'"}
+    migrated = {"status": "error", "error": "DataError: (1406, \"Data too long for column 'a'\")", "state_changed": False}
+
+    record = compare.compare_case("hostile_stacked", legacy, migrated, {"$x": "1; DROP TABLE x;-- "})
+
+    assert record["verdict"] == "INCONCLUSIVE"
+    assert record["both_rejected"] and record["same_error_code"]
+    assert (record["legacy_error_code"], record["migrated_error_code"]) == (1406, 1406)

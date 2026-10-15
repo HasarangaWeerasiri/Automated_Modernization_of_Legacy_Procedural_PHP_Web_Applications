@@ -14,6 +14,45 @@ import re
 ORDER_BY = re.compile(r"\border\s+by\b", re.IGNORECASE)
 
 
+MYSQL_CODE = re.compile(r"^\s*(\d{4})\b|\((\d{4}),")
+
+
+def sql_shape(sql: str | None):
+    """Token types of a SQL string with literal contents ignored (None if it does not tokenize)."""
+
+    if sql is None:
+        return None
+    try:
+        from sqlglot.dialects.mysql import MySQL
+        from sqlglot.tokens import TokenType
+
+        literals = {TokenType.STRING, TokenType.NUMBER, TokenType.NATIONAL_STRING, TokenType.HEX_STRING,
+                    TokenType.BIT_STRING, TokenType.BYTE_STRING}
+        return [("LIT" if t.token_type in literals else t.token_type.name) for t in MySQL().tokenize(sql)]
+    except Exception:
+        return None
+
+
+def structure_changed(hostile_sql: str | None, benign_sql: str | None) -> bool:
+    """True when the hostile value changed the legacy SQL structure, not just a literal.
+
+    benign_sql is the same legacy statement built with a harmless value ("1")
+    for every input. A hostile statement that no longer tokenizes counts as changed.
+    """
+
+    if hostile_sql is None or benign_sql is None:
+        return False
+    hostile, benign = sql_shape(hostile_sql), sql_shape(benign_sql)
+    if benign is None:
+        return False
+    return hostile is None or hostile != benign
+
+
+def error_code(text: str | None) -> int | None:
+    match = MYSQL_CODE.search(text or "")
+    return int(match.group(1) or match.group(2)) if match else None
+
+
 def mysql_text(value):
     """A driver value as the MySQL text protocol would print it."""
 
@@ -86,19 +125,36 @@ def compare_case(case: str, legacy: dict, migrated: dict, inputs: dict) -> dict:
         return record
 
     record["legacy_payload_verbatim"] = hostile and payload_verbatim(legacy.get("sql"), inputs)
+    # Injection needs evidence: the payload changed the SQL structure, not only a literal.
+    record["legacy_structure_changed"] = hostile and structure_changed(legacy.get("sql"), legacy.get("benign_sql"))
+    injected = record["legacy_structure_changed"]
+    record["legacy_error_code"] = error_code(legacy.get("error")) if legacy_status == "sql_error" else None
+    record["migrated_error_code"] = error_code(migrated.get("error")) if migrated.get("status") == "error" else None
 
     if legacy_status == "sql_error":
-        if hostile and record["legacy_payload_verbatim"]:
+        if injected:
             record["verdict"] = "LEGACY_INJECTABLE"
-            record["reason"] = f"hostile input changed the legacy SQL (MySQL error {legacy.get('error')}); generated side: {migrated.get('status')}"
+            record["reason"] = (f"hostile input changed the legacy SQL structure (MySQL error {legacy.get('error')}); "
+                                f"generated side: {migrated.get('status')}")
         else:
+            both = migrated.get("status") == "error"
             record["verdict"] = "INCONCLUSIVE"
-            record["reason"] = f"legacy SQL error: {legacy.get('error')}"
+            record["both_rejected"] = both
+            record["same_error_code"] = both and record["legacy_error_code"] == record["migrated_error_code"]
+            record["reason"] = (f"legacy SQL error: {legacy.get('error')}"
+                                + (f"; generated side also rejected (MySQL {record['migrated_error_code']})" if both else ""))
         return record
 
     if migrated.get("status") == "error":
-        record["verdict"] = "FAIL"
-        record["reason"] = f"generated code raised {migrated.get('error')}"
+        if injected and not migrated.get("state_changed"):
+            # Legacy ran an injected statement; the generated code kept the
+            # payload a value, MySQL rejected it and nothing changed.
+            record["verdict"] = "LEGACY_INJECTABLE"
+            record["reason"] = ("hostile input changed the legacy SQL structure and it executed; generated code bound it "
+                                f"as a value, MySQL rejected it (error {record['migrated_error_code']}), database unchanged")
+        else:
+            record["verdict"] = "FAIL"
+            record["reason"] = f"generated code raised {migrated.get('error')}"
         return record
 
     ordered = bool(ORDER_BY.search(legacy.get("sql") or ""))
@@ -131,7 +187,7 @@ def compare_case(case: str, legacy: dict, migrated: dict, inputs: dict) -> dict:
 
     if not record["differences"]:
         record["verdict"] = "PASS"
-    elif hostile and record["legacy_payload_verbatim"]:
+    elif injected:
         record["verdict"] = "LEGACY_INJECTABLE"
         record["reason"] = "hostile input changed the legacy SQL; generated code bound it as a value"
     else:
