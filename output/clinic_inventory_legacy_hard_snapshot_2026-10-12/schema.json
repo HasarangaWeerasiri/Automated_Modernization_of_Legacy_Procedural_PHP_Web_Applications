@@ -1,0 +1,263 @@
+{
+    "tables": [
+        {
+            "name": "departments",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "name",
+                    "data_type": "VARCHAR(100)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "code",
+                    "data_type": "VARCHAR(20)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": []
+        },
+        {
+            "name": "patients",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "department_id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "full_name",
+                    "data_type": "VARCHAR(120)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "email",
+                    "data_type": "VARCHAR(160)",
+                    "nullable": true,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "phone",
+                    "data_type": "VARCHAR(25)",
+                    "nullable": true,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "created_at",
+                    "data_type": "DATETIME",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": [
+                {
+                    "column": "department_id",
+                    "referenced_table": "departments",
+                    "referenced_column": "id"
+                }
+            ]
+        },
+        {
+            "name": "doctors",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "department_id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "full_name",
+                    "data_type": "VARCHAR(120)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "hourly_rate",
+                    "data_type": "DECIMAL(10,2)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "active",
+                    "data_type": "TINYINT(1)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": "1"
+                }
+            ],
+            "foreign_keys": [
+                {
+                    "column": "department_id",
+                    "referenced_table": "departments",
+                    "referenced_column": "id"
+                }
+            ]
+        },
+        {
+            "name": "appointments",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "patient_id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "doctor_id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "booked_at",
+                    "data_type": "DATETIME",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "status",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": "'pending'"
+                },
+                {
+                    "name": "fee",
+                    "data_type": "DECIMAL(10,2)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": [
+                {
+                    "column": "patient_id",
+                    "referenced_table": "patients",
+                    "referenced_column": "id"
+                },
+                {
+                    "column": "doctor_id",
+                    "referenced_table": "doctors",
+                    "referenced_column": "id"
+                }
+            ]
+        },
+        {
+            "name": "payments",
+            "columns": [
+                {
+                    "name": "id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": true,
+                    "auto_increment": true,
+                    "default": null
+                },
+                {
+                    "name": "appointment_id",
+                    "data_type": "INT",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "amount",
+                    "data_type": "DECIMAL(10,2)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "paid_at",
+                    "data_type": "DATETIME",
+                    "nullable": true,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                },
+                {
+                    "name": "method",
+                    "data_type": "VARCHAR(30)",
+                    "nullable": false,
+                    "primary_key": false,
+                    "auto_increment": false,
+                    "default": null
+                }
+            ],
+            "foreign_keys": [
+                {
+                    "column": "appointment_id",
+                    "referenced_table": "appointments",
+                    "referenced_column": "id"
+                }
+            ]
+        }
+    ]
+}

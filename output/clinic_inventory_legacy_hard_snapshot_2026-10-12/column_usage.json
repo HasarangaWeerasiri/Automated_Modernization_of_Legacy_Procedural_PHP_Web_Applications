@@ -1,0 +1,364 @@
+[
+    {
+        "query_id": "Q001",
+        "operation": "SELECT",
+        "tables": [
+            "patients"
+        ],
+        "read_columns": [
+            "id",
+            "full_name",
+            "email"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\01_list_patients.php",
+        "source_line": 4,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "operation": "SELECT",
+        "tables": [
+            "patients"
+        ],
+        "read_columns": [
+            "id",
+            "full_name",
+            "email"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\02_find_patient.php",
+        "source_line": 5,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q003",
+        "operation": "INSERT",
+        "tables": [
+            "patients"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "department_id",
+            "full_name",
+            "email",
+            "created_at"
+        ],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\03_add_patient.php",
+        "source_line": 8,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q004",
+        "operation": "UPDATE",
+        "tables": [
+            "patients"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "phone"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\04_update_contact.php",
+        "source_line": 8,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q005",
+        "operation": "DELETE",
+        "tables": [
+            "payments"
+        ],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\05_delete_payment.php",
+        "source_line": 5,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q006",
+        "operation": "SELECT",
+        "tables": [
+            "patients"
+        ],
+        "read_columns": [
+            "id",
+            "full_name"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "full_name"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\06_search_like.php",
+        "source_line": 5,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q007",
+        "operation": "SELECT",
+        "tables": [
+            "appointments"
+        ],
+        "read_columns": [
+            "id",
+            "booked_at"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "status"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\07_literal_predicate.php",
+        "source_line": 4,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q008",
+        "operation": "SELECT",
+        "tables": [
+            "appointments",
+            "patients",
+            "doctors"
+        ],
+        "read_columns": [
+            "id",
+            "full_name"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\08_join_appointments.php",
+        "source_line": 6,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q009",
+        "operation": "SELECT",
+        "tables": [
+            "appointments"
+        ],
+        "read_columns": [
+            "doctor_id",
+            "fee"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\09_group_totals.php",
+        "source_line": 5,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q010",
+        "operation": "SELECT",
+        "tables": [
+            "patients",
+            "appointments"
+        ],
+        "read_columns": [
+            "id",
+            "full_name"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "id",
+            "patient_id",
+            "status"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\10_subquery.php",
+        "source_line": 5,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q011",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\11_in_values.php",
+        "source_line": 5,
+        "status": "UNRESOLVED",
+        "reason": "Dynamic value represents an SQL IN-list fragment rather than a scalar value."
+    },
+    {
+        "query_id": "Q012",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\12_order_by.php",
+        "source_line": 5,
+        "status": "UNRESOLVED",
+        "reason": "Dynamic value occurs in a structural ORDER BY position."
+    },
+    {
+        "query_id": "Q013",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\13_dynamic_table.php",
+        "source_line": 5,
+        "status": "UNRESOLVED",
+        "reason": "Dynamic table identifier cannot be parameterized safely."
+    },
+    {
+        "query_id": "Q014",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\14_branch_query.php",
+        "source_line": 10,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q015",
+        "operation": "SELECT",
+        "tables": [
+            "doctors"
+        ],
+        "read_columns": [
+            "id",
+            "full_name"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "department_id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\15_cross_file.php",
+        "source_line": 6,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q016",
+        "operation": "UNKNOWN",
+        "tables": [],
+        "read_columns": [],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\16_conditional_concat.php",
+        "source_line": 8,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q017",
+        "operation": "UPDATE",
+        "tables": [
+            "appointments"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "fee"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\17_update_arithmetic.php",
+        "source_line": 6,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q018",
+        "operation": "SELECT",
+        "tables": [
+            "doctors"
+        ],
+        "read_columns": [
+            "id",
+            "full_name",
+            "hourly_rate"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "active",
+            "hourly_rate"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\18_multi_condition.php",
+        "source_line": 5,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q019",
+        "operation": "SELECT",
+        "tables": [
+            "patients"
+        ],
+        "read_columns": [
+            "id",
+            "full_name"
+        ],
+        "write_columns": [],
+        "filter_columns": [],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\19_limit_offset.php",
+        "source_line": 6,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q020",
+        "operation": "UPDATE",
+        "tables": [
+            "appointments",
+            "doctors"
+        ],
+        "read_columns": [],
+        "write_columns": [
+            "fee"
+        ],
+        "filter_columns": [
+            "id"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\20_cross_table_update.php",
+        "source_line": 6,
+        "status": "ANALYZED",
+        "reason": null
+    },
+    {
+        "query_id": "Q021",
+        "operation": "SELECT",
+        "tables": [
+            "patients"
+        ],
+        "read_columns": [
+            "id",
+            "full_name"
+        ],
+        "write_columns": [],
+        "filter_columns": [
+            "full_name"
+        ],
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\21_quoted_literal.php",
+        "source_line": 4,
+        "status": "ANALYZED",
+        "reason": null
+    }
+]

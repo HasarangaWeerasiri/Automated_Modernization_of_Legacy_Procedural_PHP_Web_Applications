@@ -1,0 +1,383 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\01_list_patients.php",
+        "source_line": 4,
+        "executor": "mysqli_query",
+        "sql_argument": "\"SELECT id, full_name, email FROM patients\"",
+        "recovered_sql": "SELECT id, full_name, email FROM patients",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\02_find_patient.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "sql_argument": "\"SELECT id, full_name, email FROM patients WHERE id = '{$id}'\"",
+        "recovered_sql": "SELECT id, full_name, email FROM patients WHERE id = '{{id}}'",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "id"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\03_add_patient.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "INSERT INTO patients (department_id, full_name, email, created_at) VALUES ({{department}}, '{{name}}', '{{email}}', '2026-02-10 09:00:00')",
+        "operation": "INSERT",
+        "dynamic_variables": [
+            "department",
+            "name",
+            "email"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\04_update_contact.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "UPDATE patients SET phone = '{{phone}}' WHERE id = {{id}}",
+        "operation": "UPDATE",
+        "dynamic_variables": [
+            "phone",
+            "id"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q005",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\05_delete_payment.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "sql_argument": "\"DELETE FROM payments WHERE id = {$id}\"",
+        "recovered_sql": "DELETE FROM payments WHERE id = {{id}}",
+        "operation": "DELETE",
+        "dynamic_variables": [
+            "id"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q006",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\06_search_like.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "sql_argument": "\"SELECT id, full_name FROM patients WHERE full_name LIKE '%{$q}%'\"",
+        "recovered_sql": "SELECT id, full_name FROM patients WHERE full_name LIKE '%{{q}}%'",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "q"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q007",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\07_literal_predicate.php",
+        "source_line": 4,
+        "executor": "mysqli_query",
+        "sql_argument": "\"SELECT id, booked_at FROM appointments WHERE status = 'confirmed'\"",
+        "recovered_sql": "SELECT id, booked_at FROM appointments WHERE status = 'confirmed'",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q008",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\08_join_appointments.php",
+        "source_line": 6,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT a.id, p.full_name, d.full_name AS doctor_name FROM appointments a JOIN patients p ON p.id = a.patient_id JOIN doctors d ON d.id = a.doctor_id WHERE p.id = {{patient}}",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "patient"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q009",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\09_group_totals.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT doctor_id, COUNT(*) AS total, SUM(fee) AS fees FROM appointments GROUP BY doctor_id HAVING COUNT(*) >= 1",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q010",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\10_subquery.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, full_name FROM patients WHERE id IN (SELECT patient_id FROM appointments WHERE status = 'confirmed')",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q011",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\11_in_values.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "sql_argument": "\"SELECT id, full_name FROM patients WHERE id IN ({$ids})\"",
+        "recovered_sql": "SELECT id, full_name FROM patients WHERE id IN ({{ids}})",
+        "operation": null,
+        "dynamic_variables": [
+            "ids"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "STRUCTURAL",
+        "reason": "Dynamic value represents an SQL IN-list fragment rather than a scalar value."
+    },
+    {
+        "query_id": "Q012",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\12_order_by.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "sql_argument": "\"SELECT id, full_name FROM patients ORDER BY {$sort}\"",
+        "recovered_sql": "SELECT id, full_name FROM patients ORDER BY {{sort}}",
+        "operation": null,
+        "dynamic_variables": [
+            "sort"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "STRUCTURAL",
+        "reason": "Dynamic value occurs in a structural ORDER BY position."
+    },
+    {
+        "query_id": "Q013",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\13_dynamic_table.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "sql_argument": "\"SELECT id FROM {$table} WHERE id = 1\"",
+        "recovered_sql": "SELECT id FROM {{table}} WHERE id = 1",
+        "operation": null,
+        "dynamic_variables": [
+            "table"
+        ],
+        "status": "UNRESOLVED",
+        "reason_code": "STRUCTURAL",
+        "reason": "Dynamic table identifier cannot be parameterized safely."
+    },
+    {
+        "query_id": "Q014",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\14_branch_query.php",
+        "source_line": 10,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, full_name FROM doctors",
+        "operation": null,
+        "dynamic_variables": [],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow.",
+        "sql_variants": [
+            {
+                "source_line": 6,
+                "control_flow": [
+                    "IF"
+                ],
+                "sql": "SELECT id, full_name FROM doctors WHERE active = 1"
+            },
+            {
+                "source_line": 8,
+                "control_flow": [
+                    "ELSE",
+                    "IF"
+                ],
+                "sql": "SELECT id, full_name FROM doctors"
+            }
+        ]
+    },
+    {
+        "query_id": "Q015",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\15_cross_file.php",
+        "source_line": 6,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, full_name FROM doctors WHERE department_id = {{departmentId}}",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "departmentId"
+        ],
+        "binding_plan": [
+            {
+                "parameter": "departmentId",
+                "source": "_GET",
+                "key": "department_id",
+                "fallback": "1",
+                "fallback_policy": "null_coalescing",
+                "binding_type": "scalar",
+                "requires_validation": true
+            }
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null,
+        "cross_file_diagnostics": {
+            "function_name": "makeDoctorQuery",
+            "function_source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\query_factory.php",
+            "resolution_status": "DIAGNOSTIC_ONLY",
+            "binding_plan": [
+                {
+                    "parameter": "departmentId",
+                    "source": "_GET",
+                    "key": "department_id",
+                    "fallback": "1",
+                    "fallback_policy": "null_coalescing",
+                    "binding_type": "scalar",
+                    "requires_validation": true
+                }
+            ],
+            "sql_template": "SELECT id, full_name FROM doctors WHERE department_id = {{departmentId}}",
+            "parameter_bindings": [
+                {
+                    "parameter": "departmentId",
+                    "argument": {
+                        "expression": "$_GET['department_id'] ?? '1'",
+                        "kind": "COALESCE",
+                        "input_source": "_GET",
+                        "input_key": "department_id",
+                        "default_expression": "'1'"
+                    }
+                }
+            ],
+            "requires_include_validation": false,
+            "safe_for_conversion": false
+        }
+    },
+    {
+        "query_id": "Q016",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\16_conditional_concat.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, full_name FROM patients WHERE 1=1 AND department_id = {{UNRESOLVED:$_GET['department_id']}}",
+        "operation": null,
+        "dynamic_variables": [],
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow.",
+        "sql_variants": [
+            {
+                "source_line": 4,
+                "control_flow": [],
+                "sql": "SELECT id, full_name FROM patients WHERE 1=1",
+                "fully_supported": true
+            },
+            {
+                "source_line": 6,
+                "control_flow": [
+                    "IF"
+                ],
+                "sql": "SELECT id, full_name FROM patients WHERE 1=1 AND department_id = {{UNRESOLVED:$_GET['department_id']}}",
+                "fully_supported": false
+            }
+        ]
+    },
+    {
+        "query_id": "Q017",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\17_update_arithmetic.php",
+        "source_line": 6,
+        "executor": "mysqli_query",
+        "sql_argument": "\"UPDATE appointments SET fee = fee + {$delta} WHERE id = {$id}\"",
+        "recovered_sql": "UPDATE appointments SET fee = fee + {{delta}} WHERE id = {{id}}",
+        "operation": "UPDATE",
+        "dynamic_variables": [
+            "delta",
+            "id"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q018",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\18_multi_condition.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "sql_argument": "\"SELECT id, full_name, hourly_rate FROM doctors WHERE active = 1 AND hourly_rate >= {$minimum}\"",
+        "recovered_sql": "SELECT id, full_name, hourly_rate FROM doctors WHERE active = 1 AND hourly_rate >= {{minimum}}",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "minimum"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q019",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\19_limit_offset.php",
+        "source_line": 6,
+        "executor": "mysqli_query",
+        "sql_argument": "\"SELECT id, full_name FROM patients LIMIT {$limit} OFFSET {$offset}\"",
+        "recovered_sql": "SELECT id, full_name FROM patients LIMIT {{limit}} OFFSET {{offset}}",
+        "operation": "SELECT",
+        "dynamic_variables": [
+            "limit",
+            "offset"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q020",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\20_cross_table_update.php",
+        "source_line": 6,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "UPDATE appointments a JOIN doctors d ON d.id = a.doctor_id SET a.fee = d.hourly_rate WHERE a.id = {{id}}",
+        "operation": "UPDATE",
+        "dynamic_variables": [
+            "id"
+        ],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    },
+    {
+        "query_id": "Q021",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\21_quoted_literal.php",
+        "source_line": 4,
+        "executor": "mysqli_query",
+        "sql_argument": "\"SELECT id, full_name FROM patients WHERE full_name = 'O''Brien'\"",
+        "recovered_sql": "SELECT id, full_name FROM patients WHERE full_name = 'O''Brien'",
+        "operation": "SELECT",
+        "dynamic_variables": [],
+        "status": "RECOVERED",
+        "reason_code": null,
+        "reason": null
+    }
+]

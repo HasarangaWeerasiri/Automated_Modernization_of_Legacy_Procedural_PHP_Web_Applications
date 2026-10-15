@@ -1,0 +1,264 @@
+[
+    {
+        "query_id": "Q001",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\01_list_patients.php",
+        "source_line": 4,
+        "operation": "SELECT",
+        "table": "patients",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "SELECT id, full_name, email FROM patients",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q002",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\02_find_patient.php",
+        "source_line": 5,
+        "operation": "SELECT",
+        "table": "patients",
+        "parameters": [
+            "id"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "SELECT id, full_name, email FROM patients WHERE id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q003",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\03_add_patient.php",
+        "source_line": 8,
+        "operation": "INSERT",
+        "table": "patients",
+        "parameters": [
+            "department",
+            "name",
+            "email"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "INSERT INTO patients (department_id, full_name, email, created_at) VALUES (:department, :name, :email, '2026-02-10 09:00:00')",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q004",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\04_update_contact.php",
+        "source_line": 8,
+        "operation": "UPDATE",
+        "table": "patients",
+        "parameters": [
+            "phone",
+            "id"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "UPDATE patients SET phone = :phone WHERE id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q005",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\05_delete_payment.php",
+        "source_line": 5,
+        "operation": "DELETE",
+        "table": "payments",
+        "parameters": [
+            "id"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "DELETE FROM payments WHERE id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q006",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\06_search_like.php",
+        "source_line": 5,
+        "operation": "SELECT",
+        "table": "patients",
+        "parameters": [
+            "q"
+        ],
+        "like_wildcard_parameters": [
+            "q"
+        ],
+        "parameterized_sql": "SELECT id, full_name FROM patients WHERE full_name LIKE :q",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q007",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\07_literal_predicate.php",
+        "source_line": 4,
+        "operation": "SELECT",
+        "table": "appointments",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "SELECT id, booked_at FROM appointments WHERE status = 'confirmed'",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q008",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\08_join_appointments.php",
+        "source_line": 6,
+        "operation": "SELECT",
+        "table": "appointments",
+        "parameters": [
+            "patient"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "SELECT a.id, p.full_name, d.full_name AS doctor_name FROM appointments a JOIN patients p ON p.id = a.patient_id JOIN doctors d ON d.id = a.doctor_id WHERE p.id = :patient",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q009",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\09_group_totals.php",
+        "source_line": 5,
+        "operation": "SELECT",
+        "table": "appointments",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "SELECT doctor_id, COUNT(*) AS total, SUM(fee) AS fees FROM appointments GROUP BY doctor_id HAVING COUNT(*) >= 1",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q010",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\10_subquery.php",
+        "source_line": 5,
+        "operation": "SELECT",
+        "status": "UNRESOLVED",
+        "reason": "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported."
+    },
+    {
+        "query_id": "Q011",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\11_in_values.php",
+        "source_line": 5,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "Dynamic value represents an SQL IN-list fragment rather than a scalar value."
+    },
+    {
+        "query_id": "Q012",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\12_order_by.php",
+        "source_line": 5,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "Dynamic value occurs in a structural ORDER BY position."
+    },
+    {
+        "query_id": "Q013",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\13_dynamic_table.php",
+        "source_line": 5,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "Dynamic table identifier cannot be parameterized safely."
+    },
+    {
+        "query_id": "Q014",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\14_branch_query.php",
+        "source_line": 10,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q015",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\15_cross_file.php",
+        "source_line": 6,
+        "operation": "SELECT",
+        "table": "doctors",
+        "parameters": [
+            "departmentId"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "SELECT id, full_name FROM doctors WHERE department_id = :departmentId",
+        "binding_plan": [
+            {
+                "parameter": "departmentId",
+                "source": "_GET",
+                "key": "department_id",
+                "fallback": "1",
+                "fallback_policy": "null_coalescing",
+                "binding_type": "scalar",
+                "requires_validation": true
+            }
+        ],
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q016",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\16_conditional_concat.php",
+        "source_line": 8,
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason": "SQL construction depends on conditional control flow."
+    },
+    {
+        "query_id": "Q017",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\17_update_arithmetic.php",
+        "source_line": 6,
+        "operation": "UPDATE",
+        "table": "appointments",
+        "parameters": [
+            "delta",
+            "id"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "UPDATE appointments SET fee = fee + :delta WHERE id = :id",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q018",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\18_multi_condition.php",
+        "source_line": 5,
+        "operation": "SELECT",
+        "table": "doctors",
+        "parameters": [
+            "minimum"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "SELECT id, full_name, hourly_rate FROM doctors WHERE active = 1 AND hourly_rate >= :minimum",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q019",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\19_limit_offset.php",
+        "source_line": 6,
+        "operation": "SELECT",
+        "table": "patients",
+        "parameters": [
+            "limit",
+            "offset"
+        ],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "SELECT id, full_name FROM patients LIMIT :limit OFFSET :offset",
+        "status": "CONVERTED",
+        "reason": null
+    },
+    {
+        "query_id": "Q020",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\20_cross_table_update.php",
+        "source_line": 6,
+        "operation": "UPDATE",
+        "status": "UNRESOLVED",
+        "reason": "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported."
+    },
+    {
+        "query_id": "Q021",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\21_quoted_literal.php",
+        "source_line": 4,
+        "operation": "SELECT",
+        "table": "patients",
+        "parameters": [],
+        "like_wildcard_parameters": [],
+        "parameterized_sql": "SELECT id, full_name FROM patients WHERE full_name = 'O''Brien'",
+        "status": "CONVERTED",
+        "reason": null
+    }
+]

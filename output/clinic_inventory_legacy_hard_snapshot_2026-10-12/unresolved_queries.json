@@ -1,0 +1,67 @@
+[
+    {
+        "query_id": "Q011",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\11_in_values.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "sql_argument": "\"SELECT id, full_name FROM patients WHERE id IN ({$ids})\"",
+        "recovered_sql": "SELECT id, full_name FROM patients WHERE id IN ({{ids}})",
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason_code": "STRUCTURAL",
+        "reason": "Dynamic value represents an SQL IN-list fragment rather than a scalar value.",
+        "action": "manual_review_required"
+    },
+    {
+        "query_id": "Q012",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\12_order_by.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "sql_argument": "\"SELECT id, full_name FROM patients ORDER BY {$sort}\"",
+        "recovered_sql": "SELECT id, full_name FROM patients ORDER BY {{sort}}",
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason_code": "STRUCTURAL",
+        "reason": "Dynamic value occurs in a structural ORDER BY position.",
+        "action": "manual_review_required"
+    },
+    {
+        "query_id": "Q013",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\13_dynamic_table.php",
+        "source_line": 5,
+        "executor": "mysqli_query",
+        "sql_argument": "\"SELECT id FROM {$table} WHERE id = 1\"",
+        "recovered_sql": "SELECT id FROM {{table}} WHERE id = 1",
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason_code": "STRUCTURAL",
+        "reason": "Dynamic table identifier cannot be parameterized safely.",
+        "action": "manual_review_required"
+    },
+    {
+        "query_id": "Q014",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\14_branch_query.php",
+        "source_line": 10,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, full_name FROM doctors",
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow.",
+        "action": "manual_review_required"
+    },
+    {
+        "query_id": "Q016",
+        "source_file": "C:\\Users\\sanjula\\Desktop\\Research\\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\\benchmarks\\apps\\clinic_inventory_legacy_hard\\legacy\\16_conditional_concat.php",
+        "source_line": 8,
+        "executor": "mysqli_query",
+        "sql_argument": "$sql",
+        "recovered_sql": "SELECT id, full_name FROM patients WHERE 1=1 AND department_id = {{UNRESOLVED:$_GET['department_id']}}",
+        "operation": null,
+        "status": "UNRESOLVED",
+        "reason_code": "BRANCHING",
+        "reason": "SQL construction depends on conditional control flow.",
+        "action": "manual_review_required"
+    }
+]
