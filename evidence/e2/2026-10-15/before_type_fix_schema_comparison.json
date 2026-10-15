@@ -1,0 +1,332 @@
+{
+  "experiment": "E2 schema fidelity",
+  "date_utc": "2026-10-15T10:29:14.523591+00:00",
+  "git_head": "fa7f983c8b4fb70170af076473fdd4806388bd2b",
+  "views": {
+    "A": "schema.sql parsed with sqlglot (independent of C3)",
+    "B": "C3 schema.json",
+    "C": "generated models.py metadata rendered for MySQL",
+    "D": "not run (no --mysql)"
+  },
+  "apps": {
+    "simple_crud": {
+      "A": {
+        "tables": 2,
+        "columns": 8,
+        "foreign_keys": 1,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "B": {
+        "tables": 2,
+        "columns": 8,
+        "foreign_keys": 1,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "C": {
+        "tables": 2,
+        "columns": 8,
+        "foreign_keys": 1,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH"
+      }
+    },
+    "mixed_crud": {
+      "A": {
+        "tables": 1,
+        "columns": 3,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 1
+      },
+      "B": {
+        "tables": 1,
+        "columns": 3,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 1
+      },
+      "C": {
+        "tables": 1,
+        "columns": 3,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 1
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH"
+      }
+    },
+    "hard_crud": {
+      "A": {
+        "tables": 5,
+        "columns": 25,
+        "foreign_keys": 4,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 5
+      },
+      "B": {
+        "tables": 5,
+        "columns": 25,
+        "foreign_keys": 4,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 5
+      },
+      "C": {
+        "tables": 5,
+        "columns": 25,
+        "foreign_keys": 4,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 5
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH"
+      }
+    },
+    "clinic": {
+      "A": {
+        "tables": 5,
+        "columns": 25,
+        "foreign_keys": 5,
+        "unique": 1,
+        "indexes": 2,
+        "tables_with_pk": 5
+      },
+      "B": {
+        "tables": 5,
+        "columns": 25,
+        "foreign_keys": 5,
+        "unique": 1,
+        "indexes": 2,
+        "tables_with_pk": 5
+      },
+      "C": {
+        "tables": 5,
+        "columns": 25,
+        "foreign_keys": 5,
+        "unique": 1,
+        "indexes": 2,
+        "tables_with_pk": 5
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH"
+      }
+    },
+    "helpdesk": {
+      "A": {
+        "tables": 3,
+        "columns": 12,
+        "foreign_keys": 2,
+        "unique": 1,
+        "indexes": 0,
+        "tables_with_pk": 3
+      },
+      "B": {
+        "tables": 3,
+        "columns": 12,
+        "foreign_keys": 2,
+        "unique": 1,
+        "indexes": 0,
+        "tables_with_pk": 3
+      },
+      "C": {
+        "tables": 3,
+        "columns": 12,
+        "foreign_keys": 2,
+        "unique": 2,
+        "indexes": 0,
+        "tables_with_pk": 3
+      },
+      "A_vs_B": [],
+      "A_vs_C": [
+        {
+          "table": "tickets",
+          "kind": "type",
+          "column": "created_at",
+          "reference": "TIMESTAMP",
+          "candidate": "DATETIME"
+        }
+      ],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "1 DIFF"
+      }
+    },
+    "hms_kishan0725": {
+      "A": {
+        "tables": 6,
+        "columns": 42,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "B": {
+        "tables": 6,
+        "columns": 42,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "C": {
+        "tables": 6,
+        "columns": 42,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH"
+      }
+    },
+    "news_buzz": {
+      "A": {
+        "tables": 2,
+        "columns": 16,
+        "foreign_keys": 0,
+        "unique": 1,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "B": {
+        "tables": 2,
+        "columns": 16,
+        "foreign_keys": 0,
+        "unique": 1,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "C": {
+        "tables": 2,
+        "columns": 16,
+        "foreign_keys": 0,
+        "unique": 1,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "A_vs_B": [],
+      "A_vs_C": [
+        {
+          "table": "posts",
+          "kind": "type",
+          "column": "updated_on",
+          "reference": "TIMESTAMP",
+          "candidate": "DATETIME"
+        }
+      ],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "1 DIFF"
+      }
+    },
+    "fee_rainbow": {
+      "A": {
+        "tables": 1,
+        "columns": 5,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 1
+      },
+      "B": {
+        "tables": 1,
+        "columns": 5,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 1
+      },
+      "C": {
+        "tables": 1,
+        "columns": 5,
+        "foreign_keys": 0,
+        "unique": 0,
+        "indexes": 0,
+        "tables_with_pk": 1
+      },
+      "A_vs_B": [],
+      "A_vs_C": [
+        {
+          "table": "admin",
+          "kind": "type",
+          "column": "created_at",
+          "reference": "TIMESTAMP",
+          "candidate": "DATETIME"
+        },
+        {
+          "table": "admin",
+          "kind": "type",
+          "column": "updated_at",
+          "reference": "TIMESTAMP",
+          "candidate": "DATETIME"
+        }
+      ],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "2 DIFF"
+      }
+    },
+    "dignity_dev_hms": {
+      "A": {
+        "tables": 6,
+        "columns": 25,
+        "foreign_keys": 0,
+        "unique": 3,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "B": {
+        "tables": 6,
+        "columns": 25,
+        "foreign_keys": 0,
+        "unique": 3,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "C": {
+        "tables": 6,
+        "columns": 25,
+        "foreign_keys": 0,
+        "unique": 3,
+        "indexes": 0,
+        "tables_with_pk": 2
+      },
+      "A_vs_B": [],
+      "A_vs_C": [],
+      "verdicts": {
+        "A_vs_B": "MATCH",
+        "A_vs_C": "MATCH"
+      }
+    }
+  }
+}
