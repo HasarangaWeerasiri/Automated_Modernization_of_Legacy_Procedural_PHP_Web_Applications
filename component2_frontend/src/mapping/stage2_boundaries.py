@@ -22,7 +22,8 @@ How the rules are applied:
           loop -> that List's guard; the other branch is its Empty. Then by
           size: R-I4 inline (up to small_if_max_elements), R-I5 its own
           component (fallback_component_min_elements or more). R-I6 merges
-          adjacent small ifs in one element. R-I1 is decided at page level.
+          adjacent small ifs in one element. R-I1 is decided at page level
+          (rules v1.1: only when the path that skips the guard leaves the page).
   R-I7    An if or loop whose only output is inline JS (`<script>`, which
           Stage 5 drops) has nothing to render: not a boundary, like R-L5.
 
@@ -188,6 +189,7 @@ class _Builder:
         self.calls = {c.id: c for c in timeline.calls} if timeline is not None else {}
         self.in_function = timeline is not None and timeline.function is not None
         self.content_type = timeline.content_type if timeline is not None else None
+        self.top_level_ifs = {t.node_id: t for t in timeline.top_level_ifs} if timeline is not None else {}
         self.is_function = timeline is not None and timeline.function is not None
         # A file that other files include is not certainly the whole response: an `exit` in it ends the
         # including page too, so R-I8's "rest of the enclosing block" is not all that stops.
@@ -631,6 +633,22 @@ class _Builder:
                         r.expr.replace(" ", "").lower().startswith("json_encode(") for r in n.reads)
                         for n in echoes))
 
+    def other_path_leaves(self, guard: _If) -> bool:
+        """Boundary rules v1.1, R-I1 scope (post-freeze change 1): the path that does not enter the guarded
+        content leaves the page. It does when the statements after the if (in the same list) always exit or
+        redirect, or when the if has an `else` and every arm other than the guarded one does (harness extension
+        `topLevelIfs`: the R-I8 exit reading and the header_redirect detection). Nothing known -> it does not:
+        the guard is then a conditional. v1.0 does not ask."""
+        if self.config.rules_version == "1.0":
+            return True
+        top = self.top_level_ifs.get(guard.node_id)
+        if top is None:
+            return False
+        arm = guard.branches[0].enclosure
+        others = [leaves for branch, cond, leaves in top.arms if (branch, cond) != (arm.branch, arm.cond_node_id)]
+        has_else = any(branch == "else" for branch, _, _ in top.arms)
+        return top.after_leaves or (has_else and all(others))
+
     def page(self) -> ComponentNode:
         if self.content_type is not None and self.content_type not in HTML_MEDIA_TYPES:
             # Section 5: the unit is not an HTML response (RSS, a sitemap). It is an API route, owned by C1.
@@ -642,9 +660,11 @@ class _Builder:
         regions = [item for item in items if not isinstance(item, KeptNode)]
         others_blank = all(_blank(item) for item in items if isinstance(item, KeptNode))
         rules, reason, sources, inner = (), "page", (), items
-        if len(regions) == 1 and isinstance(regions[0], _If) and len(regions[0].branches) == 1 and others_blank                 and not regions[0].branches[0].enclosure.exits:
+        if (len(regions) == 1 and isinstance(regions[0], _If) and len(regions[0].branches) == 1 and others_blank
+                and not regions[0].branches[0].enclosure.exits and self.other_path_leaves(regions[0])):
             # R-I1: the if wraps everything the page prints, so it is not a component. An arm that always exits
-            # is an error stop or a redirect, not the page: R-I8 / R-I8c decide it (precedence chosen in step 4)
+            # is an error stop or a redirect, not the page: R-I8 / R-I8c decide it (precedence chosen in step 4).
+            # v1.1: only when the path that skips it leaves the page; otherwise the if rules decide it below.
             guard = regions[0]
             inner = [x for item in items for x in (guard.branches[0].items if item is guard else [item])]
             rules, reason, sources = ("R-I1",), "page_guard", (guard.node_id,)

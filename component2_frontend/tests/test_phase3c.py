@@ -63,7 +63,8 @@ def test_a_call_of_a_function_whose_only_output_is_a_die_message_is_flagged(tmp_
                         "function foot() { ?></div></body></html><?php }\n"
                         "function check_login($u) {\n  if (!$res) {\n    die(mysql_error());\n  }\n  return 1;\n}",
              "login.php": "<?php include 'lib.php'; if (isset($_POST['u'])) { $ok = check_login($_POST['u']); }\n"
-                          "if ($bad) { head(); ?><form><input name='u'></form><?php foot(); } ?>"}
+                          "if ($bad) { head(); ?><form><input name='u'></form><?php foot(); }\n"
+                          "else { header('Location: home.php'); } ?>"}  # rules v1.1: the other path redirects
     result = run(tmp_path, files)
     names = result["timelines"]["login.php"]["callNames"]
     (call,) = [e for e in entries(result, "login.php", "call") if names[e["id"]] == "check_login"]

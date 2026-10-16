@@ -31,6 +31,7 @@ from src.model import (
     ResponseShape,
     SchemaType,
     Timeline,
+    TopLevelIf,
 )
 
 SCHEMA_VERSION = "1.0"
@@ -327,6 +328,20 @@ def load_timeline_json(path: Path) -> dict:
         for enc in redirect["enclosedBy"]:
             _check_enclosure(enc, where, loops_seen)
 
+    for top in timeline.get("topLevelIfs", []):  # harness extension (boundary rules v1.1, R-I1)
+        where = f"{path}: topLevelIfs {top.get('nodeId', '<no id>')}"
+        _check_node_id(top.get("nodeId"), where)
+        if not {"nodeId", "arms", "afterLeaves"} <= set(top) <= {"nodeId", "arms", "afterLeaves", "loc"} \
+                or not isinstance(top["afterLeaves"], bool) or not isinstance(top["arms"], list) or not top["arms"]:
+            raise ValueError(f"{where}: keys {sorted(top)}; expected nodeId / arms / afterLeaves and optionally loc")
+        for arm in top["arms"]:
+            if set(arm) != {"branch", "condNodeId", "leaves"} or arm["branch"] not in ("then", "elseif", "else") \
+                    or not isinstance(arm["leaves"], bool):
+                raise ValueError(f"{where}: arm {arm!r}; expected branch / condNodeId / leaves")
+            _check_node_id(arm["condNodeId"], where)
+        if "loc" in top:
+            _check_loc(top["loc"], where)
+
     return timeline
 
 
@@ -419,10 +434,13 @@ def load_timeline(path: Path) -> Timeline:
     redirects = tuple(Redirect(node_id=r["nodeId"], target=r["target"], loc=_loc(r.get("loc")),
                                enclosed_by=tuple(_enclosure(x) for x in r["enclosedBy"]))
                       for r in doc.get("redirects", ()))
+    top_level_ifs = tuple(TopLevelIf(node_id=t["nodeId"], after_leaves=t["afterLeaves"], loc=_loc(t.get("loc")),
+                                     arms=tuple((a["branch"], a["condNodeId"], a["leaves"]) for a in t["arms"]))
+                          for t in doc.get("topLevelIfs", ()))
     return Timeline(entrypoint=doc["entrypoint"], schema_version=doc["schemaVersion"], sequence=sequence,
                     queries=queries, provenance=doc.get("_provenance", {}), calls=calls, function=function,
                     order=tuple(e["id"] for e in doc["sequence"]),
-                    content_type=doc.get("responseContentType"), redirects=redirects)
+                    content_type=doc.get("responseContentType"), redirects=redirects, top_level_ifs=top_level_ifs)
 
 
 def load_labels(path: Path) -> dict[str, Label]:

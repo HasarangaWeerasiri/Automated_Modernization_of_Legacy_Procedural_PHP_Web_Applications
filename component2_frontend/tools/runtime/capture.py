@@ -12,7 +12,8 @@ marked `get_only`.
 
 Usage, from component2_frontend/ (both servers running, see tools/runtime/hms/README.md):
     venv/Scripts/python.exe tools/runtime/capture.py hms [--legacy http://127.0.0.1:18080]
-        [--generated http://127.0.0.1:18100]
+        [--generated http://127.0.0.1:18100] [--folder hms-v1.1]
+(`--folder`: the run's folder under output/runtime/, default the app's name; generated_app.py takes the same.)
 """
 
 import json
@@ -51,9 +52,9 @@ def get_only(timeline: dict) -> bool:
     return False
 
 
-def pages(app: str) -> list[dict]:
+def pages(app: str, run: str | None = None) -> list[dict]:
     """Every generated page of the app: its key, file, route and get_only."""
-    folder = OUTPUT / app / "pipeline" / app
+    folder = OUTPUT / (run or app) / "pipeline" / app
     index = json.loads((folder / "index.json").read_text(encoding="utf-8"))
     found = []
     for entry in index["pages"]:
@@ -69,19 +70,20 @@ def pages(app: str) -> list[dict]:
 
 def main(argv: list[str]) -> int:
     if not argv or argv[0].startswith("--"):
-        print(__doc__.strip().splitlines()[-3], file=sys.stderr)
+        print(__doc__.strip().splitlines()[-4], file=sys.stderr)
         return 2
     app = argv[0]
     legacy = argv[argv.index("--legacy") + 1] if "--legacy" in argv else "http://127.0.0.1:18080"
     generated = argv[argv.index("--generated") + 1] if "--generated" in argv else "http://127.0.0.1:18100"
-    out = OUTPUT / app
+    run = argv[argv.index("--folder") + 1] if "--folder" in argv else app
+    out = OUTPUT / run
     for side in ("legacy", "generated"):
         (out / side).mkdir(parents=True, exist_ok=True)
     rows = []
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch()  # the Chromium build Playwright 1.62.0 pins (tools/runtime/requirements.txt)
         context = browser.new_context(java_script_enabled=False, viewport=VIEWPORT)
-        for page_info in pages(app):
+        for page_info in pages(app, run):
             urls = {"legacy": legacy + page_info["legacyPath"], "generated": generated + page_info["generatedPath"]}
             codes = {side: status(url) for side, url in urls.items()}
             row = {**page_info, "legacyStatus": codes["legacy"], "generatedStatus": codes["generated"]}

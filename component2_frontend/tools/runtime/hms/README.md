@@ -72,5 +72,30 @@ Comparison fixes in Phase 4b (the comparison itself, not the pipeline): `style` 
 form (React writes `margin-top:50px` where PHP wrote `margin-top: 50px;`), and HTML boolean attributes are valued
 `""` (`required="required"` = `required=""`).
 
+## Phase 4c: rules v1.0 and v1.1 side by side
+
+Post-freeze changes 1 (R-I1 scope, boundary rules v1.1) and 2 (spec v0.14) are on by default; `--rules v1.0` runs
+the frozen rules. Each run has its own folder under `output/runtime/`, and `lists.json` records its rules version:
+
+```
+venv/Scripts/python.exe tools/runtime/generated_app.py hms --folder hms-v1.1               # with replay data
+venv/Scripts/python.exe tools/runtime/generated_app.py hms --folder hms-v1.1-nodata --no-data
+# serve c2-build/hms-runtime on :18100 and c2-build/hms-nodata-runtime on :18101, then
+venv/Scripts/python.exe tools/runtime/capture.py hms --folder hms-v1.1
+venv/Scripts/python.exe tools/runtime/capture.py hms --folder hms-v1.1-nodata --generated http://127.0.0.1:18101
+venv/Scripts/python.exe tools/runtime/compare.py hms-v1.1
+venv/Scripts/python.exe tools/runtime/classify.py hms --folder hms-v1.1 --before hms-v1.1-nodata
+```
+
+`hms-v1.0` is the Phase 4b run (rules v1.0), kept as it was and classified again (`--before` defaults to `hms-4a`).
+The no-data build is the baseline that tells List rows from static elements; without it, elements v1.1 adds (the
+navbar) would be counted as rows.
+
+`classify.py` also has the class `flag-but-wrong:<kind>` (owner, Phase 4c): a flag at the node, but the generated tree
+contradicts the browser's. That is either a flag claiming browser equivalence (an HTML5 repair or close, R-L6), or
+`<head>` content dropped although the browser's tree has it in `<body>`. It is counted separately from `flag:`.
+Findings in `findings.json` carry the rules version they were found under, and apply only to runs of that version. A
+difference whose printing node stands inside an if with an `unresolvedCondition` is `flag:unresolvedCondition`.
+
 Tool versions: `tools/runtime/requirements.txt` (Playwright 1.62.0, which pins Chromium build 1234, the build
 already installed; PyMySQL 1.2.3). The pipeline's own tests do not need them.

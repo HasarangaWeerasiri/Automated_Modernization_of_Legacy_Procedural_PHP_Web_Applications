@@ -198,7 +198,8 @@ def test_only_reviews_named_by_the_status_rules_reach_the_tree(trees):
         "list_while": [chain], "list_foreach": [chain], "detail": [chain], "admin": [],
         "edge_cases": [("InlineConditional", "auth_or_display")],
         "wp_guestbook": [], "wp_view": [], "wp_header": [], "wp_thumbnails": [],
-        "wp_login": [("Page", "logic_or_display")],
+        # rules v1.1 (post-freeze change 1): the login guard is a conditional; under v1.0 the review was the Page's
+        "wp_login": [("ConditionalComponent", "logic_or_display")],
     }
 
 
@@ -232,10 +233,19 @@ def test_view_comments_list_has_no_wrapper_and_an_empty_state(trees):
     assert empty.rule == "R-I2" and raw_of("wp_view", "No comments yet") in empty.node_ids
 
 
-def test_login_page_guard_is_not_a_component(trees):
-    tree = trees["wp_login"]
+def test_login_page_guard_is_not_a_component_under_rules_v10(trees):
+    tree = build("wp_login", load_boundary_config(rules="1.0"))
     assert (tree.root.type, tree.root.rule, len(tree.root.source_ids)) == ("Page", "R-I1", 1)
     assert not find(tree, type="ConditionalComponent") and not find(tree, type="InlineConditional")
+
+
+def test_login_guard_is_a_conditional_under_rules_v11(trees):
+    """Boundary rules v1.1: nothing shows that the path skipping the guard leaves the page (the mock has no
+    `topLevelIfs`; in WackoPicko it redirects only through `$bad_login`, i.e. data flow), so R-I1 does not apply."""
+    tree = trees["wp_login"]
+    assert tree.root.rule is None
+    (section,) = find(tree, type="ConditionalComponent")
+    assert (section.rule, section.elements) == ("R-I5", 17)
 
 
 def test_thumbnail_loop_abstains_as_chunked_and_the_ul_crossing_is_flagged(trees):
@@ -255,7 +265,9 @@ def test_menu_attribute_conditionals_are_expressions_not_boundaries(trees):
 
 @pytest.mark.parametrize("name", ALL_MOCKS)
 def test_fallback_rule_never_fires_in_the_rule_discovery_corpus(name, trees):
-    assert not find(trees[name], type="ConditionalComponent"), "boundary-rules.md section 3: R-I5 never triggered"
+    """A claim about the frozen rules (v1.0). Under v1.1 R-I5 fires on wp_login's former page guard."""
+    tree = build(name, load_boundary_config(rules="1.0")) if name == "wp_login" else trees[name]
+    assert not find(tree, type="ConditionalComponent"), "boundary-rules.md section 3: R-I5 never triggered"
 
 
 # ---------------------------------------------------------------- thresholds come from config

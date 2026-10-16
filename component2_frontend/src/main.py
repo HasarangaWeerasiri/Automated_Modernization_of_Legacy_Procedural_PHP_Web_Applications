@@ -84,6 +84,11 @@ def parse_args() -> argparse.Namespace:
         help="Boundary-rule thresholds for stage 2 (default: config/boundary_rules.json).",
     )
     parser.add_argument(
+        "--rules",
+        choices=["v1.0", "v1.1"],
+        help="Boundary rules version (default: the config's, v1.1). v1.0 = the frozen rules with spec v0.13.",
+    )
+    parser.add_argument(
         "--endpoint-map",
         type=Path,
         default=DEFAULT_ENDPOINT_MAP,
@@ -272,7 +277,7 @@ def run_stages(args) -> None:
     result1 = stage(1, "presentation isolation", isolate_presentation(timeline, labels), write_result, print_stage1)
     if last < 2:
         return
-    config = load_or_exit("boundary config", load_boundary_config, args.config)
+    config = load_or_exit("boundary config", lambda path: load_boundary_config(path, args.rules), args.config)
     tree = stage(2, "boundary inference", stage2.infer_boundaries(result1, timeline, config), stage2.write_tree,
                  print_stage2)
     if last < 3:

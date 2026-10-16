@@ -57,6 +57,10 @@ _SPECIAL = frozenset((
 _FORMATTING = frozenset(("a", "b", "big", "code", "em", "font", "i", "nobr", "s", "small", "strike", "strong",
                          "tt", "u"))
 _IMPLIED_END = {"li": ("li",), "dd": ("dd", "dt"), "dt": ("dd", "dt")}  # start tag -> the open elements it ends
+# Spec v0.14 section 5 (post-freeze change 2): what stays inside <head>. Any other element, or text that is not
+# whitespace, ends <head> in every browser (HTML5 "in head", anything else) and is body content.
+HEAD_CONTENT = frozenset(("base", "link", "meta", "noscript", "script", "style", "template", "title"))
+HEADINGS = frozenset(("h1", "h2", "h3", "h4", "h5", "h6"))
 
 
 class GenerationError(Exception):
@@ -242,6 +246,8 @@ class Builder:
         # known. That ends at an abstained region, at a shell's children, and at a slot named in `opaque`.
         self.certain = strict and stray
         self.opaque = opaque
+        # Spec v0.14 (rules v1.1): <head> content and heading end tags as a browser builds them
+        self.browser_v014 = config.rules_version != "1.0"
         self.tracker = tagtrack.track(outputs, config)
         self.root: list = []
         self.stack: list = []  # MElement / _Frame
@@ -521,6 +527,9 @@ class Builder:
             if ch == "<":
                 self.state, self.tag_node = "tag_open", self.node
             else:
+                if not space and self.open_head():
+                    self.flush_text()  # whitespace stays in <head>; this text is body content (spec v0.14)
+                    self.end_head("text")
                 self.text_append(ch)
         elif s == "tag_open":
             if ch.isascii() and ch.isalpha():
@@ -714,10 +723,26 @@ class Builder:
                   closing[0].parent if isinstance(closing[0].parent, MElement) else None)
         del self.stack[index:]
 
+    def open_head(self) -> bool:
+        """Spec v0.14: <head> is the current element and everything in it is text or elements (a browser's tree
+        is certain), so the next element that is not head content, or text that is not whitespace, ends it."""
+        top = self.stack[-1] if self.stack else None
+        return bool(self.browser_v014 and isinstance(top, MElement) and top.tag == "head"
+                    and all(isinstance(child, (MText, MElement)) for child in top.children))
+
+    def end_head(self, by: str) -> None:
+        head = self.stack.pop()
+        head.end, head.clean = "implied", True
+        self.flag("implied_end_tag", "info", head.node_id,
+                  f"<head> ended by {by}, as a browser does: it and what follows are body content (spec v0.14)",
+                  head.parent if isinstance(head.parent, MElement) else None)
+
     def start_tag(self, self_closing: bool = False) -> None:
         element = self.tag
         element.tag = self.tag_name.lower()
         self.state = "data"
+        if element.tag not in HEAD_CONTENT | {"html", "head", "body"} and self.open_head():
+            self.end_head(f"<{element.tag}>")
         self.implied_end_tags(element.tag)
         self.append(element)
         if element.tag in self.void or self_closing:
@@ -726,20 +751,37 @@ class Builder:
         if element.tag in RAWTEXT_TAGS:
             element.content, self.raw_end, self.state = [], "", "rawtext"
 
+    def close_at(self, index: int, name: str) -> None:
+        """`</name>` closes stack[index] and every element open inside it."""
+        entry, open_inside = self.stack[index], self.stack[index + 1:]
+        for inner in open_inside:
+            self.flag("implicit_close", "review", inner.node_id, f"<{inner.tag}> closed by </{name}>", entry)
+            inner.end, inner.clean = "implied", inner is open_inside[-1]
+        entry.end, entry.clean = "explicit", not open_inside
+        del self.stack[index:]
+
     def end_tag(self) -> None:
         self.state = "data"
         name = self.end_name.strip().lower()
+        if self.browser_v014 and name in HEADINGS:
+            # Spec v0.14 section 5b: </h1>-</h6> closes the nearest open heading of any level (HTML5 "in body")
+            for index in range(len(self.stack) - 1, -1, -1):
+                entry = self.stack[index]
+                if isinstance(entry, _Frame):
+                    break
+                if entry.tag in HEADINGS:
+                    if entry.tag != name:
+                        self.flag("implied_end_tag", "info", entry.node_id,
+                                  f"</{name}> closes the open <{entry.tag}>, as a browser does (spec v0.14)",
+                                  entry.parent if isinstance(entry.parent, MElement) else None)
+                    self.close_at(index, name)
+                    return
         for index in range(len(self.stack) - 1, -1, -1):
             entry = self.stack[index]
             if isinstance(entry, _Frame):
                 break
             if entry.tag == name:
-                open_inside = self.stack[index + 1:]
-                for inner in open_inside:
-                    self.flag("implicit_close", "review", inner.node_id, f"<{inner.tag}> closed by </{name}>", entry)
-                    inner.end, inner.clean = "implied", inner is open_inside[-1]
-                entry.end, entry.clean = "explicit", not open_inside
-                del self.stack[index:]
+                self.close_at(index, name)
                 return
         if self.certain and name == "br":  # HTML5 "in body": an end tag </br> is treated as a <br> start tag
             self.append(MElement("br", [], self.tag_node))

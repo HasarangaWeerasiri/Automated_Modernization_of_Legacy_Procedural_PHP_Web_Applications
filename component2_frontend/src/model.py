@@ -144,6 +144,18 @@ class Redirect:
 
 
 @dataclass(frozen=True)
+class TopLevelIf:
+    """An if statement directly in a scope's own statement list (harness extension `topLevelIfs`, boundary rules
+    v1.1): which of its arms, and whether the statements after it, always leave the page (exit or a literal
+    header("Location: ...")). Read by R-I1 v1.1 only."""
+
+    node_id: str
+    arms: tuple[tuple[str, str, bool], ...]  # (branch, condNodeId, leaves), in source order; no else -> none
+    after_leaves: bool
+    loc: Loc | None = None
+
+
+@dataclass(frozen=True)
 class CallEntry:
     """A call site in the timeline (Member 01 Q4, proposed): the callee's output is not inlined."""
 
@@ -257,6 +269,7 @@ class Timeline:
     content_type: str | None = None
     # Optional (harness extension, spec v0.10): every header("Location: ...") call with a literal target
     redirects: tuple["Redirect", ...] = ()
+    top_level_ifs: tuple["TopLevelIf", ...] = ()  # harness extension, boundary rules v1.1 (R-I1)
 
 
 # ----------------------------------------------------------------------------- Stage 1 result
@@ -318,6 +331,9 @@ class BoundaryConfig:
     fallback_component_min_elements: int  # R-I5 ("N"): an if with this many elements or more is its own component
     table_section_tags: tuple[str, ...]  # R-L2a walks past these
     void_tags: tuple[str, ...]  # elements that never have a closing tag
+    # "1.0": the frozen rules and spec v0.13 (freeze commit 27c380e). "1.1": post-freeze changes 1 (R-I1 scope) and
+    # 2 (spec v0.14: <head> content, heading end tags). Phase 5 runs both (docs/post-freeze-log.md)
+    rules_version: str = "1.1"
 
 
 @dataclass(frozen=True)

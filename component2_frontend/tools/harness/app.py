@@ -219,7 +219,9 @@ def function_table(file_harnesses: dict[str, FileHarness]) -> dict:
             for path in sorted(file_harnesses) for name, scope in file_harnesses[path].functions.items()}
 
 
-def app_timelines(app: str) -> AppTimelines:
+def app_timelines(app: str, rules: str = "1.1") -> AppTimelines:
+    """`rules` "1.0" leaves out the harness extension that only boundary rules v1.1 read (`topLevelIfs`), so the
+    frozen run is the same bytes as at the freeze commit."""
     config = APPS[app]
     root = config["root"]
     commit = source_commit(app)
@@ -246,7 +248,8 @@ def app_timelines(app: str) -> AppTimelines:
         for path, source, ast in zip(files, sources, asts):
             if ast.parse_errors:
                 errors[path] = list(ast.parse_errors)
-            harnesses[path] = FileHarness(source.source.read_bytes(), ast, source.path, schema)
+            harnesses[path] = FileHarness(source.source.read_bytes(), ast, source.path, schema,
+                                          top_ifs=rules.removeprefix("v") != "1.0")
     file_ids = {path: harness.file_id for path, harness in harnesses.items()}
 
     def provenance(path: str) -> dict:

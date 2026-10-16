@@ -1,6 +1,6 @@
 # Component 2 — Agent Context (read this first, every task)
 
-_Version 24 — 15 Oct 2026 (Phase 4a accepted; 4b = data wiring (post-freeze, guarded) + classify every difference)._
+_Version 25 — 16 Oct 2026 (Phase 4b accepted: render match 0.947, 2 unexplained = one unsound R-I1 decision; post-freeze changes 1–2 from that evidence; Phase 4c = implement + re-measure)._
 
 This file is the handoff between the research chat and the coding agent. It records decisions
 already made. **Do not change a decision recorded here.** If something here looks wrong or a task
@@ -118,6 +118,7 @@ harness, not Member 01's core** (`_provenance.generator = "c2-harness"`).
 - Deliberate contract gap: field **`contact`** (flagged on list pages only). `sku` appears in no schema.
 - `undecided` nodes: edge_cases (1, `auth_or_display`), wp_login (1, placeholder `logic_or_display`), wp_thumbnails (1, placeholder `logic_or_display`).
 - **What the freeze covers (made explicit 15 Oct):** boundary rules (Stage 2), Stage 1–3 decisions and Stage 5 **markup** generation — everything Phase 5 measures. **Data wiring** (Stage 4 mapping to a contract, where fetches happen) is not measured in Phase 5 (the evaluation apps have no contracts) and may change only as a logged post-freeze change **with a proof that, with no contract / endpoint map, every output of the five discovery apps and the mocks is byte-identical**.
+- Phase 4b (16 Oct): 7 / 16 HMS Lists get replay data; render match 0.588 → **0.947** (1312 / 1386); 69 differences, 67 `flag:`, 2 UNEXPLAINED (`search.php`, R-I1). Guard proof vs `27c380e`: five apps `ba8e4ac7…25d9`, mocks `71b746eb…0cf6`. **Post-freeze changes 1 (R-I1 scope → rules v1.1) and 2 (head content, heading end tags → spec v0.14)** come from this discovery-app evidence; Phase 5 reports v1.0 and v1.1.
 - Phase 4a: HMS runs unmodified in Docker (`tools/runtime/hms/`, MariaDB 10.1.48, shared socket, `display_errors=Off`); replay API `tools/runtime/replay/` (SELECT-only user `c2replay`) on :18090; generated app `next start` on :18100. Raw result (no data wired): 26 pages, 1386 legacy / 836 generated elements, 815 matched, 202 differences.
 - **Rules frozen** (boundary-rules v1.0, spec v0.12) by the owner's commit of Phase 3 step 5 — write its hash here after committing: `27c380e`. No rule or spec change after it without a *post-freeze* entry in boundary-rules §10.
 - Tests: 988 passing, 0 skipped (after step 4 part B). Warehouse: 48 PHP files, 41 pages, 1 shell (`layouts/header.php` + `footer.php`), 138 abstains (`unresolved_call` 76 — the wrapper, Q11; `cross_file_output` 40 — mostly the whitespace-only `load.php`), 0 tsc errors, `next build` ok. Manifest `legacy-apps/warehouse-69fdd1c.sha256` committed; the harness verifies it before reading.

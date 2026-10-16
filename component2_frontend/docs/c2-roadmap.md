@@ -1,4 +1,4 @@
-# Component 2 — Roadmap to 100% (v2.1)
+# Component 2 — Roadmap to 100% (v2.2)
 
 | Item | Value |
 |---|---|
@@ -11,7 +11,7 @@
 C2 is 100% when every row below is ✅. Rows 0–6 depend only on C2. Row 7 depends on Member 01 / C1;
 it has a fallback so C2 can still finish.
 
-| # | Phase | Exit check | Depends on | Status (15 Oct) |
+| # | Phase | Exit check | Depends on | Status (16 Oct) |
 |---|---|---|---|---|
 | 0 | Stages 1–5 on mocks | 573 tests, 0 strict `tsc` errors, every gap visible | — | ✅ done |
 | 1 | **Whole-app harness** | Every page of HMS and WackoPicko runs through Stages 1–5 with no crash; each page compiles or each failure is explained; pattern log written | C2 only | ✅ done 12 Oct (66 timelines, 0 crashes, 0 tsc errors, 9 new patterns) |
@@ -19,7 +19,7 @@ it has a fallback so C2 can still finish.
 | 2a | Echo-string parts, copy propagation, interpolated-SQL values, R-L3b, module fix | HMS one-echo rows generate as Lists/Items (no `no_rule` abstains for them); every generated file is a module; checker override removed | Phase 1b | ✅ done 13 Oct (HMS `no_rule` 4 → 0, unresolved reads 75 → 27; 779 tests) |
 | 2b | Functions and shell (R-F1, R-F2) | Function output becomes components at the call site; WackoPicko header/footer becomes root layout + shell component; `document_shell` and the `html_functions` route clash disappear for WackoPicko; browser-equivalent markup (spec §5b) leaves only foster-parenting nesting flags | Phase 2a | ✅ done 13 Oct (both apps one Next.js app, 0 tsc errors, `next build` ok; nesting 9 → 5; 826 tests) |
 | 3 | Rule saturation and **freeze** | phpBlog, then attendance, run through the harness; 2 consecutive apps add no new pattern (definition: boundary-rules §8) → rules doc header says **Frozen** | Phases 1–2 | ✅ **Frozen 15 Oct** (boundary-rules v1.0): phpBlog 4 new → 0 / 2; attendance none → 1 / 2; warehouse none → **2 / 2**. Step 5 committed = freeze commit (five-app totals at freeze in `docs/c2-apps-results.md`) |
-| 4 | Runtime rendering check (SO4, measured) | HMS runs in Docker (PHP + MySQL, its own `myhmsdb.sql`); the generated pages run with the same data; rendered DOM compared; every difference is explained by a flag. Unexplained difference = bug | Phase 2 | ⏳ 4a done 15 Oct (HMS unmodified in Docker; raw: 815 / 1386 legacy elements matched, 0 / 16 Lists with data); 4b: data wiring + classify every difference |
+| 4 | Runtime rendering check (SO4, measured) | HMS runs in Docker (PHP + MySQL, its own `myhmsdb.sql`); the generated pages run with the same data; rendered DOM compared; every difference is explained by a flag. Unexplained difference = bug | Phase 2 | ⏳ 4a, 4b done (render match **0.947**, 67 / 69 differences explained by a flag, 1 unsound R-I1 decision found); 4c: post-freeze changes 1–2 + re-measure |
 | 5 | Evaluation on the 5 locked apps | Owner's **gold standard committed before** the tool runs; metrics: boundary precision/recall, **unsound decisions (target 0)**, abstain/flag rate, compile rate, render match where runnable | Phase 3 freeze | ⬜ — **owner starts the gold standard now** (docs/gold-standard-guide.md), in parallel with Phase 4 |
 | 6 | Report chapter + appendices | C2 method, results (from `tools/results_table.py`), honest limits, Appendix E decision logs, Appendix F AI-use disclosure | Phases 1–5 | ⬜ |
 | 7 | Real integration | Member 01's timeline and C1's labels/contract replace the harness and substitutes for at least one HMS page; differences vs the harness explained | Member 01, C1 | 🟡 partly: real AST for 1 page arrived 12 Oct (used in 1b). Timeline/labels/contract do not exist yet |
@@ -67,3 +67,4 @@ means the swap later is a loader change only.
 | 15 Oct 2026 | v1.9 — warehouse judged: no new pattern → **rules frozen**; gold standard starts; Phase 4 next |
 | 15 Oct 2026 | v2.0 — freeze committed; evaluation apps packaged for the owner's annotation; Phase 4a starts |
 | 15 Oct 2026 | v2.1 — Phase 4a done; freeze scope made explicit (data wiring may change, guarded) |
+| 16 Oct 2026 | v2.2 — Phase 4b done; post-freeze changes 1–2 (rules v1.1, spec v0.14) from discovery evidence; Phase 5 will report v1.0 and v1.1 |

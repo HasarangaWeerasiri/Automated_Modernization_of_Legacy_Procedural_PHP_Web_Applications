@@ -131,6 +131,14 @@ FETCH_NOTE = ("Harness extension (boundary rule R-L4, v0.14): `fetchNodeId` on a
 REDIRECTS_NOTE = ("Harness extension (generation-spec v0.10, header_redirect): `redirects` lists every "
                   "`header(\"Location: ...\")` call of this scope whose argument is a string literal: {nodeId, "
                   "target, enclosedBy, loc}. It prints nothing; C1 owns the redirect.")
+TOP_LEVEL_IFS_NOTE = ("Harness extension (boundary rules v1.1, R-I1 scope; written only for rules v1.1): "
+                      "`topLevelIfs` lists every if statement directly in this scope's own statement list (a file's "
+                      "top level, a function's body): {nodeId, loc, arms: [{branch, condNodeId, leaves}], "
+                      "afterLeaves}. An arm `leaves` the page when its own statement list holds an `exit` / `die` "
+                      "statement (the R-I8 exit reading) or a `header(\"Location: ...\")` call with a literal "
+                      "argument (the header_redirect detection, spec v0.10); `afterLeaves` says the same of the "
+                      "statements after the if in the same list. Arms without an `else` have no else entry. Calls of "
+                      "functions that exit are not followed.")
 BUILTIN_METHODS_NOTE = ("boundary-rules v0.15 section 4: a method of PHP's own mysqli / mysqli_result / mysqli_stmt "
                         "classes is not a call site when its receiver is certainly of that class: a variable whose "
                         "only definitions in the app are `new mysqli(...)` / `mysqli_connect(...)`, or one whose "
@@ -254,6 +262,7 @@ class _Scope:
     content_type: str | None = None  # the media type of the first literal header("Content-Type: ...")
     exit_arms: list = field(default_factory=list)  # lines of exit statements whose arm prints (R-I8c)
     redirects: list = field(default_factory=list)  # header("Location: ...") with a literal target (spec v0.10)
+    top_ifs: list = field(default_factory=list)  # rules v1.1: the ifs of the scope's own statement list (R-I1)
     prints_by_function: bool = False  # printf / print_r ... outside every arm that exits
     notes: list = field(default_factory=list)
 
@@ -301,8 +310,10 @@ class FileHarness:
     means SELECT * on it cannot be expanded.
     """
 
-    def __init__(self, source: bytes, ast, entrypoint: str, schema: dict | None = None):
+    def __init__(self, source: bytes, ast, entrypoint: str, schema: dict | None = None, top_ifs: bool = True):
+        """`top_ifs` writes the `topLevelIfs` extension (boundary rules v1.1); off for the frozen v1.0 run."""
         self.source, self.ast, self.file_id, self.entrypoint = source, ast, ast.file_id, entrypoint
+        self.write_top_ifs = top_ifs
         self.schema = schema or {}
         try:
             source.decode("utf-8")
@@ -346,9 +357,34 @@ class FileHarness:
 
     # ---- the walk: outputs, definitions, calls and includes, with the control path of each
 
+    def _leaves(self, stmts) -> bool:
+        """Rules v1.1 (R-I1): this statement list, at its own level, always leaves the page: an exit / die
+        statement, or a header("Location: ...") call with a literal argument."""
+        for stmt in stmts or []:
+            expr = stmt.get("expr") if _is(stmt, "Stmt_Expression") else None
+            if _is(expr, "Expr_Exit"):
+                return True
+            first = _args(expr)[0] if _is(expr, "Expr_FuncCall") and _args(expr) else None
+            if _callee(expr) == "header" and _is(first, "Scalar_String") \
+                    and re.match(r"\s*location\s*:", first.get("value") or "", re.I):
+                return True
+        return False
+
+    def _top_if(self, node: _N, after: list, scope: _Scope) -> None:
+        arms = [("then", node.get("cond"), node.get("stmts"))]
+        arms += [("elseif", e.get("cond"), e.get("stmts")) for e in node.get("elseifs") or []]
+        if node.get("else"):
+            arms.append(("else", node.get("cond"), node.get("else").get("stmts")))
+        scope.top_ifs.append({"nodeId": node.id, "loc": loc_dict(node.loc),
+                              "arms": [{"branch": branch, "condNodeId": cond.id, "leaves": self._leaves(stmts)}
+                                       for branch, cond, stmts in arms],
+                              "afterLeaves": self._leaves(after)})
+
     def _walk_list(self, nodes, scope: _Scope, chain: tuple, enclosures: list) -> None:
         previous = None
-        for node in nodes or []:
+        for index, node in enumerate(nodes or []):
+            if self.write_top_ifs and not chain and not enclosures and _is(node, "Stmt_If"):
+                self._top_if(node, (nodes or [])[index + 1:], scope)
             if _is(node, "Stmt_Expression") and _is(node.get("expr"), *OR_NODES)                     and _is(node.get("expr").get("right"), "Expr_Exit"):
                 self._or_exit(node.get("expr"), scope, chain, enclosures)
                 previous = node
@@ -1073,6 +1109,7 @@ class FileHarness:
             **function,
             **({"responseContentType": scope.content_type} if scope.content_type else {}),
             "sequence": [entry for _, entry in sequence],
+            **({"topLevelIfs": scope.top_ifs} if scope.top_ifs else {}),
             **({"redirects": [redirect | {"enclosedBy": [
                 self.loop_enclosure(e) if e["role"] == "iteration" else e for e in redirect["enclosedBy"]]}
                 for redirect in scope.redirects]} if scope.redirects else {}),
@@ -1091,6 +1128,7 @@ class FileHarness:
                 "foldedIncludes": FOLDED_INCLUDE_NOTE, "whitespaceIncludes": WHITESPACE_INCLUDE_NOTE,
                 "redirectsExtension": REDIRECTS_NOTE, "builtinMethods": BUILTIN_METHODS_NOTE,
                 "selectStarConvention": SELECT_STAR_NOTE,
+                **({"topLevelIfsExtension": TOP_LEVEL_IFS_NOTE} if scope.top_ifs else {}),
                 "partsExtension": PARTS_NOTE, "copyPropagationExtension": COPY_NOTE,
                 "sqlValuesExtension": SQL_VALUES_NOTE,
                 "queriesExtension": QUERIES_NOTE, "harnessNotesExtension": NOTES_NOTE,

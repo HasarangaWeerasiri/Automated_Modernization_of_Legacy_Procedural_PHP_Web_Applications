@@ -2,6 +2,11 @@
 
   flag:<kind>   explained by a flag the pipeline emitted AT THAT NODE: a node that printed the differing element's
                 start tag (or a part of it), or the function component called inside that element
+  flag-but-wrong:<kind>
+                a flag exists at that node, but the generated tree contradicts the browser's tree (Phase 4c, owner):
+                the flag claims the generated tree is the one a browser builds (an HTML5 repair or close: spec
+                section 5b, R-L6), or drops `<head>` content that the browser's tree has in `<body>`. Counted
+                separately: such a difference is a wrong result, not an explained gap
   env:<reason>  caused by the run, not the tool (get_only pages, a legacy runtime error, no replay data)
   norm:<reason> an artefact of the comparison itself
   UNEXPLAINED   none of the above; its root cause comes from the reviewed notes (tools/runtime/<app>/findings.json)
@@ -16,8 +21,14 @@ printed by a function component (no static start tag of its own) is tied to the 
 ancestor, and the flag must be in that component. Anything else is UNEXPLAINED: a flag elsewhere on the page never
 explains a difference.
 
+Which rules produced the run (`rules` in the folder's lists.json, written by generated_app.py; "1.0" when absent,
+as for the runs made before the switch) decides which reviewed findings apply: each finding names the rules it was
+found under.
+
 Usage, from component2_frontend/ (after tools/runtime/compare.py <app>):
-    venv/Scripts/python.exe tools/runtime/classify.py hms [--folder hms-4a]
+    venv/Scripts/python.exe tools/runtime/classify.py hms [--folder hms-4a] [--before hms-4a]
+(`--before`: the same pages generated without the data wiring, to tell List rows from static elements; default
+<app>-4a, the Phase 4a capture.)
 """
 
 import collections
@@ -37,6 +48,11 @@ PLACEHOLDER = "\x00"
 STRUCTURAL = {("document_shell", "<head> and its content dropped"), ("implicit_close", None),
               ("unmatched_close", None), ("html_nesting_changed", None), ("implicit_p_close", None),
               ("implied_end_tag", None), ("stray_end_tag_repaired", None), ("output_dropped", None)}
+# Flags that say the generated tree IS the browser's (spec section 5b repairs, R-L6 "browsers ignore it", an element
+# closed by an end tag): a difference at their node contradicts what they claim.
+EQUIVALENCE = {"implicit_close", "unmatched_close", "implicit_p_close", "implied_end_tag", "stray_end_tag_repaired",
+               "implicit_tbody", "duplicate_attribute"}
+HEAD_DROP = ("document_shell", "<head> and its content dropped")
 
 
 # ---------------------------------------------------------------- the units of a page and their printed text
@@ -51,10 +67,12 @@ class Unit:
         stage5 = json.loads((folder / "stage5.json").read_text(encoding="utf-8"))
         self.text, self.spans, self.calls = "", [], []  # spans: (start, end, node id); calls: (offset, callee)
         self.loops = {}  # node id (and part ids) -> the ids of the loops enclosing it
+        self.ifs = {}  # node id (and part ids) -> the ids of the ifs enclosing it
         for entry in timeline["sequence"]:
             loops = [e["nodeId"] for e in entry["enclosedBy"] if e["role"] == "iteration"]
+            ifs = [e["nodeId"] for e in entry["enclosedBy"] if e["role"] == "branch"]
             for node_id in [entry["id"]] + [part["nodeId"] for part in entry.get("parts", [])]:
-                self.loops[node_id] = loops
+                self.loops[node_id], self.ifs[node_id] = loops, ifs
             if entry["kind"] in ("call", "include"):
                 self.calls.append((len(self.text), entry.get("callee") or entry.get("path")))
             elif entry["kind"] == "Stmt_InlineHTML":
@@ -193,6 +211,11 @@ def explain_structure(units, elements: list, missing: bool) -> dict | None:
                             and f["detail"] == "collection"), None)
                 if gap is not None:
                     return flag_id(unit, gap)
+    if missing and elements:  # an element printed inside an if whose condition was not translated
+        for unit, nodes in tag_nodes(units, elements[0]):
+            found = unresolved_guard(unit, nodes)
+            if found is not None:
+                return found
     for element in elements:
         for unit, nodes in tag_nodes(units, element):
             for node in sorted(nodes):
@@ -256,10 +279,29 @@ def explain_by_call(units, by_function, ancestors: list) -> dict | None:
     return None
 
 
+def unresolved_guard(unit: Unit, nodes) -> dict | None:
+    """An `unresolvedCondition` (spec section 6: the content it guards never renders) on an if enclosing these
+    nodes."""
+    for node in sorted(nodes):
+        for if_id in unit.ifs.get(node, []):
+            gap = next((f for f in unit.flags.get(if_id, []) if f["kind"] == "unresolvedCondition"), None)
+            if gap is not None:
+                return flag_id(unit, gap)
+    return None
+
+
 def explain_text(units, legacy_text: str, generated_text: str) -> dict | None:
     """Text printed with an expression the pipeline left as a gap: a C2Todo / flag on a part of the node whose
-    literal text is the generated text."""
+    literal text is the generated text. Text the generated page lacks altogether: a node whose literal text is in
+    it, inside an if whose condition was not translated (unresolvedCondition)."""
     if not generated_text:
+        wanted = compare._text(legacy_text)
+        for unit in units:
+            for start, end, node in unit.spans:
+                literal = compare._text(unit.text[start:end].replace(PLACEHOLDER, " "))
+                found = unresolved_guard(unit, {node}) if literal and literal in wanted else None
+                if found is not None:
+                    return found
         return None
     for unit in units:
         for start, end, node in unit.spans:
@@ -285,6 +327,17 @@ def descendants(node: compare.Node) -> list:
     return out
 
 
+def contradiction(found: dict, difference: dict) -> str | None:
+    """Why a flag that explains this difference is a wrong result (flag-but-wrong), or None. Only the body is
+    compared, so a missing element is always one the browser built inside `<body>`."""
+    kind = found["kind"]
+    if (kind, found["detail"]) == HEAD_DROP and difference["kind"] == "missing":
+        return "dropped as <head> content, but the browser's tree has it in <body>"
+    if kind in EQUIVALENCE:
+        return f"{kind} says the generated tree is the one a browser builds; the browser's tree differs here"
+    return None
+
+
 def classify_page(page: dict, legacy_tree, generated_tree, units, by_function, notes: dict) -> list:
     out = []
     for difference in page["differences"]:
@@ -306,7 +359,10 @@ def classify_page(page: dict, legacy_tree, generated_tree, units, by_function, n
             if found is None and kind == "missing":
                 found = explain_by_order(units, tree, path)
         note = notes.get((page["page"], path))
-        if found is not None:
+        wrong = contradiction(found, difference) if found is not None else None
+        if wrong is not None:
+            out.append(difference | {"class": f"flag-but-wrong:{found['kind']}", "flag": found, "contradiction": wrong})
+        elif found is not None:
             out.append(difference | {"class": f"flag:{found['kind']}", "flag": found})
         elif note is not None and note["class"] != "UNEXPLAINED":
             out.append(difference | {"class": note["class"], "evidence": note["rootCause"]})
@@ -346,12 +402,15 @@ def main(argv: list[str]) -> int:
     folder = argv[argv.index("--folder") + 1] if "--folder" in argv else app  # e.g. hms-4a: before the wiring
     out = OUTPUT / folder
     pipeline = out / "pipeline" / app
-    before = OUTPUT / f"{app}-4a"  # the same capture before the data wiring (Phase 4a): no List rows there
+    # the same pages generated without the data wiring: no List rows there (Phase 4a, or a --no-data build)
+    before = OUTPUT / (argv[argv.index("--before") + 1] if "--before" in argv else f"{app}-4a")
     index = json.loads((pipeline / "index.json").read_text(encoding="utf-8"))
     report = json.loads((out / "compare.json").read_text(encoding="utf-8"))
+    lists_file = out / "lists.json"
+    rules = json.loads(lists_file.read_text(encoding="utf-8")).get("rules", "1.0") if lists_file.exists() else "1.0"
     notes_file = HERE / app / "findings.json"
     notes = {(n["page"], n["path"]): n for n in (json.loads(notes_file.read_text(encoding="utf-8"))["findings"]
-                                                if notes_file.exists() else [])}
+                                                if notes_file.exists() else []) if n.get("rules", "1.0") == rules}
     units = {e["key"]: Unit(e["key"], pipeline / e["key"]) for e in index["pages"]
              if (pipeline / e["key"] / "stage5.json").exists()}
     by_function = {u.function: u for u in units.values() if u.function}
@@ -380,31 +439,36 @@ def main(argv: list[str]) -> int:
                "staticElements": page["legacyElements"] - list_matched - list_missing,
                "staticMatched": page["matched"] - list_matched,
                "byClass": dict(sorted(by_class.items())), "unexplained": by_class.get("UNEXPLAINED", 0),
+               "flagButWrong": sum(n for c, n in by_class.items() if c.startswith("flag-but-wrong:")),
                "differences": differences}
         pages.append(row)
         for key in ("legacyElements", "generatedElements", "matched", "listElements", "listMatched",
-                    "staticElements", "staticMatched", "unexplained"):
+                    "staticElements", "staticMatched", "unexplained", "flagButWrong"):
             totals[key] += row[key]
         for name, count in by_class.items():
             totals["class:" + name] += count
     totals_out = {k: v for k, v in totals.items() if not k.startswith("class:")}
     totals_out["renderMatch"] = round(totals["matched"] / totals["legacyElements"], 4)
     totals_out["byClass"] = dict(sorted((k[6:], v) for k, v in totals.items() if k.startswith("class:")))
-    result = {"app": app, "classes": {"flag": "a flag the pipeline emitted at that node", "env": "the run",
-                                      "norm": "the comparison", "UNEXPLAINED": "none of these; root cause noted"},
+    result = {"app": app, "rules": rules,
+              "classes": {"flag": "a flag the pipeline emitted at that node",
+                          "flag-but-wrong": "a flag at that node, but the generated tree contradicts the browser's",
+                          "env": "the run", "norm": "the comparison", "UNEXPLAINED": "none of these; root cause noted"},
               "totals": totals_out, "pages": pages}
     (out / "classified.json").write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n", encoding="utf-8",
                                          newline="\n")
-    print(f"{'page':24} {'legacy':>6} {'match':>6} {'render':>7} {'list':>9} {'static':>9} {'unexpl':>6}  classes")
+    print(f"rules v{rules}")
+    print(f"{'page':24} {'legacy':>6} {'match':>6} {'render':>7} {'list':>9} {'static':>9} {'unexpl':>6} {'wrong':>5}"
+          "  classes")
     for p in pages:
         render = f"{p['renderMatch']:.3f}" if p["renderMatch"] is not None else "  -  "
         print(f"{p['page'] + (' *' if p['getOnly'] else ''):24} {p['legacyElements']:6} {p['matched']:6} {render:>7} "
               f"{p['listMatched']:4}/{p['listElements']:<4} {p['staticMatched']:4}/{p['staticElements']:<4} "
-              f"{p['unexplained']:6}  {p['byClass']}")
+              f"{p['unexplained']:6} {p['flagButWrong']:5}  {p['byClass']}")
     t = totals_out
     print(f"{'total':24} {t['legacyElements']:6} {t['matched']:6} {t['renderMatch']:.3f} "
           f"{t['listMatched']:4}/{t['listElements']:<4} {t['staticMatched']:4}/{t['staticElements']:<4} "
-          f"{t['unexplained']:6}  {t['byClass']}")
+          f"{t['unexplained']:6} {t['flagButWrong']:5}  {t['byClass']}")
     return 0
 
 

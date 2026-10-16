@@ -28,6 +28,10 @@ Usage, from component2_frontend/:
     venv/Scripts/python.exe tools/harness/run_apps.py            # every app of the active corpus
     venv/Scripts/python.exe tools/harness/run_apps.py hms --no-tsc
     venv/Scripts/python.exe tools/harness/run_apps.py --next-build   # also `next build` each app once
+    venv/Scripts/python.exe tools/harness/run_apps.py --rules v1.0   # the frozen rules (default: v1.1)
+
+`--rules v1.0` runs boundary rules v1.0 with spec v0.13, byte for byte the outputs of the freeze commit (Phase 5
+reports v1.0 and v1.1; docs/post-freeze-log.md).
 """
 
 import json
@@ -161,15 +165,17 @@ def merge_lib(relative: str, first: str, second: str) -> tuple[str | None, list]
 
 
 def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, build: bool = False,
-            contract_path: Path = EMPTY_CONTRACT, endpoint_map_path: Path | None = None) -> dict:
+            contract_path: Path = EMPTY_CONTRACT, endpoint_map_path: Path | None = None,
+            rules: str | None = None) -> dict:
     """Run every unit of an app and assemble one Next.js app; returns (and writes) the app's index.
 
     By default there is no contract and no endpoint map (none exists for whole apps). A substitute contract and
-    map are given only by a test fixture, e.g. the Phase 4 replay check; they are named in the index."""
+    map are given only by a test fixture, e.g. the Phase 4 replay check; they are named in the index. `rules`
+    ("1.0" / "1.1") overrides config/boundary_rules.json; give the same to app_timelines."""
     folder = output / timelines.app
     if folder.exists():
         shutil.rmtree(folder)
-    config, generation_config = load_boundary_config(), load_generation_config()
+    config, generation_config = load_boundary_config(rules=rules), load_generation_config()
     contract = loader.load_contract(contract_path)
     endpoint_map = loader.load_endpoint_map(endpoint_map_path) if endpoint_map_path else None
 
@@ -335,10 +341,13 @@ def main(argv: list[str]) -> int:
         print(f"harness cannot run: {reason}")
         return 1
     tsc, build = "--no-tsc" not in argv, "--next-build" in argv
-    apps = [a for a in argv if not a.startswith("--")] or list(APPS)
+    rules = argv[argv.index("--rules") + 1] if "--rules" in argv else None
+    rules = load_boundary_config(rules=rules).rules_version  # checked; the file's version when not given
+    named = [a for i, a in enumerate(argv) if not a.startswith("--") and (i == 0 or argv[i - 1] != "--rules")]
+    apps = named or list(APPS)
     failed = 0
     for app in apps:
-        index = run_app(app_timelines(app), tsc=tsc, build=build)
+        index = run_app(app_timelines(app, rules), tsc=tsc, build=build, rules=rules)
         units = [p for p in index["pages"] if p["role"] != "shell_part"]
         crashes = [p for p in units if p["crash"]]
         not_compiling = [p for p in units if p["tsc"]]

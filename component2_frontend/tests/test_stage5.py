@@ -758,7 +758,8 @@ def test_numeric_string_compare_is_flagged_on_a_translated_condition(tmp_path):
 def test_html_nesting_on_the_mocks(runs):
     found = {name: [(f.function, f.in_abstained, f.detail) for f in flags(result, "html_nesting_changed")]
              for name, (_, _, result) in runs.items()}
-    assert found.pop("wp_login") == [("Page", False, "div > table: generated children [form]; an HTML5 parser "
+    # rules v1.1: in the login guard's conditional component (v1.0: in Page)
+    assert found.pop("wp_login") == [("LoginSection1", False, "div > table: generated children [form]; an HTML5 parser "
                                                      "builds [form, tbody]")]
     # edge_cases: its table held only the loop's rows; spec v0.7 section 5b wraps those in <tbody> too
     assert all(not v for v in found.values()), found
@@ -768,7 +769,8 @@ def test_html_nesting_on_the_mocks(runs):
 
 
 EXPECTED_FLAG_RATES = {"list_while": 12, "list_foreach": 12, "admin": 6, "detail": 5, "edge_cases": 10,
-                       "wp_guestbook": 5, "wp_view": 29, "wp_login": 4, "wp_header": 12, "wp_thumbnails": 2}
+                       "wp_guestbook": 5, "wp_view": 29, "wp_login": 5, "wp_header": 12, "wp_thumbnails": 2}
+# rules v1.1: wp_login 4 -> 5 (its former page guard is a conditional: one more review). v1.0: 4, total 97
 
 
 def test_abstained_code_is_counted_once(runs):
@@ -784,7 +786,7 @@ def test_abstained_code_is_counted_once(runs):
     assert omitted and all((f.in_abstained, f.severity, f.severity_if_rendered) == (True, "info", "todo")
                            for f in omitted)
     rates = {name: stage5.counts(r)["metrics"]["flagRate"] for name, (_, _, r) in runs.items()}
-    assert rates == EXPECTED_FLAG_RATES and sum(rates.values()) == 97
+    assert rates == EXPECTED_FLAG_RATES and sum(rates.values()) == 98
 
 
 def test_html_nesting_flag_points_at_the_element(runs):

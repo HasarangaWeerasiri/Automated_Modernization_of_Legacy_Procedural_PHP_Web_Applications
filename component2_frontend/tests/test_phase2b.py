@@ -46,8 +46,9 @@ APP = {
     "home.php": "<?php require 'lib.php'; site_header(\"home\"); ?><h1>Home</h1><select><?php options(); ?></select>"
                 "<?php badge(\"new\", 3); loud(\"hi\"); quiet(); $obj->draw(); site_footer(); ?>",
     "about.php": "<?php require 'lib.php'; site_header(); ?><p>About</p><?php site_footer(); ?>",
+    # rules v1.1: a page guard only when the other path leaves the page (here, an else that redirects)
     "sub/guard.php": "<?php require '../lib.php'; if ($ok) { site_header(\"home\"); ?><p>guarded</p>"
-                     "<?php site_footer(); } ?>",
+                     "<?php site_footer(); } else { header(\"Location: /login.php\"); exit; } ?>",
     "plain.php": "<html><body><p>Plain</p><?php badge(\"old\", 1); again(); ?></body></html>",
     "broken.php": "<?php site_header(\"x\"); ?><p>no footer</p>",
     "outside.php": "<p>before</p><?php site_header(\"y\"); ?><p>in</p><?php site_footer(); ?>",

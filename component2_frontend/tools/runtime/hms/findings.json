@@ -1,17 +1,21 @@
 {
-  "note": "Reviewed root causes of the Phase 4b differences tools/runtime/classify.py cannot tie to a flag at their node. Keyed by page and difference path (compare.py). Each stays UNEXPLAINED in classified.json: this file only records why.",
+  "note": "Reviewed root causes of the Phase 4 differences tools/runtime/classify.py cannot tie to a flag at their node. Keyed by page and difference path (compare.py); `rules` names the boundary rules version of the run they were found in (classify.py applies a finding only to a run of that version). Each stays UNEXPLAINED in classified.json: this file only records why.",
   "findings": [
     {
       "page": "search.php",
       "path": "body>div[0]",
+      "rules": "1.0",
       "class": "UNEXPLAINED",
-      "rootCause": "(ii) a frozen rule produced a result the legacy page does not show; NOT fixed, an unsound-decision candidate. search.php 4-60 prints its whole output inside `if(isset($_POST['search_submit']))`. That if wraps the page's whole output, so R-I1 (page guard) applies: 'not a component, the page renders normally; the condition is form/redirect logic owned by Component 1'. The generated page therefore renders the POST-only results view (heading, empty table, 'Go Back' link) unconditionally, also on a plain GET, where the legacy page prints nothing. No flag at that node says so: the only flag on the guard is stage2_review 'unlabelled' (generic). legacy-apps/hms search.php:4 (the guard), :20 (this <div class=\"container\">). Not a PHP error: errors.log has no line for search.php."
+      "rootCause": "(ii) a frozen rule produced a result the legacy page does not show; NOT fixed, an unsound-decision candidate. search.php 4-60 prints its whole output inside `if(isset($_POST['search_submit']))`. That if wraps the page's whole output, so R-I1 (page guard) applies: 'not a component, the page renders normally; the condition is form/redirect logic owned by Component 1'. The generated page therefore renders the POST-only results view (heading, empty table, 'Go Back' link) unconditionally, also on a plain GET, where the legacy page prints nothing. No flag at that node says so: the only flag on the guard is stage2_review 'unlabelled' (generic). legacy-apps/hms search.php:4 (the guard), :20 (this <div class=\"container\">). Not a PHP error: errors.log has no line for search.php.",
+      "unsoundDecision": "Phase 4's one unsound decision (owner, Phase 4c): found under rules v1.0; fixed by post-freeze change 1 (R-I1 scope, rules v1.1)"
     },
     {
       "page": "search.php",
       "path": "body>div[1]",
+      "rules": "1.0",
       "class": "UNEXPLAINED",
-      "rootCause": "(ii) the same R-I1 page guard as body>div[0] (search.php:4): the 'Go Back' <div> (search.php:52) is printed only after a POST in the legacy page, always in the generated page."
+      "rootCause": "(ii) the same R-I1 page guard as body>div[0] (search.php:4): the 'Go Back' <div> (search.php:52) is printed only after a POST in the legacy page, always in the generated page.",
+      "unsoundDecision": "Phase 4's one unsound decision (owner, Phase 4c): found under rules v1.0; fixed by post-freeze change 1 (R-I1 scope, rules v1.1)"
     }
   ]
 }

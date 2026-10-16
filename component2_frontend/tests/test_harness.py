@@ -750,15 +750,20 @@ def test_whole_app_totals(apps_output):
     # Step 4 part B (spec v0.11): error_output_only units are not generated (phpBlog core.php, install/core.php;
     # attendance's four connect.php): their own C2Todos and reviews go, one error_output_only review each comes.
     # Warehouse: first run.
-    expected = {"hms": (269, 68, 5, 174, 192, 391, 292), "wackopicko": (384, 58, 7, 307, 159, 301, 126),
+    # Phase 4c (rules v1.1, spec v0.14; v1.0 values in brackets): HMS reviews 174 -> 169, todo 192 -> 194, S5 review
+    # 391 -> 385, info 292 -> 318 (R-I1 guards become conditionals; the navbar and the <h4> fix bring their own
+    # flags). WackoPicko components 58 -> 62, abstains 7 -> 13, todo 159 -> 170 (four login-style guards are
+    # conditionals; three of them hold shell calls and abstain tag_crosses_function)
+    expected = {"hms": (269, 68, 5, 169, 194, 385, 318), "wackopicko": (384, 62, 13, 307, 170, 301, 126),
                 "phpblog": (801, 186, 15, 832, 591, 1046, 464), "attendance": (176, 34, 11, 95, 85, 167, 287),
                 "warehouse": (418, 64, 62, 243, 270, 270, 378)}
     # Step 5 (rules v1.0, freeze): warehouse only. Include paths from constants resolve (load.php 6/6), the
     # whitespace-only load.php is no cross_file_output (40 -> 3), ajax.php is an ajax_endpoint (not generated).
     assert totals == {app: expected[app] for app in totals}
     hms = [apps_results_table.page_row(output / "hms", entry) for entry in indexes["hms"]["pages"]]
-    assert (sum(r["review_unlabelled"] for r in hms), sum(r["review_other"] for r in hms)) == (171, 3)
-    assert (sum(r["s5review_unlabelled"] for r in hms), sum(r["s5review_other"] for r in hms)) == (171, 220)
+    # Phase 4c (rules v1.1; v1.0: (171, 3) and (171, 220)): the six HMS R-I1 guards are conditionals now
+    assert (sum(r["review_unlabelled"] for r in hms), sum(r["review_other"] for r in hms)) == (166, 3)
+    assert (sum(r["s5review_unlabelled"] for r in hms), sum(r["s5review_other"] for r in hms)) == (166, 219)
     reasons = {}
     for r in hms:
         for reason, n in r["abstains"].items():
