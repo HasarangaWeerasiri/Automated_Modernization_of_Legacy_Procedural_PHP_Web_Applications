@@ -97,7 +97,7 @@ HMS has **0 unresolved sites** at stage 3: every live site is recovered and conv
 
 | App | Sites / recovered / converted | Unresolved sites (reason codes) | How the abstentions were checked |
 |---|---|---|---|
-| Dignity-Dev HMS (fresh holdout) | 14 / 7 / 4 | 10 (4 `STRUCTURAL`, e.g. `FROM $table` from a function parameter; 3 conversion-unsupported; 1 loop/switch; 1 branching; 1 unsupported shape) | Dignity-Dev produced 10 unresolved entries. Their correctness against the ground truth is pending author verification and S15 evaluation. The draft ground truth contains 6 non-recoverable sites out of 13 live sites. |
+| Dignity-Dev HMS (**fresh holdout**, one app) | 14 calls; 13 live sites (G010, empty SQL, excluded) / 7 recovered / 4 converted | 10 unresolved entries: 7 at recovery (4 `STRUCTURAL`, 1 loop/switch, 1 branching, 1 unsupported shape on G010) and 3 at conversion (implicit comma joins) | S15 against the author-verified ground truth (16 Oct 2026; 7 recoverable, 6 non-recoverable). **Recovery: 7/7 recovered, correct abstention on 6 of 6 non-recoverable sites, 0 false recoveries, 0 extra recoveries.** **Conversion: 4 of 7 recoverable sites converted**; G007–G009 are false abstentions at conversion (implicit comma joins are outside the converter's supported join shape; no injection-safety reason). Column use: write columns 5/7 (INSERT without a column list). Evidence: `evidence/evaluation/dignity_dev_hms/summary.md`, `evaluation.json`, `implicit_join_analysis.md` |
 | NEWS-BUZZ | 32 / 30 / 29 | 3 (2 `BRANCHING`, 1 conversion-unsupported) | Its ground truth is a blind draft, **not yet author-verified** (verification due on Sunday). The draft marks `admin/editposts.php:17` and `admin/post.php:17` as not recoverable (if/else picks the SQL), which agrees with the 2 BRANCHING abstentions; not yet a verified result |
 | Fee-Rainbow | 22 / 20 / 19 | 3 (2 `UNKNOWN_EXPR`, 1 conversion-unsupported) | Ground truth not yet author-verified |
 
@@ -110,7 +110,7 @@ py3 -m c3.cli run --php benchmarks\apps\_app_only\dignity_dev_hms --schema bench
 Each entry shows file, line, reason code, reason and `manual_review_required`.
 
 **HMS is not the generalization evidence.** HMS was used to find the missed recoveries. Its 4 abstentions were reviewed and led to the general array-element rule (H1). INT(n) and ALTER-key handling were also first exposed by HMS and the other unseen apps. Stage 3 is therefore **post-adaptation**. The generalization evidence is:
-- **Dignity-Dev HMS**: the only genuine **fresh holdout**. It was run untouched on the current rules: 14 sites, 7 recovered, 4 converted, detection 14/14, and its abstentions were checked as correct (`evidence/fresh_holdout/dignity_dev_hms/README.md`).
+- **Dignity-Dev HMS**: the only genuine **fresh holdout** (one app, 13 live sites). It was run untouched, with no rule changed for it, and scored by S15 against the author-verified ground truth: detection 13/13; recovery 7/7, with correct abstention on 6 of 6 non-recoverable sites and 0 false recoveries; 4 of 7 recoverable sites converted (`evidence/evaluation/dignity_dev_hms/summary.md`). The first holdout run (`cd046ba`) and the current code give identical results.
 - **Helpdesk holdout**: frozen pre-adaptation baseline 9/7/6 (tag `c3-helpdesk-baseline-6of9`). It is post-adaptation after S13.
 - **NEWS-BUZZ and Fee-Rainbow**: frozen pre-adaptation runs in `evidence/preadaptation/`; later runs are post-adaptation. Their ground truth is not yet author-verified, so they have not been evaluated against it.
 - **No query changed on the other 8 apps** when H1 was added (`evidence/hms/H1_unresolved_review/regression.txt`). This shows the rule did not break them; it does not show generalization.
@@ -178,7 +178,7 @@ See `evidence/hms/H2_tables_without_pk/proposal.md`.
 - **No SQL is guessed.** The site gets an entry in `unresolved_queries.json` with file, line, reason code, reason and the action `manual_review_required`.
 - **A stub is generated.** `data_access.py` gets `unresolved_query_<id>(session, **kwargs)`, which raises `NotImplementedError` naming the PHP file and line, so it can never run silently.
 - **The traceability report** marks the site `manual_review_required`.
-- **On HMS** there are 0 unresolved sites. Dignity-Dev shows the behaviour: 10 of 14 sites are left unresolved, for example where a table name comes from a function parameter.
+- **On HMS** there are 0 unresolved sites. Dignity-Dev (fresh holdout) shows the behaviour: 10 unresolved entries. Against the verified ground truth, the 6 non-recoverable live sites are all correct abstentions (e.g. a table name from a function parameter). The 3 conversion-stage entries (G007–G009) are recoverable sites that the converter does not yet support, and they are reported as false abstentions at conversion.
 
 ---
 
