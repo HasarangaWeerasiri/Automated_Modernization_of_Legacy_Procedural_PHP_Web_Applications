@@ -118,6 +118,10 @@ def test_build_summary_on_hand_written_records():
         "converted_by_query_specific_template": 1,
         "recovered_not_converted": 1,
         "not_converted": 2,
+        # Q004 stops at recovery; Q002 at conversion; Q003 is template-converted.
+        "unresolved_recovery_stage": 1,
+        "unresolved_conversion_stage": 1,
+        "unresolved_total": 2,
         "unresolved_queries": 2,
         "conversion_unresolved": 2,
     }
@@ -139,3 +143,32 @@ def test_summary_separates_primary_outputs_from_supporting_artifacts(tmp_path):
     assert {"queries.json", "converted_queries.json", "schema.json", "summary.json"} <= set(
         summary["supporting_artifacts"]
     )
+
+
+def test_summary_unresolved_counts_match_the_unresolved_report(tmp_path):
+    """summary.json splits unresolved entries by stage exactly like unresolved_queries.json."""
+
+    import json
+
+    from c3.pipeline import run_pipeline
+
+    php = tmp_path / "php"
+    php.mkdir()
+    (php / "a.php").write_text(
+        '<?php\n'
+        'mysqli_query($c, "SELECT id FROM t WHERE id = 1");\n'                      # converted
+        'mysqli_query($c, "SELECT a.id FROM t a, u b WHERE a.id = b.id");\n'        # recovered, not converted
+        'mysqli_query($c, "SELECT id FROM " . $table);\n',                          # recovery-unresolved
+        encoding="utf-8",
+    )
+    (tmp_path / "schema.sql").write_text(
+        "CREATE TABLE t (id INT PRIMARY KEY); CREATE TABLE u (id INT PRIMARY KEY);", encoding="utf-8")
+    run_pipeline(php, tmp_path / "schema.sql", tmp_path / "out")
+
+    summary = json.loads((tmp_path / "out" / "summary.json").read_text(encoding="utf-8"))
+    report = json.loads((tmp_path / "out" / "unresolved_queries.json").read_text(encoding="utf-8"))
+    stages = [entry["stage"] for entry in report]
+
+    assert summary["unresolved_recovery_stage"] == stages.count("recovery") == 1
+    assert summary["unresolved_conversion_stage"] == stages.count("conversion") == 1
+    assert summary["unresolved_total"] == len(report) == 2

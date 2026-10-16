@@ -40,7 +40,7 @@ def test_outcomes_ambiguous_commented_and_schema_mismatch():
     assert (r["TP"], r["FN"], r["FP"], r["TN"], r["excluded_ambiguous"]) == (2, 1, 1, 1, 1)
     assert r["precision"] == 66.7 and r["recall"] == 66.7
     assert r["false_recoveries"] == ["a.php:3"] and r["false_abstentions"] == ["a.php:2"]
-    assert [d["site"] for d in result["detection"]["false_detections_commented_out"]] == ["a.php:6"]
+    assert [(d["site"], d["site_status"]) for d in result["detection"]["non_live_sites_reported"]] == [("a.php:6", "commented_out")]
     assert result["detection"]["c3_sites_not_in_gt"] == [{"site": "b.php:9", "c3_query_id": "Q8"}]
     assert result["column_use_accuracy"]["sites"] == 1 and result["column_use_accuracy"]["read"] == 100.0
     assert result["column_use_accuracy"]["filter"] == 100.0  # case-insensitive

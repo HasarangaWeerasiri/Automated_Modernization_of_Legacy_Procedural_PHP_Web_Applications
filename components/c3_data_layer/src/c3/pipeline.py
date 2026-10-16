@@ -73,6 +73,19 @@ def build_summary(
             for q in converted
         ),
         "not_converted": total - converted_count,
+        # The same split as unresolved_queries.json: every query that is not
+        # CONVERTED, by the stage at which it stopped.
+        "unresolved_recovery_stage": sum(
+            q.get("status") != "RECOVERED"
+            and q.get("query_id") not in {c.get("query_id") for c in converted_rows}
+            for q in queries
+        ),
+        "unresolved_conversion_stage": sum(
+            q.get("query_id") in recovered_ids
+            and q.get("status") != "CONVERTED"
+            for q in converted
+        ),
+        "unresolved_total": total - converted_count,
         # Backward-compatible keys (original meaning).
         "unresolved_queries": total - recovered,
         "conversion_unresolved": total - converted_count,

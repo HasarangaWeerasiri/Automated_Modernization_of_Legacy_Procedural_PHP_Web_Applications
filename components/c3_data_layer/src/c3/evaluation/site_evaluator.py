@@ -6,8 +6,9 @@ execution site (file, line, site_status, expected_recoverable true / false /
 never by query ID (C3 query IDs are positional).
 
 Rules
-  * Only live sites count. Commented-out GT sites that C3 reports are false
-    detections.
+  * Only live sites count. Non-live GT sites (commented out, dead code such
+    as an empty SQL string) that C3 reports are listed under
+    non_live_sites_reported with their site_status. They are not scored.
   * "ambiguous" sites are excluded from precision / recall and listed.
   * Recovery: expected true & RECOVERED = TP, expected true & abstained =
     FN (false abstention), expected false & RECOVERED = FP (false
@@ -66,7 +67,7 @@ def evaluate_sites(
     usage_by_id = {u["query_id"]: u for u in column_usage}
 
     counts = {"TP": 0, "FN": 0, "FP": 0, "TN": 0}
-    details, ambiguous, false_detections, schema_mismatch = [], [], [], []
+    details, ambiguous, non_live_reported, schema_mismatch = [], [], [], []
     matched_keys = set()
     fields = ("operation", "tables", "read", "write", "filter")
     column_correct = {"main": dict.fromkeys(fields, 0), "schema_mismatch": dict.fromkeys(fields, 0)}
@@ -80,8 +81,9 @@ def evaluate_sites(
 
         if entry.get("site_status") != "live":
             if record is not None:
-                false_detections.append({"site": f"{entry['source_file']}:{entry['line']}",
-                                         "site_status": entry.get("site_status"), "c3_query_id": record["query_id"]})
+                non_live_reported.append({"site": f"{entry['source_file']}:{entry['line']}",
+                                          "site_status": entry.get("site_status"), "c3_query_id": record["query_id"],
+                                          "c3_status": record.get("status")})
             continue
 
         detail = {"gt_id": entry.get("query_id"), "site": f"{entry['source_file']}:{entry['line']}",
@@ -145,7 +147,7 @@ def evaluate_sites(
         "gt_entries": len(ground_truth),
         "gt_live_sites": len(live),
         "detection": {"live_detected": detected_live, "recall": _percentage(detected_live, len(live)),
-                      "false_detections_commented_out": false_detections, "c3_sites_not_in_gt": extra_c3},
+                      "non_live_sites_reported": non_live_reported, "c3_sites_not_in_gt": extra_c3},
         "recovery": {
             "excluded_ambiguous": len(ambiguous),
             "evaluated": tp + fn + fp + tn,
