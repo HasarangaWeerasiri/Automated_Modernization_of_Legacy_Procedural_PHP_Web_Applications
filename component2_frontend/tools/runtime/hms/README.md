@@ -88,6 +88,9 @@ venv/Scripts/python.exe tools/runtime/classify.py hms --folder hms-v1.1 --before
 ```
 
 `hms-v1.0` is the Phase 4b run (rules v1.0), kept as it was and classified again (`--before` defaults to `hms-4a`).
+`hms-v1.1` is the Phase 4c run (changes 1–2); `hms-v1.1-final` (with `hms-v1.1-final-nodata`) the Phase 4d run after
+change 3, the one reported in `docs/phase4-results.md`. `simulate_css.py` and `side_by_side.py` take a run's folder name
+in place of the app (e.g. `simulate_css.py hms-v1.1-final`).
 The no-data build is the baseline that tells List rows from static elements; without it, elements v1.1 adds (the
 navbar) would be counted as rows.
 

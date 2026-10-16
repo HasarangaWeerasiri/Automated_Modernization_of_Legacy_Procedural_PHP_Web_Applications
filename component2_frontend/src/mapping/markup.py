@@ -61,6 +61,25 @@ _IMPLIED_END = {"li": ("li",), "dd": ("dd", "dt"), "dt": ("dd", "dt")}  # start 
 # whitespace, ends <head> in every browser (HTML5 "in head", anything else) and is body content.
 HEAD_CONTENT = frozenset(("base", "link", "meta", "noscript", "script", "style", "template", "title"))
 HEADINGS = frozenset(("h1", "h2", "h3", "h4", "h5", "h6"))
+_RAW_CONTENT = re.compile(r"<(script|style|title|textarea)\b[^>]*>.*?</\1\s*>", re.I | re.S)
+_TAG_OR_TEXT = re.compile(r"<([A-Za-z][A-Za-z0-9-]*)|([^<\s])")
+
+
+def starts_body(text: str) -> bool:
+    """Spec v0.15: whether literal output certainly starts the body (an element that is not head content, text
+    that is not whitespace, or an end tag `</html>`, `</body>`, `</br>`, which make the HTML5 parser insert the
+    body), so a later `<head>` start tag is ignored by a browser."""
+    text = re.sub(r"<!--.*?(?:-->|$)|<![^>]*>|<\?[^>]*>", "", text, flags=re.S)
+    text = _RAW_CONTENT.sub("", text)
+    if re.search(r"</(?:html|body|br)\b", text, re.I):
+        return True
+    text = re.sub(r"</[^>]*>", "", text)
+    for found in _TAG_OR_TEXT.finditer(re.sub(r"<[A-Za-z][^>]*>", lambda m: m.group(0).split()[0].rstrip(">") + " ",
+                                               text)):
+        name, char = found.groups()
+        if char is not None or name.lower() not in HEAD_CONTENT | {"html", "head"}:
+            return True
+    return False
 
 
 class GenerationError(Exception):
@@ -238,7 +257,8 @@ class Builder:
     """Builds the markup tree of a run of timeline items (see the module docstring)."""
 
     def __init__(self, outputs: list[OutputNode], config: BoundaryConfig, abstain: dict[str, ComponentNode],
-                 strict: bool = True, stray: bool = False, opaque: frozenset = frozenset()):
+                 strict: bool = True, stray: bool = False, opaque: frozenset = frozenset(),
+                 body_slots: frozenset = frozenset()):
         self.void = frozenset(config.void_tags)
         self.abstain_by_source = abstain
         self.strict = strict
@@ -246,8 +266,11 @@ class Builder:
         # known. That ends at an abstained region, at a shell's children, and at a slot named in `opaque`.
         self.certain = strict and stray
         self.opaque = opaque
-        # Spec v0.14 (rules v1.1): <head> content and heading end tags as a browser builds them
+        # Spec v0.14 (rules v1.1): <head> content and heading end tags as a browser builds them; v0.15: a <head>
+        # after body content, </form>
         self.browser_v014 = config.rules_version != "1.0"
+        self.body_slots = body_slots  # calls / includes whose output certainly holds body content (v0.15)
+        self.body_started = False  # body content has certainly been printed, outside any region (v0.15)
         self.tracker = tagtrack.track(outputs, config)
         self.root: list = []
         self.stack: list = []  # MElement / _Frame
@@ -282,6 +305,8 @@ class Builder:
     def walk(self, items: list) -> None:
         for item in items:
             if isinstance(item, OutputNode):
+                if item.id in self.body_slots and not any(isinstance(e, _Frame) for e in self.stack):
+                    self.body_started = self.browser_v014
                 if item.id in self.abstain_by_source:  # e.g. markup_from_expression: opaque, its text is not read
                     self.abstained(item, self.abstain_by_source[item.id])
                 elif item.kind in ("call", "children", "include"):
@@ -530,6 +555,8 @@ class Builder:
                 if not space and self.open_head():
                     self.flush_text()  # whitespace stays in <head>; this text is body content (spec v0.14)
                     self.end_head("text")
+                if not space and not self.in_head():
+                    self.mark_body()
                 self.text_append(ch)
         elif s == "tag_open":
             if ch.isascii() and ch.isalpha():
@@ -730,6 +757,14 @@ class Builder:
         return bool(self.browser_v014 and isinstance(top, MElement) and top.tag == "head"
                     and all(isinstance(child, (MText, MElement)) for child in top.children))
 
+    def in_head(self) -> bool:
+        return any(isinstance(e, MElement) and e.tag == "head" for e in self.stack)
+
+    def mark_body(self) -> None:
+        """Body content is printed here; certain only outside every loop and if (v0.15)."""
+        if self.browser_v014 and not any(isinstance(e, _Frame) for e in self.stack):
+            self.body_started = True
+
     def end_head(self, by: str) -> None:
         head = self.stack.pop()
         head.end, head.clean = "implied", True
@@ -743,6 +778,14 @@ class Builder:
         self.state = "data"
         if element.tag not in HEAD_CONTENT | {"html", "head", "body"} and self.open_head():
             self.end_head(f"<{element.tag}>")
+        if element.tag == "head" and self.body_started and not self.in_head():
+            # Spec v0.15: after body content a <head> start tag is ignored; what it holds stays in the body
+            self.flag("implied_end_tag", "info", element.node_id,
+                      "<head> after body content is ignored, as a browser does: its children are body content "
+                      "(spec v0.15)", self.anchor())
+            return
+        if element.tag not in HEAD_CONTENT | {"html", "head"} and not self.in_head():
+            self.mark_body()
         self.implied_end_tags(element.tag)
         self.append(element)
         if element.tag in self.void or self_closing:
@@ -763,6 +806,25 @@ class Builder:
     def end_tag(self) -> None:
         self.state = "data"
         name = self.end_name.strip().lower()
+        if name in ("html", "body", "br") and not self.in_head():
+            self.mark_body()  # the HTML5 parser inserts the body for these (spec v0.15)
+        if self.browser_v014 and name == "form":
+            # Spec v0.15: </form> removes only the <form> from the open elements (HTML5 "in body")
+            for index in range(len(self.stack) - 1, -1, -1):
+                entry = self.stack[index]
+                if isinstance(entry, _Frame):
+                    break
+                if isinstance(entry, MElement) and entry.tag == "form":
+                    inside = self.stack[index + 1:]
+                    if inside:
+                        entry.end, entry.clean = "explicit", False
+                        del self.stack[index]
+                        self.flag("implied_end_tag", "info", entry.node_id,
+                                  f"</form> removes only the <form>; <{inside[0].tag}> opened inside it stays open, "
+                                  "as a browser does (spec v0.15)",
+                                  entry.parent if isinstance(entry.parent, MElement) else None)
+                        return
+                    break
         if self.browser_v014 and name in HEADINGS:
             # Spec v0.14 section 5b: </h1>-</h6> closes the nearest open heading of any level (HTML5 "in body")
             for index in range(len(self.stack) - 1, -1, -1):
@@ -833,10 +895,12 @@ def _first_output(item) -> OutputNode | None:
 
 
 def build_page(outputs: list[OutputNode], config: BoundaryConfig, abstain: dict[str, ComponentNode],
-               stray: bool = False, opaque: frozenset = frozenset()) -> Markup:
+               stray: bool = False, opaque: frozenset = frozenset(), body_slots: frozenset = frozenset()) -> Markup:
     """The markup tree of a whole page; abstained regions are opaque. `stray` turns on the repair of stray
-    </p> and </br> end tags (spec v0.7 section 5b); `opaque` names the slots after which it stops."""
-    return Builder(outputs, config, abstain, strict=True, stray=stray, opaque=opaque).build(_regions(outputs))
+    </p> and </br> end tags (spec v0.7 section 5b); `opaque` names the slots after which it stops; `body_slots`
+    the calls / includes whose output certainly holds body content (spec v0.15)."""
+    return Builder(outputs, config, abstain, strict=True, stray=stray, opaque=opaque,
+                   body_slots=body_slots).build(_regions(outputs))
 
 
 def build_region(region, outputs: list[OutputNode], config: BoundaryConfig,

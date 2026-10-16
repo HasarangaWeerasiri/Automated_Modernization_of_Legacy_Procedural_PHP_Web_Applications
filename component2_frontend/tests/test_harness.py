@@ -754,7 +754,9 @@ def test_whole_app_totals(apps_output):
     # 391 -> 385, info 292 -> 318 (R-I1 guards become conditionals; the navbar and the <h4> fix bring their own
     # flags). WackoPicko components 58 -> 62, abstains 7 -> 13, todo 159 -> 170 (four login-style guards are
     # conditionals; three of them hold shell calls and abstain tag_crosses_function)
-    expected = {"hms": (269, 68, 5, 169, 194, 385, 318), "wackopicko": (384, 62, 13, 307, 170, 301, 126),
+    # Phase 4d (spec v0.15, change 3): HMS S5 review 385 -> 383 (index1.php's <head> content is no longer dropped as
+    # document_shell; prescribe.php's </form> no longer an implicit_close), info 318 -> 322 (implied_end_tag)
+    expected = {"hms": (269, 68, 5, 169, 194, 383, 322), "wackopicko": (384, 62, 13, 307, 170, 301, 126),
                 "phpblog": (801, 186, 15, 832, 591, 1046, 464), "attendance": (176, 34, 11, 95, 85, 167, 287),
                 "warehouse": (418, 64, 62, 243, 270, 270, 378)}
     # Step 5 (rules v1.0, freeze): warehouse only. Include paths from constants resolve (load.php 6/6), the
@@ -763,7 +765,7 @@ def test_whole_app_totals(apps_output):
     hms = [apps_results_table.page_row(output / "hms", entry) for entry in indexes["hms"]["pages"]]
     # Phase 4c (rules v1.1; v1.0: (171, 3) and (171, 220)): the six HMS R-I1 guards are conditionals now
     assert (sum(r["review_unlabelled"] for r in hms), sum(r["review_other"] for r in hms)) == (166, 3)
-    assert (sum(r["s5review_unlabelled"] for r in hms), sum(r["s5review_other"] for r in hms)) == (166, 219)
+    assert (sum(r["s5review_unlabelled"] for r in hms), sum(r["s5review_other"] for r in hms)) == (166, 217)  # 4d
     reasons = {}
     for r in hms:
         for reason, n in r["abstains"].items():

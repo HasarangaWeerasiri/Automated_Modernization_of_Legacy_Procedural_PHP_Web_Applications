@@ -227,7 +227,6 @@ def app_timelines(app: str, rules: str = "1.1") -> AppTimelines:
     commit = source_commit(app)
     if commit != config["commit"]:
         raise RuntimeError(f"legacy-apps/{root.name} is at {commit}, expected {config['commit']}")
-    harnesses, errors = {}, {}
     with tempfile.TemporaryDirectory() as work:
         tree = Path(work) / "tree"
         if "manifest" in config:  # verified above: the folder is the commit
@@ -240,21 +239,29 @@ def app_timelines(app: str, rules: str = "1.1") -> AppTimelines:
                 raise RuntimeError(f"{app}: {missing} exists at {commit}; its substitution is out of date")
             shutil.copyfile(tree / source, tree / missing)
         files = app_files(app, tree)
-        scripts = js_references(tree, files, config["docroot"], config["exclude"])
-        schema, schema_files = load_schema(tree)
-        sources = [SourceFile(tree / path, f"f{index:03d}", f"{config['prefix']}/{path}")
-                   for index, path in enumerate(files, start=1)]
-        asts, meta = parse_sources(sources)
-        for path, source, ast in zip(files, sources, asts):
-            if ast.parse_errors:
-                errors[path] = list(ast.parse_errors)
-            harnesses[path] = FileHarness(source.source.read_bytes(), ast, source.path, schema,
-                                          top_ifs=rules.removeprefix("v") != "1.0")
+        return tree_timelines(app, tree, files, config["prefix"], config["docroot"], config["exclude"], commit,
+                              substitutions, rules)
+
+
+def tree_timelines(app: str, tree: Path, files: list[str], prefix: str, docroot: str, exclude: tuple, commit: str,
+                   substitutions: dict, rules: str) -> AppTimelines:
+    """The timelines of the PHP `files` of a folder that holds one app (paths relative to `tree`)."""
+    harnesses, errors = {}, {}
+    scripts = js_references(tree, files, docroot, exclude)
+    schema, schema_files = load_schema(tree)
+    sources = [SourceFile(tree / path, f"f{index:03d}", f"{prefix}/{path}")
+               for index, path in enumerate(files, start=1)]
+    asts, meta = parse_sources(sources)
+    for path, source, ast in zip(files, sources, asts):
+        if ast.parse_errors:
+            errors[path] = list(ast.parse_errors)
+        harnesses[path] = FileHarness(source.source.read_bytes(), ast, source.path, schema,
+                                      top_ifs=rules.removeprefix("v") != "1.0")
     file_ids = {path: harness.file_id for path, harness in harnesses.items()}
 
     def provenance(path: str) -> dict:
         return {"generator": "c2-harness", "parser": meta["parser"], "parserSyntax": meta["syntax"][file_ids[path]],
-                "php": meta["php"], "source": f"{config['prefix']}/{path}", "sourceCommit": commit,
+                "php": meta["php"], "source": f"{prefix}/{path}", "sourceCommit": commit,
                 **({"analysisSubstitution": f"not in the repository: analysed from {substitutions[path]} "
                                             "(legacy-apps/PINS.md)"} if path in substitutions else {}),
                 "astFormat": "Member 01 schema 1.0 (produced by the harness: tools/harness/parse.php)",
@@ -268,8 +275,18 @@ def app_timelines(app: str, rules: str = "1.1") -> AppTimelines:
     silent_notes = {path: sorted(harnesses[path].top.notes, key=lambda n: (n["line"], n["col"], n["kind"]))
                     for path in silent if harnesses[path].top.notes}
     return AppTimelines(app, tuple(pages), tuple(silent), errors, len(files), tuple(schema_files),
-                        function_table(harnesses), config["docroot"], config["prefix"], silent_notes,
+                        function_table(harnesses), docroot, prefix, silent_notes,
                         silent_redirects(harnesses, silent), scripts)
+
+
+def dir_timelines(folder: Path, app: str, docroot: str = "", exclude: tuple = ("vendor/",),
+                  rules: str = "1.1") -> AppTimelines:
+    """The timelines of an app given as a plain folder (Phase 5: an evaluation app unpacked from its archive and
+    checked against its manifest by the owner). Every .php file outside `exclude`; entrypoints are
+    "<app>/<path>"; no commit (the archive's sha256 manifest identifies it)."""
+    files = [f for f in sorted(p.relative_to(folder).as_posix() for p in folder.rglob("*.php"))
+             if not any(f.startswith(prefix) for prefix in exclude)]
+    return tree_timelines(app, folder, files, app, docroot, exclude, "", {}, rules)
 
 
 def dump_timeline(timeline: dict) -> str:

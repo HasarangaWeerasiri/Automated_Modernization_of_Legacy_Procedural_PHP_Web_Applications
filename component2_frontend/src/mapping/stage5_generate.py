@@ -54,6 +54,7 @@ from src.mapping.markup import (
     MLoop,
     MText,
     build_page,
+    starts_body,
     build_region,
     php_literal_text,
 )
@@ -1673,7 +1674,8 @@ class Generator:
         page = self.file(self.root_path)
         key = page.mark()
         try:
-            markup = build_page(self.outputs, self.boundary_config, self.abstain, *self.stray_repair())
+            markup = build_page(self.outputs, self.boundary_config, self.abstain, *self.stray_repair(),
+                                body_slots=self.body_slots())
             repair(markup)  # spec v0.6 section 5b: what a browser builds from this markup
             ctx = _Ctx(file=page, markup=markup, boundary=self.boundaries(markup), function=self.root_name,
                        function_key=key)
@@ -1730,6 +1732,22 @@ class Generator:
                 page.entries.append(_Entry("flag", "sql_interpolated_values", "sql_interpolated_values", INFO,
                                            query.node_id, " ".join(query.sql.split())[:120], key, "Page", False))
         return self.result()
+
+    def body_slots(self) -> frozenset:
+        """Spec v0.15: the call / include slots of this unit whose target certainly prints body content (its
+        unconditional top-level output holds a non-head element or text), so a later <head> is ignored."""
+        if self.units is None or self.boundary_config.rules_version == "1.0":
+            return frozenset()
+        found = set()
+        for call in self.timeline.calls:
+            target = self.units.timelines.get(call.callee or "")
+            if target is None or call.outputs_inside is not True:
+                continue
+            text = "".join(tagtrack.output_text(n) for n in target.sequence
+                           if not n.enclosed_by and n.kind != "call" and not app_units.is_slot(n))
+            if starts_body(text):
+                found.add(call.id)
+        return frozenset(found)
 
     def stray_repair(self) -> tuple[bool, frozenset]:
         """Whether a stray </p> / </br> may be repaired in this unit, and the slots after which it may not.

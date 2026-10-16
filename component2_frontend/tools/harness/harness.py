@@ -134,9 +134,9 @@ REDIRECTS_NOTE = ("Harness extension (generation-spec v0.10, header_redirect): `
 TOP_LEVEL_IFS_NOTE = ("Harness extension (boundary rules v1.1, R-I1 scope; written only for rules v1.1): "
                       "`topLevelIfs` lists every if statement directly in this scope's own statement list (a file's "
                       "top level, a function's body): {nodeId, loc, arms: [{branch, condNodeId, leaves}], "
-                      "afterLeaves}. An arm `leaves` the page when its own statement list holds an `exit` / `die` "
-                      "statement (the R-I8 exit reading) or a `header(\"Location: ...\")` call with a literal "
-                      "argument (the header_redirect detection, spec v0.10); `afterLeaves` says the same of the "
+                      "afterLeaves}. An arm `leaves` the page when its own statement list holds a "
+                      "`header(\"Location: ...\")` call with a literal argument (the header_redirect detection, spec "
+                      "v0.10); a bare `exit` does not count (it shows a blank page). `afterLeaves` says the same of the "
                       "statements after the if in the same list. Arms without an `else` have no else entry. Calls of "
                       "functions that exit are not followed.")
 BUILTIN_METHODS_NOTE = ("boundary-rules v0.15 section 4: a method of PHP's own mysqli / mysqli_result / mysqli_stmt "
@@ -358,12 +358,11 @@ class FileHarness:
     # ---- the walk: outputs, definitions, calls and includes, with the control path of each
 
     def _leaves(self, stmts) -> bool:
-        """Rules v1.1 (R-I1): this statement list, at its own level, always leaves the page: an exit / die
-        statement, or a header("Location: ...") call with a literal argument."""
+        """Rules v1.1 (R-I1, clarified 16 Oct): this statement list, at its own level, always leaves the page by a
+        redirect: a header("Location: ...") call with a literal argument. A bare exit shows a blank page: it does
+        not count."""
         for stmt in stmts or []:
             expr = stmt.get("expr") if _is(stmt, "Stmt_Expression") else None
-            if _is(expr, "Expr_Exit"):
-                return True
             first = _args(expr)[0] if _is(expr, "Expr_FuncCall") and _args(expr) else None
             if _callee(expr) == "header" and _is(first, "Scalar_String") \
                     and re.match(r"\s*location\s*:", first.get("value") or "", re.I):

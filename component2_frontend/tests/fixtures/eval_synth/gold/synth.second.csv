@@ -1,0 +1,9 @@
+app,file,line,construct,decision,container,item_root,binding,notes
+synth,guard.php,2,if,page_guard,,,,
+synth,login.php,2,if,page_guard,,,,
+synth,index.php,18,if,list_guard,,,,
+synth,index.php,25,if,inline,,,,
+synth,index.php,27,if,inline,,,,
+synth,index.php,22,if,auth_check,,,,
+synth,index.php,23,if,request_handler,,,,
+synth,redirect.php,3,if,redirect_guard,,,,

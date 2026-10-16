@@ -222,3 +222,47 @@ def test_content_under_an_untranslated_condition_is_explained_by_it(tmp_path):
     found = classify.explain_text([unit], "Failed to connect: Unknown database 'hms'", "")
     assert (found["kind"], found["nodeId"]) == ("unresolvedCondition", "if1")
     assert classify.explain_text([unit], "Something else", "") is None
+
+
+# ---------------------------------------------------------------- Phase 4d: R-I1 clarified, change 3 (spec v0.15)
+
+BARE_EXIT = "<?php if (isset($_SESSION['user'])) { ?>\n" + WHOLE_PAGE + "<?php } else { exit; } ?>\n"
+HEAD_AFTER_BODY = {"top.php": '<header class="bar"><a href="index.php">Home</a></header>\n',
+                   "page.php": '<?php include("top.php"); ?>\n<html><head>\n<link rel="stylesheet" href="s.css">\n'
+                               '<style>p{}</style>\n</head><body><p>Hi</p></body></html>\n'}
+FORM = ('<div class="pane"><form method="post"><div class="row"><label>A</label>\n</form>\n<br>\n'
+        '</div><p class="after">x</p></div>\n')
+
+
+def test_a_bare_exit_does_not_leave_the_page(tmp_path):
+    """R-I1 clarified (16 Oct): a bare exit shows a blank page, so the guard is a conditional."""
+    result = run_tiny(tmp_path, {"page.php": BARE_EXIT})
+    assert "R-I1" not in result["stage"]("page.php", 2)["tree"]["rules"]
+    (top,) = result["timeline"]("page.php")["topLevelIfs"]
+    assert [(a["branch"], a["leaves"]) for a in top["arms"]] == [("then", False), ("else", False)]
+
+
+def test_a_head_after_body_content_keeps_its_children_in_the_body(tmp_path):
+    new = run_tiny(tmp_path, {**HEAD_AFTER_BODY})
+    page = new["page"]("page")
+    assert '<link rel="stylesheet" href="s.css" />' in page and "<style>" in page
+    flags = new["stage"]("page.php", 5)["flags"]
+    assert any(f["flag"] == "implied_end_tag" and f["detail"].startswith("<head> after body content") for f in flags)
+    old = run_tiny(tmp_path, {**HEAD_AFTER_BODY}, rules="1.0")
+    assert "s.css" not in old["page"]("page")  # v1.0: dropped with <head>
+
+
+def test_a_head_after_a_silent_include_is_still_the_head(tmp_path):
+    files = {"top.php": "<?php $x = 1; ?>", "page.php": HEAD_AFTER_BODY["page.php"]}
+    assert "s.css" not in run_tiny(tmp_path, files)["page"]("page")  # nothing printed before it: a real <head>
+
+
+def test_an_end_form_tag_removes_only_the_form(tmp_path):
+    new, old = run_tiny(tmp_path, {"page.php": FORM}), run_tiny(tmp_path, {"page.php": FORM}, rules="1.0")
+    flat = lambda text: " ".join(text.split())  # noqa: E731
+    # the browser: <br> stays inside the open <div class="row">, which stays inside the <form>
+    assert '<div className="row"> <label>A</label> {" "} <br /> </div> </form>' in flat(new["page"]("page"))
+    assert '<p className="after">x</p> </div>' in flat(new["page"]("page"))
+    assert '</div> </form> <br />' in flat(old["page"]("page"))
+    flags = new["stage"]("page.php", 5)["flags"]
+    assert any(f["flag"] == "implied_end_tag" and f["detail"].startswith("</form> removes only") for f in flags)

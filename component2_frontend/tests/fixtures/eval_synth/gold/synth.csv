@@ -1,0 +1,45 @@
+app,file,line,construct,decision,container,item_root,binding,notes
+synth,index.php,1,unit,page,,,,
+synth,data.php,1,unit,not_ui,,,,JSON only
+synth,silent.php,1,unit,page,,,,deliberately wrong (prints nothing)
+synth,lib.php,1,unit,layout_part,,,,shell functions (not in the mapping)
+synth,index.php,11,loop,list,table@10,tr,,
+synth,index.php,17,loop,inline_map,,,,option loop
+synth,index.php,18,loop,list,ul@18,li,,
+synth,index.php,19,loop,list,section@19,div,,deliberately wrong container
+synth,index.php,20,loop,list,fragment,li,,inside try / catch
+synth,index.php,34,loop,not_ui,,,,no output
+synth,guard.php,2,if,page_guard,,,,
+synth,login.php,2,if,page_guard,,,,else redirects
+synth,index.php,18,if,list_guard,,,,
+synth,lib.php,4,if,attribute,,,,
+synth,index.php,24,if,attribute_presence,,,,
+synth,index.php,25,if,inline,,,,
+synth,index.php,27,if,own_component,,,,
+synth,index.php,28,if,own_component,,,,
+synth,index.php,29,if,inline,,,,large block
+synth,index.php,30,if,inline,,,,
+synth,index.php,31,if,not_ui,,,,deliberately wrong
+synth,index.php,32,if,not_ui,,,,deliberately wrong (first if of the chain)
+synth,index.php,32,if,inline,,,,unsure: second if of the chain
+synth,index.php,22,if,auth_check,,,,
+synth,index.php,23,if,request_handler,,,,
+synth,redirect.php,3,if,redirect_guard,,,,header Location
+synth,redirect.php,4,if,redirect_guard,,,,meta refresh and exit
+synth,index.php,35,if,not_ui,,,,alert only
+synth,index.php,37,if,own_component,,,,deliberately odd: the tool's R-I7 is not in this row of the mapping
+synth,index.php,26,if,inline,,,,deliberately wrong line (an <hr>): a miss
+synth,index.php,8,function,shell,,,,top() / bottom()
+synth,index.php,21,function,component,,,,
+synth,index.php,36,function,component,,,,method call
+synth,index.php,2,include,not_ui,,,,
+synth,index.php,3,include,not_ui,,,,
+synth,index.php,12,read,,,,items.name,
+synth,index.php,13,read,,,,items.cost,deliberately wrong
+synth,index.php,14,read,,,,unknown,deliberately wrong
+synth,index.php,17,read,,,,items.name,
+synth,index.php,18,read,,,,users.name,
+synth,index.php,23,read,,,,literal,
+synth,index.php,33,read,,,,session,
+synth,index.php,33,read,,,,request,
+synth,index.php,33,read,,,,unknown,
