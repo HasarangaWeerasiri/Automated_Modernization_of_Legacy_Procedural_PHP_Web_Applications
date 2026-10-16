@@ -12,6 +12,7 @@ import argparse
 import importlib.util
 import inspect
 import json
+import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -114,11 +115,28 @@ def main() -> int:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
-    def relative(path: str) -> str:
+    # Site labels as the pipeline wrote them into the generated code, relative
+    # to the app root it actually analysed (independent of how --php is given).
+    source_text = (out / "data_access.py").read_text(encoding="utf-8")
+    pipeline_labels = {
+        match.group(3): match.group(1)
+        for match in re.finditer(r"Migrated from (.+?):(\d+)\.\s*Original query ID: (Q\d+)\.", source_text)
+    }
+    pipeline_labels.update({
+        match.group(1): match.group(2)
+        for match in re.finditer(r"Unresolved query (Q\d+); (.+?):(\d+)\.", source_text)
+    })
+
+    def relative(path: str, query_id: str | None = None) -> str:
+        if query_id in pipeline_labels:
+            return pipeline_labels[query_id]
         try:
             return Path(path).resolve().relative_to(php_root).as_posix()
         except ValueError:
-            return Path(path).name
+            # Never fall back to a bare file name: it hides the directory.
+            raise SystemExit(
+                f"{path} is not under --php {php_root}; pass the app root the pipeline analysed"
+            )
 
     functions = []
     for name, function in inspect.getmembers(module, inspect.isfunction):
@@ -143,7 +161,7 @@ def main() -> int:
             "returns": return_shape(record.get("parameterized_sql") or "", operation, usage.get(query_id, {})),
             "commit": ("commits by default; pass `commit=False` to leave the transaction to the caller"
                        if operation != "SELECT" else "read only (no commit)"),
-            "php_site": f"{relative(queries[query_id]['source_file'])}:{queries[query_id]['source_line']}",
+            "php_site": f"{relative(queries[query_id]['source_file'], query_id)}:{queries[query_id]['source_line']}",
             "conversion_rule": record.get("conversion_rule"),
         })
     functions.sort(key=lambda f: f["query_id"])
@@ -245,7 +263,7 @@ def main() -> int:
     if unresolved:
         lines += ["| Site | Stage | Reason | Action |", "|---|---|---|---|"]
         for item in unresolved:
-            lines.append(f"| `{relative(item.get('source_file', ''))}:{item.get('source_line')}` | {item.get('stage')} | "
+            lines.append(f"| `{relative(item.get('source_file', ''), item.get('query_id'))}:{item.get('source_line')}` | {item.get('stage')} | "
                          f"{item.get('reason_code') or ''} {item.get('reason') or ''} | {item.get('action') or ''} |")
     else:
         lines.append("None: every SQL site was converted.")
