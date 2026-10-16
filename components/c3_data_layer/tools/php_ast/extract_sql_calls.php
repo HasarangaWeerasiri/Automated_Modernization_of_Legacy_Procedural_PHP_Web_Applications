@@ -430,12 +430,227 @@ function getBranchConditions(
     return $conditions;
 }
 
+/**
+ * Executor calls directly inside a function body (nested closures,
+ * functions and classes excluded), with their SQL argument node.
+ */
+function directExecutorCalls(Node\Stmt\Function_ $function, NodeFinder $nodeFinder): array
+{
+    $calls = [];
+
+    foreach ($nodeFinder->find($function->stmts ?? [], function (Node $node) use ($function): bool {
+        if (!(
+            ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name
+                && array_key_exists(strtolower($node->name->toString()), SQL_FUNCTION_ARGUMENT_POSITIONS))
+            || ($node instanceof Node\Expr\MethodCall && $node->name instanceof Node\Identifier
+                && in_array(strtolower($node->name->toString()), SQL_METHOD_NAMES, true))
+        )) {
+            return false;
+        }
+        for ($parent = $node->getAttribute('parent'); $parent !== null && $parent !== $function; $parent = $parent->getAttribute('parent')) {
+            if ($parent instanceof Node\FunctionLike || $parent instanceof Node\Stmt\ClassLike) {
+                return false;
+            }
+        }
+        return true;
+    }) as $call) {
+        $executor = $call instanceof Node\Expr\FuncCall
+            ? strtolower($call->name->toString())
+            : strtolower($call->name->toString());
+        $position = $call instanceof Node\Expr\FuncCall ? SQL_FUNCTION_ARGUMENT_POSITIONS[$executor] : 0;
+        $calls[] = ['executor' => $executor, 'sql' => findSqlArgument($call, $position)];
+    }
+
+    return $calls;
+}
+
+/**
+ * Find user-defined SQL wrapper functions across the project.
+ *
+ * A function is a wrapper only when ONE of its own parameters reaches ONE
+ * direct executor call unmodified, as the whole SQL argument (the
+ * `function query($query) { return mysqli_query($conn, $query); }` shape).
+ * Abstain (not a wrapper, reason recorded) when the function:
+ * - is defined conditionally or inside a namespace/class (not at file top level);
+ * - is defined more than once with different bodies;
+ * - calls itself (recursion);
+ * - modifies the parameter, takes it by reference or as variadic;
+ * - has several executor calls, or uses the parameter inside a larger string.
+ * Calls through variable functions or dynamic method names are never matched.
+ */
+function findSqlWrappers(array $phpFiles, $parser, Standard $prettyPrinter, NodeFinder $nodeFinder): array
+{
+    $definitions = [];
+
+    foreach ($phpFiles as $phpFile) {
+        $code = file_get_contents($phpFile);
+        if ($code === false) {
+            continue;
+        }
+        try {
+            $ast = $parser->parse($code);
+        } catch (Error $error) {
+            continue;
+        }
+        if ($ast === null) {
+            continue;
+        }
+        foreach ($ast as $rootNode) {
+            if ($rootNode instanceof Node) {
+                connectParentNodes($rootNode);
+            }
+        }
+        foreach ($nodeFinder->findInstanceOf($ast, Node\Stmt\Function_::class) as $function) {
+            $definitions[strtolower($function->name->toString())][] = [
+                'file' => $phpFile,
+                'node' => $function,
+                'body' => $prettyPrinter->prettyPrint([$function]),
+            ];
+        }
+    }
+
+    $wrappers = [];
+    $rejected = [];
+
+    foreach ($definitions as $name => $defs) {
+        $analysed = array_map(fn ($def) => analyseWrapperDefinition($def, $name, $nodeFinder), $defs);
+        $shaped = array_filter($analysed, fn ($a) => $a['shaped']);
+
+        if (!$shaped) {
+            continue; // no definition passes a parameter straight to an executor
+        }
+
+        $where = array_map(fn ($d) => $d['file'] . ':' . $d['node']->getStartLine(), $defs);
+        $reason = null;
+
+        if (count(array_unique(array_column($defs, 'body'))) > 1) {
+            $reason = 'defined more than once with different bodies';
+        } else {
+            foreach ($analysed as $a) {
+                if ($a['reason'] !== null) {
+                    $reason = $a['reason'];
+                    break;
+                }
+            }
+        }
+
+        if ($reason !== null) {
+            $rejected[$name] = ['reason' => $reason, 'definitions' => $where];
+            continue;
+        }
+
+        $first = $analysed[0];
+        $wrappers[$name] = [
+            'name' => $defs[0]['node']->name->toString(),
+            'parameter' => $first['parameter'],
+            'parameter_index' => $first['parameter_index'],
+            'executor' => $first['executor'],
+            'definitions' => $where,
+        ];
+    }
+
+    return ['wrappers' => $wrappers, 'rejected' => $rejected];
+}
+
+/**
+ * One definition: is it wrapper-shaped (a parameter is the whole SQL
+ * argument of an executor), and if so, is there a reason to abstain?
+ */
+function analyseWrapperDefinition(array $def, string $name, NodeFinder $nodeFinder): array
+{
+    $function = $def['node'];
+    $params = [];
+    foreach ($function->params as $index => $param) {
+        if ($param->var instanceof Node\Expr\Variable && is_string($param->var->name)) {
+            $params[$param->var->name] = ['index' => $index, 'node' => $param];
+        }
+    }
+
+    $uses = [];
+    foreach (directExecutorCalls($function, $nodeFinder) as $call) {
+        if ($call['sql'] instanceof Node\Expr\Variable && is_string($call['sql']->name)
+            && isset($params[$call['sql']->name])) {
+            $uses[] = ['executor' => $call['executor'], 'parameter' => $call['sql']->name];
+        }
+    }
+
+    $result = ['shaped' => (bool) $uses, 'reason' => null, 'parameter' => null, 'parameter_index' => null, 'executor' => null];
+    if (!$uses) {
+        return $result;
+    }
+
+    if ($function->getAttribute('parent') !== null) {
+        $result['reason'] = 'defined conditionally or inside a namespace/class';
+        return $result;
+    }
+    if (count($uses) > 1) {
+        $result['reason'] = 'several executor calls use parameters';
+        return $result;
+    }
+
+    $parameter = $uses[0]['parameter'];
+    $paramNode = $params[$parameter]['node'];
+    if ($paramNode->byRef || $paramNode->variadic) {
+        $result['reason'] = 'SQL parameter is by reference or variadic';
+        return $result;
+    }
+
+    $mutated = $nodeFinder->findFirst($function->stmts ?? [], fn (Node $n) =>
+        (($n instanceof Node\Expr\Assign || $n instanceof Node\Expr\AssignOp || $n instanceof Node\Expr\AssignRef
+            || $n instanceof Node\Expr\PreInc || $n instanceof Node\Expr\PostInc
+            || $n instanceof Node\Expr\PreDec || $n instanceof Node\Expr\PostDec)
+            && $n->var instanceof Node\Expr\Variable && $n->var->name === $parameter)
+        || ($n instanceof Node\Stmt\Unset_
+            && array_filter($n->vars, fn ($v) => $v instanceof Node\Expr\Variable && $v->name === $parameter)));
+    if ($mutated) {
+        $result['reason'] = 'SQL parameter is modified before execution';
+        return $result;
+    }
+
+    $recursive = $nodeFinder->findFirst($function->stmts ?? [], fn (Node $n) =>
+        $n instanceof Node\Expr\FuncCall && $n->name instanceof Node\Name && strtolower($n->name->toString()) === $name);
+    if ($recursive) {
+        $result['reason'] = 'recursive';
+        return $result;
+    }
+
+    $result['parameter'] = $parameter;
+    $result['parameter_index'] = $params[$parameter]['index'];
+    $result['executor'] = $uses[0]['executor'];
+    return $result;
+}
+
+/**
+ * SQL argument of a call to a wrapper: the named argument matching the
+ * wrapper's parameter, else the positional one (null if unpacked/unsure).
+ */
+function wrapperSqlArgument(Node\Expr\FuncCall $call, array $wrapper): ?Node
+{
+    foreach ($call->args as $argument) {
+        if ($argument instanceof Node\Arg && $argument->name instanceof Node\Identifier) {
+            if ($argument->name->toString() === $wrapper['parameter']) {
+                return $argument->value;
+            }
+        }
+    }
+    for ($index = 0; $index <= $wrapper['parameter_index']; $index++) {
+        $argument = $call->args[$index] ?? null;
+        if (!$argument instanceof Node\Arg || $argument->unpack || $argument->name !== null) {
+            return null;
+        }
+    }
+    return $call->args[$wrapper['parameter_index']]->value;
+}
+
 $results = [];
+$wrapperResults = [];
 $assignments = [];
 $functions = [];
 $includes = [];
 $unsupportedOperations = [];
 $phpFiles = collectPhpFiles($inputPath);
+$sqlWrapperScan = findSqlWrappers($phpFiles, $parser, $prettyPrinter, $nodeFinder);
+$sqlWrappers = $sqlWrapperScan['wrappers'];
 
 
 foreach ($phpFiles as $phpFile) {
@@ -813,6 +1028,36 @@ foreach ($phpFiles as $phpFile) {
             continue;
         }
 
+        /*
+         * A call to a recognised SQL wrapper (see findSqlWrappers) is an
+         * SQL site of its own, at the call's file and line. It carries the
+         * wrapper's underlying executor, so recovery and conversion apply
+         * exactly the rules of a direct executor call. These sites are
+         * appended after all direct sites, so existing query IDs keep
+         * their numbers.
+         */
+        if (isset($sqlWrappers[$functionName]) && count($call->name->getParts()) === 1) {
+            $wrapper = $sqlWrappers[$functionName];
+            $sqlArgument = wrapperSqlArgument($call, $wrapper);
+            $wrapperResults[] = [
+                'source_file' => $phpFile,
+                'source_line' => $call->getStartLine(),
+                'loop_context' => getLoopContext($call),
+                'branch_context' => getBranchContext($call),
+                'executor' => $wrapper['executor'],
+                'sql_argument' => $sqlArgument === null ? null : expressionToString($sqlArgument, $prettyPrinter),
+                'status' => $sqlArgument === null ? 'UNRESOLVED' : 'LOCATED',
+                'reason' => $sqlArgument === null ? 'missing_sql_argument' : null,
+                'wrapper' => [
+                    'name' => $wrapper['name'],
+                    'parameter' => $wrapper['parameter'],
+                    'definitions' => $wrapper['definitions'],
+                ],
+            ];
+
+            continue;
+        }
+
         if (!array_key_exists($functionName, SQL_FUNCTION_ARGUMENT_POSITIONS)) {
             continue;
         }
@@ -941,12 +1186,17 @@ foreach ($phpFiles as $phpFile) {
 
 
 $output = [
-    'sql_calls' => $results,
+    'sql_calls' => array_merge($results, $wrapperResults),
     'assignments' => $assignments,
     'functions' => $functions,
     'includes' => $includes,
     'unsupported_operations' => $unsupportedOperations,
 ];
+
+// Only when wrapper-shaped functions exist, so other output is unchanged.
+if ($sqlWrapperScan['wrappers'] || $sqlWrapperScan['rejected']) {
+    $output['sql_wrappers'] = $sqlWrapperScan;
+}
 
 echo json_encode(
     $output,

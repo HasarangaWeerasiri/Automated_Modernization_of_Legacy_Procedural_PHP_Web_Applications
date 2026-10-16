@@ -858,6 +858,173 @@ def _detect_structural_placeholder(
 
     return None, None
 
+# A PHP string literal in a pretty-printed expression.
+_PHP_STRING_LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"|\'((?:[^\'\\]|\\.)*)\'', re.DOTALL)
+
+
+def _top_level_tokens(expression: str):
+    """Yield (kind, text, start, end) for string literals and the operators
+    ?, ?:, ??, : and . that sit at nesting depth 0 (outside (), [], {})."""
+
+    depth = 0
+    index = 0
+    length = len(expression)
+
+    while index < length:
+        char = expression[index]
+        if char in "\"'":
+            match = _PHP_STRING_LITERAL.match(expression, index)
+            if not match:
+                return
+            if depth == 0:
+                # Decoded as PHP would (e.g. "\r\n    WHERE" starts with a real line break).
+                quote = char
+                raw = match.group(1) if match.group(1) is not None else match.group(2)
+                text = _decode_php_string(raw, quote).replace(LITERAL_DOLLAR, "$")
+                yield "literal", text, index, match.end()
+            index = match.end()
+            continue
+        if char in "([{":
+            depth += 1
+        elif char in ")]}":
+            depth -= 1
+        elif depth == 0 and char == "?":
+            nxt = expression[index + 1:index + 2]
+            if nxt == "?":
+                yield "??", "??", index, index + 2
+                index += 2
+                continue
+            if nxt == "-":  # ?-> nullsafe operator
+                index += 2
+                continue
+            if nxt == ":":
+                yield "?:", "?:", index, index + 2
+                index += 2
+                continue
+            yield "?", "?", index, index + 1
+        elif depth == 0 and char == ":" and expression[index + 1:index + 2] != ":" and expression[index - 1:index] != ":":
+            yield ":", ":", index, index + 1
+        elif depth == 0 and char == ".":
+            yield ".", ".", index, index + 1
+        index += 1
+
+
+def _value_alternatives(expression: str) -> list[str]:
+    """Split an assigned expression into the expressions it can evaluate to:
+    the alternatives of a top-level ternary, ?: or ?? (recursively), else the
+    whole expression. The condition of a ternary is not a value."""
+
+    expression = expression.strip()
+
+    # (a ? b : c) as a whole alternative: look inside the one enclosing pair.
+    if expression.startswith("(") and expression.endswith(")"):
+        depth = 0
+        for position, char in enumerate(expression):
+            depth += char == "("
+            depth -= char == ")"
+            if depth == 0 and position < len(expression) - 1:
+                break
+        else:
+            return _value_alternatives(expression[1:-1])
+
+    tokens = list(_top_level_tokens(expression))
+
+    for kind in ("??", "?:"):
+        for token in tokens:
+            if token[0] == kind:
+                left, right = expression[:token[2]], expression[token[3]:]
+                if kind == "?:":
+                    return _value_alternatives(left) + _value_alternatives(right)
+                return _value_alternatives(left) + _value_alternatives(right)
+
+    question = next((t for t in tokens if t[0] == "?"), None)
+    if question is not None:
+        nested = 0
+        for token in tokens:
+            if token[2] <= question[2]:
+                continue
+            if token[0] == "?":
+                nested += 1
+            elif token[0] == ":":
+                if nested == 0:
+                    then_part = expression[question[3]:token[2]]
+                    else_part = expression[token[3]:]
+                    return _value_alternatives(then_part) + _value_alternatives(else_part)
+                nested -= 1
+        return [expression]
+
+    return [expression]
+
+
+def _value_literals(expression: str) -> list[str]:
+    """String literals that ARE the assigned value: each alternative's top-level
+    literal concatenation operands. Literals inside [] (array keys) or ()
+    (function arguments) are not values and are ignored."""
+
+    literals = []
+    for alternative in _value_alternatives(expression):
+        literals.extend(text for kind, text, _, _ in _top_level_tokens(alternative.strip()) if kind == "literal")
+    return literals
+# Text that starts an SQL clause (it supplies structure, not a value).
+_SQL_CLAUSE_START = re.compile(
+    r"^\s*(?:WHERE|AND|OR|NOT|ORDER\s+BY|GROUP\s+BY|HAVING|LIMIT|OFFSET|UNION|"
+    r"(?:LEFT|RIGHT|INNER|OUTER|CROSS)?\s*JOIN|SET|VALUES|FROM|SELECT)\b",
+    re.IGNORECASE,
+)
+
+
+def _detect_sql_fragment_variable(
+    sql_call: dict,
+    dynamic_variables: list[str],
+    assignments: list[dict],
+) -> tuple[str | None, str | None]:
+    """
+    Detect an interpolated variable that supplies SQL text, not a value.
+
+    Conservative only: it can turn a site UNRESOLVED, never recover one.
+    For each interpolated variable, the assignments before the site in the
+    same file are read nearest-first, up to and including the first
+    unconditional one (so both branches of an if/else are seen). If any of
+    them assigns a string literal that starts an SQL clause (WHERE, AND,
+    ORDER BY, JOIN, ...), directly or as a ternary/branch alternative, the
+    variable is an SQL fragment and cannot become a bind parameter.
+    """
+
+    source_file = sql_call.get("source_file")
+    line = sql_call.get("source_line")
+
+    if line is None:
+        return None, None
+
+    for variable in dynamic_variables:
+        preceding = sorted(
+            (
+                a for a in assignments
+                if a.get("source_file") == source_file
+                and a.get("variable") == "$" + variable
+                and a.get("source_line") is not None
+                and a["source_line"] < line
+            ),
+            key=lambda a: a["source_line"],
+            reverse=True,
+        )
+
+        for assignment in preceding:
+            for text in _value_literals(assignment.get("expression") or ""):
+                if _SQL_CLAUSE_START.match(text):
+                    return (
+                        "STRUCTURAL",
+                        f"Interpolated variable ${variable} supplies SQL text "
+                        f"(a clause fragment assigned at line {assignment['source_line']}), "
+                        "not a value; it cannot be parameterized safely.",
+                    )
+
+            if not assignment.get("control_flow"):
+                break
+
+    return None, None
+
+
 def _detect_operation(
     sql: str,
 ) -> str | None:
@@ -1521,6 +1688,16 @@ def recover_queries_from_ast(
                 recovered_sql
             )
 
+            if structural_reason_code is None:
+                (
+                    structural_reason_code,
+                    structural_reason,
+                ) = _detect_sql_fragment_variable(
+                    sql_call,
+                    dynamic_variables,
+                    assignments,
+                )
+
             if structural_reason_code is not None:
                 status = "UNRESOLVED"
                 reason_code = structural_reason_code
@@ -1617,6 +1794,15 @@ def recover_queries_from_ast(
             )
 
             query["conditional_candidate"] = candidate
+
+    # Sites that are calls to a user-defined SQL wrapper keep the wrapper's
+    # name, parameter and definitions (the site itself is the call's file/line).
+    calls_by_id = {f"Q{index:03d}": call for index, call in enumerate(sql_calls, start=1)}
+
+    for query in recovered_queries:
+        wrapper = calls_by_id.get(query.get("query_id"), {}).get("wrapper")
+        if wrapper:
+            query["wrapper"] = wrapper
 
     return recovered_queries
 
