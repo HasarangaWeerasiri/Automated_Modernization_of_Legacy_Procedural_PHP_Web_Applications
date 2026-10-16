@@ -5,7 +5,7 @@
   "detection": {
     "live_detected": 44,
     "recall": 100.0,
-    "false_detections_commented_out": [],
+    "non_live_sites_reported": [],
     "c3_sites_not_in_gt": []
   },
   "recovery": {
@@ -46,140 +46,8 @@
     ],
     "false_recoveries": []
   },
-  "column_use_accuracy": {
-    "operation": null,
-    "tables": null,
-    "read": null,
-    "write": null,
-    "filter": null,
-    "sites": 0
-  },
-  "schema_mismatch": {
-    "sites": [
-      {
-        "site": "admin-panel.php:42",
-        "problems": [
-          "table appointmenttb not in schema"
-        ]
-      },
-      {
-        "site": "admin-panel.php:45",
-        "problems": [
-          "table appointmenttb not in schema"
-        ]
-      },
-      {
-        "site": "admin-panel.php:144",
-        "problems": [
-          "table doctb not in schema"
-        ]
-      },
-      {
-        "site": "admin-panel.php:313",
-        "problems": [
-          "table doctb not in schema"
-        ]
-      },
-      {
-        "site": "admin-panel.php:473",
-        "problems": [
-          "table appointmenttb not in schema"
-        ]
-      },
-      {
-        "site": "admin-panel.php:550",
-        "problems": [
-          "table prestb not in schema"
-        ]
-      },
-      {
-        "site": "admin-panel1.php:278",
-        "problems": [
-          "table doctb not in schema"
-        ]
-      },
-      {
-        "site": "admin-panel1.php:329",
-        "problems": [
-          "table patreg not in schema"
-        ]
-      },
-      {
-        "site": "admin-panel1.php:385",
-        "problems": [
-          "table prestb not in schema"
-        ]
-      },
-      {
-        "site": "admin-panel1.php:458",
-        "problems": [
-          "table appointmenttb not in schema"
-        ]
-      },
-      {
-        "site": "admin-panel1.php:568",
-        "problems": [
-          "table contact not in schema"
-        ]
-      },
-      {
-        "site": "doctor-panel.php:186",
-        "problems": [
-          "table appointmenttb not in schema"
-        ]
-      },
-      {
-        "site": "doctor-panel.php:280",
-        "problems": [
-          "table prestb not in schema"
-        ]
-      },
-      {
-        "site": "doctor-panel.php:332",
-        "problems": [
-          "table appointmenttb not in schema"
-        ]
-      },
-      {
-        "site": "func1.php:43",
-        "problems": [
-          "table doctb not in schema"
-        ]
-      },
-      {
-        "site": "func3.php:36",
-        "problems": [
-          "table doctb not in schema"
-        ]
-      },
-      {
-        "site": "newfunc.php:45",
-        "problems": [
-          "table doctb not in schema"
-        ]
-      },
-      {
-        "site": "newfunc.php:57",
-        "problems": [
-          "table doctb not in schema"
-        ]
-      },
-      {
-        "site": "prescribe.php:33",
-        "problems": [
-          "table prestb not in schema"
-        ]
-      }
-    ],
-    "column_use_accuracy": {
-      "operation": 0.0,
-      "tables": 0.0,
-      "read": 10.5,
-      "write": 89.5,
-      "filter": 73.7,
-      "sites": 19
-    }
-  },
+  "column_use_accuracy": null,
+  "schema_mismatch": null,
   "ambiguous_sites": [
     {
       "gt_id": "G041",
@@ -199,41 +67,7 @@
       "c3_query_id": "Q001",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": false
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "appointmenttb"
-          ],
-          "read_columns": [
-            "apptime"
-          ],
-          "write_columns": [],
-          "filter_columns": [
-            "doctor",
-            "appdate",
-            "apptime"
-          ]
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table appointmenttb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G002",
@@ -242,48 +76,7 @@
       "c3_query_id": "Q002",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": true,
-        "write": false,
-        "filter": true
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "INSERT",
-          "tables": [
-            "appointmenttb"
-          ],
-          "read_columns": [],
-          "write_columns": [
-            "pid",
-            "fname",
-            "lname",
-            "gender",
-            "email",
-            "contact",
-            "doctor",
-            "docfees",
-            "appdate",
-            "apptime",
-            "userstatus",
-            "doctorstatus"
-          ],
-          "filter_columns": []
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table appointmenttb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G003",
@@ -310,38 +103,7 @@
       "c3_query_id": "Q005",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": true
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "doctb"
-          ],
-          "read_columns": [
-            "username",
-            "spec"
-          ],
-          "write_columns": [],
-          "filter_columns": []
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table doctb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G006",
@@ -350,38 +112,7 @@
       "c3_query_id": "Q006",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": true
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "doctb"
-          ],
-          "read_columns": [
-            "username",
-            "spec"
-          ],
-          "write_columns": [],
-          "filter_columns": []
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table doctb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G007",
@@ -390,46 +121,7 @@
       "c3_query_id": "Q007",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": false
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "appointmenttb"
-          ],
-          "read_columns": [
-            "id",
-            "doctor",
-            "docfees",
-            "appdate",
-            "apptime",
-            "userstatus",
-            "doctorstatus"
-          ],
-          "write_columns": [],
-          "filter_columns": [
-            "fname",
-            "lname"
-          ]
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table appointmenttb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G008",
@@ -438,45 +130,7 @@
       "c3_query_id": "Q008",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": false
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "prestb"
-          ],
-          "read_columns": [
-            "doctor",
-            "id",
-            "appdate",
-            "apptime",
-            "disease",
-            "allergy",
-            "prescription"
-          ],
-          "write_columns": [],
-          "filter_columns": [
-            "pid"
-          ]
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table prestb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G009",
@@ -503,37 +157,7 @@
       "c3_query_id": "Q011",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": true
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "doctb"
-          ],
-          "read_columns": [
-            "*"
-          ],
-          "write_columns": [],
-          "filter_columns": []
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table doctb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G012",
@@ -542,37 +166,7 @@
       "c3_query_id": "Q012",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": true
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "patreg"
-          ],
-          "read_columns": [
-            "*"
-          ],
-          "write_columns": [],
-          "filter_columns": []
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table patreg not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G013",
@@ -581,37 +175,7 @@
       "c3_query_id": "Q013",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": true
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "prestb"
-          ],
-          "read_columns": [
-            "*"
-          ],
-          "write_columns": [],
-          "filter_columns": []
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table prestb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G014",
@@ -620,37 +184,7 @@
       "c3_query_id": "Q014",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": true
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "appointmenttb"
-          ],
-          "read_columns": [
-            "*"
-          ],
-          "write_columns": [],
-          "filter_columns": []
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table appointmenttb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G015",
@@ -659,37 +193,7 @@
       "c3_query_id": "Q015",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": true
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "contact"
-          ],
-          "read_columns": [
-            "*"
-          ],
-          "write_columns": [],
-          "filter_columns": []
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table contact not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G016",
@@ -725,49 +229,7 @@
       "c3_query_id": "Q019",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": false
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "appointmenttb"
-          ],
-          "read_columns": [
-            "pid",
-            "id",
-            "fname",
-            "lname",
-            "gender",
-            "email",
-            "contact",
-            "appdate",
-            "apptime",
-            "userstatus",
-            "doctorstatus"
-          ],
-          "write_columns": [],
-          "filter_columns": [
-            "doctor"
-          ]
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table appointmenttb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G021",
@@ -776,47 +238,7 @@
       "c3_query_id": "Q020",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": false
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "prestb"
-          ],
-          "read_columns": [
-            "pid",
-            "fname",
-            "lname",
-            "id",
-            "appdate",
-            "apptime",
-            "disease",
-            "allergy",
-            "prescription"
-          ],
-          "write_columns": [],
-          "filter_columns": [
-            "doctor"
-          ]
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table prestb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G022",
@@ -825,37 +247,7 @@
       "c3_query_id": "Q021",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": true
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "appointmenttb"
-          ],
-          "read_columns": [
-            "*"
-          ],
-          "write_columns": [],
-          "filter_columns": []
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table appointmenttb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G023",
@@ -909,37 +301,7 @@
       "c3_query_id": "Q027",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": true
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "doctb"
-          ],
-          "read_columns": [
-            "*"
-          ],
-          "write_columns": [],
-          "filter_columns": []
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table doctb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G032",
@@ -1002,37 +364,7 @@
       "c3_query_id": "Q034",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": true
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "doctb"
-          ],
-          "read_columns": [
-            "*"
-          ],
-          "write_columns": [],
-          "filter_columns": []
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table doctb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G040",
@@ -1077,37 +409,7 @@
       "c3_query_id": "Q039",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": true
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "doctb"
-          ],
-          "read_columns": [
-            "spec"
-          ],
-          "write_columns": [],
-          "filter_columns": []
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table doctb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G047",
@@ -1116,37 +418,7 @@
       "c3_query_id": "Q040",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": false,
-        "write": true,
-        "filter": true
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "SELECT",
-          "tables": [
-            "doctb"
-          ],
-          "read_columns": [
-            "*"
-          ],
-          "write_columns": [],
-          "filter_columns": []
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table doctb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G049",
@@ -1173,46 +445,7 @@
       "c3_query_id": "Q043",
       "c3_status": "RECOVERED",
       "c3_reason_code": null,
-      "outcome": "TP",
-      "column_checks": {
-        "operation": false,
-        "tables": false,
-        "read": true,
-        "write": false,
-        "filter": true
-      },
-      "column_differences": {
-        "expected": {
-          "operation": "INSERT",
-          "tables": [
-            "prestb"
-          ],
-          "read_columns": [],
-          "write_columns": [
-            "doctor",
-            "pid",
-            "id",
-            "fname",
-            "lname",
-            "appdate",
-            "apptime",
-            "disease",
-            "allergy",
-            "prescription"
-          ],
-          "filter_columns": []
-        },
-        "c3": {
-          "operation": null,
-          "tables": null,
-          "read_columns": null,
-          "write_columns": null,
-          "filter_columns": null
-        }
-      },
-      "schema_mismatch": [
-        "table prestb not in schema"
-      ]
+      "outcome": "TP"
     },
     {
       "gt_id": "G052",
@@ -1226,5 +459,5 @@
   ],
   "ground_truth_file": "benchmarks/ground truth/hms_kishan0725/queries.json",
   "c3_output": "evidence/preadaptation/hms_kishan0725/output (frozen; code 371fddf, before S1-S14)",
-  "note": "Recovery only. The original pipeline stopped at stage 3/6 (INT(11)), so column_usage.json and schema-derived files were never produced: the column_use_accuracy and schema_mismatch fields here are empty and must not be read as results."
+  "scope": "recovery and detection only: the pre-adaptation pipeline stopped at stage 3/6 (INT(11)) before column analysis and code generation"
 }
