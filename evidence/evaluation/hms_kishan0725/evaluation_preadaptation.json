@@ -1,0 +1,1230 @@
+{
+  "matching": "ground truth (file, line) = C3 (source_file relative to the PHP root, source_line)",
+  "gt_entries": 52,
+  "gt_live_sites": 44,
+  "detection": {
+    "live_detected": 44,
+    "recall": 100.0,
+    "false_detections_commented_out": [],
+    "c3_sites_not_in_gt": []
+  },
+  "recovery": {
+    "excluded_ambiguous": 1,
+    "evaluated": 43,
+    "TP": 19,
+    "FN": 24,
+    "FP": 0,
+    "TN": 0,
+    "precision": 100.0,
+    "recall": 44.2,
+    "accuracy": 44.2,
+    "false_abstentions": [
+      "admin-panel.php:71",
+      "admin-panel.php:86",
+      "admin-panel1.php:15",
+      "admin-panel1.php:27",
+      "appsearch.php:17",
+      "contact.php:11",
+      "doctor-panel.php:8",
+      "doctorsearch.php:16",
+      "func.php:8",
+      "func.php:34",
+      "func.php:62",
+      "func1.php:8",
+      "func2.php:14",
+      "func2.php:26",
+      "func2.php:41",
+      "func2.php:66",
+      "func3.php:8",
+      "func3.php:24",
+      "func3.php:49",
+      "messearch.php:15",
+      "newfunc.php:23",
+      "newfunc.php:84",
+      "patientsearch.php:15",
+      "search.php:8"
+    ],
+    "false_recoveries": []
+  },
+  "column_use_accuracy": {
+    "operation": null,
+    "tables": null,
+    "read": null,
+    "write": null,
+    "filter": null,
+    "sites": 0
+  },
+  "schema_mismatch": {
+    "sites": [
+      {
+        "site": "admin-panel.php:42",
+        "problems": [
+          "table appointmenttb not in schema"
+        ]
+      },
+      {
+        "site": "admin-panel.php:45",
+        "problems": [
+          "table appointmenttb not in schema"
+        ]
+      },
+      {
+        "site": "admin-panel.php:144",
+        "problems": [
+          "table doctb not in schema"
+        ]
+      },
+      {
+        "site": "admin-panel.php:313",
+        "problems": [
+          "table doctb not in schema"
+        ]
+      },
+      {
+        "site": "admin-panel.php:473",
+        "problems": [
+          "table appointmenttb not in schema"
+        ]
+      },
+      {
+        "site": "admin-panel.php:550",
+        "problems": [
+          "table prestb not in schema"
+        ]
+      },
+      {
+        "site": "admin-panel1.php:278",
+        "problems": [
+          "table doctb not in schema"
+        ]
+      },
+      {
+        "site": "admin-panel1.php:329",
+        "problems": [
+          "table patreg not in schema"
+        ]
+      },
+      {
+        "site": "admin-panel1.php:385",
+        "problems": [
+          "table prestb not in schema"
+        ]
+      },
+      {
+        "site": "admin-panel1.php:458",
+        "problems": [
+          "table appointmenttb not in schema"
+        ]
+      },
+      {
+        "site": "admin-panel1.php:568",
+        "problems": [
+          "table contact not in schema"
+        ]
+      },
+      {
+        "site": "doctor-panel.php:186",
+        "problems": [
+          "table appointmenttb not in schema"
+        ]
+      },
+      {
+        "site": "doctor-panel.php:280",
+        "problems": [
+          "table prestb not in schema"
+        ]
+      },
+      {
+        "site": "doctor-panel.php:332",
+        "problems": [
+          "table appointmenttb not in schema"
+        ]
+      },
+      {
+        "site": "func1.php:43",
+        "problems": [
+          "table doctb not in schema"
+        ]
+      },
+      {
+        "site": "func3.php:36",
+        "problems": [
+          "table doctb not in schema"
+        ]
+      },
+      {
+        "site": "newfunc.php:45",
+        "problems": [
+          "table doctb not in schema"
+        ]
+      },
+      {
+        "site": "newfunc.php:57",
+        "problems": [
+          "table doctb not in schema"
+        ]
+      },
+      {
+        "site": "prescribe.php:33",
+        "problems": [
+          "table prestb not in schema"
+        ]
+      }
+    ],
+    "column_use_accuracy": {
+      "operation": 0.0,
+      "tables": 0.0,
+      "read": 10.5,
+      "write": 89.5,
+      "filter": 73.7,
+      "sites": 19
+    }
+  },
+  "ambiguous_sites": [
+    {
+      "gt_id": "G041",
+      "site": "include/header.php:35",
+      "expected_recoverable": "ambiguous",
+      "c3_query_id": "Q036",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "UNKNOWN_EXPR",
+      "outcome": "EXCLUDED_AMBIGUOUS"
+    }
+  ],
+  "details": [
+    {
+      "gt_id": "G001",
+      "site": "admin-panel.php:42",
+      "expected_recoverable": true,
+      "c3_query_id": "Q001",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": false
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "appointmenttb"
+          ],
+          "read_columns": [
+            "apptime"
+          ],
+          "write_columns": [],
+          "filter_columns": [
+            "doctor",
+            "appdate",
+            "apptime"
+          ]
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table appointmenttb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G002",
+      "site": "admin-panel.php:45",
+      "expected_recoverable": true,
+      "c3_query_id": "Q002",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": true,
+        "write": false,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "INSERT",
+          "tables": [
+            "appointmenttb"
+          ],
+          "read_columns": [],
+          "write_columns": [
+            "pid",
+            "fname",
+            "lname",
+            "gender",
+            "email",
+            "contact",
+            "doctor",
+            "docfees",
+            "appdate",
+            "apptime",
+            "userstatus",
+            "doctorstatus"
+          ],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table appointmenttb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G003",
+      "site": "admin-panel.php:71",
+      "expected_recoverable": true,
+      "c3_query_id": "Q003",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "UNKNOWN_EXPR",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G004",
+      "site": "admin-panel.php:86",
+      "expected_recoverable": true,
+      "c3_query_id": "Q004",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "UNKNOWN_EXPR",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G005",
+      "site": "admin-panel.php:144",
+      "expected_recoverable": true,
+      "c3_query_id": "Q005",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "doctb"
+          ],
+          "read_columns": [
+            "username",
+            "spec"
+          ],
+          "write_columns": [],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table doctb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G006",
+      "site": "admin-panel.php:313",
+      "expected_recoverable": true,
+      "c3_query_id": "Q006",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "doctb"
+          ],
+          "read_columns": [
+            "username",
+            "spec"
+          ],
+          "write_columns": [],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table doctb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G007",
+      "site": "admin-panel.php:473",
+      "expected_recoverable": true,
+      "c3_query_id": "Q007",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": false
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "appointmenttb"
+          ],
+          "read_columns": [
+            "id",
+            "doctor",
+            "docfees",
+            "appdate",
+            "apptime",
+            "userstatus",
+            "doctorstatus"
+          ],
+          "write_columns": [],
+          "filter_columns": [
+            "fname",
+            "lname"
+          ]
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table appointmenttb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G008",
+      "site": "admin-panel.php:550",
+      "expected_recoverable": true,
+      "c3_query_id": "Q008",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": false
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "prestb"
+          ],
+          "read_columns": [
+            "doctor",
+            "id",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription"
+          ],
+          "write_columns": [],
+          "filter_columns": [
+            "pid"
+          ]
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table prestb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G009",
+      "site": "admin-panel1.php:15",
+      "expected_recoverable": true,
+      "c3_query_id": "Q009",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G010",
+      "site": "admin-panel1.php:27",
+      "expected_recoverable": true,
+      "c3_query_id": "Q010",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G011",
+      "site": "admin-panel1.php:278",
+      "expected_recoverable": true,
+      "c3_query_id": "Q011",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "doctb"
+          ],
+          "read_columns": [
+            "*"
+          ],
+          "write_columns": [],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table doctb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G012",
+      "site": "admin-panel1.php:329",
+      "expected_recoverable": true,
+      "c3_query_id": "Q012",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "patreg"
+          ],
+          "read_columns": [
+            "*"
+          ],
+          "write_columns": [],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table patreg not in schema"
+      ]
+    },
+    {
+      "gt_id": "G013",
+      "site": "admin-panel1.php:385",
+      "expected_recoverable": true,
+      "c3_query_id": "Q013",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "prestb"
+          ],
+          "read_columns": [
+            "*"
+          ],
+          "write_columns": [],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table prestb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G014",
+      "site": "admin-panel1.php:458",
+      "expected_recoverable": true,
+      "c3_query_id": "Q014",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "appointmenttb"
+          ],
+          "read_columns": [
+            "*"
+          ],
+          "write_columns": [],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table appointmenttb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G015",
+      "site": "admin-panel1.php:568",
+      "expected_recoverable": true,
+      "c3_query_id": "Q015",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "contact"
+          ],
+          "read_columns": [
+            "*"
+          ],
+          "write_columns": [],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table contact not in schema"
+      ]
+    },
+    {
+      "gt_id": "G016",
+      "site": "appsearch.php:17",
+      "expected_recoverable": true,
+      "c3_query_id": "Q016",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G017",
+      "site": "contact.php:11",
+      "expected_recoverable": true,
+      "c3_query_id": "Q017",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G018",
+      "site": "doctor-panel.php:8",
+      "expected_recoverable": true,
+      "c3_query_id": "Q018",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "UNKNOWN_EXPR",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G020",
+      "site": "doctor-panel.php:186",
+      "expected_recoverable": true,
+      "c3_query_id": "Q019",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": false
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "appointmenttb"
+          ],
+          "read_columns": [
+            "pid",
+            "id",
+            "fname",
+            "lname",
+            "gender",
+            "email",
+            "contact",
+            "appdate",
+            "apptime",
+            "userstatus",
+            "doctorstatus"
+          ],
+          "write_columns": [],
+          "filter_columns": [
+            "doctor"
+          ]
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table appointmenttb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G021",
+      "site": "doctor-panel.php:280",
+      "expected_recoverable": true,
+      "c3_query_id": "Q020",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": false
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "prestb"
+          ],
+          "read_columns": [
+            "pid",
+            "fname",
+            "lname",
+            "id",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription"
+          ],
+          "write_columns": [],
+          "filter_columns": [
+            "doctor"
+          ]
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table prestb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G022",
+      "site": "doctor-panel.php:332",
+      "expected_recoverable": true,
+      "c3_query_id": "Q021",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "appointmenttb"
+          ],
+          "read_columns": [
+            "*"
+          ],
+          "write_columns": [],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table appointmenttb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G023",
+      "site": "doctorsearch.php:16",
+      "expected_recoverable": true,
+      "c3_query_id": "Q022",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G024",
+      "site": "func.php:8",
+      "expected_recoverable": true,
+      "c3_query_id": "Q023",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G025",
+      "site": "func.php:34",
+      "expected_recoverable": true,
+      "c3_query_id": "Q024",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G027",
+      "site": "func.php:62",
+      "expected_recoverable": true,
+      "c3_query_id": "Q025",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G028",
+      "site": "func1.php:8",
+      "expected_recoverable": true,
+      "c3_query_id": "Q026",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G030",
+      "site": "func1.php:43",
+      "expected_recoverable": true,
+      "c3_query_id": "Q027",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "doctb"
+          ],
+          "read_columns": [
+            "*"
+          ],
+          "write_columns": [],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table doctb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G032",
+      "site": "func2.php:14",
+      "expected_recoverable": true,
+      "c3_query_id": "Q028",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G033",
+      "site": "func2.php:26",
+      "expected_recoverable": true,
+      "c3_query_id": "Q029",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G034",
+      "site": "func2.php:41",
+      "expected_recoverable": true,
+      "c3_query_id": "Q030",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G036",
+      "site": "func2.php:66",
+      "expected_recoverable": true,
+      "c3_query_id": "Q031",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G037",
+      "site": "func3.php:8",
+      "expected_recoverable": true,
+      "c3_query_id": "Q032",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G038",
+      "site": "func3.php:24",
+      "expected_recoverable": true,
+      "c3_query_id": "Q033",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G039",
+      "site": "func3.php:36",
+      "expected_recoverable": true,
+      "c3_query_id": "Q034",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "doctb"
+          ],
+          "read_columns": [
+            "*"
+          ],
+          "write_columns": [],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table doctb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G040",
+      "site": "func3.php:49",
+      "expected_recoverable": true,
+      "c3_query_id": "Q035",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G041",
+      "site": "include/header.php:35",
+      "expected_recoverable": "ambiguous",
+      "c3_query_id": "Q036",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "UNKNOWN_EXPR",
+      "outcome": "EXCLUDED_AMBIGUOUS"
+    },
+    {
+      "gt_id": "G042",
+      "site": "messearch.php:15",
+      "expected_recoverable": true,
+      "c3_query_id": "Q037",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G044",
+      "site": "newfunc.php:23",
+      "expected_recoverable": true,
+      "c3_query_id": "Q038",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G046",
+      "site": "newfunc.php:45",
+      "expected_recoverable": true,
+      "c3_query_id": "Q039",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "doctb"
+          ],
+          "read_columns": [
+            "spec"
+          ],
+          "write_columns": [],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table doctb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G047",
+      "site": "newfunc.php:57",
+      "expected_recoverable": true,
+      "c3_query_id": "Q040",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": false,
+        "write": true,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "SELECT",
+          "tables": [
+            "doctb"
+          ],
+          "read_columns": [
+            "*"
+          ],
+          "write_columns": [],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table doctb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G049",
+      "site": "newfunc.php:84",
+      "expected_recoverable": true,
+      "c3_query_id": "Q041",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G050",
+      "site": "patientsearch.php:15",
+      "expected_recoverable": true,
+      "c3_query_id": "Q042",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    },
+    {
+      "gt_id": "G051",
+      "site": "prescribe.php:33",
+      "expected_recoverable": true,
+      "c3_query_id": "Q043",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": false,
+        "tables": false,
+        "read": true,
+        "write": false,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "INSERT",
+          "tables": [
+            "prestb"
+          ],
+          "read_columns": [],
+          "write_columns": [
+            "doctor",
+            "pid",
+            "id",
+            "fname",
+            "lname",
+            "appdate",
+            "apptime",
+            "disease",
+            "allergy",
+            "prescription"
+          ],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": null,
+          "tables": null,
+          "read_columns": null,
+          "write_columns": null,
+          "filter_columns": null
+        }
+      },
+      "schema_mismatch": [
+        "table prestb not in schema"
+      ]
+    },
+    {
+      "gt_id": "G052",
+      "site": "search.php:8",
+      "expected_recoverable": true,
+      "c3_query_id": "Q044",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "FN"
+    }
+  ],
+  "ground_truth_file": "benchmarks/ground truth/hms_kishan0725/queries.json",
+  "c3_output": "evidence/preadaptation/hms_kishan0725/output (frozen; code 371fddf, before S1-S14)",
+  "note": "Recovery only. The original pipeline stopped at stage 3/6 (INT(11)), so column_usage.json and schema-derived files were never produced: the column_use_accuracy and schema_mismatch fields here are empty and must not be read as results."
+}
