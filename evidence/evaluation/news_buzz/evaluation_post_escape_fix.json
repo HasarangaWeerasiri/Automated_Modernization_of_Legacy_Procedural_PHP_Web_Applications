@@ -1,0 +1,545 @@
+{
+  "matching": "ground truth (file, line) = C3 (source_file relative to the PHP root, source_line)",
+  "gt_entries": 32,
+  "gt_live_sites": 32,
+  "detection": {
+    "live_detected": 32,
+    "recall": 100.0,
+    "non_live_sites_reported": [],
+    "c3_sites_not_in_gt": []
+  },
+  "recovery": {
+    "excluded_ambiguous": 0,
+    "evaluated": 32,
+    "TP": 30,
+    "FN": 0,
+    "FP": 0,
+    "TN": 2,
+    "precision": 100.0,
+    "recall": 100.0,
+    "accuracy": 100.0,
+    "false_abstentions": [],
+    "false_recoveries": []
+  },
+  "column_use_accuracy": {
+    "operation": 100.0,
+    "tables": 100.0,
+    "read": 100.0,
+    "write": 100.0,
+    "filter": 100.0,
+    "sites": 30
+  },
+  "schema_mismatch": {
+    "sites": [],
+    "column_use_accuracy": {
+      "operation": null,
+      "tables": null,
+      "read": null,
+      "write": null,
+      "filter": null,
+      "sites": 0
+    }
+  },
+  "ambiguous_sites": [],
+  "details": [
+    {
+      "gt_id": "G001",
+      "site": "admin/adduser.php:51",
+      "expected_recoverable": true,
+      "c3_query_id": "Q001",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G002",
+      "site": "admin/editposts.php:17",
+      "expected_recoverable": false,
+      "c3_query_id": "Q002",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G003",
+      "site": "admin/editposts.php:88",
+      "expected_recoverable": true,
+      "c3_query_id": "Q003",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G004",
+      "site": "admin/index.php:34",
+      "expected_recoverable": true,
+      "c3_query_id": "Q004",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G005",
+      "site": "admin/index.php:64",
+      "expected_recoverable": true,
+      "c3_query_id": "Q005",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G006",
+      "site": "admin/post.php:17",
+      "expected_recoverable": false,
+      "c3_query_id": "Q006",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G007",
+      "site": "admin/posts.php:51",
+      "expected_recoverable": true,
+      "c3_query_id": "Q007",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G008",
+      "site": "admin/posts.php:98",
+      "expected_recoverable": true,
+      "c3_query_id": "Q008",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G009",
+      "site": "admin/posts.php:110",
+      "expected_recoverable": true,
+      "c3_query_id": "Q009",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G010",
+      "site": "admin/posts.php:153",
+      "expected_recoverable": true,
+      "c3_query_id": "Q010",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G011",
+      "site": "admin/posts.php:200",
+      "expected_recoverable": true,
+      "c3_query_id": "Q011",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G012",
+      "site": "admin/posts.php:212",
+      "expected_recoverable": true,
+      "c3_query_id": "Q012",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G013",
+      "site": "admin/posts.php:251",
+      "expected_recoverable": true,
+      "c3_query_id": "Q013",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G014",
+      "site": "admin/posts.php:292",
+      "expected_recoverable": true,
+      "c3_query_id": "Q014",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G015",
+      "site": "admin/profile.php:7",
+      "expected_recoverable": true,
+      "c3_query_id": "Q015",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G016",
+      "site": "admin/profile.php:55",
+      "expected_recoverable": true,
+      "c3_query_id": "Q016",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G017",
+      "site": "admin/profile.php:76",
+      "expected_recoverable": true,
+      "c3_query_id": "Q017",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G018",
+      "site": "admin/profile1.php:7",
+      "expected_recoverable": true,
+      "c3_query_id": "Q018",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G019",
+      "site": "admin/profile1.php:68",
+      "expected_recoverable": true,
+      "c3_query_id": "Q019",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G020",
+      "site": "admin/publishnews.php:73",
+      "expected_recoverable": true,
+      "c3_query_id": "Q020",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G021",
+      "site": "admin/users.php:53",
+      "expected_recoverable": true,
+      "c3_query_id": "Q021",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G022",
+      "site": "admin/users.php:84",
+      "expected_recoverable": true,
+      "c3_query_id": "Q022",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G023",
+      "site": "admin/users.php:96",
+      "expected_recoverable": true,
+      "c3_query_id": "Q023",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G024",
+      "site": "admin/users.php:109",
+      "expected_recoverable": true,
+      "c3_query_id": "Q024",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G025",
+      "site": "admin/users.php:123",
+      "expected_recoverable": true,
+      "c3_query_id": "Q025",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G026",
+      "site": "admin/users.php:176",
+      "expected_recoverable": true,
+      "c3_query_id": "Q026",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G027",
+      "site": "index.php:15",
+      "expected_recoverable": true,
+      "c3_query_id": "Q027",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G028",
+      "site": "login.php:10",
+      "expected_recoverable": true,
+      "c3_query_id": "Q028",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G029",
+      "site": "publicposts.php:16",
+      "expected_recoverable": true,
+      "c3_query_id": "Q029",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G030",
+      "site": "registerprocess.php:38",
+      "expected_recoverable": true,
+      "c3_query_id": "Q030",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G031",
+      "site": "registerprocess.php:51",
+      "expected_recoverable": true,
+      "c3_query_id": "Q031",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G032",
+      "site": "search.php:19",
+      "expected_recoverable": true,
+      "c3_query_id": "Q032",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    }
+  ],
+  "ground_truth_file": "benchmarks/ground truth/news_buzz/queries.json"
+}

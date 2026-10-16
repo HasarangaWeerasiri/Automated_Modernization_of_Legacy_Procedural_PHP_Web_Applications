@@ -49,3 +49,25 @@ py3 -m c3.cli evaluate --php benchmarks\apps\_app_only\news_buzz --output $env:T
 ```
 
 The pre-adaptation file was produced with the same evaluator (`evaluate_sites`) on `evidence/preadaptation/news_buzz/output/queries.json` and its `schema.json`. The column-use fields were removed because that run never produced column analysis.
+
+## Post-escape-fix evaluation (2026-10-16, code `bd575ad`)
+
+**Label: post-adaptation.** The PHP string escape-decoding fix (`a85a1a1`) was found through this app's G003. The run is on the current code, which also includes wrapper detection (`4fdd0d0`); NEWS-BUZZ has no wrapper function, so that change does not affect it.
+
+**Evidence:** `evaluation_post_escape_fix.json`. The files above (`evaluation_preadaptation.json`, `evaluation.json`) are unchanged.
+
+| Measure | Post-adaptation (before escape fix) | **Post-escape-fix** |
+|---|---|---|
+| SQL site detection | 32/32 | 32/32 |
+| Recovery TP / FN / FP / TN | 30 / 0 / 0 / 2 | 30 / 0 / 0 / 2 |
+| Precision / recall | 100% / 100% | 100% / 100% |
+| Correct abstentions (G002, G006) | 2 of 2 | 2 of 2 |
+| Incorrect / extra recoveries | 0 / 0 | 0 / 0 |
+| Conversion coverage (recoverable sites with a generated function) | 29/30 | **30/30** |
+| Column use on TP sites: operation / tables / read / write / filter | 29/30, 29/30, 30/30, 29/30, 29/30 | **30/30 on every field** |
+| Unresolved entries | 3 (2 recovery-stage, 1 conversion-stage: G003) | 2 (recovery-stage: G002, G006) |
+
+**G003 `admin/editposts.php:88`:**
+- **Before:** the recovered SQL contained the literal two-character `\t` escape, so the conversion stage could not parse it.
+- **Now:** it is decoded to a tab and normalised, so the SQL is `UPDATE posts SET title = :post_title , ... , status = :post_status , ... WHERE id= :post_id`.
+- **Result:** G003 converts to `update_post_q003(...)` with 7 bound parameters, and all five column-use fields match the ground truth.
