@@ -1,0 +1,77 @@
+﻿# date: 2026-10-16T14:44:15.3404689+05:30
+# git HEAD: c45ed7c4bf5e35e65943eedad9ba9034cd5d8984
+# MySQL server: 8.0.39
+# command: python -m pytest tests/benchmarks/clinic_hard -v -rs -p no:cacheprovider
+============================= test session starts =============================
+platform win32 -- Python 3.13.5, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\sanjula\Desktop\Research\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\components\c3_data_layer\.venv\Scripts\python.exe
+rootdir: C:\Users\sanjula\Desktop\Research\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\components\c3_data_layer
+configfile: pyproject.toml
+plugins: anyio-4.15.1, typeguard-4.6.0
+collecting ... collected 63 items
+
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q001-args0] PASSED [  1%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q002-args1] PASSED [  3%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q002-args2] PASSED [  4%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q002-args3] PASSED [  6%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q002-args4] PASSED [  7%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q006-args5] PASSED [  9%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q006-args6] PASSED [ 11%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q006-args7] PASSED [ 12%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q006-args8] PASSED [ 14%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q007-args9] PASSED [ 15%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q008-args10] PASSED [ 17%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q008-args11] PASSED [ 19%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q008-args12] PASSED [ 20%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q009-args13] PASSED [ 22%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q015-args14] PASSED [ 23%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q015-args15] PASSED [ 25%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q015-args16] PASSED [ 26%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q015-args17] PASSED [ 28%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q018-args18] PASSED [ 30%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q018-args19] PASSED [ 31%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q019-args20] PASSED [ 33%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q019-args21] PASSED [ 34%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_php_python_equivalence[Q021-args22] PASSED [ 36%]
+tests/benchmarks/clinic_hard/test_behavioral_equivalence.py::test_q002_sql_injection_is_blocked PASSED [ 38%]
+tests/benchmarks/clinic_hard/test_clinic_generated_output.py::test_generated_output_is_fresh_and_complete PASSED [ 39%]
+tests/benchmarks/clinic_hard/test_clinic_generated_output.py::test_generated_data_access_module_loads PASSED [ 41%]
+tests/benchmarks/clinic_hard/test_q010_equivalence.py::test_q010_php_sqlalchemy_equivalence PASSED [ 42%]
+tests/benchmarks/clinic_hard/test_q011_equivalence.py::test_q011_full_pipeline_equivalence[missing--inputs0] PASSED [ 44%]
+tests/benchmarks/clinic_hard/test_q011_equivalence.py::test_q011_full_pipeline_equivalence[null--inputs1] PASSED [ 46%]
+tests/benchmarks/clinic_hard/test_q011_equivalence.py::test_q011_full_pipeline_equivalence[value-1-inputs2] PASSED [ 47%]
+tests/benchmarks/clinic_hard/test_q011_equivalence.py::test_q011_full_pipeline_equivalence[value-1,2-inputs3] PASSED [ 49%]
+tests/benchmarks/clinic_hard/test_q011_equivalence.py::test_q011_full_pipeline_equivalence[value-2,3-inputs4] PASSED [ 50%]
+tests/benchmarks/clinic_hard/test_q011_equivalence.py::test_q011_full_pipeline_equivalence[value-001,002-inputs5] PASSED [ 52%]
+tests/benchmarks/clinic_hard/test_q012_equivalence.py::test_q012_full_pipeline_equivalence[missing--inputs0-full_name] PASSED [ 53%]
+tests/benchmarks/clinic_hard/test_q012_equivalence.py::test_q012_full_pipeline_equivalence[null--inputs1-full_name] PASSED [ 55%]
+tests/benchmarks/clinic_hard/test_q012_equivalence.py::test_q012_full_pipeline_equivalence[value-id-inputs2-id] PASSED [ 57%]
+tests/benchmarks/clinic_hard/test_q012_equivalence.py::test_q012_full_pipeline_equivalence[value-full_name-inputs3-full_name] PASSED [ 58%]
+tests/benchmarks/clinic_hard/test_q013_equivalence.py::test_q013_full_pipeline_equivalence[missing--inputs0] PASSED [ 60%]
+tests/benchmarks/clinic_hard/test_q013_equivalence.py::test_q013_full_pipeline_equivalence[null--inputs1] PASSED [ 61%]
+tests/benchmarks/clinic_hard/test_q013_equivalence.py::test_q013_full_pipeline_equivalence[value-patients-inputs2] PASSED [ 63%]
+tests/benchmarks/clinic_hard/test_q014_equivalence.py::test_q014_equivalence[missing--inputs0] PASSED [ 65%]
+tests/benchmarks/clinic_hard/test_q014_equivalence.py::test_q014_equivalence[null--inputs1] PASSED [ 66%]
+tests/benchmarks/clinic_hard/test_q014_equivalence.py::test_q014_equivalence[value-1-inputs2] PASSED [ 68%]
+tests/benchmarks/clinic_hard/test_q014_equivalence.py::test_q014_equivalence[value-0-inputs3] PASSED [ 69%]
+tests/benchmarks/clinic_hard/test_q014_equivalence.py::test_q014_equivalence[value--inputs4] PASSED [ 71%]
+tests/benchmarks/clinic_hard/test_q014_equivalence.py::test_q014_equivalence[value-false-inputs5] PASSED [ 73%]
+tests/benchmarks/clinic_hard/test_q014_equivalence.py::test_q014_full_pipeline_equivalence[missing--inputs0] PASSED [ 74%]
+tests/benchmarks/clinic_hard/test_q014_equivalence.py::test_q014_full_pipeline_equivalence[null--inputs1] PASSED [ 76%]
+tests/benchmarks/clinic_hard/test_q014_equivalence.py::test_q014_full_pipeline_equivalence[value-1-inputs2] PASSED [ 77%]
+tests/benchmarks/clinic_hard/test_q014_equivalence.py::test_q014_full_pipeline_equivalence[value-0-inputs3] PASSED [ 79%]
+tests/benchmarks/clinic_hard/test_q014_equivalence.py::test_q014_full_pipeline_equivalence[value--inputs4] PASSED [ 80%]
+tests/benchmarks/clinic_hard/test_q014_equivalence.py::test_q014_full_pipeline_equivalence[value-false-inputs5] PASSED [ 82%]
+tests/benchmarks/clinic_hard/test_q016_equivalence.py::test_q016_full_pipeline_equivalence[missing--inputs0] PASSED [ 84%]
+tests/benchmarks/clinic_hard/test_q016_equivalence.py::test_q016_full_pipeline_equivalence[null--inputs1] PASSED [ 85%]
+tests/benchmarks/clinic_hard/test_q016_equivalence.py::test_q016_full_pipeline_equivalence[value-1-inputs2] PASSED [ 87%]
+tests/benchmarks/clinic_hard/test_q016_equivalence.py::test_q016_full_pipeline_equivalence[value-2-inputs3] PASSED [ 88%]
+tests/benchmarks/clinic_hard/test_q016_equivalence.py::test_q016_full_pipeline_equivalence[value-3-inputs4] PASSED [ 90%]
+tests/benchmarks/clinic_hard/test_q020_equivalence.py::test_q020_php_sqlalchemy_equivalence PASSED [ 92%]
+tests/benchmarks/clinic_hard/test_q020_rollback.py::test_q020_update_and_rollback PASSED [ 93%]
+tests/benchmarks/clinic_hard/test_write_equivalence.py::test_php_python_write_equivalence[Q003] PASSED [ 95%]
+tests/benchmarks/clinic_hard/test_write_equivalence.py::test_php_python_write_equivalence[Q004] PASSED [ 96%]
+tests/benchmarks/clinic_hard/test_write_equivalence.py::test_php_python_write_equivalence[Q005] PASSED [ 98%]
+tests/benchmarks/clinic_hard/test_write_equivalence.py::test_php_python_write_equivalence[Q017] PASSED [100%]
+
+============================= 63 passed in 12.59s =============================
+# pytest exit code: 0
