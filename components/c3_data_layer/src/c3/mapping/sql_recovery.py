@@ -106,18 +106,98 @@ def _strip_php_string_quotes(value: str) -> str:
     return value
 
 
-def _decode_php_string(value: str) -> str:
+# A literal "$" written as \$ in a double-quoted string. It is kept as this
+# private-use character until variable interpolation has been resolved, so
+# that "\$name" is never mistaken for the variable $name.
+LITERAL_DOLLAR = "\ue000"
+
+_DOUBLE_QUOTED_SIMPLE_ESCAPES = {
+    "n": b"\n",
+    "r": b"\r",
+    "t": b"\t",
+    "v": b"\v",
+    "e": b"\x1b",
+    "f": b"\f",
+    "\\": b"\\",
+    "$": LITERAL_DOLLAR.encode("utf-8"),
+    '"': b'"',
+}
+_OCTAL_ESCAPE = re.compile(r"[0-7]{1,3}")
+_HEX_ESCAPE = re.compile(r"x([0-9A-Fa-f]{1,2})")
+_UNICODE_ESCAPE = re.compile(r"u\{([0-9A-Fa-f]+)\}")
+
+
+def _decode_php_string(value: str, quote: str = '"') -> str:
     """
-    Convert escaped line endings and quotes from the
-    pretty-printed PHP expression into readable text.
+    Decode the escape sequences of a PHP string literal body, following
+    PHP semantics.
+
+    Single-quoted: only \\\\ and \\' are escapes; every other backslash is
+    literal.
+
+    Double-quoted: \\n \\r \\t \\v \\e \\f \\\\ \\$ \\", octal \\[0-7]{1,3}
+    (wrapping above \\377, as PHP does), hex \\x[0-9A-Fa-f]{1,2} and Unicode
+    \\u{hex}. Octal and hex escapes are bytes, so the result is built as bytes
+    and decoded as UTF-8. Any other backslash (unknown escape, \\u without
+    braces, a code point above U+10FFFF) is kept literally, as in PHP. A
+    literal \\$ becomes LITERAL_DOLLAR; restore it after interpolation.
     """
 
-    value = value.replace("\\r\\n", "\n")
-    value = value.replace("\\n", "\n")
-    value = value.replace("\\r", "\n")
-    value = value.replace('\\"', '"')
+    if quote == "'":
+        out = []
+        index = 0
+        while index < len(value):
+            if value[index] == "\\" and index + 1 < len(value) and value[index + 1] in "\\'":
+                out.append(value[index + 1])
+                index += 2
+            else:
+                out.append(value[index])
+                index += 1
+        return "".join(out)
 
-    return value
+    out = bytearray()
+    index = 0
+    length = len(value)
+
+    while index < length:
+        char = value[index]
+
+        if char != "\\" or index + 1 >= length:
+            out += char.encode("utf-8", errors="surrogateescape")
+            index += 1
+            continue
+
+        rest = value[index + 1:]
+        simple = _DOUBLE_QUOTED_SIMPLE_ESCAPES.get(rest[0])
+
+        if simple is not None:
+            out += simple
+            index += 2
+            continue
+
+        match = _OCTAL_ESCAPE.match(rest)
+        if match:
+            out.append(int(match.group(0), 8) & 0xFF)
+            index += 1 + len(match.group(0))
+            continue
+
+        match = _HEX_ESCAPE.match(rest)
+        if match:
+            out.append(int(match.group(1), 16))
+            index += 1 + len(match.group(0))
+            continue
+
+        match = _UNICODE_ESCAPE.match(rest)
+        if match and int(match.group(1), 16) <= 0x10FFFF:
+            out += chr(int(match.group(1), 16)).encode("utf-8", errors="surrogatepass")
+            index += 1 + len(match.group(0))
+            continue
+
+        # Unknown escape: PHP keeps the backslash.
+        out += b"\\"
+        index += 1
+
+    return out.decode("utf-8", errors="surrogateescape")
 
 
 def _split_concat_expression(
@@ -241,7 +321,8 @@ def _expression_to_template(
             )
 
             content = _decode_php_string(
-                content
+                content,
+                part[0],
             )
 
             if part[0] == "'":
@@ -285,6 +366,9 @@ def _expression_to_template(
                 _variable_placeholder,
                 content,
             )
+
+            # Escaped dollars (\$) are literal SQL text, restored only now.
+            content = content.replace(LITERAL_DOLLAR, "$")
 
             output_parts.append(content)
 
