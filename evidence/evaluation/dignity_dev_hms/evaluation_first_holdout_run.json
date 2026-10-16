@@ -1,0 +1,274 @@
+{
+  "matching": "ground truth (file, line) = C3 (source_file relative to the PHP root, source_line)",
+  "gt_entries": 14,
+  "gt_live_sites": 13,
+  "detection": {
+    "live_detected": 13,
+    "recall": 100.0,
+    "false_detections_commented_out": [
+      {
+        "site": "library.php:249",
+        "site_status": "dead_code_empty_sql",
+        "c3_query_id": "Q010"
+      }
+    ],
+    "c3_sites_not_in_gt": []
+  },
+  "recovery": {
+    "excluded_ambiguous": 0,
+    "evaluated": 13,
+    "TP": 7,
+    "FN": 0,
+    "FP": 0,
+    "TN": 6,
+    "precision": 100.0,
+    "recall": 100.0,
+    "accuracy": 100.0,
+    "false_abstentions": [],
+    "false_recoveries": []
+  },
+  "column_use_accuracy": {
+    "operation": 100.0,
+    "tables": 100.0,
+    "read": 100.0,
+    "write": 71.4,
+    "filter": 100.0,
+    "sites": 7
+  },
+  "schema_mismatch": {
+    "sites": [],
+    "column_use_accuracy": {
+      "operation": null,
+      "tables": null,
+      "read": null,
+      "write": null,
+      "filter": null,
+      "sites": 0
+    }
+  },
+  "ambiguous_sites": [],
+  "details": [
+    {
+      "gt_id": "G001",
+      "site": "library.php:31",
+      "expected_recoverable": false,
+      "c3_query_id": "Q001",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "STRUCTURAL",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G002",
+      "site": "library.php:53",
+      "expected_recoverable": false,
+      "c3_query_id": "Q002",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "STRUCTURAL",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G003",
+      "site": "library.php:96",
+      "expected_recoverable": false,
+      "c3_query_id": "Q003",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "LOOP_OR_SWITCH_CONTROL_FLOW",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G004",
+      "site": "library.php:158",
+      "expected_recoverable": true,
+      "c3_query_id": "Q004",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": false,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "INSERT",
+          "tables": [
+            "patient_info"
+          ],
+          "read_columns": [],
+          "write_columns": [
+            "patient_id",
+            "full_name",
+            "dob",
+            "weight",
+            "phone_no",
+            "address"
+          ],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": "INSERT",
+          "tables": [
+            "patient_info"
+          ],
+          "read_columns": [],
+          "write_columns": [],
+          "filter_columns": []
+        }
+      }
+    },
+    {
+      "gt_id": "G005",
+      "site": "library.php:178",
+      "expected_recoverable": true,
+      "c3_query_id": "Q005",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": false,
+        "filter": true
+      },
+      "column_differences": {
+        "expected": {
+          "operation": "INSERT",
+          "tables": [
+            "appointments"
+          ],
+          "read_columns": [],
+          "write_columns": [
+            "appointment_no",
+            "patient_id",
+            "speciality",
+            "medical_condition",
+            "doctors_suggestion",
+            "payment_amount",
+            "case_closed"
+          ],
+          "filter_columns": []
+        },
+        "c3": {
+          "operation": "INSERT",
+          "tables": [
+            "appointments"
+          ],
+          "read_columns": [],
+          "write_columns": [],
+          "filter_columns": []
+        }
+      }
+    },
+    {
+      "gt_id": "G006",
+      "site": "library.php:203",
+      "expected_recoverable": false,
+      "c3_query_id": "Q006",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "BRANCHING",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G007",
+      "site": "library.php:219",
+      "expected_recoverable": true,
+      "c3_query_id": "Q007",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G008",
+      "site": "library.php:226",
+      "expected_recoverable": true,
+      "c3_query_id": "Q008",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G009",
+      "site": "library.php:233",
+      "expected_recoverable": true,
+      "c3_query_id": "Q009",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G011",
+      "site": "library.php:292",
+      "expected_recoverable": true,
+      "c3_query_id": "Q011",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G012",
+      "site": "library.php:299",
+      "expected_recoverable": true,
+      "c3_query_id": "Q012",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G013",
+      "site": "library.php:313",
+      "expected_recoverable": false,
+      "c3_query_id": "Q013",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "STRUCTURAL",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G014",
+      "site": "library.php:320",
+      "expected_recoverable": false,
+      "c3_query_id": "Q014",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "STRUCTURAL",
+      "outcome": "TN"
+    }
+  ],
+  "ground_truth_file": "benchmarks/ground truth/dignity_dev_hms/queries.json"
+}
