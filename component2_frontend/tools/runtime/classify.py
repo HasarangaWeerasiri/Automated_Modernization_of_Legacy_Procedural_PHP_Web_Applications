@@ -7,6 +7,11 @@
                 the flag claims the generated tree is the one a browser builds (an HTML5 repair or close: spec
                 section 5b, R-L6), or drops `<head>` content that the browser's tree has in `<body>`. Counted
                 separately: such a difference is a wrong result, not an explained gap
+  framework:react_hoist
+                React 19 renders `<meta>`, `<title>` and non-stylesheet `<link>` elements into the document's <head>,
+                wherever the component tree has them (owner, Phase 4e): a missing body element of those kinds whose
+                exact copy (tag and attributes) is in the generated page's <head>. Explained, not a generator error,
+                counted separately (it changes nothing visible)
   env:<reason>  caused by the run, not the tool (get_only pages, a legacy runtime error, no replay data)
   norm:<reason> an artefact of the comparison itself
   UNEXPLAINED   none of the above; its root cause comes from the reviewed notes (tools/runtime/<app>/findings.json)
@@ -21,6 +26,11 @@ printed by a function component (no static start tag of its own) is tied to the 
 ancestor, and the flag must be in that component. Anything else is UNEXPLAINED: a flag elsewhere on the page never
 explains a difference.
 
+Fallback (Phase 4e, phpBlog): when the differing element cannot be found by its own attribute values (its only
+attribute is printed by an expression, or it has none), the nearest ancestor that can be found is searched: a gap flag of
+the right kind on a node printed inside that ancestor (a C2Todo / unresolvedCondition for text, an attribute flag naming
+the same attribute and tag) explains it, marked `via` that ancestor (weaker evidence than the node itself).
+
 Which rules produced the run (`rules` in the folder's lists.json, written by generated_app.py; "1.0" when absent,
 as for the runs made before the switch) decides which reviewed findings apply: each finding names the rules it was
 found under.
@@ -32,6 +42,7 @@ Usage, from component2_frontend/ (after tools/runtime/compare.py <app>):
 """
 
 import collections
+import html
 import json
 import re
 import sys
@@ -68,11 +79,13 @@ class Unit:
         self.text, self.spans, self.calls = "", [], []  # spans: (start, end, node id); calls: (offset, callee)
         self.loops = {}  # node id (and part ids) -> the ids of the loops enclosing it
         self.ifs = {}  # node id (and part ids) -> the ids of the ifs enclosing it
+        self.arms = {}  # node id (and part ids) -> [(if id, branch)] of the ifs enclosing it
         for entry in timeline["sequence"]:
             loops = [e["nodeId"] for e in entry["enclosedBy"] if e["role"] == "iteration"]
             ifs = [e["nodeId"] for e in entry["enclosedBy"] if e["role"] == "branch"]
+            arms = [(e["nodeId"], e.get("branch")) for e in entry["enclosedBy"] if e["role"] == "branch"]
             for node_id in [entry["id"]] + [part["nodeId"] for part in entry.get("parts", [])]:
-                self.loops[node_id], self.ifs[node_id] = loops, ifs
+                self.loops[node_id], self.ifs[node_id], self.arms[node_id] = loops, ifs, arms
             if entry["kind"] in ("call", "include"):
                 self.calls.append((len(self.text), entry.get("callee") or entry.get("path")))
             elif entry["kind"] == "Stmt_InlineHTML":
@@ -125,13 +138,31 @@ def _has(tag_text: str, name: str, value: str) -> bool:
     return False
 
 
+def _tokens(tag_text: str, name: str, value: str) -> bool:
+    """A weaker match (Phase 4e): every word of the value appears in the start tag's text (a value partly printed by
+    an if or an expression, e.g. `class="<?php if (...) echo 'container'; ?> mt-3"`)."""
+    words = value.split()
+    return bool(words) and re.search(rf"[\s{PLACEHOLDER}]{re.escape(name)}\s*=", tag_text, re.I) is not None \
+        and all(w in tag_text for w in words)  # (an if's arms are printed next to each other: no word boundaries)
+
+
+def _score(tag_text: str, attrs, weak: bool) -> int:
+    return sum((_tokens if weak else _has)(tag_text, n, v) for n, v in attrs)
+
+
 def locate(unit: Unit, element: compare.Node) -> list:
     """(start, end) of the start tag(s) in the unit's text that printed `element`: the occurrences of its tag
-    matching the most of its attribute values (at least one, unless it has none and the tag occurs once)."""
+    matching the most of its attribute values (at least one, unless it has none and the tag occurs once). When no
+    occurrence matches a value exactly, the values are matched word by word."""
+    found = _locate(unit, element, weak=False)
+    return found if found or not element.attrs else _locate(unit, element, weak=True)
+
+
+def _locate(unit: Unit, element: compare.Node, weak: bool) -> list:
     scored = []
     for start, end in start_tags(unit.text, element.tag):
         tag_text = unit.text[start:end]
-        scored.append((sum(_has(tag_text, n, v) for n, v in element.attrs), start, end))
+        scored.append((_score(tag_text, element.attrs, weak), start, end))
     if not scored:
         return []
     best = max(s for s, _, _ in scored)
@@ -159,12 +190,18 @@ def flag_id(unit: Unit, flag: dict) -> dict:
 
 def tag_nodes(units: list, element: compare.Node) -> list:
     """[(unit, node ids)] of the occurrences of the element's start tag that match the most of its attribute values
-    across all the units together (a weaker match in another unit is not the element); ties must all be found."""
+    across all the units together (a weaker match in another unit is not the element); ties must all be found. When no
+    occurrence matches a value exactly, the values are matched word by word."""
+    found = _tag_nodes(units, element, weak=False)
+    return found if found or not element.attrs else _tag_nodes(units, element, weak=True)
+
+
+def _tag_nodes(units: list, element: compare.Node, weak: bool) -> list:
     scored = []
     for unit in units:
         for start, end in start_tags(unit.text, element.tag):
             tag_text = unit.text[start:end]
-            scored.append((sum(_has(tag_text, n, v) for n, v in element.attrs), unit, start, end))
+            scored.append((_score(tag_text, element.attrs, weak), unit, start, end))
     if not scored:
         return []
     best = max(s for s, _, _, _ in scored)
@@ -173,15 +210,44 @@ def tag_nodes(units: list, element: compare.Node) -> list:
     return [(unit, unit.nodes(start, end)) for s, unit, start, end in scored if s == best]
 
 
-def explain_attributes(units, element, names) -> dict | None:
+def region(units, element: compare.Node) -> list:
+    """[(unit, node ids)] printed between the start tag of `element` and its end tag, for each located occurrence."""
+    out = []
+    for unit in units:
+        for start, end in locate(unit, element):
+            close = unit.text.lower().find(f"</{element.tag}", end)
+            out.append((unit, unit.nodes(start, close if close >= 0 else len(unit.text))))
+    return out
+
+
+def via_ancestor(units, tree, path: str, wanted) -> dict | None:
+    """The nearest located ancestor's region: the first flag `wanted(flag)` accepts on a node printed inside it."""
+    for ancestor in ancestors_of(tree, path):
+        found = region(units, ancestor)
+        if not found:
+            continue
+        for unit, nodes in found:
+            for node in sorted(nodes):
+                for f in unit.flags.get(node, []):
+                    if wanted(f):
+                        return flag_id(unit, f) | {"via": f"inside <{ancestor.tag}> {dict(ancestor.attrs)}"}
+        return None  # the nearest located ancestor decides
+    return None
+
+
+def explain_attributes(units, element, names, tree=None, path: str = "") -> dict | None:
     found = tag_nodes(units, element)
     if not found:
-        return None
+        if tree is None or not names:
+            return None
+        return via_ancestor(units, tree, path, lambda f: all(_detail_names(f, n, element.tag) for n in names[:1]))
     explained = []
     for attr in names:
         hits = []
         for unit, nodes in found:
-            hit = next((flag_id(unit, f) for node in sorted(nodes) for f in unit.flags.get(node, [])
+            # an if inside the start tag (R-I3 / R-I3b) printed the attribute through its arms: its flags count too
+            printing = set(nodes) | {i for node in nodes for i in unit.ifs.get(node, [])}
+            hit = next((flag_id(unit, f) for node in sorted(printing) for f in unit.flags.get(node, [])
                         if _detail_names(f, attr, element.tag)), None)
             hits.append(hit)
         if not hits or any(h is None for h in hits):  # every tied occurrence must carry it
@@ -290,22 +356,37 @@ def unresolved_guard(unit: Unit, nodes) -> dict | None:
     return None
 
 
-def explain_text(units, legacy_text: str, generated_text: str) -> dict | None:
+def explain_text(units, legacy_text: str, generated_text: str, tree=None, path: str = "") -> dict | None:
     """Text printed with an expression the pipeline left as a gap: a C2Todo / flag on a part of the node whose
     literal text is the generated text. Text the generated page lacks altogether: a node whose literal text is in
-    it, inside an if whose condition was not translated (unresolvedCondition)."""
+    it, inside an if whose condition was not translated (unresolvedCondition). Failing both, the element's (or its
+    nearest located ancestor's) region holds a C2Todo / unresolvedCondition (Phase 4e)."""
+    found = _explain_text(units, legacy_text, generated_text)
+    if found is None and tree is not None:
+        element = compare.find(tree, path)
+        gap = lambda f: f["kind"] in ("C2Todo", "unresolvedCondition")  # noqa: E731
+        for unit, nodes in region(units, element) if element is not None and element.attrs else []:
+            for node in sorted(nodes):
+                for f in unit.flags.get(node, []):
+                    if gap(f):
+                        return flag_id(unit, f)
+        found = via_ancestor(units, tree, path + ">x[0]", gap)  # (its ancestors, from the element itself)
+    return found
+
+
+def _explain_text(units, legacy_text: str, generated_text: str) -> dict | None:
     if not generated_text:
         wanted = compare._text(legacy_text)
         for unit in units:
             for start, end, node in unit.spans:
-                literal = compare._text(unit.text[start:end].replace(PLACEHOLDER, " "))
+                literal = compare._text(html.unescape(unit.text[start:end].replace(PLACEHOLDER, " ")))
                 found = unresolved_guard(unit, {node}) if literal and literal in wanted else None
                 if found is not None:
                     return found
         return None
     for unit in units:
         for start, end, node in unit.spans:
-            literal = unit.text[start:end].replace(PLACEHOLDER, "")
+            literal = html.unescape(unit.text[start:end].replace(PLACEHOLDER, ""))
             if PLACEHOLDER in unit.text[start:end] and compare._text(literal) == generated_text:
                 for part in sorted(unit.nodes(start, end)):
                     for f in unit.flags.get(part, []):
@@ -327,6 +408,25 @@ def descendants(node: compare.Node) -> list:
     return out
 
 
+def defaulted_arm(units, element: compare.Node | None, legacy: compare.Node | None = None) -> dict | None:
+    """The generated element was printed in an arm that renders only because the condition of its if was not
+    translated (unresolvedCondition is false, so an `else` / later arm renders on every request), and the legacy page
+    did not take that arm (its counterpart, when there is one, was printed elsewhere): that flag."""
+    if element is None:
+        return None
+    legacy_arms = {arm for unit, nodes in (tag_nodes(units, legacy) if legacy is not None else [])
+                   for node in nodes for arm in unit.arms.get(node, [])}
+    for unit, nodes in tag_nodes(units, element):
+        for node in sorted(nodes):
+            for if_id, branch in unit.arms.get(node, []):
+                if branch == "then" or (if_id, branch) in legacy_arms:
+                    continue
+                gap = next((f for f in unit.flags.get(if_id, []) if f["kind"] == "unresolvedCondition"), None)
+                if gap is not None:
+                    return flag_id(unit, gap)
+    return None
+
+
 def contradiction(found: dict, difference: dict) -> str | None:
     """Why a flag that explains this difference is a wrong result (flag-but-wrong), or None. Only the body is
     compared, so a missing element is always one the browser built inside `<body>`."""
@@ -338,15 +438,44 @@ def contradiction(found: dict, difference: dict) -> str | None:
     return None
 
 
-def classify_page(page: dict, legacy_tree, generated_tree, units, by_function, notes: dict) -> list:
+# What Next.js itself writes into every page's <head>: a copy of one of these there proves nothing by itself
+NEXT_HEAD = ((("charset", "utf-8"),), (("content", "width=device-width, initial-scale=1"), ("name", "viewport")))
+
+
+def react_hoisted(element: compare.Node, generated_head: list) -> bool:
+    """React 19 always renders these into <head> (document metadata): <meta> without itemprop, <title>, and a <link>
+    that is not a stylesheet. The generated <head> must hold the element: once if Next.js does not write it itself,
+    twice if it does (Next.js's own and the hoisted one)."""
+    attrs = dict(element.attrs)
+    kinds = element.tag in ("meta", "title") or (element.tag == "link" and "stylesheet" not in attrs.get("rel", ""))
+    copies = sum((h.tag, h.attrs, h.text) == (element.tag, element.attrs, element.text) for h in generated_head)
+    own = element.tag == "meta" and element.attrs in NEXT_HEAD
+    return kinds and "itemprop" not in attrs and copies > (1 if own else 0)
+
+
+def classify_page(page: dict, legacy_tree, generated_tree, units, by_function, notes: dict,
+                  generated_head: list = (), pairs: dict | None = None) -> list:
     out = []
     for difference in page["differences"]:
         kind, path = difference["kind"], difference["path"]
+        if kind == "missing" and react_hoisted(compare.find(legacy_tree, path), generated_head):
+            out.append(difference | {"class": "framework:react_hoist",
+                                     "evidence": "the same element is in the generated page's <head> (React 19)"})
+            continue
+        if kind != "missing":  # the generated side of the difference
+            gpath = difference.get("generatedPath") or (pairs or {}).get(path)
+            arm = defaulted_arm(units, compare.find(generated_tree, gpath) if gpath else None,
+                                None if kind == "extra" else compare.find(legacy_tree, path))
+            if arm is not None:
+                out.append(difference | {"class": "flag-but-wrong:unresolvedCondition", "flag": arm,
+                                         "contradiction": "an arm rendered on every request because its untranslated "
+                                                          "condition is false; the browser took another arm"})
+                continue
         found = None
         if kind == "attributes":
-            found = explain_attributes(units, compare.find(legacy_tree, path), difference["names"])
+            found = explain_attributes(units, compare.find(legacy_tree, path), difference["names"], legacy_tree, path)
         elif kind == "text":
-            found = explain_text(units, difference["legacy"], difference["generated"])
+            found = explain_text(units, difference["legacy"], difference["generated"], legacy_tree, path)
         else:
             tree = legacy_tree if kind == "missing" else generated_tree
             element = compare.find(tree, path if kind == "missing" else difference["generatedPath"])
@@ -358,7 +487,7 @@ def classify_page(page: dict, legacy_tree, generated_tree, units, by_function, n
             found = found or explain_structure(units, relatives, kind == "missing")
             if found is None and kind == "missing":
                 found = explain_by_order(units, tree, path)
-        note = notes.get((page["page"], path))
+        note = notes.get((page["page"], path)) or notes.get((page["page"], "*"))
         wrong = contradiction(found, difference) if found is not None else None
         if wrong is not None:
             out.append(difference | {"class": f"flag-but-wrong:{found['kind']}", "flag": found, "contradiction": wrong})
@@ -420,14 +549,19 @@ def main(argv: list[str]) -> int:
         generated_html = (out / "generated" / f"{page['page']}.html").read_text(encoding="utf-8")
         legacy_tree, generated_tree = compare.body(legacy_html), compare.body(generated_html, generated=True)
         unit = units[page["page"]]
-        called = [by_function[c] for _, c in unit.calls if c in by_function]
-        differences = classify_page(page, legacy_tree, generated_tree, [unit] + called, by_function, notes)
+        # a page inside a shell (R-F2): the shell's header and footer printed part of it (Phase 4e, phpBlog)
+        entry = next(e for e in index["pages"] if e["key"] == page["page"])
+        shell = [units[e["key"]] for e in index["pages"] if e["role"] == "shell" and e.get("group")
+                 and e["group"] == entry.get("group") and e["key"] in units]
+        called = [by_function[c] for u in [unit] + shell for _, c in u.calls if c in by_function]
+        matches = []
+        compare.compare(legacy_html, generated_html, matches)
+        differences = classify_page(page, legacy_tree, generated_tree, [unit] + shell + called, by_function, notes,
+                                    compare.head(generated_html), dict(matches))
         # list rows: legacy elements matched to a row the wiring added, and missing legacy elements whose gap is a
         # List's collection (no data for it)
         rows = row_paths((before / "generated" / f"{page['page']}.html").read_text(encoding="utf-8"), generated_html) \
             if out != before and (before / "generated" / f"{page['page']}.html").exists() else set()
-        matches = []
-        compare.compare(legacy_html, generated_html, matches)
         list_matched = sum(1 for _, g in matches[1:] if g in rows)
         list_missing = sum(d.get("elements", 0) for d in differences
                            if d["kind"] == "missing" and d.get("flag", {}).get("detail") == "collection")
@@ -440,10 +574,11 @@ def main(argv: list[str]) -> int:
                "staticMatched": page["matched"] - list_matched,
                "byClass": dict(sorted(by_class.items())), "unexplained": by_class.get("UNEXPLAINED", 0),
                "flagButWrong": sum(n for c, n in by_class.items() if c.startswith("flag-but-wrong:")),
+               "framework": sum(n for c, n in by_class.items() if c.startswith("framework:")),
                "differences": differences}
         pages.append(row)
         for key in ("legacyElements", "generatedElements", "matched", "listElements", "listMatched",
-                    "staticElements", "staticMatched", "unexplained", "flagButWrong"):
+                    "staticElements", "staticMatched", "unexplained", "flagButWrong", "framework"):
             totals[key] += row[key]
         for name, count in by_class.items():
             totals["class:" + name] += count
@@ -453,6 +588,7 @@ def main(argv: list[str]) -> int:
     result = {"app": app, "rules": rules,
               "classes": {"flag": "a flag the pipeline emitted at that node",
                           "flag-but-wrong": "a flag at that node, but the generated tree contradicts the browser's",
+                          "framework": "the target framework renders the generated tree elsewhere (React 19 hoisting)",
                           "env": "the run", "norm": "the comparison", "UNEXPLAINED": "none of these; root cause noted"},
               "totals": totals_out, "pages": pages}
     (out / "classified.json").write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n", encoding="utf-8",

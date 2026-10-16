@@ -6,6 +6,10 @@ out of scope, and Server Components need none), waits for `load`, and saves `doc
 and a full-page screenshot under output/runtime/<app>/{legacy,generated}/<page>.{html,png}, plus index.json.
 
 A page is captured only when both sides answer a plain GET with 200; anything else is listed with its status.
+A page that **redirects** (an HTTP redirect the browser follows, or a `<meta http-equiv="refresh">`, which a browser
+follows even with JavaScript off) is recorded with where it goes (`<side>FinalUrl` / `<side>Refresh`); a side whose
+served HTML holds a meta refresh is not loaded in the browser (it would leave at once).
+compare.py leaves such a page out of the element comparison (Phase 4e: phpBlog's admin pages, anonymous GET).
 Nothing is posted and nobody logs in: a page whose output depends on a request or a session (its timeline reads
 $_POST / $_GET / $_REQUEST / $_SESSION / $_COOKIE in an output or a condition) is captured as an anonymous GET and
 marked `get_only`.
@@ -30,6 +34,8 @@ ROOT = HERE.parents[1]  # component2_frontend/
 OUTPUT = ROOT / "output" / "runtime"
 VIEWPORT = {"width": 1280, "height": 800}
 REQUEST_INPUT = re.compile(r"\$_(POST|GET|REQUEST|SESSION|COOKIE)\b")
+REFRESH_TAG = re.compile(r"<meta[^>]+http-equiv\s*=\s*[\"']?refresh[^>]*>", re.I)
+REFRESH_URL = re.compile(r"url\s*=\s*([^\"'>\s;]+)", re.I)
 
 
 def status(url: str) -> int:
@@ -68,6 +74,20 @@ def pages(app: str, run: str | None = None) -> list[dict]:
     return found
 
 
+def meta_refresh(url: str) -> str | None:
+    """The target of a `<meta http-equiv="refresh">` in the page as served (a browser follows it, JavaScript or not),
+    or None."""
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, method="GET"), timeout=60) as response:
+            text = response.read().decode("utf-8", errors="replace")
+    except (urllib.error.URLError, TimeoutError):
+        return None
+    for tag in REFRESH_TAG.findall(text):
+        found = REFRESH_URL.search(tag)
+        return found.group(1) if found else ""
+    return None
+
+
 def main(argv: list[str]) -> int:
     if not argv or argv[0].startswith("--"):
         print(__doc__.strip().splitlines()[-4], file=sys.stderr)
@@ -91,8 +111,14 @@ def main(argv: list[str]) -> int:
                 rows.append(row | {"captured": False})
                 continue
             for side, url in urls.items():
+                refresh = meta_refresh(url)
+                if refresh is not None:  # it sends the browser elsewhere: recorded, not captured
+                    row[f"{side}Refresh"] = refresh
+                    continue
                 page = context.new_page()
                 page.goto(url, wait_until="load")
+                if page.url != url:  # an HTTP redirect (e.g. an admin page without a login): where it ended
+                    row[f"{side}FinalUrl"] = page.url
                 html = page.evaluate("document.documentElement.outerHTML")
                 (out / side / f"{page_info['page']}.html").write_text(html, encoding="utf-8", newline="\n")
                 page.screenshot(path=str(out / side / f"{page_info['page']}.png"), full_page=True)

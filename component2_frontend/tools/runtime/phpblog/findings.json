@@ -1,0 +1,40 @@
+{
+  "note": "Reviewed root causes of the Phase 4e (phpBlog) differences tools/runtime/classify.py cannot tie to a flag at their node. Keyed by page and difference path (compare.py; \"*\" = every difference of the page); `rules` = the rules version of the run. A finding with a class other than UNEXPLAINED is a hand-reviewed link (its evidence names the flag and the node); UNEXPLAINED stays UNEXPLAINED.",
+  "findings": [
+    {
+      "page": "install__upgrade-v2.2.php",
+      "path": "*",
+      "rules": "1.1",
+      "class": "env:legacy_runtime_error",
+      "rootCause": "The legacy page stops with a PHP fatal error after its first line: install/upgrade-v2.2.php:46 queries a `settings` table that install/database.sql does not create (PHP 8: uncaught mysqli_sql_exception, tools/runtime/phpblog/build/logs/errors.log). Before that, line 41 tries to rewrite ../config.php on a plain GET (blocked: the file is mounted read-only). The generated page prints every message. Caused by the run (an upgrade script run against a fresh install), not by the tool."
+    },
+    {
+      "page": "index.php",
+      "path": "body>div[1]>div[0]>div[0]>div[0]",
+      "rules": "1.1",
+      "class": "flag:attribute_omitted",
+      "rootCause": "Reviewed link: index.php:85 `<div class=\"row <?php echo $mt3_i; ?>\">`; the class is omitted, flag attribute_omitted (unresolved_read) at f036#00213. The mechanical link fails because the legacy value (\"row\") equals the literal class of other <div>s, which carry no flag."
+    },
+    {
+      "page": "login.php",
+      "path": "body>div[1]>div[0]>div[0]>div[0]>div[1]>div[0]>div[0]>form[0]>div[0]",
+      "rules": "1.1",
+      "class": "flag:attribute_omitted",
+      "rootCause": "Reviewed link: login.php:42 `<div class=\"input-group mb-3 needs-validation <?php if ($error == 1) ...?>\">`; the class is omitted, flag attribute_omitted (condition_not_translatable) at the if f042#00105. The legacy value equals the literal class of the form's other <div>s (login.php 54, 118, 122, 126)."
+    },
+    {
+      "page": "blog.php",
+      "path": "body>footer[0]>div[0]>div[2]>div[0]>a[0]>strong[0]>span[0]",
+      "rules": "1.1",
+      "class": "flag:C2Todo",
+      "rootCause": "Reviewed link: core.php:1006 `<span>&nbsp; <?php echo $settings['email']; ?></span>` (footer of the shell); C2Todo unresolved_read at f033#02168. The <span> and its ancestors up to the footer have no attribute the classifier can find them by."
+    }
+  ],
+  "unsoundDecisions": [
+    {
+      "rules": "1.1",
+      "where": "phpBlog core.php:652 (the shell, every public page: 35 differences) and blog.php:29 (2 differences)",
+      "what": "An if / else whose condition is not translatable: spec section 6 generates unresolvedCondition (false), so the ternary renders the else arm on every request. core.php:652 `if ($logged == 'No') { Sign In | Register } else { Profile menu }`: the logged-in Profile menu is shown to an anonymous visitor (the browser shows Sign In). blog.php:29 `if ($count <= 0) { 'There are no published posts' } else { the posts loop and its pagination }` (R-I2: the loop is the else arm): the empty list and its pagination are shown, the legacy page shows the message (the seed has no posts). Classified flag-but-wrong:unresolvedCondition (37 differences). Root cause (ii): a v1.1 spec rule (section 6: unresolvedCondition is false, also where it selects an else arm) produced a wrong result. Not fixed (rules v1.1 final): a post-freeze finding under v1.1, for the owner."
+    }
+  ]
+}

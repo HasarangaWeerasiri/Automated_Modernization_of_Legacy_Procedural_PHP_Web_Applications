@@ -7,6 +7,8 @@ nothing but the recorded SQL. Values are converted for JSON only (DECIMAL -> num
 
 Usage, from component2_frontend/:
     venv/Scripts/python.exe tools/runtime/replay/server.py hms [--port 18090]
+    venv/Scripts/python.exe tools/runtime/replay/server.py phpblog --port 18091 --db-port 13307 --database phpblog
+(defaults: HMS's database, tools/runtime/hms/; phpBlog's is tools/runtime/phpblog/)
 """
 
 import datetime
@@ -70,9 +72,13 @@ def handler(replay: dict):
 
 def main(argv: list[str]) -> int:
     if not argv:
-        print(__doc__.strip().splitlines()[-1], file=sys.stderr)
+        print(__doc__.strip().splitlines()[-3], file=sys.stderr)
         return 2
     port = int(argv[argv.index("--port") + 1]) if "--port" in argv else 18090
+    if "--db-port" in argv:
+        DB["port"] = int(argv[argv.index("--db-port") + 1])
+    if "--database" in argv:
+        DB["database"] = argv[argv.index("--database") + 1]
     replay = json.loads((HERE / "build" / argv[0] / "replay.json").read_text(encoding="utf-8"))
     server = ThreadingHTTPServer(("127.0.0.1", port), handler(replay))
     print(f"replay API for {argv[0]} on http://127.0.0.1:{port} ({len(replay['queries'])} queries)", flush=True)

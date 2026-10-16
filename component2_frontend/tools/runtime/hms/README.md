@@ -100,5 +100,19 @@ contradicts the browser's. That is either a flag claiming browser equivalence (a
 Findings in `findings.json` carry the rules version they were found under, and apply only to runs of that version. A
 difference whose printing node stands inside an if with an `unresolvedCondition` is `flag:unresolvedCondition`.
 
+## Phase 4e: changes to the comparison (both apps)
+
+Made for phpBlog (`tools/runtime/phpblog/README.md`); the HMS results are the same under them:
+
+- `compare.py` pairs siblings by a weighted alignment: at each level first the most attribute-identical pairs, then the
+  most matched elements in their subtrees (a plain tag-name LCS paired the neighbours of a missing sibling wrongly).
+- `capture.py` records a page that redirects an anonymous GET (HTTP, or a `<meta http-equiv="refresh">`) with its target;
+  `compare.py` leaves such a page out (`compare.json` `redirected`).
+- `classify.py`: class `framework:react_hoist` (owner, Phase 4e); `flag-but-wrong:unresolvedCondition` (an arm rendered
+  because its untranslated condition is false, where the legacy page took another arm); a page inside a shell is tied
+  to the shell's unit too; an element found by the words of its attribute values when no value matches exactly; the
+  flags of an if inside a start tag count for its attribute; text tied through entities and through the nearest
+  ancestor that can be found (`via`); findings for a whole page (`"path": "*"`).
+
 Tool versions: `tools/runtime/requirements.txt` (Playwright 1.62.0, which pins Chromium build 1234, the build
 already installed; PyMySQL 1.2.3). The pipeline's own tests do not need them.

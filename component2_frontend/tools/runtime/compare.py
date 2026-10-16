@@ -88,6 +88,13 @@ def _normalise(element) -> Node:
     return Node(element.tag, attrs, _text(" ".join(pieces)), children)
 
 
+def head(html: str) -> list:
+    """The elements of the document's <head>, normalised like the body (React 19 moves some there)."""
+    document = html5lib.parse(html, treebuilder="etree", namespaceHTMLElements=False)
+    found = document.find("head")
+    return [] if found is None else _normalise(found).children
+
+
 def body(html: str, generated: bool = False) -> Node:
     document = html5lib.parse(html, treebuilder="etree", namespaceHTMLElements=False)
     found = document.find("body")
@@ -99,16 +106,42 @@ def body(html: str, generated: bool = False) -> Node:
     return node
 
 
-def _lcs(left: list, right: list) -> list[tuple[int, int]]:
-    """Index pairs of a longest common subsequence of two lists of tags (deterministic: earliest pairs)."""
+def _score(legacy: "Node", generated: "Node", memo: dict) -> tuple[int, int]:
+    """(1 if their attributes are identical, the elements their best alignment matches: 1 + their children's)."""
+    key = (id(legacy), id(generated))
+    if key not in memo:
+        memo[key] = (int(legacy.attrs == generated.attrs), 1 + _table(legacy.children, generated.children, memo)[0][0][1])
+    return memo[key]
+
+
+def _plus(a: tuple, b: tuple) -> tuple:
+    return a[0] + b[0], a[1] + b[1]
+
+
+def _table(left: list, right: list, memo: dict) -> list:
+    """The weighted LCS table of two lists of sibling elements: only same-tag elements pair; the best alignment has
+    first the most attribute-identical pairs among these siblings, then the most matched elements in their subtrees
+    (Phase 4e: a missing sibling no longer shifts every later pairing, and an element pairs with its own counterpart
+    before a merely similar one)."""
     n, m = len(left), len(right)
-    table = [[0] * (m + 1) for _ in range(n + 1)]
+    table = [[(0, 0)] * (m + 1) for _ in range(n + 1)]
     for i in range(n - 1, -1, -1):
         for j in range(m - 1, -1, -1):
-            table[i][j] = table[i + 1][j + 1] + 1 if left[i] == right[j] else max(table[i + 1][j], table[i][j + 1])
-    pairs, i, j = [], 0, 0
+            best = max(table[i + 1][j], table[i][j + 1])
+            if left[i].tag == right[j].tag:
+                best = max(best, _plus(_score(left[i], right[j], memo), table[i + 1][j + 1]))
+            table[i][j] = best
+    return table
+
+
+def _lcs(left: list, right: list, memo: dict | None = None) -> list[tuple[int, int]]:
+    """Index pairs of the sibling alignment with the most attribute-identical pairs, then the most matched elements
+    (deterministic: earliest pairs)."""
+    memo = {} if memo is None else memo
+    table = _table(left, right, memo)
+    pairs, i, j, n, m = [], 0, 0, len(left), len(right)
     while i < n and j < m:
-        if left[i] == right[j]:
+        if left[i].tag == right[j].tag and _plus(_score(left[i], right[j], memo), table[i + 1][j + 1]) == table[i][j]:
             pairs.append((i, j))
             i, j = i + 1, j + 1
         elif table[i + 1][j] >= table[i][j + 1]:
@@ -124,10 +157,10 @@ def _step(path: str, siblings: list, index: int) -> str:
 
 
 def align(legacy: Node, generated: Node, path: str = "body", gpath: str = "body",
-          matches: list | None = None) -> tuple[int, list]:
+          matches: list | None = None, memo: dict | None = None) -> tuple[int, list]:
     """(matched element pairs under and including this pair, differences). `path` is the legacy element's path,
     `gpath` the generated one's; `matches`, when given, collects every matched (legacy path, generated path)."""
-    matched, differences = 1, []
+    matched, differences, memo = 1, [], {} if memo is None else memo
     if matches is not None:
         matches.append((path, gpath))
     if legacy.attrs != generated.attrs:
@@ -137,7 +170,7 @@ def align(legacy: Node, generated: Node, path: str = "body", gpath: str = "body"
                             "legacy": dict(legacy.attrs), "generated": dict(generated.attrs)})
     if legacy.text != generated.text:
         differences.append({"kind": "text", "path": path, "legacy": legacy.text, "generated": generated.text})
-    pairs = _lcs([c.tag for c in legacy.children], [c.tag for c in generated.children])
+    pairs = _lcs(legacy.children, generated.children, memo)
     paired_l, paired_g = {i for i, _ in pairs}, {j for _, j in pairs}
     for i, child in enumerate(legacy.children):
         if i not in paired_l:
@@ -149,7 +182,7 @@ def align(legacy: Node, generated: Node, path: str = "body", gpath: str = "body"
     for i, j in pairs:
         sub_matched, sub_differences = align(legacy.children[i], generated.children[j],
                                              _step(path, legacy.children, i), _step(gpath, generated.children, j),
-                                             matches)
+                                             matches, memo)
         matched += sub_matched
         differences += sub_differences
     return matched, differences
@@ -182,8 +215,13 @@ def main(argv: list[str]) -> int:
     out = OUTPUT / argv[0]
     capture = json.loads((out / "capture.json").read_text(encoding="utf-8"))
     pages = []
+    redirected = []
     for row in capture["pages"]:
         if not row["captured"]:
+            continue
+        moved = {k: v for k, v in row.items() if k.endswith(("FinalUrl", "Refresh"))}
+        if moved:  # one side sent the browser elsewhere: not the same page any more (capture.py)
+            redirected.append({"page": row["page"], "getOnly": row["getOnly"], **moved})
             continue
         legacy = (out / "legacy" / f"{row['page']}.html").read_text(encoding="utf-8")
         generated = (out / "generated" / f"{row['page']}.html").read_text(encoding="utf-8")
@@ -196,8 +234,9 @@ def main(argv: list[str]) -> int:
         "style": "declarations in a canonical form (spaces around : and ; removed, trailing ; dropped, order kept)",
         "boolean": "HTML boolean attributes valued \"\" (presence is their meaning)",
         "nextjs": "the empty <div hidden> first in the generated <body> (streaming boundary) dropped",
-        "alignment": "body element trees; children matched by LCS of tag names, recursively"},
-        "totals": totals, "pages": pages}
+        "alignment": "body element trees; siblings of the same tag paired to give first the most attribute-identical "
+                     "pairs, then the most matched elements (a weighted LCS, recursively)"},
+        "totals": totals, "pages": pages, "redirected": redirected}
     (out / "compare.json").write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8", newline="\n")
     print(f"{'page':38} {'legacy':>7} {'gen':>6} {'match':>6} {'diffs':>6}")
     for p in pages:

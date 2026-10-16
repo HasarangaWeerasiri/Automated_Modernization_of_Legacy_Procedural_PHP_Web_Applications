@@ -62,8 +62,8 @@ def main(argv: list[str]) -> int:
         browser = playwright.chromium.launch()
         context = browser.new_context(java_script_enabled=False, viewport=capture["viewport"])
         for row in capture["pages"]:
-            if not row["captured"]:
-                continue
+            if not row["captured"] or any(k.endswith(("Refresh", "FinalUrl")) for k in row):
+                continue  # (a page that redirects is not compared: capture.py)
             legacy_url = capture["legacy"] + row["legacyPath"]
             links = stylesheets((out / "legacy" / f"{row['page']}.html").read_text(encoding="utf-8"), legacy_url)
             injected[row["page"]] = links

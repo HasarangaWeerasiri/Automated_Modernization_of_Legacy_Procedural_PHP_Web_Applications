@@ -1,0 +1,31 @@
+# Phase 4e runtime check, legacy side: phpBlog at 4ffe3c9, unmodified (tools/runtime/phpblog/README.md).
+# Run tools/runtime/phpblog/prepare.py first: it writes build/htdocs, build/config and build/initdb.
+name: c2-phpblog
+services:
+  db:
+    image: mariadb:10.6
+    environment:
+      MARIADB_ROOT_PASSWORD: phpblog     # the installer's "database password" (build/config/config.php)
+      MARIADB_DATABASE: phpblog          # database.sql has no CREATE DATABASE; the init scripts run in this one
+    volumes:
+      - ./build/initdb/01-database.sql:/docker-entrypoint-initdb.d/01-database.sql:ro
+      - ./initdb/02-replay-user.sql:/docker-entrypoint-initdb.d/02-replay-user.sql:ro
+    ports:
+      - "127.0.0.1:13307:3306"           # for the replay API only (read-only user c2replay)
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 3s
+      retries: 40
+  web:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./build/htdocs:/var/www/html:ro
+      # the two files phpBlog's installer writes (install/done.php 22, 49-63), made by prepare.py, mounted in
+      - ./build/config/config.php:/var/www/html/config.php:ro
+      - ./build/config/config_settings.php:/var/www/html/config_settings.php:ro
+      - ./build/logs:/var/log/php
+    ports:
+      - "127.0.0.1:18081:80"

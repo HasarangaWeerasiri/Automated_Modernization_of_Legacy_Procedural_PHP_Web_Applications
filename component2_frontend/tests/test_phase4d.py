@@ -128,8 +128,8 @@ EXPECTED = {  # (file, line, construct, gold) -> (v1.0, v1.1)
     ("index.php", 25, "if", "inline"): ("correct", "correct"),
     ("index.php", 27, "if", "own_component"): ("correct", "correct"),  # R-I4: size is a style choice
     ("index.php", 28, "if", "own_component"): ("correct", "correct"),
-    ("index.php", 29, "if", "inline"): ("correct", "correct"),  # R-I5 with the note "large"
-    ("index.php", 30, "if", "inline"): ("manual", "manual"),  # R-I5 without it: the owner judges
+    ("index.php", 29, "if", "inline"): ("correct", "correct"),  # R-I5: size is a style choice (mapping v1.1)
+    ("index.php", 30, "if", "inline"): ("correct", "correct"),  # with or without a "large" note
     ("index.php", 31, "if", "not_ui"): ("wrong", "wrong"),
     ("index.php", 32, "if", "not_ui"): ("wrong", "wrong"),
     ("index.php", 32, "if", "inline"): ("unsure", "unsure"),
@@ -172,16 +172,16 @@ def test_every_mapped_decision_and_every_outcome_is_exercised(scored):
                 if r["construct"] == "read"}
     assert bindings >= {"items", "users", "unknown", "session", "request", "literal"}
     outcomes = set(results(scored["report"], "1.0").values()) | set(results(scored["report"], "1.1").values())
-    assert outcomes == {"correct", "abstain", "wrong", "manual", "unmapped", "miss", "unsure", "not_in_mapping"}
+    assert outcomes == {"correct", "abstain", "wrong", "unmapped", "miss", "unsure", "not_in_mapping"}
 
 
 def test_the_metrics_follow_section_3(scored):
     v10, v11 = (scored["report"]["versions"][v]["metrics"] for v in ("1.0", "1.1"))
-    # boundary rows: 33 scored (24 correct, 4 wrong); abstain counts every scored row (2 boundary + 1 read)
-    assert v10["counts"] == {"correct": 24, "wrong": 4, "abstain": 3, "readsCorrect": 6}
-    assert (v10["boundaryPrecision"], v10["boundaryRecall"]) == (round(24 / 28, 4), round(24 / 33, 4))
+    # boundary rows: 33 scored (25 correct, 4 wrong); abstain counts every scored row (2 boundary + 1 read)
+    assert v10["counts"] == {"correct": 25, "wrong": 4, "abstain": 3, "readsCorrect": 6}
+    assert (v10["boundaryPrecision"], v10["boundaryRecall"]) == (round(25 / 29, 4), round(25 / 33, 4))
     assert v10["abstainRate"] == round(3 / 42, 4)
-    assert v11["counts"]["correct"] == 23 and v11["counts"]["abstain"] == 4  # guard.php under v1.1
+    assert v11["counts"]["correct"] == 24 and v11["counts"]["abstain"] == 4  # guard.php under v1.1
     # strict: every wrong decision; flag-adjusted: not the two ifs whose node carries a specific review
     # (condition_not_translatable / exclusivity_not_verified): `unlabelled` and `no_endpoint` are on every node
     assert (v10["unsoundStrict"], v10["unsoundFlagAdjusted"]) == (6, 4)
@@ -200,6 +200,7 @@ def test_the_cli_writes_the_report_and_the_results_page(scored, tmp_path):
     text = doc.read_text(encoding="utf-8")
     assert "| Metric | synth v1.0 | synth v1.1 | total v1.0 | total v1.1 |" in text
     assert "| `guard.php:2` | if | page_guard | correct — R-I1 | abstain — R-I5" in text
+    assert "**Unmapped (for manual review):**" in text and "`index.php:37` if `own_component`: tool R-I7" in text
 
 
 def test_the_kappa_helper():
