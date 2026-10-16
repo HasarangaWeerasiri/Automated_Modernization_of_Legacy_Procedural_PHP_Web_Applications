@@ -1,0 +1,7 @@
+pytest
+requests
+SQLAlchemy
+deepdiff
+# The driver for the migrated system's database. For MySQL:
+PyMySQL
+cryptography

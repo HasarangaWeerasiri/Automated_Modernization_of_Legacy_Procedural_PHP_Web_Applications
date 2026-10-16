@@ -30,9 +30,9 @@ import requests
 
 from c4 import containers, dbstate, scenarios
 from c4.capture import CaptureError
-from c4.compare import FAIL, INCONCLUSIVE, PASS, compare, judge_probe
+from c4.compare import FAIL, INCONCLUSIVE, PASS, compare, conflicts, judge_probe
 from c4.config import Config, ConfigError, load_config
-from c4.replay import Replay, ReplayError, replay
+from c4.replay import ReplayError, replay
 
 
 def endpoint_verdict(scenario_verdicts: Iterable[str]) -> str:
@@ -42,43 +42,6 @@ def endpoint_verdict(scenario_verdicts: Iterable[str]) -> str:
     if INCONCLUSIVE in verdicts:
         return INCONCLUSIVE
     return PASS
-
-
-def _as_replay(record: dict[str, Any]) -> Replay:
-    """What the legacy system did, presented as if a migrated system had done it."""
-    response = record["legacy_response"]
-    outcome = "success" if response["outcome"] == "no_effect" else response["outcome"]
-    return Replay(response["status_code"], outcome, tuple(response["records"]), None, record["db_state"]["delta"])
-
-
-def _compatible(a: dict[str, Any], b: dict[str, Any]) -> bool:
-    """Whether one answer can satisfy both oracle records.
-
-    If what one legacy page did would pass against the other's record, a migrated
-    system that does the same satisfies both.
-    """
-    return compare(a, _as_replay(b)).verdict != FAIL or compare(b, _as_replay(a)).verdict != FAIL
-
-
-def conflicts(cases: list[tuple[dict[str, Any], dict[str, Any]]]) -> dict[str, list[str]]:
-    """Scenarios whose identical request is expected to give incompatible results.
-
-    One endpoint can replace several legacy pages. Two of its scenarios may then send
-    exactly the same request to the migrated system while the pages they came from
-    did different things. No migrated system can satisfy both, so neither scenario
-    can be judged. Returns, per scenario, the scenarios it conflicts with.
-    """
-    groups: dict[str, list[dict[str, Any]]] = {}
-    for scenario, record in cases:
-        request = json.dumps([scenario["endpoint_id"], scenario["migrated_request"]], sort_keys=True)
-        groups.setdefault(request, []).append(record)
-    found: dict[str, list[str]] = {}
-    for records in groups.values():
-        for a in records:
-            for b in records:
-                if a is not b and not _compatible(a, b):
-                    found.setdefault(a["scenario_id"], []).append(b["scenario_id"])
-    return found
 
 
 def evaluate(config: Config, baselines: dict[str, dbstate.Snapshot]) -> dict[str, Any]:

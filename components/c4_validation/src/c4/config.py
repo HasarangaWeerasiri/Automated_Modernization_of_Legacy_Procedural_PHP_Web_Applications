@@ -88,6 +88,7 @@ class Config:
     scenario_dir: Path
     oracle_dir: Path
     report_dir: Path
+    generated_dir: Path
     ready_timeout: float
     request_timeout: float
 
@@ -199,6 +200,7 @@ def load_config(
         scenario_dir=root / "inputs" / benchmark / "scenarios",
         oracle_dir=output / "oracles" / benchmark,
         report_dir=output / "reports" / benchmark,
+        generated_dir=output / "generated" / benchmark,
         ready_timeout=float(values["C4_READY_TIMEOUT"]),
         request_timeout=float(values["C4_REQUEST_TIMEOUT"]),
     )

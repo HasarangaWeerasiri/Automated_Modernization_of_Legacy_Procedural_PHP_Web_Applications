@@ -1,0 +1,472 @@
+{
+  "tables": {
+    "admintb": [
+      {
+        "username": "admin",
+        "password": "admin123"
+      }
+    ],
+    "appointmenttb": [
+      {
+        "pid": 4,
+        "ID": 1,
+        "fname": "Kishan",
+        "lname": "Lal",
+        "gender": "Male",
+        "email": "kishansmart0@gmail.com",
+        "contact": "8838489464",
+        "doctor": "Ganesh",
+        "docFees": 550,
+        "appdate": "2020-02-14",
+        "apptime": "10:00:00",
+        "userStatus": 1,
+        "doctorStatus": 0
+      },
+      {
+        "pid": 4,
+        "ID": 10,
+        "fname": "Kishan",
+        "lname": "Lal",
+        "gender": "Male",
+        "email": "kishansmart0@gmail.com",
+        "contact": "8838489464",
+        "doctor": "Ganesh",
+        "docFees": 550,
+        "appdate": "0000-00-00",
+        "apptime": "14:00:00",
+        "userStatus": 1,
+        "doctorStatus": 0
+      },
+      {
+        "pid": 4,
+        "ID": 11,
+        "fname": "Kishan",
+        "lname": "Lal",
+        "gender": "Male",
+        "email": "kishansmart0@gmail.com",
+        "contact": "8838489464",
+        "doctor": "Dinesh",
+        "docFees": 700,
+        "appdate": "2020-03-27",
+        "apptime": "15:00:00",
+        "userStatus": 1,
+        "doctorStatus": 1
+      },
+      {
+        "pid": 9,
+        "ID": 12,
+        "fname": "William",
+        "lname": "Blake",
+        "gender": "Male",
+        "email": "william@gmail.com",
+        "contact": "8683619153",
+        "doctor": "Kumar",
+        "docFees": 800,
+        "appdate": "2020-03-26",
+        "apptime": "12:00:00",
+        "userStatus": 1,
+        "doctorStatus": 1
+      },
+      {
+        "pid": 9,
+        "ID": 13,
+        "fname": "William",
+        "lname": "Blake",
+        "gender": "Male",
+        "email": "william@gmail.com",
+        "contact": "8683619153",
+        "doctor": "Tiwary",
+        "docFees": 450,
+        "appdate": "2020-03-26",
+        "apptime": "14:00:00",
+        "userStatus": 1,
+        "doctorStatus": 1
+      },
+      {
+        "pid": 4,
+        "ID": 2,
+        "fname": "Kishan",
+        "lname": "Lal",
+        "gender": "Male",
+        "email": "kishansmart0@gmail.com",
+        "contact": "8838489464",
+        "doctor": "Dinesh",
+        "docFees": 700,
+        "appdate": "2020-02-28",
+        "apptime": "10:00:00",
+        "userStatus": 0,
+        "doctorStatus": 1
+      },
+      {
+        "pid": 4,
+        "ID": 3,
+        "fname": "Kishan",
+        "lname": "Lal",
+        "gender": "Male",
+        "email": "kishansmart0@gmail.com",
+        "contact": "8838489464",
+        "doctor": "Amit",
+        "docFees": 1000,
+        "appdate": "2020-02-19",
+        "apptime": "03:00:00",
+        "userStatus": 0,
+        "doctorStatus": 1
+      },
+      {
+        "pid": 11,
+        "ID": 4,
+        "fname": "Shraddha",
+        "lname": "Kapoor",
+        "gender": "Female",
+        "email": "shraddha@gmail.com",
+        "contact": "9768946252",
+        "doctor": "ashok",
+        "docFees": 500,
+        "appdate": "2020-02-29",
+        "apptime": "20:00:00",
+        "userStatus": 1,
+        "doctorStatus": 1
+      },
+      {
+        "pid": 4,
+        "ID": 5,
+        "fname": "Kishan",
+        "lname": "Lal",
+        "gender": "Male",
+        "email": "kishansmart0@gmail.com",
+        "contact": "8838489464",
+        "doctor": "Dinesh",
+        "docFees": 700,
+        "appdate": "2020-02-28",
+        "apptime": "12:00:00",
+        "userStatus": 1,
+        "doctorStatus": 1
+      },
+      {
+        "pid": 4,
+        "ID": 6,
+        "fname": "Kishan",
+        "lname": "Lal",
+        "gender": "Male",
+        "email": "kishansmart0@gmail.com",
+        "contact": "8838489464",
+        "doctor": "Ganesh",
+        "docFees": 550,
+        "appdate": "2020-02-26",
+        "apptime": "15:00:00",
+        "userStatus": 0,
+        "doctorStatus": 1
+      },
+      {
+        "pid": 2,
+        "ID": 8,
+        "fname": "Alia",
+        "lname": "Bhatt",
+        "gender": "Female",
+        "email": "alia@gmail.com",
+        "contact": "8976897689",
+        "doctor": "Ganesh",
+        "docFees": 550,
+        "appdate": "2020-03-21",
+        "apptime": "10:00:00",
+        "userStatus": 1,
+        "doctorStatus": 1
+      },
+      {
+        "pid": 5,
+        "ID": 9,
+        "fname": "Gautam",
+        "lname": "Shankararam",
+        "gender": "Male",
+        "email": "gautam@gmail.com",
+        "contact": "9070897653",
+        "doctor": "Ganesh",
+        "docFees": 550,
+        "appdate": "2020-03-19",
+        "apptime": "20:00:00",
+        "userStatus": 1,
+        "doctorStatus": 0
+      }
+    ],
+    "contact": [
+      {
+        "name": "Jane",
+        "email": "jane@gmail.com",
+        "contact": "7869869757",
+        "message": "I love your service!"
+      },
+      {
+        "name": "Anu",
+        "email": "anu@gmail.com",
+        "contact": "7896677554",
+        "message": "Hey Admin"
+      },
+      {
+        "name": "Aakash",
+        "email": "aakash@gmail.com",
+        "contact": "8788979967",
+        "message": "Love your site"
+      },
+      {
+        "name": "Mani",
+        "email": "mani@gmail.com",
+        "contact": "8977768978",
+        "message": "Want some coffee?"
+      },
+      {
+        "name": "Abbis",
+        "email": "abbis@gmail.com",
+        "contact": "8979776868",
+        "message": "Love your service"
+      },
+      {
+        "name": "Asiq",
+        "email": "asiq@gmail.com",
+        "contact": "9087897564",
+        "message": "Love your service. Thank you!"
+      },
+      {
+        "name": "Karthick",
+        "email": "karthi@gmail.com",
+        "contact": "9898989898",
+        "message": "Good service"
+      },
+      {
+        "name": " Viki",
+        "email": "viki@gmail.com",
+        "contact": "9899778865",
+        "message": "Good Job, Pal"
+      },
+      {
+        "name": "Ananya",
+        "email": "ananya@gmail.com",
+        "contact": "9997888879",
+        "message": "How can I reach you?"
+      }
+    ],
+    "doctb": [
+      {
+        "username": "Amit",
+        "password": "amit123",
+        "email": "amit@gmail.com",
+        "spec": "Cardiologist",
+        "docFees": 1000
+      },
+      {
+        "username": "Abbis",
+        "password": "abbis123",
+        "email": "abbis@gmail.com",
+        "spec": "Neurologist",
+        "docFees": 1500
+      },
+      {
+        "username": "Tiwary",
+        "password": "tiwary123",
+        "email": "tiwary@gmail.com",
+        "spec": "Pediatrician",
+        "docFees": 450
+      },
+      {
+        "username": "ashok",
+        "password": "ashok123",
+        "email": "ashok@gmail.com",
+        "spec": "General",
+        "docFees": 500
+      },
+      {
+        "username": "Ganesh",
+        "password": "ganesh123",
+        "email": "ganesh@gmail.com",
+        "spec": "Pediatrician",
+        "docFees": 550
+      },
+      {
+        "username": "arun",
+        "password": "arun123",
+        "email": "arun@gmail.com",
+        "spec": "Cardiologist",
+        "docFees": 600
+      },
+      {
+        "username": "Dinesh",
+        "password": "dinesh123",
+        "email": "dinesh@gmail.com",
+        "spec": "General",
+        "docFees": 700
+      },
+      {
+        "username": "Kumar",
+        "password": "kumar123",
+        "email": "kumar@gmail.com",
+        "spec": "Pediatrician",
+        "docFees": 800
+      }
+    ],
+    "patreg": [
+      {
+        "pid": 9,
+        "fname": "William",
+        "lname": "Blake",
+        "gender": "Male",
+        "email": "william@gmail.com",
+        "contact": "8683619153",
+        "password": "william123",
+        "cpassword": "william123"
+      },
+      {
+        "pid": 4,
+        "fname": "Kishan",
+        "lname": "Lal",
+        "gender": "Male",
+        "email": "kishansmart0@gmail.com",
+        "contact": "8838489464",
+        "password": "kishan123",
+        "cpassword": "kishan123"
+      },
+      {
+        "pid": 2,
+        "fname": "Alia",
+        "lname": "Bhatt",
+        "gender": "Female",
+        "email": "alia@gmail.com",
+        "contact": "8976897689",
+        "password": "alia123",
+        "cpassword": "alia123"
+      },
+      {
+        "pid": 3,
+        "fname": "Shahrukh",
+        "lname": "khan",
+        "gender": "Male",
+        "email": "shahrukh@gmail.com",
+        "contact": "8976898463",
+        "password": "shahrukh123",
+        "cpassword": "shahrukh123"
+      },
+      {
+        "pid": 6,
+        "fname": "Sushant",
+        "lname": "Singh",
+        "gender": "Male",
+        "email": "sushant@gmail.com",
+        "contact": "9059986865",
+        "password": "sushant123",
+        "cpassword": "sushant123"
+      },
+      {
+        "pid": 5,
+        "fname": "Gautam",
+        "lname": "Shankararam",
+        "gender": "Male",
+        "email": "gautam@gmail.com",
+        "contact": "9070897653",
+        "password": "gautam123",
+        "cpassword": "gautam123"
+      },
+      {
+        "pid": 7,
+        "fname": "Nancy",
+        "lname": "Deborah",
+        "gender": "Female",
+        "email": "nancy@gmail.com",
+        "contact": "9128972454",
+        "password": "nancy123",
+        "cpassword": "nancy123"
+      },
+      {
+        "pid": 10,
+        "fname": "Peter",
+        "lname": "Norvig",
+        "gender": "Male",
+        "email": "peter@gmail.com",
+        "contact": "9609362815",
+        "password": "peter123",
+        "cpassword": "peter123"
+      },
+      {
+        "pid": 11,
+        "fname": "Shraddha",
+        "lname": "Kapoor",
+        "gender": "Female",
+        "email": "shraddha@gmail.com",
+        "contact": "9768946252",
+        "password": "shraddha123",
+        "cpassword": "shraddha123"
+      },
+      {
+        "pid": 8,
+        "fname": "Kenny",
+        "lname": "Sebastian",
+        "gender": "Male",
+        "email": "kenny@gmail.com",
+        "contact": "9809879868",
+        "password": "kenny123",
+        "cpassword": "kenny123"
+      },
+      {
+        "pid": 1,
+        "fname": "Ram",
+        "lname": "Kumar",
+        "gender": "Male",
+        "email": "ram@gmail.com",
+        "contact": "9876543210",
+        "password": "ram123",
+        "cpassword": "ram123"
+      }
+    ],
+    "prestb": [
+      {
+        "doctor": "Dinesh",
+        "pid": 4,
+        "ID": 11,
+        "fname": "Kishan",
+        "lname": "Lal",
+        "appdate": "2020-03-27",
+        "apptime": "15:00:00",
+        "disease": "Cough",
+        "allergy": "Nothing",
+        "prescription": "Just take a teaspoon of Benadryl every night"
+      },
+      {
+        "doctor": "Kumar",
+        "pid": 9,
+        "ID": 12,
+        "fname": "William",
+        "lname": "Blake",
+        "appdate": "2020-03-26",
+        "apptime": "12:00:00",
+        "disease": "Sever fever",
+        "allergy": "nothing",
+        "prescription": "Paracetamol -> 1 every morning and night"
+      },
+      {
+        "doctor": "Tiwary",
+        "pid": 9,
+        "ID": 13,
+        "fname": "William",
+        "lname": "Blake",
+        "appdate": "2020-03-26",
+        "apptime": "14:00:00",
+        "disease": "Cough",
+        "allergy": "Skin dryness",
+        "prescription": "Intake fruits with more water content"
+      },
+      {
+        "doctor": "Ganesh",
+        "pid": 2,
+        "ID": 8,
+        "fname": "Alia",
+        "lname": "Bhatt",
+        "appdate": "2020-03-21",
+        "apptime": "10:00:00",
+        "disease": "Severe Fever",
+        "allergy": "Nothing",
+        "prescription": "Take bed rest"
+      }
+    ]
+  },
+  "auto_increment": {
+    "appointmenttb": 14,
+    "patreg": 12
+  }
+}

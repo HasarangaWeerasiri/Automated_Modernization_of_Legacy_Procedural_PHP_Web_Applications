@@ -276,6 +276,46 @@ def compare(record: dict[str, Any], replayed: Replay) -> Comparison:
     return Comparison(verdict, differences, abstentions)
 
 
+# ------------------------------------------------------- conflicting expectations
+
+
+def _as_replay(record: dict[str, Any]) -> Replay:
+    """What the legacy system did, presented as if a migrated system had done it."""
+    response = record["legacy_response"]
+    outcome = "success" if response["outcome"] == "no_effect" else response["outcome"]
+    return Replay(response["status_code"], outcome, tuple(response["records"]), None, record["db_state"]["delta"])
+
+
+def _compatible(a: dict[str, Any], b: dict[str, Any]) -> bool:
+    """Whether one answer can satisfy both oracle records.
+
+    If what one legacy page did would pass against the other's record, a migrated
+    system that does the same satisfies both.
+    """
+    return compare(a, _as_replay(b)).verdict != FAIL or compare(b, _as_replay(a)).verdict != FAIL
+
+
+def conflicts(cases: list[tuple[dict[str, Any], dict[str, Any]]]) -> dict[str, list[str]]:
+    """Scenarios whose identical request is expected to give incompatible results.
+
+    One endpoint can replace several legacy pages. Two of its scenarios may then send
+    exactly the same request to the migrated system while the pages they came from
+    did different things. No migrated system can satisfy both, so neither scenario
+    can be judged. Returns, per scenario, the scenarios it conflicts with.
+    """
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for scenario, record in cases:
+        request = json.dumps([scenario["endpoint_id"], scenario["migrated_request"]], sort_keys=True)
+        groups.setdefault(request, []).append(record)
+    found: dict[str, list[str]] = {}
+    for records in groups.values():
+        for a in records:
+            for b in records:
+                if a is not b and not _compatible(a, b):
+                    found.setdefault(a["scenario_id"], []).append(b["scenario_id"])
+    return found
+
+
 # ------------------------------------------------------------- injection probes
 #
 # Injection probes are not judged by equivalence (FR13). A migrated system that
@@ -319,22 +359,26 @@ def injection_effects(probe: Any, records: Iterable[dict[str, Any]], delta: dict
     return effects
 
 
+def legacy_injection_behaviour(record: dict[str, Any], scenario: dict[str, Any]) -> tuple[str, list]:
+    """What a probe did to the legacy system: vulnerable, broken or no sign of injection."""
+    probe = scenario["values"][scenario["parameter"]]
+    legacy = record["legacy_response"]
+    effects = injection_effects(probe, legacy["records"], record["db_state"]["delta"])
+    if effects:
+        return "vulnerable", effects
+    if scenario.get("legacy_table") == "none" and legacy["outcome"] == "no_effect":
+        # A page that should store what it is sent stored nothing: the input broke it.
+        return "broken", effects
+    # Nothing visible. For a page that reads, a query broken by the input and a
+    # literal search that finds nothing look the same from outside.
+    return "no sign of injection", effects
+
+
 def judge_probe(record: dict[str, Any], scenario: dict[str, Any], replayed: Replay) -> dict[str, Any]:
     """Label one injection probe from what the legacy and the migrated system did."""
     probe = scenario["values"][scenario["parameter"]]
     legacy = record["legacy_response"]
-
-    legacy_effects = injection_effects(probe, legacy["records"], record["db_state"]["delta"])
-    writes = scenario.get("legacy_table") == "none"
-    if legacy_effects:
-        legacy_label = "vulnerable"
-    elif writes and legacy["outcome"] == "no_effect":
-        # A page that should store what it is sent stored nothing: the input broke it.
-        legacy_label = "broken"
-    else:
-        # Nothing visible. For a page that reads, a query broken by the input and a
-        # literal search that finds nothing look the same from outside.
-        legacy_label = "no sign of injection"
+    legacy_label, legacy_effects = legacy_injection_behaviour(record, scenario)
 
     migrated_effects = injection_effects(probe, replayed.records or (), replayed.delta)
     if replayed.outcome == "error":
