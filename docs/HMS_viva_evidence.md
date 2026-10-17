@@ -1,6 +1,6 @@
 # HMS (kishan0725): viva evidence for C3 Data Layer Migration (PP1)
 
-Scope: **HMS only**. Every number below comes from a committed evidence file. Verdicts used:
+Scope: **HMS**. Other apps appear only where HMS cannot show something: abstention (2c), limits that apply to every app (3a) and the Clinic templates (section 4). Every number below comes from a committed evidence file. Verdicts used:
 - **verified**: tested on HMS, with saved evidence and no open cases
 - **partly verified**: tested; the counts are given
 - **not tested**
@@ -37,11 +37,11 @@ The six objectives are from the C3 research proposal (supplied by the author; th
 | FR | What was done on HMS | Verdict | Evidence file | Live command (one line) |
 |---|---|---|---|---|
 | FR1 SQL execution-point identification | AST extraction of every `mysqli_query` site in the app-only copy, compared with an independent grep and with the verified ground truth | **verified**: 44/44 live sites detected; 0 of 8 commented-out lines reported | `evidence/evaluation/hms_kishan0725/evaluation.json` | `py3 -m c3.cli evaluate --php benchmarks\apps\_app_only\hms_kishan0725 --output output\hms_pp1_demo --ground-truth "benchmarks\ground truth\hms_kishan0725\queries.json"` |
-| FR2 Fragmented / conditional SQL recovery | Concatenation, interpolation and array elements (`$_GET['ID']`, rule H1); block-containment rule (S13) | **verified on HMS shapes**: 43/43 recoverable sites recovered; 0 false recoveries; 1 ambiguous site excluded. HMS has little conditional SQL | `evidence/evaluation/hms_kishan0725/summary.md`, `evidence/hms/H1_unresolved_review/review.md` | same command as FR1 (see `recovery`) |
+| FR2 Fragmented / conditional SQL recovery | Concatenation, interpolation and array elements (`$_GET['ID']`, rule H1); block-containment rule (S13) | **verified on HMS shapes**: 43/43 recoverable sites recovered; 0 false recoveries; 1 ambiguous site excluded. HMS has little conditional SQL. General limit: section 3a | `evidence/evaluation/hms_kishan0725/summary.md`, `evidence/hms/H1_unresolved_review/review.md` | same command as FR1 (see `recovery`) |
 | FR3 Schema recovery | `myhmsdb.sql` parsed by C3 and, independently, by sqlglot; original DDL loaded into MySQL 8 and reflected | **verified**: all views match (6 tables, 42 columns). 7 query-vs-schema drift site-columns reported separately | `evidence/hms/E_checks/e2_offline/schema_comparison.json`, `evidence/mysql_runs/2026-10-15_173248/e2/schema_comparison_mysql.json` | `py3 scripts\schema_comparison.py --apps hms_kishan0725 --out $env:TEMP\e2_demo` |
-| FR4 Column-use analysis | Read, write and filter roles plus table attribution, compared with the ground truth | **verified**: operation, tables, read, write and filter match on 37/37 schema-consistent sites; the 6 schema-mismatch sites also match (reported separately) | `evidence/evaluation/hms_kishan0725/evaluation.json` | same command as FR1 (see `column_use_accuracy`) |
+| FR4 Column-use analysis | Read, write and filter roles plus table attribution, compared with the ground truth | **verified (SQL-level column use)**: operation, tables, read, write and filter match on 37/37 schema-consistent sites; the 6 schema-mismatch sites also match (reported separately). Use of result columns in later PHP logic is not traced: section 3a | `evidence/evaluation/hms_kishan0725/evaluation.json` | same command as FR1 (see `column_use_accuracy`) |
 | FR5 ORM model generation | `models.py`: 2 ORM classes (tables with a PK) and 4 Core `Table` objects (no PK in the dump) | **verified**: imports, `configure_mappers()` OK, live MySQL reflection matches | `evidence/hms/E_checks/e2_offline/orm_mapping_test_log.txt`, `evidence/hms/H2_tables_without_pk/proposal.md` | `py3 scripts\schema_comparison.py --apps hms_kishan0725 --out $env:TEMP\e2_demo` |
-| FR6 Parameterised SQLAlchemy data access | 44 `text()` functions with bind parameters, compared with the PHP on real MySQL 8 (E1: legacy SQL built by PHP itself) | **partly verified: 27 PASS, 0 FAIL, 17 INCONCLUSIVE of 44** (causes in section 3) | `evidence/mysql_runs/2026-10-15_195730/e1/hms_kishan0725.json`, `evidence/hms/E1_triage/triage.md` | `Get-Content evidence\mysql_runs\2026-10-15_195730\e1\php_vs_sqlalchemy_equivalence.json` |
+| FR6 Parameterised SQLAlchemy data access | 44 `text()` functions with bind parameters, compared with the PHP on real MySQL 8 (E1: legacy SQL built by PHP itself) | **partly verified: 27 PASS, 0 FAIL, 17 INCONCLUSIVE of 44** (causes in section 3). Unsupported join shapes on other apps: section 3a | `evidence/mysql_runs/2026-10-15_195730/e1/hms_kishan0725.json`, `evidence/hms/E1_triage/triage.md` | `Get-Content evidence\mysql_runs\2026-10-15_195730\e1\php_vs_sqlalchemy_equivalence.json` |
 | FR7 Injection safety | 12 hostile payloads against every function (E4); taint report; hostile cases inside E1 on MySQL | **verified (static and recording session)**: 44/44 functions safe; 62/62 user values bound; 26/26 legacy injection sites remediated. On MySQL, E1 recorded 34 `LEGACY_INJECTABLE` cases where the PHP was injected and the generated code was not | `evidence/hms/E_checks/e4/injection_report.json`, `output/hms_kishan0725/security_report.json` | `py3 scripts\e4_injection_check.py --apps hms_kishan0725 --out $env:TEMP\e4_demo` |
 | FR8 Abstention and unresolved reporting | `unresolved_queries.json`; schema-drift and ambiguous sites flagged in the handoff | **partly verified**: 0 false recoveries on HMS. HMS has 0 unresolved sites, so abstention is not exercised here; it is shown on Dignity-Dev, NEWS-BUZZ and Fee-Rainbow (section 2c) | `output/hms_pp1_demo/unresolved_queries.json`, `evidence/fresh_holdout/dignity_dev_hms/README.md` | `Get-Content output\hms_pp1_demo\unresolved_queries.json` |
 | FR9 Alembic migration | `alembic/` generated; MySQL 8: upgrade → live schema = models → `alembic check` → downgrade | **verified** | `evidence/mysql_runs/2026-10-15_173218/e3/hms_kishan0725.json` | `py3 scripts\alembic_roundtrip.py output\hms_pp1_demo --url "sqlite:///$env:TEMP/hms_viva.db" --report $env:TEMP\e3_demo.json` (SQLite mechanics; MySQL result in the file) |
@@ -93,13 +93,13 @@ The causes of the 17 INCONCLUSIVE sites are in section 3. That run recorded the 
 
 ### 2c. Abstention: shown on other apps, not on HMS
 
-HMS has **0 unresolved sites** at stage 3: every live site is recovered and converted. So HMS cannot show that C3 abstains correctly, meaning that it leaves a site unresolved, with a reason, instead of guessing. That behaviour has to be shown on other benchmark apps (current code, 2026-10-15 regression run):
+HMS has **0 unresolved sites** at stage 3: every live site is recovered and converted. So HMS cannot show that C3 abstains correctly, meaning that it leaves a site unresolved, with a reason, instead of guessing. That behaviour has to be shown on other benchmark apps. Sites / recovered / converted are current-code counts from `docs/C3_results_summary.md` (run at `6e92711`, 2026-10-17). The checks are the final S15 evaluations named in each row. None of these apps has an E1 (MySQL behaviour) run, so nothing here says their generated functions behave like the PHP.
 
 | App | Sites / recovered / converted | Unresolved sites (reason codes) | How the abstentions were checked |
 |---|---|---|---|
 | Dignity-Dev HMS (**fresh holdout**, one app) | 14 calls; 13 live sites (G010, empty SQL, excluded) / 7 recovered / 4 converted | 10 unresolved entries: 7 at recovery (4 `STRUCTURAL`, 1 loop/switch, 1 branching, 1 unsupported shape on G010) and 3 at conversion (implicit comma joins) | S15 against the author-verified ground truth (16 Oct 2026; 7 recoverable, 6 non-recoverable). **Recovery: 7/7 recovered, correct abstention on 6 of 6 non-recoverable sites, 0 false recoveries, 0 extra recoveries.** **Conversion: 4 of 7 recoverable sites converted**; G007–G009 are false abstentions at conversion (implicit comma joins are outside the converter's supported join shape; no injection-safety reason). Column use: write columns 5/7 (INSERT without a column list). Evidence: `evidence/evaluation/dignity_dev_hms/summary.md`, `evaluation.json`, `implicit_join_analysis.md` |
-| NEWS-BUZZ | 32 / 30 / 29 | 3 (2 `BRANCHING`, 1 conversion-unsupported) | Its ground truth is a blind draft, **not yet author-verified** (verification due on Sunday). The draft marks `admin/editposts.php:17` and `admin/post.php:17` as not recoverable (if/else picks the SQL), which agrees with the 2 BRANCHING abstentions; not yet a verified result |
-| Fee-Rainbow | 22 / 20 / 19 | 3 (2 `UNKNOWN_EXPR`, 1 conversion-unsupported) | Ground truth not yet author-verified |
+| NEWS-BUZZ (post-adaptation; final run after the escape fix) | 32 live sites / 30 recovered / 30 converted | 2 at recovery (`BRANCHING`): G002/Q002 `admin/editposts.php:17` and G006/Q006 `admin/post.php:17`, where an if/else picks the SQL | S15 against the author-verified ground truth (16 Oct 2026): **30/30 recoverable sites recovered (precision and recall 100%), correct abstention on 2 of 2 non-recoverable sites, 0 false recoveries**. Evidence: `evidence/evaluation/news_buzz/evaluation_post_escape_fix.json`, `summary.md`, `benchmarks/ground truth/news_buzz/AUTHOR_VERIFICATION.md` |
+| Fee-Rainbow (post-adaptation; final run after wrapper support) | 54 live sites / 42 recovered / 40 converted | 12 at recovery: 10 `STRUCTURAL` (dynamic SQL fragments passed to the `query()` wrapper) and the 2 helper executor lines G021/Q021 `admin/config/helpers.php:4` and G022/Q022 `config/helpers.php:4`, whose SQL is a function parameter. 2 at conversion: Q007 and Q054 (LEFT JOIN; section 3a) | S15 against the author-verified ground truth (16 Oct 2026): **40/40 recoverable sites recovered (precision and recall 100%), correct abstention on 12 of 12 non-recoverable sites, 0 false recoveries in this final run**. 2 ambiguous sites excluded (G007 `admin/app/models/categories.php:100`, G011 `admin/app/models/occasions.php:92`). Ground-truth IDs and query IDs differ from G034/Q033 onward, because the ground truth also numbers 4 commented-out executor lines (58 entries, 54 live), which C3 does not report as sites. For example, the LEFT JOIN site `app/views/products/detail.php:8` is G058 in the ground truth and Q054 in C3. The evaluator matches by file and line, never by ID. The first wrapper measurement had 10 wrong recoveries (precision 80.0%); it was fixed by a general rule and is disclosed in `evidence/evaluation/fee_rainbow/summary.md`. Evidence: `evidence/evaluation/fee_rainbow/evaluation_wrapper_support.json`, `summary.md`, `benchmarks/ground truth/fee_rainbow/AUTHOR_VERIFICATION.md` |
 
 Live command (writes only to a temp folder):
 
@@ -112,7 +112,7 @@ Each entry shows file, line, reason code, reason and `manual_review_required`.
 **HMS is not the generalization evidence.** HMS was used to find the missed recoveries. Its 4 abstentions were reviewed and led to the general array-element rule (H1). INT(n) and ALTER-key handling were also first exposed by HMS and the other unseen apps. Stage 3 is therefore **post-adaptation**. The generalization evidence is:
 - **Dignity-Dev HMS**: the only genuine **fresh holdout** (one app, 13 live sites). It was run untouched, with no rule changed for it, and scored by S15 against the author-verified ground truth: detection 13/13; recovery 7/7, with correct abstention on 6 of 6 non-recoverable sites and 0 false recoveries; 4 of 7 recoverable sites converted (`evidence/evaluation/dignity_dev_hms/summary.md`). The first holdout run (`cd046ba`) and the current code give identical results.
 - **Helpdesk holdout**: frozen pre-adaptation baseline 9/7/6 (tag `c3-helpdesk-baseline-6of9`). It is post-adaptation after S13.
-- **NEWS-BUZZ and Fee-Rainbow**: frozen pre-adaptation runs in `evidence/preadaptation/`; later runs are post-adaptation. Their ground truth is not yet author-verified, so they have not been evaluated against it.
+- **NEWS-BUZZ and Fee-Rainbow**: frozen pre-adaptation runs in `evidence/preadaptation/`. All later runs are post-adaptation: the escape fix came from NEWS-BUZZ, and wrapper support came from Fee-Rainbow. Both are evaluated by S15 against their author-verified ground truth (rows above). They are not fresh holdouts.
 - **No query changed on the other 8 apps** when H1 was added (`evidence/hms/H1_unresolved_review/regression.txt`). This shows the rule did not break them; it does not show generalization.
 
 ---
@@ -134,8 +134,26 @@ Each entry shows file, line, reason code, reason and `manual_review_required`.
 
 - **Other limits:**
   - one MySQL version (8.0.39) in strict mode;
+  - E1 (MySQL behaviour) exists for HMS only. Dignity-Dev, Helpdesk, NEWS-BUZZ and Fee-Rainbow have conversion counts but no MySQL comparison, so their generated functions are not shown to behave like the PHP;
   - E1 uses hand-chosen inputs (`normal`, `empty_result`, hostile, type mismatch), which is not exhaustive testing;
   - the 4 tables without a primary key were not given an ORM identity (by decision; see section 4).
+
+### 3a. C3 limits that apply to every app
+
+- **FR2: branch-dependent SQL.** If the SQL text differs between branches of an `if`/`else`, no general rule rebuilds it. C3 recovers SQL that is built and executed inside the same conditional block (rule S13). Otherwise it abstains with reason `BRANCHING`, for example NEWS-BUZZ G002/Q002 `admin/editposts.php:17` and G006/Q006 `admin/post.php:17`. Only the Clinic query-specific templates Q014 and Q016 rebuild branch-dependent SQL, and only for those exact Clinic files (`components/c3_data_layer/src/c3/conversion/query_converter.py:220-232` and `:274-286`).
+- **FR4: column use stops at the SQL statement.** C3 identifies the tables and columns each recovered query reads, writes and filters on, including JOIN ON, GROUP BY, ORDER BY and HAVING roles, and these are measured against the ground truth. It does **not** trace how result columns are used afterwards in the PHP application logic (for example `$row['name']` in output or in conditions). That part of FR4 is not implemented (`components/c3_data_layer/src/c3/analysis/column_analyzer.py:256-414`; no downstream analysis exists in `src/` or `tools/`).
+- **FR6: unsupported join shapes.** The converter accepts static INNER JOIN SELECTs only. Six recovered SQL sites stay unconverted, each listed in `unresolved_queries.json` with `CONVERSION_UNSUPPORTED` and given a `NotImplementedError` stub. The current-code list is in `docs/C3_results_summary.md`, "Unresolved at conversion stage".
+
+  | Join | App | Ground-truth ID | C3 query ID | file:line | Ground-truth label |
+  |---|---|---|---|---|---|
+  | LEFT JOIN | Helpdesk | G007 | Q007 | `report.php:5` | recoverable |
+  | LEFT JOIN | Fee-Rainbow | G007 | Q007 | `admin/app/models/categories.php:100` | ambiguous (excluded from P/R) |
+  | LEFT JOIN | Fee-Rainbow | G058 | Q054 | `app/views/products/detail.php:8` | recoverable |
+  | implicit comma join | Dignity-Dev | G007 | Q007 | `library.php:219` | recoverable |
+  | implicit comma join | Dignity-Dev | G008 | Q008 | `library.php:226` | recoverable |
+  | implicit comma join | Dignity-Dev | G009 | Q009 | `library.php:233` | recoverable |
+
+  Five of the six are recoverable in the ground truth; Fee-Rainbow G007 is ambiguous.
 
 ---
 
@@ -159,6 +177,15 @@ The independent grep (`candidates.csv`) and E1, which builds the legacy SQL with
 
 **Did you tune on HMS?**
 Yes, and it is labelled. The H1 rule (array elements such as `$_GET['ID']` as named values) came from reviewing the 4 HMS abstentions. It is a general rule with no app-specific or query-ID logic, and it changed 0 queries on the other 8 apps. The HMS results are therefore post-adaptation. The pre-adaptation numbers (section 2) are kept, and Dignity-Dev is the fresh-holdout evidence.
+
+**Do other benchmarks rely on special cases?**
+Clinic does, and it is reported separately. Of Clinic's 22 conversions, 15 use general rules and 7 use query-specific templates (Q010, Q011, Q012, Q013, Q014, Q016, Q020). Each template is selected by its query ID and matches only the exact Clinic source file.
+- The 7 have MySQL equivalence tests (`components/c3_data_layer/tests/benchmarks/clinic_hard/`), but they are not general conversion rules and are not evidence of generalization.
+- General rules alone give 15/22 (68.2%). That figure is code-derived: no run with the templates disabled was measured.
+- Clinic has no author-verified ground truth, so these are pipeline counts, not accuracy.
+- HMS, Dignity-Dev, Helpdesk, NEWS-BUZZ and Fee-Rainbow use 0 templates.
+
+Source: `docs/C3_results_summary.md` (current-code table and Clinic footnote).
 
 **Why `text()` with bind parameters instead of ORM queries?**
 - **Faithfulness:** the generated function runs the same SQL structure as the PHP. Only the values change, from string-pasted to bound parameters, and that is what makes the E1 comparison meaningful.
