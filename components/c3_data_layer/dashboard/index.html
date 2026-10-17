@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>C3 Migration Studio</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <h1>C3 Migration Studio</h1>
+      <p>Data Layer Migration: legacy procedural PHP + MySQL to SQLAlchemy</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="button" id="theme-toggle" aria-pressed="false">Light theme</button>
+    </div>
+  </header>
+
+  <nav class="main-tabs" role="tablist" aria-label="Main sections">
+    <button type="button" class="main-tab" role="tab" id="tab-evidence" data-tab="evidence" aria-controls="panel-evidence">Evidence</button>
+    <button type="button" class="main-tab" role="tab" id="tab-tryit" data-tab="tryit" aria-controls="panel-tryit">Try It</button>
+  </nav>
+
+  <main>
+    <!-- ======================= EVIDENCE ======================= -->
+    <section id="panel-evidence" role="tabpanel" aria-labelledby="tab-evidence">
+      <div id="load-status" class="notice info">Loading evidence data…</div>
+
+      <nav class="sub-tabs" role="tablist" aria-label="Evidence sections">
+        <button type="button" class="sub-tab" role="tab" data-section="overview">Overview</button>
+        <button type="button" class="sub-tab" role="tab" data-section="sql">SQL Results</button>
+        <button type="button" class="sub-tab" role="tab" data-section="models">Models &amp; Migration</button>
+        <button type="button" class="sub-tab" role="tab" data-section="evaluation">Evaluation</button>
+        <button type="button" class="sub-tab" role="tab" data-section="reports">Reports</button>
+      </nav>
+
+      <div class="controls" id="app-controls">
+        <label class="field">Application
+          <select id="app-select"></select>
+        </label>
+      </div>
+
+      <section id="section-overview" class="evidence-section" data-section="overview"></section>
+      <section id="section-sql" class="evidence-section" data-section="sql" hidden></section>
+      <section id="section-models" class="evidence-section" data-section="models" hidden></section>
+      <section id="section-evaluation" class="evidence-section" data-section="evaluation" hidden></section>
+      <section id="section-reports" class="evidence-section" data-section="reports" hidden></section>
+    </section>
+
+    <!-- ======================= TRY IT (no evidence data) ======================= -->
+    <section id="panel-tryit" role="tabpanel" aria-labelledby="tab-tryit" hidden>
+      <div class="section-head">
+        <div>
+          <h2>Try It: migrate your own project</h2>
+          <p>Upload a legacy PHP application and its MySQL schema to generate SQLAlchemy models, data-access functions and an
+            Alembic migration. Results shown here will come only from your uploaded project, never from the research benchmarks.</p>
+        </div>
+      </div>
+
+      <div class="notice">The local migration connection is not available yet. Uploads are not sent anywhere and nothing is analysed
+        in this version.</div>
+
+      <div class="grid two">
+        <div class="upload">
+          <label for="php-zip">PHP application (.zip)</label>
+          <input type="file" id="php-zip" accept=".zip,application/zip">
+          <span class="muted" id="php-zip-name">No file selected.</span>
+        </div>
+        <div class="upload">
+          <label for="schema-sql">MySQL schema (.sql)</label>
+          <input type="file" id="schema-sql" accept=".sql,text/plain">
+          <span class="muted" id="schema-sql-name">No file selected.</span>
+        </div>
+      </div>
+
+      <p><button type="button" class="button primary" id="run-migration" disabled aria-disabled="true">Local migration connection pending</button></p>
+
+      <div class="grid kpis" aria-label="Results of the uploaded project">
+        <div class="kpi"><div class="kpi-label">SQL detected</div><div class="kpi-value">—</div><div class="kpi-foot">No analysis run</div></div>
+        <div class="kpi"><div class="kpi-label">SQL recovered</div><div class="kpi-value">—</div><div class="kpi-foot">No analysis run</div></div>
+        <div class="kpi"><div class="kpi-label">Converted functions</div><div class="kpi-value">—</div><div class="kpi-foot">No analysis run</div></div>
+        <div class="kpi"><div class="kpi-label">Unresolved sites</div><div class="kpi-value">—</div><div class="kpi-foot">No analysis run</div></div>
+      </div>
+
+      <div class="grid two">
+        <div class="card"><h3>Query explorer</h3><div class="placeholder">Recovered and unresolved SQL sites of your project will be listed here.</div></div>
+        <div class="card"><h3>Generated code preview</h3><div class="placeholder">models.py and data_access.py of your project will be previewed here.</div></div>
+      </div>
+      <div class="card"><h3>Download results</h3><div class="placeholder">A download of the generated data layer will be offered here after a run.</div></div>
+    </section>
+  </main>
+
+  <div class="scrim" id="scrim" hidden></div>
+  <aside class="drawer" id="detail-drawer" hidden aria-labelledby="detail-title" role="dialog">
+    <button type="button" class="button drawer-close" id="detail-close">Close</button>
+    <h3 id="detail-title">Details</h3>
+    <div id="detail-body"></div>
+  </aside>
+
+  <footer id="footer">C3 Migration Studio</footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
