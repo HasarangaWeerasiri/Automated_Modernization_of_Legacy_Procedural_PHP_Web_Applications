@@ -1,0 +1,1348 @@
+{
+  "title": "sqlacodegen schema-only baseline: evaluation comparison, not used by the C3 pipeline",
+  "generated": {
+    "date_utc": "2026-10-18T18:03:18+00:00",
+    "git_head": "d40a56af6804ab150c6feac33f0f2ce9772fccc2",
+    "script": "scripts/baseline_sqlacodegen.py"
+  },
+  "tools": {
+    "sqlacodegen": {
+      "python": "3.13.5",
+      "sqlacodegen": "4.0.4",
+      "SQLAlchemy": "2.1.5",
+      "PyMySQL": "1.2.3"
+    },
+    "sqlacodegen_venv": "C:\\Users\\sanjula\\AppData\\Local\\c3_sqlacodegen_venv",
+    "generator": "declarative",
+    "c3": {
+      "git_head": "d40a56af6804ab150c6feac33f0f2ce9772fccc2",
+      "run": "fresh current-code C3 run into a temp folder outside the repo"
+    }
+  },
+  "not_applicable_for_sqlacodegen": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+  "apps": {
+    "hms_kishan0725": {
+      "label": "HMS (kishan0725)",
+      "database": "c3_e3_hms_kishan0725",
+      "c3_run": "<temp>/hms_kishan0725",
+      "c3_outputs": {
+        "sha256_normalised": {
+          "models.py": "ece35eb35f192add90319779bbbdfe0fbd1a3801b8a12ead6cee9b0ba36781d8",
+          "data_access.py": "8090761cf91bfc121ad47f3cfe387f5d0db177f0a8f5a2d7e4feed617e02c526",
+          "queries.json": "2feff8352c9e598279f6e05e98dac125ae40646e785de685f4c933f8fc78220c",
+          "unresolved_queries.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "summary.json": "afe31aee261f84caeb0b791babce5544391082f9bf0a1eb19655833ae99f8b80"
+        },
+        "matches_gate_2026_10_19": true
+      },
+      "c3_only": {
+        "label": null,
+        "live_query_sites": 44,
+        "live_query_sites_source": "evidence/evaluation/hms_kishan0725/evaluation.json gt_live_sites",
+        "detected_sites": 44,
+        "recovered_sites": 44,
+        "recovered_sites_note": "summary.json recovered_queries: all detected sites, including any non-live ones",
+        "data_access_functions_generated": 44,
+        "data_access_functions_breakdown": {
+          "converted_by_general_rules": 44,
+          "converted_by_query_specific_template": 0
+        },
+        "manual_review_count": 0,
+        "manual_review_rate": 0.0,
+        "abstentions": {
+          "total": 0,
+          "live": 0,
+          "non_live": 0,
+          "by_stage": {},
+          "by_reason_code": {},
+          "sites": []
+        },
+        "source": "C3 run outputs summary.json, unresolved_queries.json, queries.json (manual review as in scripts/summarize_evidence.py compute_manual_review)"
+      },
+      "sqlacodegen_only": {
+        "live_query_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "recovered_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "data_access_functions_generated": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "manual_review_count": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "abstentions": "not applicable (sqlacodegen reads only the database schema, never the PHP code)"
+      },
+      "sqlacodegen": {
+        "status": "ok",
+        "error": null,
+        "models_file": "hms_kishan0725/sqlacodegen_models.py",
+        "models_sha256": "5a40f11cef874158d005f6206eac90b3001e973c006219f6c5a5974e9097e2d1",
+        "mentions_auto_increment": false,
+        "database_facts": {
+          "database": "c3_e3_hms_kishan0725",
+          "mysql_server": "8.0.39",
+          "tables": {
+            "admintb": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "appointmenttb": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "contact": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "doctb": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "patreg": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "prestb": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            }
+          },
+          "tables_created": {
+            "first": "2026-10-15 17:32:52",
+            "last": "2026-10-15 17:32:53"
+          }
+        }
+      },
+      "notes": [],
+      "status": "compared",
+      "comparison": {
+        "verdict": "MATCH",
+        "counts": {
+          "tables": {
+            "compared": 6,
+            "matches": 6,
+            "differences": 0
+          },
+          "columns": {
+            "compared": 42,
+            "matches": 42,
+            "differences": 0
+          },
+          "primary_keys": {
+            "compared": 6,
+            "matches": 6,
+            "differences": 0
+          },
+          "nullability": {
+            "compared": 42,
+            "matches": 42,
+            "differences": 0
+          },
+          "types": {
+            "compared": 42,
+            "matches": 42,
+            "differences": 0
+          },
+          "foreign_keys": {
+            "compared": 0,
+            "matches": 0,
+            "differences": 0
+          }
+        },
+        "differences": []
+      }
+    },
+    "dignity_dev_hms": {
+      "label": "Dignity-Dev",
+      "database": "c3_e3_dignity_dev_hms",
+      "c3_run": "<temp>/dignity_dev_hms",
+      "c3_outputs": {
+        "sha256_normalised": {
+          "models.py": "2c902950932aed9284d503b9dfa926a86f413d9d43f5bfaa2cba4a24ca3f31a7",
+          "data_access.py": "6002a6bcb439795ddd405d1ba366149aa054f92014b708774fb062ea4c5d1106",
+          "queries.json": "015b7703bd73a1dc8b5c9e75a86723e1c4dc0972a4ab5fefe758a594bf648a50",
+          "unresolved_queries.json": "c5550a07d56fe5105bb708e05c9c7e922f978b930ccc912cdf24f121f403b671",
+          "summary.json": "654e756faf7def8b69a83cc3600d27612598dcf4555114b906e80ac786677672"
+        },
+        "matches_gate_2026_10_19": true
+      },
+      "c3_only": {
+        "label": null,
+        "live_query_sites": 13,
+        "live_query_sites_source": "evidence/evaluation/dignity_dev_hms/evaluation.json gt_live_sites",
+        "detected_sites": 14,
+        "recovered_sites": 7,
+        "recovered_sites_note": "summary.json recovered_queries: all detected sites, including any non-live ones",
+        "data_access_functions_generated": 4,
+        "data_access_functions_breakdown": {
+          "converted_by_general_rules": 4,
+          "converted_by_query_specific_template": 0
+        },
+        "manual_review_count": 9,
+        "manual_review_rate": 69.2,
+        "abstentions": {
+          "total": 10,
+          "live": 9,
+          "non_live": 1,
+          "by_stage": {
+            "recovery": 7,
+            "conversion": 3
+          },
+          "by_reason_code": {
+            "BRANCHING": 1,
+            "CONVERSION_UNSUPPORTED": 3,
+            "LOOP_OR_SWITCH_CONTROL_FLOW": 1,
+            "STRUCTURAL": 4,
+            "UNSUPPORTED_SHAPE": 1
+          },
+          "sites": [
+            {
+              "query_id": "Q001",
+              "gt_id": "G001",
+              "site": "library.php:31",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q002",
+              "gt_id": "G002",
+              "site": "library.php:53",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q003",
+              "gt_id": "G003",
+              "site": "library.php:96",
+              "stage": "recovery",
+              "reason_code": "LOOP_OR_SWITCH_CONTROL_FLOW",
+              "live": true
+            },
+            {
+              "query_id": "Q006",
+              "gt_id": "G006",
+              "site": "library.php:203",
+              "stage": "recovery",
+              "reason_code": "BRANCHING",
+              "live": true
+            },
+            {
+              "query_id": "Q007",
+              "gt_id": "G007",
+              "site": "library.php:219",
+              "stage": "conversion",
+              "reason_code": "CONVERSION_UNSUPPORTED",
+              "live": true
+            },
+            {
+              "query_id": "Q008",
+              "gt_id": "G008",
+              "site": "library.php:226",
+              "stage": "conversion",
+              "reason_code": "CONVERSION_UNSUPPORTED",
+              "live": true
+            },
+            {
+              "query_id": "Q009",
+              "gt_id": "G009",
+              "site": "library.php:233",
+              "stage": "conversion",
+              "reason_code": "CONVERSION_UNSUPPORTED",
+              "live": true
+            },
+            {
+              "query_id": "Q013",
+              "gt_id": "G013",
+              "site": "library.php:313",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q014",
+              "gt_id": "G014",
+              "site": "library.php:320",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q010",
+              "gt_id": null,
+              "site": "library.php:249",
+              "stage": "recovery",
+              "reason_code": "UNSUPPORTED_SHAPE",
+              "live": false
+            }
+          ]
+        },
+        "source": "C3 run outputs summary.json, unresolved_queries.json, queries.json (manual review as in scripts/summarize_evidence.py compute_manual_review)"
+      },
+      "sqlacodegen_only": {
+        "live_query_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "recovered_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "data_access_functions_generated": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "manual_review_count": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "abstentions": "not applicable (sqlacodegen reads only the database schema, never the PHP code)"
+      },
+      "sqlacodegen": {
+        "status": "ok",
+        "error": null,
+        "models_file": "dignity_dev_hms/sqlacodegen_models.py",
+        "models_sha256": "78eb9c523c1348c0ca1a17e62f3d00f00eba395ebf4796694b1efd35525196b7",
+        "mentions_auto_increment": false,
+        "database_facts": {
+          "database": "c3_e3_dignity_dev_hms",
+          "mysql_server": "8.0.39",
+          "tables": {
+            "admin": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "appointments": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "clerks": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "doctors": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "patient_info": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "users": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            }
+          },
+          "tables_created": {
+            "first": "2026-10-15 17:32:55",
+            "last": "2026-10-15 17:32:55"
+          }
+        }
+      },
+      "notes": [],
+      "status": "compared",
+      "comparison": {
+        "verdict": "MATCH",
+        "counts": {
+          "tables": {
+            "compared": 6,
+            "matches": 6,
+            "differences": 0
+          },
+          "columns": {
+            "compared": 25,
+            "matches": 25,
+            "differences": 0
+          },
+          "primary_keys": {
+            "compared": 6,
+            "matches": 6,
+            "differences": 0
+          },
+          "nullability": {
+            "compared": 25,
+            "matches": 25,
+            "differences": 0
+          },
+          "types": {
+            "compared": 25,
+            "matches": 25,
+            "differences": 0
+          },
+          "foreign_keys": {
+            "compared": 0,
+            "matches": 0,
+            "differences": 0
+          }
+        },
+        "differences": []
+      }
+    },
+    "helpdesk_legacy_holdout": {
+      "label": "Helpdesk",
+      "database": "c3_e3_helpdesk",
+      "c3_run": "<temp>/helpdesk_legacy_holdout",
+      "c3_outputs": {
+        "sha256_normalised": {
+          "models.py": "5292c5359a8dabfba3fab9cadd80b254303173d27ae4c91cddbf6fb3636b2634",
+          "data_access.py": "6d52506ae8a96b892643f6a33589948b56a0488a5e248f0b7fe4be7e2ab92ed7",
+          "queries.json": "6105e24fbdcf18ce0a32df40d31b866d15639a615da04aca4fcea43d80bdc650",
+          "unresolved_queries.json": "485ac4cab94a334773347bc0e43ba4293464a8374f8ae669415b56082e997690",
+          "summary.json": "d633e6d347a29fe13ab17ff385312987724922923c1f5780929cc5df499ef9cc"
+        },
+        "matches_gate_2026_10_19": true
+      },
+      "c3_only": {
+        "label": null,
+        "live_query_sites": 9,
+        "live_query_sites_source": "evidence/evaluation/helpdesk_legacy_holdout/evaluation.json gt_live_sites",
+        "detected_sites": 9,
+        "recovered_sites": 9,
+        "recovered_sites_note": "summary.json recovered_queries: all detected sites, including any non-live ones",
+        "data_access_functions_generated": 8,
+        "data_access_functions_breakdown": {
+          "converted_by_general_rules": 8,
+          "converted_by_query_specific_template": 0
+        },
+        "manual_review_count": 1,
+        "manual_review_rate": 11.1,
+        "abstentions": {
+          "total": 1,
+          "live": 1,
+          "non_live": 0,
+          "by_stage": {
+            "conversion": 1
+          },
+          "by_reason_code": {
+            "CONVERSION_UNSUPPORTED": 1
+          },
+          "sites": [
+            {
+              "query_id": "Q007",
+              "gt_id": "G007",
+              "site": "report.php:5",
+              "stage": "conversion",
+              "reason_code": "CONVERSION_UNSUPPORTED",
+              "live": true
+            }
+          ]
+        },
+        "source": "C3 run outputs summary.json, unresolved_queries.json, queries.json (manual review as in scripts/summarize_evidence.py compute_manual_review)"
+      },
+      "sqlacodegen_only": {
+        "live_query_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "recovered_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "data_access_functions_generated": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "manual_review_count": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "abstentions": "not applicable (sqlacodegen reads only the database schema, never the PHP code)"
+      },
+      "sqlacodegen": {
+        "status": "ok",
+        "error": null,
+        "models_file": "helpdesk_legacy_holdout/sqlacodegen_models.py",
+        "models_sha256": "69d3ef4b36a2ccfce4388382be1420892d656b1e610eb9c34ba98feedf3fde27",
+        "mentions_auto_increment": false,
+        "database_facts": {
+          "database": "c3_e3_helpdesk",
+          "mysql_server": "8.0.39",
+          "tables": {
+            "agents": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "teams": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "tickets": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            }
+          },
+          "tables_created": {
+            "first": "2026-10-15 17:32:51",
+            "last": "2026-10-15 17:32:51"
+          }
+        }
+      },
+      "notes": [],
+      "status": "compared",
+      "comparison": {
+        "verdict": "MATCH",
+        "counts": {
+          "tables": {
+            "compared": 3,
+            "matches": 3,
+            "differences": 0
+          },
+          "columns": {
+            "compared": 12,
+            "matches": 12,
+            "differences": 0
+          },
+          "primary_keys": {
+            "compared": 3,
+            "matches": 3,
+            "differences": 0
+          },
+          "nullability": {
+            "compared": 12,
+            "matches": 12,
+            "differences": 0
+          },
+          "types": {
+            "compared": 12,
+            "matches": 12,
+            "differences": 0
+          },
+          "foreign_keys": {
+            "compared": 2,
+            "matches": 2,
+            "differences": 0
+          }
+        },
+        "differences": []
+      }
+    },
+    "news_buzz": {
+      "label": "NEWS-BUZZ",
+      "database": "c3_e3_news_buzz",
+      "c3_run": "<temp>/news_buzz",
+      "c3_outputs": {
+        "sha256_normalised": {
+          "models.py": "24c72743c91557c24f579d1a02ce359f6ffc3f5aecf2cdc49cc4e34f2820b3da",
+          "data_access.py": "ad718e214f3b4901ca54ff3a908107ada57b7071ad5900dd9370f5587cea358f",
+          "queries.json": "fe86719c249d4085497d73adb93d1b7f6aaa1c45b8f69b4c747de02ecf2e1eca",
+          "unresolved_queries.json": "65d7a276a02c29fb2cba8f50fc43bae4a39a0f551b2c3b7e1795bbb411d2403f",
+          "summary.json": "252cd44f7bbf42c36f272684b432688bf3ca86990ae8c4839f1fbc3764aad2a8"
+        },
+        "matches_gate_2026_10_19": true
+      },
+      "c3_only": {
+        "label": null,
+        "live_query_sites": 32,
+        "live_query_sites_source": "evidence/evaluation/news_buzz/evaluation_post_escape_fix.json gt_live_sites",
+        "detected_sites": 32,
+        "recovered_sites": 30,
+        "recovered_sites_note": "summary.json recovered_queries: all detected sites, including any non-live ones",
+        "data_access_functions_generated": 30,
+        "data_access_functions_breakdown": {
+          "converted_by_general_rules": 30,
+          "converted_by_query_specific_template": 0
+        },
+        "manual_review_count": 2,
+        "manual_review_rate": 6.2,
+        "abstentions": {
+          "total": 2,
+          "live": 2,
+          "non_live": 0,
+          "by_stage": {
+            "recovery": 2
+          },
+          "by_reason_code": {
+            "BRANCHING": 2
+          },
+          "sites": [
+            {
+              "query_id": "Q002",
+              "gt_id": "G002",
+              "site": "admin/editposts.php:17",
+              "stage": "recovery",
+              "reason_code": "BRANCHING",
+              "live": true
+            },
+            {
+              "query_id": "Q006",
+              "gt_id": "G006",
+              "site": "admin/post.php:17",
+              "stage": "recovery",
+              "reason_code": "BRANCHING",
+              "live": true
+            }
+          ]
+        },
+        "source": "C3 run outputs summary.json, unresolved_queries.json, queries.json (manual review as in scripts/summarize_evidence.py compute_manual_review)"
+      },
+      "sqlacodegen_only": {
+        "live_query_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "recovered_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "data_access_functions_generated": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "manual_review_count": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "abstentions": "not applicable (sqlacodegen reads only the database schema, never the PHP code)"
+      },
+      "sqlacodegen": {
+        "status": "ok",
+        "error": null,
+        "models_file": "news_buzz/sqlacodegen_models.py",
+        "models_sha256": "a176f72a31ef2b6b5d2513654dd767ad3afbbae6e2540dc3736bb52425fce609",
+        "mentions_auto_increment": false,
+        "database_facts": {
+          "database": "c3_e3_news_buzz",
+          "mysql_server": "8.0.39",
+          "tables": {
+            "posts": {
+              "type": "BASE TABLE",
+              "engine": "MyISAM"
+            },
+            "users": {
+              "type": "BASE TABLE",
+              "engine": "MyISAM"
+            }
+          },
+          "tables_created": {
+            "first": "2026-10-15 17:32:54",
+            "last": "2026-10-15 17:32:54"
+          }
+        }
+      },
+      "notes": [
+        "2 table(s) use MyISAM (posts, users): MySQL keeps no foreign keys for them, so foreign-key differences on these tables say nothing about either tool"
+      ],
+      "status": "compared",
+      "comparison": {
+        "verdict": "MATCH",
+        "counts": {
+          "tables": {
+            "compared": 2,
+            "matches": 2,
+            "differences": 0
+          },
+          "columns": {
+            "compared": 16,
+            "matches": 16,
+            "differences": 0
+          },
+          "primary_keys": {
+            "compared": 2,
+            "matches": 2,
+            "differences": 0
+          },
+          "nullability": {
+            "compared": 16,
+            "matches": 16,
+            "differences": 0
+          },
+          "types": {
+            "compared": 16,
+            "matches": 16,
+            "differences": 0
+          },
+          "foreign_keys": {
+            "compared": 0,
+            "matches": 0,
+            "differences": 0
+          }
+        },
+        "differences": []
+      }
+    },
+    "fee_rainbow": {
+      "label": "Fee-Rainbow",
+      "database": "c3_e3_fee_rainbow",
+      "c3_run": "<temp>/fee_rainbow",
+      "c3_outputs": {
+        "sha256_normalised": {
+          "models.py": "88aee1419809900e782ac4c8f025066a7be8bea7186c50dc01533e5d59e128ef",
+          "data_access.py": "7b35d82f6a1a0eb669e358221b8a59af9be7594700baa4f07ccf7f1c08a7761a",
+          "queries.json": "b22b0fe79c53cba034f62fa460824cef722764126b303f5df2d33ea82b7dd98f",
+          "unresolved_queries.json": "286bb1e809bafab61ecc4fa43a84fb5f49040deb431c8874b72f8960f6bb87b4",
+          "summary.json": "8890d7aefb63385ebf69d77317e095500b0cfde7a9ae7c2056929ec0634b01c3"
+        },
+        "matches_gate_2026_10_19": true
+      },
+      "c3_only": {
+        "label": null,
+        "live_query_sites": 54,
+        "live_query_sites_source": "evidence/evaluation/fee_rainbow/evaluation_wrapper_support.json gt_live_sites",
+        "detected_sites": 54,
+        "recovered_sites": 42,
+        "recovered_sites_note": "summary.json recovered_queries: all detected sites, including any non-live ones",
+        "data_access_functions_generated": 40,
+        "data_access_functions_breakdown": {
+          "converted_by_general_rules": 40,
+          "converted_by_query_specific_template": 0
+        },
+        "manual_review_count": 14,
+        "manual_review_rate": 25.9,
+        "abstentions": {
+          "total": 14,
+          "live": 14,
+          "non_live": 0,
+          "by_stage": {
+            "conversion": 2,
+            "recovery": 12
+          },
+          "by_reason_code": {
+            "CONVERSION_UNSUPPORTED": 2,
+            "STRUCTURAL": 10,
+            "UNKNOWN_EXPR": 2
+          },
+          "sites": [
+            {
+              "query_id": "Q007",
+              "gt_id": "G007",
+              "site": "admin/app/models/categories.php:100",
+              "stage": "conversion",
+              "reason_code": "CONVERSION_UNSUPPORTED",
+              "live": true
+            },
+            {
+              "query_id": "Q021",
+              "gt_id": "G021",
+              "site": "admin/config/helpers.php:4",
+              "stage": "recovery",
+              "reason_code": "UNKNOWN_EXPR",
+              "live": true
+            },
+            {
+              "query_id": "Q022",
+              "gt_id": "G022",
+              "site": "config/helpers.php:4",
+              "stage": "recovery",
+              "reason_code": "UNKNOWN_EXPR",
+              "live": true
+            },
+            {
+              "query_id": "Q023",
+              "gt_id": "G023",
+              "site": "admin/app/models/categories.php:7",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q024",
+              "gt_id": "G024",
+              "site": "admin/app/models/categories.php:21",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q025",
+              "gt_id": "G025",
+              "site": "admin/app/models/occasions.php:7",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q026",
+              "gt_id": "G026",
+              "site": "admin/app/models/occasions.php:14",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q027",
+              "gt_id": "G027",
+              "site": "admin/app/models/products.php:17",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q028",
+              "gt_id": "G028",
+              "site": "admin/app/models/products.php:42",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q029",
+              "gt_id": "G029",
+              "site": "admin/app/models/subcategories.php:7",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q030",
+              "gt_id": "G030",
+              "site": "admin/app/models/subcategories.php:24",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q049",
+              "gt_id": "G051",
+              "site": "app/models/products.php:17",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q050",
+              "gt_id": "G052",
+              "site": "app/models/products.php:42",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q054",
+              "gt_id": "G058",
+              "site": "app/views/products/detail.php:8",
+              "stage": "conversion",
+              "reason_code": "CONVERSION_UNSUPPORTED",
+              "live": true
+            }
+          ]
+        },
+        "source": "C3 run outputs summary.json, unresolved_queries.json, queries.json (manual review as in scripts/summarize_evidence.py compute_manual_review)"
+      },
+      "sqlacodegen_only": {
+        "live_query_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "recovered_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "data_access_functions_generated": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "manual_review_count": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "abstentions": "not applicable (sqlacodegen reads only the database schema, never the PHP code)"
+      },
+      "sqlacodegen": {
+        "status": "ok",
+        "error": null,
+        "models_file": "fee_rainbow/sqlacodegen_models.py",
+        "models_sha256": "72b3258d3f905e7932651144b82a22ee1e48c3d804215a73bed509250ac1f453",
+        "mentions_auto_increment": false,
+        "database_facts": {
+          "database": "c3_e3_fee_rainbow",
+          "mysql_server": "8.0.39",
+          "tables": {
+            "admin": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            }
+          },
+          "tables_created": {
+            "first": "2026-10-15 17:32:54",
+            "last": "2026-10-15 17:32:54"
+          }
+        }
+      },
+      "notes": [],
+      "status": "compared",
+      "comparison": {
+        "verdict": "MATCH",
+        "counts": {
+          "tables": {
+            "compared": 1,
+            "matches": 1,
+            "differences": 0
+          },
+          "columns": {
+            "compared": 5,
+            "matches": 5,
+            "differences": 0
+          },
+          "primary_keys": {
+            "compared": 1,
+            "matches": 1,
+            "differences": 0
+          },
+          "nullability": {
+            "compared": 5,
+            "matches": 5,
+            "differences": 0
+          },
+          "types": {
+            "compared": 5,
+            "matches": 5,
+            "differences": 0
+          },
+          "foreign_keys": {
+            "compared": 0,
+            "matches": 0,
+            "differences": 0
+          }
+        },
+        "differences": []
+      }
+    },
+    "clinic_inventory_legacy_hard": {
+      "label": "Clinic",
+      "database": "c3_e3_clinic",
+      "c3_run": "<temp>/clinic_inventory_legacy_hard",
+      "c3_outputs": {
+        "sha256_normalised": {
+          "models.py": "5e5b37b667796d544ee0043e622b1c6b1d943eb855d86c94d2e106344f6b2563",
+          "data_access.py": "d73bb48620204075fd657842ab0d3e4a4e268abe598782115a9e9c1310320982",
+          "queries.json": "afdb048598cb84495384fdeb58f91fe2dd62349f49c1366961b37662fc9468da",
+          "unresolved_queries.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "summary.json": "70349a6afe966c7db2ef19a503e0fc1770c32fcb8c2dbb6e843ff04afc267cc6"
+        },
+        "matches_gate_2026_10_19": true
+      },
+      "c3_only": {
+        "label": "pipeline counts, not verified",
+        "live_query_sites": 22,
+        "live_query_sites_source": "summary.json total_queries (no ground truth)",
+        "detected_sites": 22,
+        "recovered_sites": 17,
+        "recovered_sites_note": "summary.json recovered_queries: all detected sites, including any non-live ones",
+        "data_access_functions_generated": 22,
+        "data_access_functions_breakdown": {
+          "converted_by_general_rules": 15,
+          "converted_by_query_specific_template": 7
+        },
+        "manual_review_count": 0,
+        "manual_review_rate": 0.0,
+        "abstentions": {
+          "total": 0,
+          "live": 0,
+          "non_live": 0,
+          "by_stage": {},
+          "by_reason_code": {},
+          "sites": []
+        },
+        "source": "C3 run outputs summary.json, unresolved_queries.json, queries.json (manual review as in scripts/summarize_evidence.py compute_manual_review)"
+      },
+      "sqlacodegen_only": {
+        "live_query_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "recovered_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "data_access_functions_generated": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "manual_review_count": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "abstentions": "not applicable (sqlacodegen reads only the database schema, never the PHP code)"
+      },
+      "sqlacodegen": {
+        "status": "ok",
+        "error": null,
+        "models_file": "clinic_inventory_legacy_hard/sqlacodegen_models.py",
+        "models_sha256": "43fff03ec467d1cd4578cdc8800b233cb037f8ffea4ae85773821f166663bb0a",
+        "mentions_auto_increment": false,
+        "database_facts": {
+          "database": "c3_e3_clinic",
+          "mysql_server": "8.0.39",
+          "tables": {
+            "appointments": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "departments": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "doctors": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "patients": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "payments": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            }
+          },
+          "tables_created": {
+            "first": "2026-10-15 17:32:50",
+            "last": "2026-10-15 17:32:51"
+          }
+        }
+      },
+      "notes": [],
+      "status": "compared",
+      "comparison": {
+        "verdict": "MATCH",
+        "counts": {
+          "tables": {
+            "compared": 5,
+            "matches": 5,
+            "differences": 0
+          },
+          "columns": {
+            "compared": 25,
+            "matches": 25,
+            "differences": 0
+          },
+          "primary_keys": {
+            "compared": 5,
+            "matches": 5,
+            "differences": 0
+          },
+          "nullability": {
+            "compared": 25,
+            "matches": 25,
+            "differences": 0
+          },
+          "types": {
+            "compared": 25,
+            "matches": 25,
+            "differences": 0
+          },
+          "foreign_keys": {
+            "compared": 5,
+            "matches": 5,
+            "differences": 0
+          }
+        },
+        "differences": []
+      }
+    },
+    "simple_crud": {
+      "label": "simple_crud",
+      "database": "c3_e3_simple_crud",
+      "c3_run": "<temp>/simple_crud",
+      "c3_outputs": {
+        "sha256_normalised": {
+          "models.py": "10de1b6073872703a276b4b407164dcd243e3acc7cf652a723e835e23a434bb5",
+          "data_access.py": "f302b8e5660ddc9da12ae381d425050b12bf93019030624196e9ae1f6bfdf0a2",
+          "queries.json": "e5027d8feaa730f7b2472e5c2b6bbaf198b395f62e8b1fdfcc796d41d7246794",
+          "unresolved_queries.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "summary.json": "eab665501d0be31150256eba013fec7983b1a904185b0edf28cf01680aae61f3"
+        },
+        "matches_gate_2026_10_19": true
+      },
+      "c3_only": {
+        "label": "pipeline counts, not verified",
+        "live_query_sites": 4,
+        "live_query_sites_source": "summary.json total_queries (no ground truth)",
+        "detected_sites": 4,
+        "recovered_sites": 4,
+        "recovered_sites_note": "summary.json recovered_queries: all detected sites, including any non-live ones",
+        "data_access_functions_generated": 4,
+        "data_access_functions_breakdown": {
+          "converted_by_general_rules": 4,
+          "converted_by_query_specific_template": 0
+        },
+        "manual_review_count": 0,
+        "manual_review_rate": 0.0,
+        "abstentions": {
+          "total": 0,
+          "live": 0,
+          "non_live": 0,
+          "by_stage": {},
+          "by_reason_code": {},
+          "sites": []
+        },
+        "source": "C3 run outputs summary.json, unresolved_queries.json, queries.json (manual review as in scripts/summarize_evidence.py compute_manual_review)"
+      },
+      "sqlacodegen_only": {
+        "live_query_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "recovered_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "data_access_functions_generated": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "manual_review_count": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "abstentions": "not applicable (sqlacodegen reads only the database schema, never the PHP code)"
+      },
+      "sqlacodegen": {
+        "status": "ok",
+        "error": null,
+        "models_file": "simple_crud/sqlacodegen_models.py",
+        "models_sha256": "84048f845688dca9bbd605b34779fc8930be3b805bd022588a407b0d43bd55d8",
+        "mentions_auto_increment": false,
+        "database_facts": {
+          "database": "c3_e3_simple_crud",
+          "mysql_server": "8.0.39",
+          "tables": {
+            "appointments": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "users": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            }
+          },
+          "tables_created": {
+            "first": "2026-10-15 17:32:49",
+            "last": "2026-10-15 17:32:49"
+          }
+        }
+      },
+      "notes": [],
+      "status": "compared",
+      "comparison": {
+        "verdict": "MATCH",
+        "counts": {
+          "tables": {
+            "compared": 2,
+            "matches": 2,
+            "differences": 0
+          },
+          "columns": {
+            "compared": 8,
+            "matches": 8,
+            "differences": 0
+          },
+          "primary_keys": {
+            "compared": 2,
+            "matches": 2,
+            "differences": 0
+          },
+          "nullability": {
+            "compared": 8,
+            "matches": 8,
+            "differences": 0
+          },
+          "types": {
+            "compared": 8,
+            "matches": 8,
+            "differences": 0
+          },
+          "foreign_keys": {
+            "compared": 1,
+            "matches": 1,
+            "differences": 0
+          }
+        },
+        "differences": []
+      }
+    },
+    "mixed_crud": {
+      "label": "mixed_crud",
+      "database": "c3_e3_mixed_crud",
+      "c3_run": "<temp>/mixed_crud",
+      "c3_outputs": {
+        "sha256_normalised": {
+          "models.py": "cf264f917e6e7d428fcfbc8cbb3b3abd9cc5da1b57970984b3daf4509b630c8b",
+          "data_access.py": "19a40c863296650088203adefacabae9e52bc6b15fd6a573af196cb204db5b0b",
+          "queries.json": "67197ef94f2789b1f9c5b75dce9a5bea1d2418ebfa79b9ef67597b6d4df74fd9",
+          "unresolved_queries.json": "1278761692ef703d4f2fe46adeb4e87cde1c0f443c1f541c998d9fe7bae97d01",
+          "summary.json": "75bc57b662d7d3d6b5e9ecfb5471cbf4856f284b723935a9873fb3c44f6c9182"
+        },
+        "matches_gate_2026_10_19": true
+      },
+      "c3_only": {
+        "label": "pipeline counts, not verified",
+        "live_query_sites": 6,
+        "live_query_sites_source": "summary.json total_queries (no ground truth)",
+        "detected_sites": 6,
+        "recovered_sites": 5,
+        "recovered_sites_note": "summary.json recovered_queries: all detected sites, including any non-live ones",
+        "data_access_functions_generated": 5,
+        "data_access_functions_breakdown": {
+          "converted_by_general_rules": 5,
+          "converted_by_query_specific_template": 0
+        },
+        "manual_review_count": 1,
+        "manual_review_rate": 16.7,
+        "abstentions": {
+          "total": 1,
+          "live": 1,
+          "non_live": 0,
+          "by_stage": {
+            "recovery": 1
+          },
+          "by_reason_code": {
+            "UNKNOWN_EXPR": 1
+          },
+          "sites": [
+            {
+              "query_id": "Q006",
+              "gt_id": null,
+              "site": "06_dynamic_function.php:8",
+              "stage": "recovery",
+              "reason_code": "UNKNOWN_EXPR",
+              "live": true
+            }
+          ]
+        },
+        "source": "C3 run outputs summary.json, unresolved_queries.json, queries.json (manual review as in scripts/summarize_evidence.py compute_manual_review)"
+      },
+      "sqlacodegen_only": {
+        "live_query_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "recovered_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "data_access_functions_generated": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "manual_review_count": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "abstentions": "not applicable (sqlacodegen reads only the database schema, never the PHP code)"
+      },
+      "sqlacodegen": {
+        "status": "ok",
+        "error": null,
+        "models_file": "mixed_crud/sqlacodegen_models.py",
+        "models_sha256": "8d266fc57b180b2598cc21fed621e6032378be3ab4355e8dfe5b6fac42535dfa",
+        "mentions_auto_increment": false,
+        "database_facts": {
+          "database": "c3_e3_mixed_crud",
+          "mysql_server": "8.0.39",
+          "tables": {
+            "products": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            }
+          },
+          "tables_created": {
+            "first": "2026-10-15 17:32:50",
+            "last": "2026-10-15 17:32:50"
+          }
+        }
+      },
+      "notes": [],
+      "status": "compared",
+      "comparison": {
+        "verdict": "MATCH",
+        "counts": {
+          "tables": {
+            "compared": 1,
+            "matches": 1,
+            "differences": 0
+          },
+          "columns": {
+            "compared": 3,
+            "matches": 3,
+            "differences": 0
+          },
+          "primary_keys": {
+            "compared": 1,
+            "matches": 1,
+            "differences": 0
+          },
+          "nullability": {
+            "compared": 3,
+            "matches": 3,
+            "differences": 0
+          },
+          "types": {
+            "compared": 3,
+            "matches": 3,
+            "differences": 0
+          },
+          "foreign_keys": {
+            "compared": 0,
+            "matches": 0,
+            "differences": 0
+          }
+        },
+        "differences": []
+      }
+    },
+    "hard_crud": {
+      "label": "hard_crud",
+      "database": "c3_e3_hard_crud",
+      "c3_run": "<temp>/hard_crud",
+      "c3_outputs": {
+        "sha256_normalised": {
+          "models.py": "4f32e6dbcf3050552e0a7d504019d8663a95452509734c76a5b2c7f3083d07b4",
+          "data_access.py": "669cfeda98a4e664b6cc730c273f3c5175c2061551f2e78fcd835f944fa9d8a6",
+          "queries.json": "bcbdac8a84bcdcb65e5b0db0e0e4cc55c50f4aaee06f52913e36aa5712c13663",
+          "unresolved_queries.json": "8de328c0dc2e1d23d07a3d3c4b9d3bb697fe522cedda6756dbc824ecce6ce6cb",
+          "summary.json": "cf457a10238480ed20cd4e83f11c90e8c9f9afc6a993b78c1307216e5056000e"
+        },
+        "matches_gate_2026_10_19": true
+      },
+      "c3_only": {
+        "label": "pipeline counts, not verified",
+        "live_query_sites": 5,
+        "live_query_sites_source": "summary.json total_queries (no ground truth)",
+        "detected_sites": 5,
+        "recovered_sites": 2,
+        "recovered_sites_note": "summary.json recovered_queries: all detected sites, including any non-live ones",
+        "data_access_functions_generated": 2,
+        "data_access_functions_breakdown": {
+          "converted_by_general_rules": 2,
+          "converted_by_query_specific_template": 0
+        },
+        "manual_review_count": 3,
+        "manual_review_rate": 60.0,
+        "abstentions": {
+          "total": 3,
+          "live": 3,
+          "non_live": 0,
+          "by_stage": {
+            "recovery": 3
+          },
+          "by_reason_code": {
+            "BRANCHING": 1,
+            "STRUCTURAL": 2
+          },
+          "sites": [
+            {
+              "query_id": "Q002",
+              "gt_id": null,
+              "site": "02_dynamic_order.php:9",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q003",
+              "gt_id": null,
+              "site": "03_dynamic_in.php:9",
+              "stage": "recovery",
+              "reason_code": "STRUCTURAL",
+              "live": true
+            },
+            {
+              "query_id": "Q004",
+              "gt_id": null,
+              "site": "04_conditional_append.php:11",
+              "stage": "recovery",
+              "reason_code": "BRANCHING",
+              "live": true
+            }
+          ]
+        },
+        "source": "C3 run outputs summary.json, unresolved_queries.json, queries.json (manual review as in scripts/summarize_evidence.py compute_manual_review)"
+      },
+      "sqlacodegen_only": {
+        "live_query_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "recovered_sites": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "data_access_functions_generated": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "manual_review_count": "not applicable (sqlacodegen reads only the database schema, never the PHP code)",
+        "abstentions": "not applicable (sqlacodegen reads only the database schema, never the PHP code)"
+      },
+      "sqlacodegen": {
+        "status": "ok",
+        "error": null,
+        "models_file": "hard_crud/sqlacodegen_models.py",
+        "models_sha256": "4cbe8db9d70da60adef49c6a4c5fe97706b3c7e0fa6c7e1964c817b6ecc70444",
+        "mentions_auto_increment": false,
+        "database_facts": {
+          "database": "c3_e3_hard_crud",
+          "mysql_server": "8.0.39",
+          "tables": {
+            "categories": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "order_items": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "orders": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "products": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            },
+            "users": {
+              "type": "BASE TABLE",
+              "engine": "InnoDB"
+            }
+          },
+          "tables_created": {
+            "first": "2026-10-15 17:32:50",
+            "last": "2026-10-15 17:32:50"
+          }
+        }
+      },
+      "notes": [],
+      "status": "compared",
+      "comparison": {
+        "verdict": "MATCH",
+        "counts": {
+          "tables": {
+            "compared": 5,
+            "matches": 5,
+            "differences": 0
+          },
+          "columns": {
+            "compared": 25,
+            "matches": 25,
+            "differences": 0
+          },
+          "primary_keys": {
+            "compared": 5,
+            "matches": 5,
+            "differences": 0
+          },
+          "nullability": {
+            "compared": 25,
+            "matches": 25,
+            "differences": 0
+          },
+          "types": {
+            "compared": 25,
+            "matches": 25,
+            "differences": 0
+          },
+          "foreign_keys": {
+            "compared": 4,
+            "matches": 4,
+            "differences": 0
+          }
+        },
+        "differences": []
+      }
+    }
+  },
+  "failures": {}
+}

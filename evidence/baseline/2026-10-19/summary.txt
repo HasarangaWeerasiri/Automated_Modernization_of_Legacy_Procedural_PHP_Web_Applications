@@ -1,0 +1,47 @@
+sqlacodegen schema-only baseline: evaluation comparison, not used by the C3 pipeline
+
+Run: 2026-10-18T18:03:18+00:00  git HEAD d40a56af6804ab150c6feac33f0f2ce9772fccc2
+sqlacodegen 4.0.4 (SQLAlchemy 2.1.5, PyMySQL 1.2.3)
+
+Model parity, C3 models.py vs sqlacodegen (matches/differences):
+
+  app                           status  tables  columns  primary_keys  nullability  types  foreign_keys
+  hms_kishan0725                MATCH   6/0     42/0     6/0           42/0         42/0   0/0
+  dignity_dev_hms               MATCH   6/0     25/0     6/0           25/0         25/0   0/0
+  helpdesk_legacy_holdout       MATCH   3/0     12/0     3/0           12/0         12/0   2/0
+  news_buzz                     MATCH   2/0     16/0     2/0           16/0         16/0   0/0
+  fee_rainbow                   MATCH   1/0     5/0      1/0           5/0          5/0    0/0
+  clinic_inventory_legacy_hard  MATCH   5/0     25/0     5/0           25/0         25/0   5/0
+  simple_crud                   MATCH   2/0     8/0      2/0           8/0          8/0    1/0
+  mixed_crud                    MATCH   1/0     3/0      1/0           3/0          3/0    0/0
+  hard_crud                     MATCH   5/0     25/0     5/0           25/0         25/0   4/0
+
+Differences:
+  news_buzz: NOTE 2 table(s) use MyISAM (posts, users): MySQL keeps no foreign keys for them, so foreign-key differences on these tables say nothing about either tool
+
+sqlacodegen failures:
+  none
+
+C3 only (sqlacodegen: not applicable (sqlacodegen reads only the database schema, never the PHP code)):
+
+  app                           live sites  recovered  functions  manual review  abstentions (live/non-live)  label
+  hms_kishan0725                44          44         44         0 (0.0%)       0 (0/0)                      verified ground truth
+  dignity_dev_hms               13          7          4          9 (69.2%)      10 (9/1)                     verified ground truth
+  helpdesk_legacy_holdout       9           9          8          1 (11.1%)      1 (1/0)                      verified ground truth
+  news_buzz                     32          30         30         2 (6.2%)       2 (2/0)                      verified ground truth
+  fee_rainbow                   54          42         40         14 (25.9%)     14 (14/0)                    verified ground truth
+  clinic_inventory_legacy_hard  22          17         22         0 (0.0%)       0 (0/0)                      pipeline counts, not verified
+  simple_crud                   4           4          4          0 (0.0%)       0 (0/0)                      pipeline counts, not verified
+  mixed_crud                    6           5          5          1 (16.7%)      1 (1/0)                      pipeline counts, not verified
+  hard_crud                     5           2          2          3 (60.0%)      3 (3/0)                      pipeline counts, not verified
+
+Abstention reason codes (C3):
+  hms_kishan0725: {}
+  dignity_dev_hms: {"BRANCHING": 1, "CONVERSION_UNSUPPORTED": 3, "LOOP_OR_SWITCH_CONTROL_FLOW": 1, "STRUCTURAL": 4, "UNSUPPORTED_SHAPE": 1}
+  helpdesk_legacy_holdout: {"CONVERSION_UNSUPPORTED": 1}
+  news_buzz: {"BRANCHING": 2}
+  fee_rainbow: {"CONVERSION_UNSUPPORTED": 2, "STRUCTURAL": 10, "UNKNOWN_EXPR": 2}
+  clinic_inventory_legacy_hard: {}
+  simple_crud: {}
+  mixed_crud: {"UNKNOWN_EXPR": 1}
+  hard_crud: {"BRANCHING": 1, "STRUCTURAL": 2}
