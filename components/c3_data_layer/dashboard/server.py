@@ -72,10 +72,83 @@ SECURITY_HEADERS = {
 
 
 class BridgeError(Exception):
-    def __init__(self, status: int, message: str):
+    def __init__(self, status: int, message: str, detail: dict | None = None):
         super().__init__(message)
         self.status = status
         self.message = message
+        self.detail = detail or {}
+
+
+STAGE_LINE = re.compile(r"^\[(\d+)/(\d+)\]\s*(.+?)\s*$", re.M)
+FRAME_LINE = re.compile(r'^\s*File "(?P<file>[^"]+)", line (?P<line>\d+)(?:, in (?P<func>\S+))?', re.M)
+CLASSIFICATION = {
+    "c3_defect": "a C3 code-generation defect, not a problem with your upload",
+    "environment": "a problem with the local setup (the PHP executable was not found), not a problem with your upload",
+    "input_php": "an input problem: a PHP file in the upload could not be parsed",
+    "input_schema": "an input problem: the MySQL schema could not be read",
+    "unknown": "an unexpected C3 error (probably a C3 defect); the run log has the details",
+}
+
+
+def sanitize(text: str, run_dir: Path, app_dir: Path) -> str:
+    """Upload-relative paths only: the run folder, repository, Python install and home folder are replaced by labels."""
+
+    pairs = [(app_dir, "<upload>"), (run_dir, "<run>"), (COMPONENT / "src", "<c3>"), (REPO, "<repo>"),
+             (Path(sys.prefix), "<python>"), (Path(sys.base_prefix), "<python>"), (Path.home(), "~")]
+    variants = {}
+    for path, label in pairs:
+        raw = str(path)
+        for variant in (raw, raw.replace("\\", "/"), raw.replace("\\", "\\\\")):
+            variants.setdefault(variant, label)
+    for value in sorted(variants, key=len, reverse=True):
+        text = text.replace(value, variants[value])
+    return re.sub(r"<upload>(?:\\\\|\\|/)", "", text)
+
+
+def error_payload(error: BridgeError) -> dict:
+    return {"error": error.message, **{k: v for k, v in error.detail.items() if k != "log_available"}}
+
+
+def describe_failure(stdout: str, stderr: str) -> dict:
+    """Stage, exception, innermost C3 frame and classification of a failed CLI run (sanitized text in, dict out)."""
+
+    stages = STAGE_LINE.findall(stdout)
+    stage = f"stage {stages[-1][0]}/{stages[-1][1]} ({stages[-1][2].rstrip('.')})" if stages else "before the first stage"
+    lines = [line for line in stderr.strip().splitlines() if line.strip()]
+    last = lines[-1].strip() if lines else ""
+    head, separator, message = last.partition(": ")
+    exception = head.rsplit(".", 1)[-1] if separator and re.fullmatch(r"[\w.]+", head) else "Error"
+    message = message if separator else (last or "the pipeline exited without a message")
+    frames = list(FRAME_LINE.finditer(stderr))
+    c3_frames = [f for f in frames if f["file"].startswith("<c3>")]
+    frame = None
+    if c3_frames:
+        f = c3_frames[-1]
+        module = f['file'][len('<c3>'):].replace('\\', '/').lstrip('/')
+        frame = f"{module}:{f['line']} in {f['func']}"  # <c3> is the src folder, so module starts with c3/
+    generated_line = None
+    unknown = [f for f in frames if f["file"] == "<unknown>"]
+    if unknown:
+        after = stderr[unknown[-1].end():].splitlines()
+        code = next((line.strip() for line in after[1:] if line.strip()), "")
+        generated_line = {"line": int(unknown[-1]["line"]), "code": code}
+
+    if exception == "GeneratedCodeError" or (exception == "SyntaxError" and generated_line):
+        kind = "c3_defect"
+    elif "PHP executable was not found" in stderr:
+        kind = "environment"
+    elif "PHP AST extractor failed" in stderr or "PhpAstExtractorError" in stderr:
+        kind = "input_php"
+    elif frame and re.search(r"c3/mapping/schema_reader|c3/conversion/type_map", frame):
+        kind = "input_schema"
+    else:
+        kind = "unknown"
+    summary = f"C3 stopped in {stage}: {exception}: {message}"
+    if generated_line and exception == "SyntaxError":
+        summary += f" (generated code line {generated_line['line']}: {generated_line['code']})"
+    return {"stage": stage, "exception": exception, "message": message, "frame": frame, "generated_code": generated_line,
+            "classification": kind, "classification_text": CLASSIFICATION[kind],
+            "summary": f"{summary}. This is {CLASSIFICATION[kind]}."}
 
 
 def child_environment(run_dir: Path) -> dict:
@@ -203,6 +276,18 @@ class Bridge:
                 started = time.monotonic()
                 self.run_cli(run_dir, app_dir, schema, out_dir)
                 duration = round(time.monotonic() - started, 1)
+            except BridgeError as error:
+                if error.detail.get("log_available"):
+                    # Keep only the sanitized log of a failed pipeline run (until the hourly cleanup); drop the upload.
+                    shutil.rmtree(app_dir, ignore_errors=True)
+                    shutil.rmtree(out_dir, ignore_errors=True)
+                    (run_dir / "schema.sql").unlink(missing_ok=True)
+                    shutil.rmtree(run_dir / "tmp", ignore_errors=True)
+                    error.detail["run_id"] = run_id
+                    error.detail["log_url"] = f"/api/runs/{run_id}/log"
+                else:
+                    shutil.rmtree(run_dir, ignore_errors=True)
+                raise
             except BaseException:
                 shutil.rmtree(run_dir, ignore_errors=True)
                 raise
@@ -219,16 +304,26 @@ class Bridge:
         process = subprocess.Popen(command, cwd=run_dir, env=child_environment(run_dir), stdin=subprocess.DEVNULL,
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=flags)
         try:
-            _, stderr = process.communicate(timeout=self.limits["timeout_seconds"])
+            stdout, stderr = process.communicate(timeout=self.limits["timeout_seconds"])
         except subprocess.TimeoutExpired:
             kill_tree(process)
             raise BridgeError(HTTPStatus.GATEWAY_TIMEOUT,
                               f"The analysis did not finish within {self.limits['timeout_seconds']} seconds and was stopped.")
-        (run_dir / "pipeline_log.txt").write_bytes(stderr or b"")
+        out_text = sanitize((stdout or b"").decode("utf-8", "replace").replace("\r\n", "\n"), run_dir, app_dir)
+        err_text = sanitize((stderr or b"").decode("utf-8", "replace").replace("\r\n", "\n"), run_dir, app_dir)
+        (run_dir / "pipeline_log.txt").write_text(f"{out_text}\n----- stderr -----\n{err_text}", encoding="utf-8", newline="\n")
         if process.returncode != 0 or not (out_dir / "summary.json").is_file():
-            tail = (stderr or b"").decode("utf-8", "replace").strip().splitlines()[-3:]
-            reason = tail[-1] if tail else f"exit code {process.returncode}"
-            raise BridgeError(HTTPStatus.UNPROCESSABLE_ENTITY, f"C3 could not process this upload: {reason}")
+            failure = describe_failure(out_text, err_text)
+            (run_dir / "failure.json").write_text(json.dumps(failure), encoding="utf-8")
+            raise BridgeError(HTTPStatus.UNPROCESSABLE_ENTITY, failure["summary"], {"failure": failure, "log_available": True})
+
+    def log(self, run_id: str) -> bytes:
+        if not RUN_ID.match(run_id or ""):
+            raise BridgeError(HTTPStatus.NOT_FOUND, "Unknown run.")
+        path = self.run_root / run_id / "pipeline_log.txt"
+        if not path.is_file() or not (self.run_root / run_id / "failure.json").is_file():
+            raise BridgeError(HTTPStatus.NOT_FOUND, "No log is kept for this run (logs are kept for failed runs until the hourly cleanup).")
+        return path.read_bytes()
 
     def run_dir(self, run_id: str) -> Path:
         if not RUN_ID.match(run_id or ""):
@@ -350,9 +445,12 @@ def make_handler(bridge: Bridge):
             try:
                 if path == "/api/limits":
                     return self.send_json(HTTPStatus.OK, {"limits": bridge.limits, "label": UPLOAD_LABEL})
-                match = re.match(r"^/api/runs/([^/]+)/(summary|unresolved|download|file/(models\.py|data_access\.py))$", path)
+                match = re.match(r"^/api/runs/([^/]+)/(summary|unresolved|download|log|file/(models\.py|data_access\.py))$", path)
                 if match:
                     run_id, what = match.group(1), match.group(2)
+                    if what == "log":
+                        return self.send_body(HTTPStatus.OK, bridge.log(run_id), "text/plain; charset=utf-8",
+                                              {"Content-Disposition": f'attachment; filename="c3_failed_run_{run_id}.log.txt"'})
                     if what == "summary":
                         return self.send_json(HTTPStatus.OK, bridge.summary(run_id))
                     if what == "unresolved":
@@ -370,7 +468,7 @@ def make_handler(bridge: Bridge):
                     return self.send_body(HTTPStatus.OK, (DASHBOARD / name).read_bytes(), content_type)
                 return self.send_json(HTTPStatus.NOT_FOUND, {"error": "Not found."})
             except BridgeError as error:
-                return self.send_json(error.status, {"error": error.message})
+                return self.send_json(error.status, error_payload(error))
 
         def do_POST(self):
             if not self.guard():
@@ -390,7 +488,7 @@ def make_handler(bridge: Bridge):
                 sql_name, sql_data = parts.get("schema_sql", ("", b""))
                 return self.send_json(HTTPStatus.OK, bridge.analyze(zip_name, zip_data, sql_name, sql_data))
             except BridgeError as error:
-                return self.send_json(error.status, {"error": error.message})
+                return self.send_json(error.status, error_payload(error))
 
     return Handler
 

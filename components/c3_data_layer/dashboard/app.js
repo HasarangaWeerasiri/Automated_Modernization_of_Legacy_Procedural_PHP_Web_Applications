@@ -547,7 +547,11 @@ const TryIt = (() => {
     const response = await fetch(url, Object.assign({ cache: "no-store" }, options || {}));
     let body = null;
     try { body = await response.json(); } catch (error) { body = null; }
-    if (!response.ok) throw new Error((body && body.error) || `Request failed (HTTP ${response.status}).`);
+    if (!response.ok) {
+      const error = new Error((body && body.error) || `Request failed (HTTP ${response.status}).`);
+      error.detail = body || {};
+      throw error;
+    }
     return body;
   }
 
@@ -572,6 +576,26 @@ const TryIt = (() => {
   }
 
   function showError(message) { $("tryit-error").textContent = message; $("tryit-error").hidden = !message; }
+
+  // A failed C3 run: stage, exception, where in C3, the generated line if any, who is at fault, and the kept log.
+  function showFailure(error) {
+    const failure = error.detail && error.detail.failure;
+    if (!failure) return showError(error.message);
+    const rows = [
+      ["Stage", failure.stage],
+      ["Error", `${failure.exception}: ${failure.message}`],
+      ["Where in C3", failure.frame],
+      ["Generated code", failure.generated_code ? `line ${failure.generated_code.line}: ${failure.generated_code.code}` : null],
+    ].filter(([, value]) => value);
+    fill($("tryit-error"),
+      h("p", { class: "failure-head" }, h("strong", { text: "C3 could not finish this upload. " }),
+        `This is ${failure.classification_text}.`),
+      h("dl", { class: "failure-detail" }, rows.map(([k, v]) => [h("dt", { text: k }), h("dd", {}, h("code", { text: v }))])),
+      error.detail.log_url ? h("p", {}, h("a", { href: error.detail.log_url, download: "", text: "Download the run log" }),
+        " (kept on this computer until the hourly cleanup; paths are shown relative to your upload).") : null);
+    $("tryit-error").hidden = false;
+    return null;
+  }
 
   function progress(message) {
     const box = $("tryit-progress");
@@ -673,7 +697,7 @@ const TryIt = (() => {
       const unresolved = await getJson(`${API}runs/${summary.run_id}/unresolved`);
       render(summary, unresolved, "live");
     } catch (error) {
-      showError(error.message);
+      showFailure(error);
     } finally {
       stopTimer();
       state.busy = false;

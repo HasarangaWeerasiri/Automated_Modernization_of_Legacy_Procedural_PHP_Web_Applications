@@ -305,6 +305,153 @@ def test_recorded_sample_refuses_hms(tmp_path):
                              ROOT / "benchmarks" / "apps" / "hms_kishan0725" / "myhmsdb.sql", target=tmp_path / "s.json")
 
 
+# ---------- failure reporting ----------
+
+SCHOOL_LIKE_STDOUT = "".join(f"[{k}/7] {t}...\n" for k, t in enumerate([
+    "Recovering legacy SQL", "Converting recovered queries", "Parsing schema and generating SQLAlchemy models",
+    "Generating data-access functions", "Generating column-use report",
+    "Generating unresolved-query, traceability and security reports"], 1))
+SCHOOL_LIKE_STDERR = """Traceback (most recent call last):
+  File "<c3>/c3/pipeline.py", line 172, in run_pipeline
+    generate_security_report(
+  File "<c3>/c3/analysis/security_report.py", line 297, in scan_generated_code
+    tree = ast.parse(data_access_source)
+  File "<python>/Lib/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "<unknown>", line 237
+    def insert_student_q013(session, roll_no, class, address, *, commit: bool = True):
+                                              ^^^^^
+SyntaxError: invalid syntax
+"""
+
+
+def test_describe_failure_names_stage_frame_generated_line_and_c3_defect():
+    failure = server.describe_failure(SCHOOL_LIKE_STDOUT, SCHOOL_LIKE_STDERR)
+    assert failure["stage"] == "stage 6/7 (Generating unresolved-query, traceability and security reports)"
+    assert failure["exception"] == "SyntaxError" and failure["message"] == "invalid syntax"
+    assert failure["frame"] == "c3/analysis/security_report.py:297 in scan_generated_code"
+    assert failure["generated_code"] == {"line": 237, "code": "def insert_student_q013(session, roll_no, class, address, *, commit: bool = True):"}
+    assert failure["classification"] == "c3_defect"
+    assert "a C3 code-generation defect, not a problem with your upload" in failure["summary"]
+
+
+@pytest.mark.parametrize("stdout,stderr,kind", [
+    ("[1/7] Recovering legacy SQL...\n[2/7] Converting...\n[3/7] Parsing schema...\n[4/7] Generating data-access functions...\n",
+     'Traceback (most recent call last):\n  File "<c3>/c3/pipeline.py", line 160, in run_pipeline\n    check_generated_python(\n'
+     "c3.pipeline.GeneratedCodeError: stage 4/7 (data-access functions): generated data_access.py is not valid Python at line 3 "
+     "(invalid syntax): def f(session, class):\n", "c3_defect"),
+    ("[1/7] Recovering legacy SQL...\n", 'Traceback (most recent call last):\n  File "<c3>/c3/mapping/sql_locator.py", line 66, in _run_ast_extractor\n'
+     "c3.mapping.sql_locator.PhpAstExtractorError: PHP executable was not found: php\n", "environment"),
+    ("[1/7] Recovering legacy SQL...\n[2/7] Converting recovered queries...\n",
+     'Traceback (most recent call last):\n  File "<c3>/c3/mapping/schema_reader.py", line 600, in read_schema\nValueError: bad schema\n', "input_schema"),
+    ("", "Killed\n", "unknown"),
+])
+def test_describe_failure_classifies(stdout, stderr, kind):
+    failure = server.describe_failure(stdout, stderr)
+    assert failure["classification"] == kind
+    assert failure["classification_text"] in failure["summary"]
+
+
+def test_sanitize_leaves_only_upload_relative_paths(tmp_path):
+    run_dir = tmp_path / "runs" / "0123456789abcdef"
+    app_dir = run_dir / "app"
+    text = (f'File "{app_dir}\\school\\students.php", line 26\n'
+            f'File "{server.COMPONENT / "src" / "c3" / "pipeline.py"}"\n{run_dir}\\out\\data_access.py\n{server.REPO}\\x\n')
+    clean = server.sanitize(text, run_dir, app_dir)
+    assert 'File "school\\students.php", line 26' in clean
+    assert "<c3>" in clean and "<run>" in clean and "<repo>" in clean
+    assert str(tmp_path) not in clean and str(server.REPO) not in clean
+
+
+FAKE_CLI = '''import os, sys
+php = sys.argv[sys.argv.index("--php") + 1]
+src = os.environ["FAKE_C3_SRC"]
+for k, text in enumerate(["Recovering legacy SQL", "Converting recovered queries", "Parsing schema and generating SQLAlchemy models",
+                          "Generating data-access functions", "Generating column-use report",
+                          "Generating unresolved-query, traceability and security reports"], 1):
+    print("[%d/7] %s..." % (k, text))
+sys.stderr.write("Traceback (most recent call last):\\n")
+sys.stderr.write('  File "%s", line 297, in scan_generated_code\\n' % os.path.join(src, "c3", "analysis", "security_report.py"))
+sys.stderr.write("    tree = ast.parse(data_access_source)\\n")
+sys.stderr.write('  File "<unknown>", line 237\\n')
+sys.stderr.write("    def insert_student_q013(session, roll_no, class, *, commit: bool = True):\\n")
+sys.stderr.write("                                              ^^^^^\\n")
+sys.stderr.write("note: built from %s\\n" % os.path.join(php, "school", "students.php"))
+sys.stderr.write("SyntaxError: invalid syntax\\n")
+sys.exit(1)
+'''
+
+
+@pytest.fixture
+def failing_cli(tmp_path, monkeypatch):
+    fake = tmp_path / "fake_c3"
+    (fake / "c3").mkdir(parents=True)
+    (fake / "c3" / "__init__.py").write_text("", encoding="utf-8")
+    (fake / "c3" / "cli.py").write_text(FAKE_CLI, encoding="utf-8")
+    real = server.child_environment
+
+    def environment(run_dir):
+        env = real(run_dir)
+        env["PYTHONPATH"] = str(fake)
+        env["FAKE_C3_SRC"] = str(server.COMPONENT / "src")
+        return env
+    monkeypatch.setattr(server, "child_environment", environment)
+
+
+def test_failed_run_keeps_only_a_sanitized_log(bridge, failing_cli):
+    error = error_of(bridge.analyze, "school.zip", make_zip({"school/students.php": b"<?php"}), "school.sql", SCHEMA)
+    assert error.status == 422
+    failure = error.detail["failure"]
+    assert failure["classification"] == "c3_defect" and failure["stage"].startswith("stage 6/7")
+    assert failure["frame"] == "c3/analysis/security_report.py:297 in scan_generated_code"
+    run_dir = bridge.run_root / error.detail["run_id"]
+    assert sorted(p.name for p in run_dir.iterdir()) == ["failure.json", "pipeline_log.txt"]   # upload removed
+    log = bridge.log(error.detail["run_id"]).decode("utf-8")
+    assert "school/students.php" in log.replace("\\", "/") and str(bridge.run_root) not in log and str(server.REPO) not in log
+    assert error.detail["log_url"] == f"/api/runs/{error.detail['run_id']}/log"
+    assert "%" not in json.dumps(server.error_payload(error))
+
+
+def test_failed_run_log_is_removed_by_the_hourly_cleanup(tmp_path, failing_cli):
+    short = server.Bridge(run_root=tmp_path / "runs", limits={"run_ttl_seconds": 0})
+    error = error_of(short.analyze, "a.zip", make_zip({"a.php": b"<?php"}), "s.sql", SCHEMA)
+    import os
+    import time
+    run_dir = short.run_root / error.detail["run_id"]
+    old = time.time() - 10
+    os.utime(run_dir, (old, old))
+    short.cleanup()
+    assert not run_dir.exists()
+    with pytest.raises(server.BridgeError):
+        short.log(error.detail["run_id"])
+
+
+def test_http_failure_returns_stage_classification_and_log(tmp_path, failing_cli):
+    httpd = server.make_server(0, server.Bridge(run_root=tmp_path / "runs"))
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    try:
+        body, content_type = multipart({"php_zip": ("a.zip", make_zip({"a.php": b"<?php"})), "schema_sql": ("s.sql", SCHEMA)})
+        status, _, payload = request(httpd, "POST", "/api/analyze", body, {"Content-Type": content_type})
+        data = json.loads(payload)
+        assert status == 422 and data["failure"]["classification"] == "c3_defect"
+        assert data["error"].startswith("C3 stopped in stage 6/7") and "log_available" not in data
+        status, headers, log = request(httpd, "GET", data["log_url"])
+        assert status == 200 and headers["Content-Type"].startswith("text/plain") and b"SyntaxError" in log
+        assert request(httpd, "GET", "/api/runs/0123456789abcdef/log")[0] == 404
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+
+def test_try_it_shows_the_failure_details():
+    block = _try_it_block()
+    assert "function showFailure(error)" in block and "showFailure(error);" in block
+    for field in ("failure.stage", "failure.exception", "failure.frame", "failure.generated_code", "failure.classification_text",
+                  "error.detail.log_url"):
+        assert field in block, field
+
+
 def test_sample_check_flags_paths_credentials_and_foreign_tables():
     schema = b"CREATE TABLE posts (id INT PRIMARY KEY);"
     clean = {"previews": {"data_access.py": {"text": "text('SELECT id FROM posts WHERE id = :id')"},
