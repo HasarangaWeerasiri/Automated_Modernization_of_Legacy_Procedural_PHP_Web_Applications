@@ -1,0 +1,24 @@
+# C3 MySQL run (Part 2), copied from evidence/mysql_runs/2026-10-18_225756/ (logs copied byte-for-byte)
+# command (run by the user, password typed at Read-Host into $env:C3_DB_PASSWORD for that session only):
+#   .\scripts\run_mysql_tests.ps1 -ResetClinicDatabases
+# git HEAD 1d93e93c89106611b81712a998f13bb7443cccb6, MySQL server 8.0.39
+
+Clinic E1 (tests/benchmarks/clinic_hard, clinic_mysql_equivalence_log.txt):
+  63 passed, 0 failed, 0 skipped, 0 inconclusive; pytest exit 0
+  read equivalence 23, Q002 injection blocked 1, generated output 2, Q010 1, Q011 6, Q012 4, Q013 3,
+  Q014 12 (6 template + 6 full pipeline), Q016 5, Q020 equivalence 1, Q020 rollback 1, write equivalence 4 (Q003 Q004 Q005 Q017)
+
+Full suite with MySQL (full_suite_with_mysql_log.txt):
+  934 passed, 0 failed, 0 skipped, 1 warning (Starlette httpx deprecation); pytest exit 0
+  = the 873 passed + 61 MySQL skips of the non-MySQL run, all now executed
+
+HMS E1: NOT run in this run. run_mysql_tests.ps1 does not run it; HMS E1 runs through
+  scripts/run_e1_mysql.ps1 (scripts/equivalence/run_e1.py). The suite's test_e1_harness.py needs no MySQL.
+  Most recent recorded HMS E1 (not re-measured here, older code):
+    evidence/mysql_runs/2026-10-15_195730/e1/php_vs_sqlalchemy_equivalence.json (HEAD 01f427e):
+    44 sites: 27 PASS, 0 FAIL, 17 INCONCLUSIVE (inconclusive is not counted as passed)
+
+Secrets check: both logs scanned for password, pwd, secret, token, IDENTIFIED BY, user:pass@ URLs,
+  -p options, c3_tester, env: and Read-Host. No credential found; the only matches were "-patients"
+  (a test ID) and "-packages" (a library path). Every line was read: run header, test results,
+  progress lines and one deprecation warning.

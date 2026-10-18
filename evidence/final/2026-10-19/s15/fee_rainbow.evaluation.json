@@ -1,0 +1,1167 @@
+{
+  "matching": "ground truth (file, line) = C3 (source_file relative to the PHP root, source_line)",
+  "gt_entries": 58,
+  "gt_live_sites": 54,
+  "detection": {
+    "live_detected": 54,
+    "recall": 100.0,
+    "non_live_sites_reported": [],
+    "c3_sites_not_in_gt": []
+  },
+  "recovery": {
+    "excluded_ambiguous": 2,
+    "evaluated": 52,
+    "TP": 40,
+    "FN": 0,
+    "FP": 0,
+    "TN": 12,
+    "precision": 100.0,
+    "recall": 100.0,
+    "accuracy": 100.0,
+    "false_abstentions": [],
+    "false_recoveries": []
+  },
+  "column_use_accuracy": {
+    "operation": 100.0,
+    "tables": 100.0,
+    "read": 100.0,
+    "write": 100.0,
+    "filter": 100.0,
+    "sites": 4
+  },
+  "schema_mismatch": {
+    "sites": [
+      {
+        "site": "admin/app/models/categories.php:34",
+        "problems": [
+          "table categories not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/models/categories.php:57",
+        "problems": [
+          "table categories not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/models/categories.php:76",
+        "problems": [
+          "table subcategories not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/models/categories.php:80",
+        "problems": [
+          "table categories not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/models/occasions.php:27",
+        "problems": [
+          "table occasions not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/models/occasions.php:52",
+        "problems": [
+          "table occasions not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/models/occasions.php:72",
+        "problems": [
+          "table occasions not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/models/products.php:82",
+        "problems": [
+          "table products not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/models/products.php:133",
+        "problems": [
+          "table products not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/models/products.php:152",
+        "problems": [
+          "table products not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/models/products.php:165",
+        "problems": [
+          "table products not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/models/subcategories.php:40",
+        "problems": [
+          "table subcategories not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/models/subcategories.php:65",
+        "problems": [
+          "table subcategories not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/models/subcategories.php:85",
+        "problems": [
+          "table subcategories not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/views/categories/edit.php:5",
+        "problems": [
+          "table categories not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/views/categories/subcategories/delete.php:9",
+        "problems": [
+          "table subcategories not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/views/categories/subcategories/edit.php:5",
+        "problems": [
+          "table subcategories not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/views/dashboard/index.php:3",
+        "problems": [
+          "table categories not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/views/dashboard/index.php:4",
+        "problems": [
+          "table occasions not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/views/dashboard/index.php:5",
+        "problems": [
+          "table products not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/views/occasions/edit.php:5",
+        "problems": [
+          "table occasions not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/views/products/add.php:3",
+        "problems": [
+          "table categories not in schema",
+          "table subcategories not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/views/products/add.php:7",
+        "problems": [
+          "table subcategories not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/views/products/add.php:8",
+        "problems": [
+          "table occasions not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/views/products/edit.php:5",
+        "problems": [
+          "table categories not in schema",
+          "table subcategories not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/views/products/edit.php:9",
+        "problems": [
+          "table subcategories not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/views/products/edit.php:10",
+        "problems": [
+          "table occasions not in schema"
+        ]
+      },
+      {
+        "site": "admin/app/views/products/edit.php:11",
+        "problems": [
+          "table products not in schema"
+        ]
+      },
+      {
+        "site": "app/controllers/ProductsController.php:5",
+        "problems": [
+          "table products not in schema"
+        ]
+      },
+      {
+        "site": "app/controllers/ProductsController.php:10",
+        "problems": [
+          "table categories not in schema"
+        ]
+      },
+      {
+        "site": "app/controllers/ProductsController.php:15",
+        "problems": [
+          "table products not in schema"
+        ]
+      },
+      {
+        "site": "app/controllers/ProductsController.php:20",
+        "problems": [
+          "table products not in schema"
+        ]
+      },
+      {
+        "site": "app/views/products/detail.php:5",
+        "problems": [
+          "table categories not in schema"
+        ]
+      },
+      {
+        "site": "app/views/products/detail.php:6",
+        "problems": [
+          "table subcategories not in schema"
+        ]
+      },
+      {
+        "site": "app/views/products/detail.php:7",
+        "problems": [
+          "table occasions not in schema"
+        ]
+      },
+      {
+        "site": "app/views/products/detail.php:8",
+        "problems": [
+          "table categories not in schema",
+          "table occasions not in schema",
+          "table products not in schema",
+          "table subcategories not in schema"
+        ]
+      }
+    ],
+    "column_use_accuracy": {
+      "operation": 100.0,
+      "tables": 100.0,
+      "read": 100.0,
+      "write": 100.0,
+      "filter": 100.0,
+      "sites": 36
+    }
+  },
+  "ambiguous_sites": [
+    {
+      "gt_id": "G007",
+      "site": "admin/app/models/categories.php:100",
+      "expected_recoverable": "ambiguous",
+      "c3_query_id": "Q007",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "EXCLUDED_AMBIGUOUS"
+    },
+    {
+      "gt_id": "G011",
+      "site": "admin/app/models/occasions.php:92",
+      "expected_recoverable": "ambiguous",
+      "c3_query_id": "Q011",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "EXCLUDED_AMBIGUOUS"
+    }
+  ],
+  "details": [
+    {
+      "gt_id": "G001",
+      "site": "admin/app/models/auth.php:9",
+      "expected_recoverable": true,
+      "c3_query_id": "Q001",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G002",
+      "site": "admin/app/models/auth.php:28",
+      "expected_recoverable": true,
+      "c3_query_id": "Q002",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G003",
+      "site": "admin/app/models/categories.php:34",
+      "expected_recoverable": true,
+      "c3_query_id": "Q003",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table categories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G004",
+      "site": "admin/app/models/categories.php:57",
+      "expected_recoverable": true,
+      "c3_query_id": "Q004",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table categories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G005",
+      "site": "admin/app/models/categories.php:76",
+      "expected_recoverable": true,
+      "c3_query_id": "Q005",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table subcategories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G006",
+      "site": "admin/app/models/categories.php:80",
+      "expected_recoverable": true,
+      "c3_query_id": "Q006",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table categories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G007",
+      "site": "admin/app/models/categories.php:100",
+      "expected_recoverable": "ambiguous",
+      "c3_query_id": "Q007",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "EXCLUDED_AMBIGUOUS"
+    },
+    {
+      "gt_id": "G008",
+      "site": "admin/app/models/occasions.php:27",
+      "expected_recoverable": true,
+      "c3_query_id": "Q008",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table occasions not in schema"
+      ]
+    },
+    {
+      "gt_id": "G009",
+      "site": "admin/app/models/occasions.php:52",
+      "expected_recoverable": true,
+      "c3_query_id": "Q009",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table occasions not in schema"
+      ]
+    },
+    {
+      "gt_id": "G010",
+      "site": "admin/app/models/occasions.php:72",
+      "expected_recoverable": true,
+      "c3_query_id": "Q010",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table occasions not in schema"
+      ]
+    },
+    {
+      "gt_id": "G011",
+      "site": "admin/app/models/occasions.php:92",
+      "expected_recoverable": "ambiguous",
+      "c3_query_id": "Q011",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "EXCLUDED_AMBIGUOUS"
+    },
+    {
+      "gt_id": "G012",
+      "site": "admin/app/models/products.php:82",
+      "expected_recoverable": true,
+      "c3_query_id": "Q012",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table products not in schema"
+      ]
+    },
+    {
+      "gt_id": "G013",
+      "site": "admin/app/models/products.php:133",
+      "expected_recoverable": true,
+      "c3_query_id": "Q013",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table products not in schema"
+      ]
+    },
+    {
+      "gt_id": "G014",
+      "site": "admin/app/models/products.php:152",
+      "expected_recoverable": true,
+      "c3_query_id": "Q014",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table products not in schema"
+      ]
+    },
+    {
+      "gt_id": "G015",
+      "site": "admin/app/models/products.php:165",
+      "expected_recoverable": true,
+      "c3_query_id": "Q015",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table products not in schema"
+      ]
+    },
+    {
+      "gt_id": "G016",
+      "site": "admin/app/models/register.php:30",
+      "expected_recoverable": true,
+      "c3_query_id": "Q016",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G017",
+      "site": "admin/app/models/register.php:44",
+      "expected_recoverable": true,
+      "c3_query_id": "Q017",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G018",
+      "site": "admin/app/models/subcategories.php:40",
+      "expected_recoverable": true,
+      "c3_query_id": "Q018",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table subcategories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G019",
+      "site": "admin/app/models/subcategories.php:65",
+      "expected_recoverable": true,
+      "c3_query_id": "Q019",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table subcategories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G020",
+      "site": "admin/app/models/subcategories.php:85",
+      "expected_recoverable": true,
+      "c3_query_id": "Q020",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table subcategories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G021",
+      "site": "admin/config/helpers.php:4",
+      "expected_recoverable": false,
+      "c3_query_id": "Q021",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": null,
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G022",
+      "site": "config/helpers.php:4",
+      "expected_recoverable": false,
+      "c3_query_id": "Q022",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": null,
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G023",
+      "site": "admin/app/models/categories.php:7",
+      "expected_recoverable": false,
+      "c3_query_id": "Q023",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "STRUCTURAL",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G024",
+      "site": "admin/app/models/categories.php:21",
+      "expected_recoverable": false,
+      "c3_query_id": "Q024",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "STRUCTURAL",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G025",
+      "site": "admin/app/models/occasions.php:7",
+      "expected_recoverable": false,
+      "c3_query_id": "Q025",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "STRUCTURAL",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G026",
+      "site": "admin/app/models/occasions.php:14",
+      "expected_recoverable": false,
+      "c3_query_id": "Q026",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "STRUCTURAL",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G027",
+      "site": "admin/app/models/products.php:17",
+      "expected_recoverable": false,
+      "c3_query_id": "Q027",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "STRUCTURAL",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G028",
+      "site": "admin/app/models/products.php:42",
+      "expected_recoverable": false,
+      "c3_query_id": "Q028",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "STRUCTURAL",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G029",
+      "site": "admin/app/models/subcategories.php:7",
+      "expected_recoverable": false,
+      "c3_query_id": "Q029",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "STRUCTURAL",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G030",
+      "site": "admin/app/models/subcategories.php:24",
+      "expected_recoverable": false,
+      "c3_query_id": "Q030",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "STRUCTURAL",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G031",
+      "site": "admin/app/views/categories/edit.php:5",
+      "expected_recoverable": true,
+      "c3_query_id": "Q031",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table categories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G032",
+      "site": "admin/app/views/categories/subcategories/delete.php:9",
+      "expected_recoverable": true,
+      "c3_query_id": "Q032",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table subcategories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G034",
+      "site": "admin/app/views/categories/subcategories/edit.php:5",
+      "expected_recoverable": true,
+      "c3_query_id": "Q033",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table subcategories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G035",
+      "site": "admin/app/views/dashboard/index.php:3",
+      "expected_recoverable": true,
+      "c3_query_id": "Q034",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table categories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G036",
+      "site": "admin/app/views/dashboard/index.php:4",
+      "expected_recoverable": true,
+      "c3_query_id": "Q035",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table occasions not in schema"
+      ]
+    },
+    {
+      "gt_id": "G037",
+      "site": "admin/app/views/dashboard/index.php:5",
+      "expected_recoverable": true,
+      "c3_query_id": "Q036",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table products not in schema"
+      ]
+    },
+    {
+      "gt_id": "G038",
+      "site": "admin/app/views/occasions/edit.php:5",
+      "expected_recoverable": true,
+      "c3_query_id": "Q037",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table occasions not in schema"
+      ]
+    },
+    {
+      "gt_id": "G039",
+      "site": "admin/app/views/products/add.php:3",
+      "expected_recoverable": true,
+      "c3_query_id": "Q038",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table categories not in schema",
+        "table subcategories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G040",
+      "site": "admin/app/views/products/add.php:7",
+      "expected_recoverable": true,
+      "c3_query_id": "Q039",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table subcategories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G041",
+      "site": "admin/app/views/products/add.php:8",
+      "expected_recoverable": true,
+      "c3_query_id": "Q040",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table occasions not in schema"
+      ]
+    },
+    {
+      "gt_id": "G043",
+      "site": "admin/app/views/products/edit.php:5",
+      "expected_recoverable": true,
+      "c3_query_id": "Q041",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table categories not in schema",
+        "table subcategories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G044",
+      "site": "admin/app/views/products/edit.php:9",
+      "expected_recoverable": true,
+      "c3_query_id": "Q042",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table subcategories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G045",
+      "site": "admin/app/views/products/edit.php:10",
+      "expected_recoverable": true,
+      "c3_query_id": "Q043",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table occasions not in schema"
+      ]
+    },
+    {
+      "gt_id": "G046",
+      "site": "admin/app/views/products/edit.php:11",
+      "expected_recoverable": true,
+      "c3_query_id": "Q044",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table products not in schema"
+      ]
+    },
+    {
+      "gt_id": "G047",
+      "site": "app/controllers/ProductsController.php:5",
+      "expected_recoverable": true,
+      "c3_query_id": "Q045",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table products not in schema"
+      ]
+    },
+    {
+      "gt_id": "G048",
+      "site": "app/controllers/ProductsController.php:10",
+      "expected_recoverable": true,
+      "c3_query_id": "Q046",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table categories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G049",
+      "site": "app/controllers/ProductsController.php:15",
+      "expected_recoverable": true,
+      "c3_query_id": "Q047",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table products not in schema"
+      ]
+    },
+    {
+      "gt_id": "G050",
+      "site": "app/controllers/ProductsController.php:20",
+      "expected_recoverable": true,
+      "c3_query_id": "Q048",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table products not in schema"
+      ]
+    },
+    {
+      "gt_id": "G051",
+      "site": "app/models/products.php:17",
+      "expected_recoverable": false,
+      "c3_query_id": "Q049",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "STRUCTURAL",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G052",
+      "site": "app/models/products.php:42",
+      "expected_recoverable": false,
+      "c3_query_id": "Q050",
+      "c3_status": "UNRESOLVED",
+      "c3_reason_code": "STRUCTURAL",
+      "outcome": "TN"
+    },
+    {
+      "gt_id": "G055",
+      "site": "app/views/products/detail.php:5",
+      "expected_recoverable": true,
+      "c3_query_id": "Q051",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table categories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G056",
+      "site": "app/views/products/detail.php:6",
+      "expected_recoverable": true,
+      "c3_query_id": "Q052",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table subcategories not in schema"
+      ]
+    },
+    {
+      "gt_id": "G057",
+      "site": "app/views/products/detail.php:7",
+      "expected_recoverable": true,
+      "c3_query_id": "Q053",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table occasions not in schema"
+      ]
+    },
+    {
+      "gt_id": "G058",
+      "site": "app/views/products/detail.php:8",
+      "expected_recoverable": true,
+      "c3_query_id": "Q054",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      },
+      "schema_mismatch": [
+        "table categories not in schema",
+        "table occasions not in schema",
+        "table products not in schema",
+        "table subcategories not in schema"
+      ]
+    }
+  ],
+  "ground_truth_file": "benchmarks/ground truth/fee_rainbow/queries.json"
+}

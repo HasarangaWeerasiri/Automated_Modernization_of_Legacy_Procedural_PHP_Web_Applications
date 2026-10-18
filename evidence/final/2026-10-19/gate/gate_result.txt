@@ -1,0 +1,11 @@
+﻿# Byte-identity gate, 2026-10-19 (HEAD 1d93e93c89106611b81712a998f13bb7443cccb6)
+# command: python c3fx_gate.py <repo> compare before final19  (summary.json run-folder path normalised to <RUN>)
+# before = 18 Oct BEFORE hashes (before_2026-10-18.sha256.json); final19 = this run (final_2026-10-19.sha256.json)
+compared 135 files; only in before: []; only in final19: []
+content differences: []
+raw-hash differences explained only by the run folder path: ['clinic_inventory_legacy_hard/summary.json', 'dignity_dev_hms/summary.json', 'fee_rainbow/summary.json', 'hard_crud/summary.json', 'helpdesk_legacy_holdout/summary.json', 'hms_kishan0725/summary.json', 'mixed_crud/summary.json', 'news_buzz/summary.json', 'simple_crud/summary.json']
+RESULT: BYTE-IDENTICAL (content)
+
+# Frozen HMS signatures (output/hms_kishan0725/signatures.json)
+# expected: FA8C1AFE46576D51A3939067B3699F488E2021B5B8F2A5CDEC2D7ED9D931DDC1
+# measured: FA8C1AFE46576D51A3939067B3699F488E2021B5B8F2A5CDEC2D7ED9D931DDC1  match: True

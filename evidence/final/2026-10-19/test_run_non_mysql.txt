@@ -1,0 +1,49 @@
+# C3 non-MySQL test run (final, 2026-10-19)
+# date (start): 2026-10-18T22:45:08+05:30
+# date (end): 2026-10-18T22:45:54+05:30
+# branch: database-migration
+# git HEAD: 1d93e93c89106611b81712a998f13bb7443cccb6
+# pipeline source and tools: no uncommitted changes
+# working tree before the run (git status --porcelain):
+#    M benchmarks/equivalence_cases/hms_kishan0725.json
+#    M benchmarks/equivalence_cases/hms_kishan0725_inputs.csv
+#   ?? evidence/mysql_runs/2026-10-15_195730/e1/hms_kishan0725.json
+#   ?? output/clinic_inventory_legacy_hard/
+#   ?? output/hms_pp1_demo/
+# command (cwd components/c3_data_layer): PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src TMP=TEMP=<short temp outside the repo> python -m pytest -q -rs -p no:cacheprovider --basetemp=<short temp>/bt
+# MySQL: C3_DB_PASSWORD not set, so MySQL-dependent tests are skipped.
+# result: 873 passed, 61 skipped, 1 warning in 44.62s; pytest exit code 0
+#
+.....ssssssssssssssssssssssss..sssssssssssssssssssssssssssssssssssss.... [  7%]
+........................................................................ [ 15%]
+........................................................................ [ 23%]
+........................................................................ [ 30%]
+........................................................................ [ 38%]
+........................................................................ [ 46%]
+........................................................................ [ 53%]
+........................................................................ [ 61%]
+........................................................................ [ 69%]
+........................................................................ [ 77%]
+........................................................................ [ 84%]
+........................................................................ [ 92%]
+......................................................................   [100%]
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  C:\Users\sanjula\Desktop\Research\Automated_Modernization_of_Legacy_Procedural_PHP_Web_Applications\components\c3_data_layer\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [23] tests\benchmarks\clinic_hard\test_behavioral_equivalence.py:242: C3_DB_PASSWORD not configured
+SKIPPED [1] tests\benchmarks\clinic_hard\test_behavioral_equivalence.py:251: C3_DB_PASSWORD not configured
+SKIPPED [1] tests\benchmarks\clinic_hard\test_q010_equivalence.py:91: C3_DB_PASSWORD not configured
+SKIPPED [6] tests\benchmarks\clinic_hard\test_q011_equivalence.py:103: C3_DB_PASSWORD not configured
+SKIPPED [4] tests\benchmarks\clinic_hard\test_q012_equivalence.py:129: C3_DB_PASSWORD not configured
+SKIPPED [3] tests\benchmarks\clinic_hard\test_q013_equivalence.py:111: C3_DB_PASSWORD not configured
+SKIPPED [6] tests\benchmarks\clinic_hard\test_q014_equivalence.py:113: C3_DB_PASSWORD not configured
+SKIPPED [6] tests\benchmarks\clinic_hard\test_q014_equivalence.py:175: C3_DB_PASSWORD not configured
+SKIPPED [5] tests\benchmarks\clinic_hard\test_q016_equivalence.py:109: C3_DB_PASSWORD not configured
+SKIPPED [1] tests\benchmarks\clinic_hard\test_q020_equivalence.py:54: MySQL credentials are not configured
+SKIPPED [1] tests\benchmarks\clinic_hard\test_q020_rollback.py:24: MySQL test credentials not configured
+SKIPPED [4] tests\benchmarks\clinic_hard\test_write_equivalence.py:195: C3_DB_PASSWORD not configured
+873 passed, 61 skipped, 1 warning in 44.62s

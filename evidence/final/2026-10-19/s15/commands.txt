@@ -1,0 +1,10 @@
+== hms_kishan0725 (exit 0)
+python -m c3.cli evaluate --php benchmarks\apps\_app_only\hms_kishan0725 --output <final19 run>\hms_kishan0725 --ground-truth "benchmarks\ground truth\hms_kishan0725\queries.json" --report evidence\final\2026-10-19\s15\hms_kishan0725.evaluation.json
+== dignity_dev_hms (exit 0)
+python -m c3.cli evaluate --php benchmarks\apps\_app_only\dignity_dev_hms --output <final19 run>\dignity_dev_hms --ground-truth "benchmarks\ground truth\dignity_dev_hms\queries.json" --report evidence\final\2026-10-19\s15\dignity_dev_hms.evaluation.json
+== helpdesk_legacy_holdout (exit 0)
+python -m c3.cli evaluate --php benchmarks\apps\helpdesk_legacy_holdout\legacy --output <final19 run>\helpdesk_legacy_holdout --ground-truth "benchmarks\ground truth\helpdesk_legacy_holdout\queries.json" --report evidence\final\2026-10-19\s15\helpdesk_legacy_holdout.evaluation.json
+== news_buzz (exit 0)
+python -m c3.cli evaluate --php benchmarks\apps\_app_only\news_buzz --output <final19 run>\news_buzz --ground-truth "benchmarks\ground truth\news_buzz\queries.json" --report evidence\final\2026-10-19\s15\news_buzz.evaluation.json
+== fee_rainbow (exit 0)
+python -m c3.cli evaluate --php benchmarks\apps\_app_only\fee_rainbow --output <final19 run>\fee_rainbow --ground-truth "benchmarks\ground truth\fee_rainbow\queries.json" --report evidence\final\2026-10-19\s15\fee_rainbow.evaluation.json

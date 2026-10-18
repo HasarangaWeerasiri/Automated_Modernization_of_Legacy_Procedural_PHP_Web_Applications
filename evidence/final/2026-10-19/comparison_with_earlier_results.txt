@@ -1,0 +1,42 @@
+S15: final (2026-10-19) vs committed evaluation
+
+hms_kishan0725: compared with evidence/evaluation/hms_kishan0725/evaluation.json
+  new: live 44, detected 44, TP 43 FN 0 FP 0 TN 0, P 100.0 R 100.0, ambiguous excluded 1, column use {'operation': 100.0, 'tables': 100.0, 'read': 100.0, 'write': 100.0, 'filter': 100.0, 'sites': 37}
+  differences: 3
+    $.detection.false_detections_commented_out: only in committed
+    $.detection.non_live_sites_reported: only in new
+    $.ground_truth_file: committed '../../benchmarks/ground truth/hms_kishan0725/queries.json' -> new 'benchmarks/ground truth/hms_kishan0725/queries.json'
+dignity_dev_hms: compared with evidence/evaluation/dignity_dev_hms/evaluation.json
+  new: live 13, detected 13, TP 7 FN 0 FP 0 TN 6, P 100.0 R 100.0, ambiguous excluded 0, column use {'operation': 100.0, 'tables': 100.0, 'read': 100.0, 'write': 71.4, 'filter': 100.0, 'sites': 7}
+  differences: 2
+    $.detection.false_detections_commented_out: only in committed
+    $.detection.non_live_sites_reported: only in new
+helpdesk_legacy_holdout: compared with evidence/evaluation/helpdesk_legacy_holdout/evaluation.json
+  new: live 9, detected 9, TP 9 FN 0 FP 0 TN 0, P 100.0 R 100.0, ambiguous excluded 0, column use {'operation': 100.0, 'tables': 100.0, 'read': 100.0, 'write': 100.0, 'filter': 100.0, 'sites': 9}
+  differences: 0
+news_buzz: compared with evidence/evaluation/news_buzz/evaluation_post_escape_fix.json
+  new: live 32, detected 32, TP 30 FN 0 FP 0 TN 2, P 100.0 R 100.0, ambiguous excluded 0, column use {'operation': 100.0, 'tables': 100.0, 'read': 100.0, 'write': 100.0, 'filter': 100.0, 'sites': 30}
+  differences: 0
+fee_rainbow: compared with evidence/evaluation/fee_rainbow/evaluation_wrapper_support.json
+  new: live 54, detected 54, TP 40 FN 0 FP 0 TN 12, P 100.0 R 100.0, ambiguous excluded 2, column use {'operation': 100.0, 'tables': 100.0, 'read': 100.0, 'write': 100.0, 'filter': 100.0, 'sites': 4}
+  differences: 0
+
+E4: final (2026-10-19) vs evidence/e4/2026-10-17/injection_report.json
+
+simple_crud: functions 4 -> 4, safe 4 -> 4, cases 48 -> 48, changed cases 0
+mixed_crud: functions 5 -> 5, safe 5 -> 5, cases 60 -> 60, changed cases 0
+hard_crud: functions 2 -> 2, safe 2 -> 2, cases 24 -> 24, changed cases 0
+clinic: functions 22 -> 22, safe 22 -> 22, cases 264 -> 264, changed cases 0
+helpdesk: functions 8 -> 8, safe 8 -> 8, cases 96 -> 96, changed cases 0
+hms_kishan0725: functions 44 -> 44, safe 44 -> 44, cases 528 -> 528, changed cases 0
+news_buzz: functions 30 -> 30, safe 30 -> 30, cases 360 -> 360, changed cases 0
+fee_rainbow: functions 40 -> 40, safe 40 -> 40, cases 480 -> 480, changed cases 0
+dignity_dev_hms: functions 4 -> 4, safe 4 -> 4, cases 48 -> 48, changed cases 0
+E4 git_head: 17 Oct 6e92711 -> final 1d93e93; payloads identical: True
+
+Format-only differences (checked):
+  hms_kishan0725: committed false_detections_commented_out == new non_live_sites_reported: True ([])
+  dignity_dev_hms: same single entry (library.php:249, dead_code_empty_sql, Q010) under both names; the new report adds
+    c3_status 'UNRESOLVED' to the entry (evaluator change in commit 8bdb677, 16 Oct). Not a metric change.
+  hms_kishan0725: ground_truth_file '../../benchmarks/ground truth/hms_kishan0725/queries.json' (relative to components/c3_data_layer) and 'benchmarks/ground truth/hms_kishan0725/queries.json' (relative to the repo root) are the same file: True
+  Conclusion: no change in any measured value; the differences are the evaluator's renamed field and the working directory of the path.

@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": {
   "by": "scripts/summarize_evidence.py --dashboard-json",
-  "date": "2026-10-18T15:15:08+05:30",
-  "git_head": "6769ae010bb6a2e0f55f18a8490805be7c8e6bfc",
+  "date": "2026-10-18T22:49:51+05:30",
+  "git_head": "1d93e93c89106611b81712a998f13bb7443cccb6",
   "pipeline_unchanged_since_head": true,
   "current_code_run": "fresh C3 run of all 9 apps into a temp folder outside the repo (written <temp>)"
  },
