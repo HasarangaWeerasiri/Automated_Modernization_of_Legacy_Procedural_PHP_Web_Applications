@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": {
   "by": "scripts/summarize_evidence.py --dashboard-json",
-  "date": "2026-10-18T12:12:35+05:30",
-  "git_head": "2785650e7dd34dcc808f758a7cc4e93a39eb1d16",
+  "date": "2026-10-18T15:15:08+05:30",
+  "git_head": "6769ae010bb6a2e0f55f18a8490805be7c8e6bfc",
   "pipeline_unchanged_since_head": true,
   "current_code_run": "fresh C3 run of all 9 apps into a temp folder outside the repo (written <temp>)"
  },
@@ -2756,25 +2756,6 @@
    }
   },
   {
-   "id": "hms_kishan0725|current code|manual_review_rate",
-   "app": "hms_kishan0725",
-   "stage": "current-code",
-   "stage_label": "current code",
-   "category": "review",
-   "metric": "manual_review_rate",
-   "label": "Manual-review rate (unresolved / detected)",
-   "numerator": 0,
-   "denominator": 44,
-   "value": 0.0,
-   "unit": "percent",
-   "status": "derived",
-   "source": {
-    "file": "<temp>/hms_kishan0725/summary.json",
-    "derivation": "unresolved_total / total_queries"
-   },
-   "note": "Share of detected sites flagged for human review. It is not a measurement of developer effort."
-  },
-  {
    "id": "hms_kishan0725|current code|conversion_coverage_gt",
    "app": "hms_kishan0725",
    "stage": "current-code",
@@ -2952,25 +2933,6 @@
      "value": "unresolved_total"
     }
    }
-  },
-  {
-   "id": "dignity_dev_hms|current code|manual_review_rate",
-   "app": "dignity_dev_hms",
-   "stage": "current-code",
-   "stage_label": "current code",
-   "category": "review",
-   "metric": "manual_review_rate",
-   "label": "Manual-review rate (unresolved / detected)",
-   "numerator": 10,
-   "denominator": 14,
-   "value": 71.4,
-   "unit": "percent",
-   "status": "derived",
-   "source": {
-    "file": "<temp>/dignity_dev_hms/summary.json",
-    "derivation": "unresolved_total / total_queries"
-   },
-   "note": "Share of detected sites flagged for human review. It is not a measurement of developer effort."
   },
   {
    "id": "dignity_dev_hms|current code|conversion_coverage_gt",
@@ -3152,25 +3114,6 @@
    }
   },
   {
-   "id": "helpdesk_legacy_holdout|current code|manual_review_rate",
-   "app": "helpdesk_legacy_holdout",
-   "stage": "current-code",
-   "stage_label": "current code",
-   "category": "review",
-   "metric": "manual_review_rate",
-   "label": "Manual-review rate (unresolved / detected)",
-   "numerator": 1,
-   "denominator": 9,
-   "value": 11.1,
-   "unit": "percent",
-   "status": "derived",
-   "source": {
-    "file": "<temp>/helpdesk_legacy_holdout/summary.json",
-    "derivation": "unresolved_total / total_queries"
-   },
-   "note": "Share of detected sites flagged for human review. It is not a measurement of developer effort."
-  },
-  {
    "id": "helpdesk_legacy_holdout|current code|conversion_coverage_gt",
    "app": "helpdesk_legacy_holdout",
    "stage": "current-code",
@@ -3348,25 +3291,6 @@
      "value": "unresolved_total"
     }
    }
-  },
-  {
-   "id": "news_buzz|current code|manual_review_rate",
-   "app": "news_buzz",
-   "stage": "current-code",
-   "stage_label": "current code",
-   "category": "review",
-   "metric": "manual_review_rate",
-   "label": "Manual-review rate (unresolved / detected)",
-   "numerator": 2,
-   "denominator": 32,
-   "value": 6.2,
-   "unit": "percent",
-   "status": "derived",
-   "source": {
-    "file": "<temp>/news_buzz/summary.json",
-    "derivation": "unresolved_total / total_queries"
-   },
-   "note": "Share of detected sites flagged for human review. It is not a measurement of developer effort."
   },
   {
    "id": "news_buzz|current code|conversion_coverage_gt",
@@ -3548,25 +3472,6 @@
    }
   },
   {
-   "id": "fee_rainbow|current code|manual_review_rate",
-   "app": "fee_rainbow",
-   "stage": "current-code",
-   "stage_label": "current code",
-   "category": "review",
-   "metric": "manual_review_rate",
-   "label": "Manual-review rate (unresolved / detected)",
-   "numerator": 14,
-   "denominator": 54,
-   "value": 25.9,
-   "unit": "percent",
-   "status": "derived",
-   "source": {
-    "file": "<temp>/fee_rainbow/summary.json",
-    "derivation": "unresolved_total / total_queries"
-   },
-   "note": "Share of detected sites flagged for human review. It is not a measurement of developer effort."
-  },
-  {
    "id": "fee_rainbow|current code|conversion_coverage_gt",
    "app": "fee_rainbow",
    "stage": "current-code",
@@ -3746,25 +3651,6 @@
    }
   },
   {
-   "id": "clinic_inventory_legacy_hard|current code|manual_review_rate",
-   "app": "clinic_inventory_legacy_hard",
-   "stage": "current-code",
-   "stage_label": "current code",
-   "category": "review",
-   "metric": "manual_review_rate",
-   "label": "Manual-review rate (unresolved / detected)",
-   "numerator": 0,
-   "denominator": 22,
-   "value": 0.0,
-   "unit": "percent",
-   "status": "derived",
-   "source": {
-    "file": "<temp>/clinic_inventory_legacy_hard/summary.json",
-    "derivation": "unresolved_total / total_queries"
-   },
-   "note": "Share of detected sites flagged for human review. It is not a measurement of developer effort."
-  },
-  {
    "id": "simple_crud|current code|sql_detected",
    "app": "simple_crud",
    "stage": "current-code",
@@ -3923,25 +3809,6 @@
      "value": "unresolved_total"
     }
    }
-  },
-  {
-   "id": "simple_crud|current code|manual_review_rate",
-   "app": "simple_crud",
-   "stage": "current-code",
-   "stage_label": "current code",
-   "category": "review",
-   "metric": "manual_review_rate",
-   "label": "Manual-review rate (unresolved / detected)",
-   "numerator": 0,
-   "denominator": 4,
-   "value": 0.0,
-   "unit": "percent",
-   "status": "derived",
-   "source": {
-    "file": "<temp>/simple_crud/summary.json",
-    "derivation": "unresolved_total / total_queries"
-   },
-   "note": "Share of detected sites flagged for human review. It is not a measurement of developer effort."
   },
   {
    "id": "mixed_crud|current code|sql_detected",
@@ -4104,25 +3971,6 @@
    }
   },
   {
-   "id": "mixed_crud|current code|manual_review_rate",
-   "app": "mixed_crud",
-   "stage": "current-code",
-   "stage_label": "current code",
-   "category": "review",
-   "metric": "manual_review_rate",
-   "label": "Manual-review rate (unresolved / detected)",
-   "numerator": 1,
-   "denominator": 6,
-   "value": 16.7,
-   "unit": "percent",
-   "status": "derived",
-   "source": {
-    "file": "<temp>/mixed_crud/summary.json",
-    "derivation": "unresolved_total / total_queries"
-   },
-   "note": "Share of detected sites flagged for human review. It is not a measurement of developer effort."
-  },
-  {
    "id": "hard_crud|current code|sql_detected",
    "app": "hard_crud",
    "stage": "current-code",
@@ -4283,23 +4131,364 @@
    }
   },
   {
+   "id": "hms_kishan0725|current code|manual_review_rate",
+   "app": "hms_kishan0725",
+   "stage": "current-code",
+   "stage_label": "current code",
+   "category": "review",
+   "metric": "manual_review_rate",
+   "label": "Manual-review rate (live sites not converted / live sites)",
+   "numerator": 0,
+   "denominator": 44,
+   "value": 0.0,
+   "unit": "percent",
+   "status": "derived",
+   "source": {
+    "file": "<temp>/hms_kishan0725/unresolved_queries.json; <temp>/hms_kishan0725/summary.json; evidence/evaluation/hms_kishan0725/evaluation.json",
+    "derivation": "manual-review rate = (live sites unresolved at the recovery stage + live sites unresolved at the conversion stage) / live sites. Each site is counted once; non-live sites (commented-out or dead code) are excluded; ambiguous ground-truth sites are included in both counts and listed separately. Live sites: evidence/evaluation/hms_kishan0725/evaluation.json gt_live_sites."
+   },
+   "note": "Proxy: counts sites, not developer hours. It is not a measurement of developer effort."
+  },
+  {
+   "id": "dignity_dev_hms|current code|manual_review_rate",
+   "app": "dignity_dev_hms",
+   "stage": "current-code",
+   "stage_label": "current code",
+   "category": "review",
+   "metric": "manual_review_rate",
+   "label": "Manual-review rate (live sites not converted / live sites)",
+   "numerator": 9,
+   "denominator": 13,
+   "value": 69.2,
+   "unit": "percent",
+   "status": "derived",
+   "source": {
+    "file": "<temp>/dignity_dev_hms/unresolved_queries.json; <temp>/dignity_dev_hms/summary.json; evidence/evaluation/dignity_dev_hms/evaluation.json",
+    "derivation": "manual-review rate = (live sites unresolved at the recovery stage + live sites unresolved at the conversion stage) / live sites. Each site is counted once; non-live sites (commented-out or dead code) are excluded; ambiguous ground-truth sites are included in both counts and listed separately. Live sites: evidence/evaluation/dignity_dev_hms/evaluation.json gt_live_sites."
+   },
+   "note": "Proxy: counts sites, not developer hours. It is not a measurement of developer effort."
+  },
+  {
+   "id": "helpdesk_legacy_holdout|current code|manual_review_rate",
+   "app": "helpdesk_legacy_holdout",
+   "stage": "current-code",
+   "stage_label": "current code",
+   "category": "review",
+   "metric": "manual_review_rate",
+   "label": "Manual-review rate (live sites not converted / live sites)",
+   "numerator": 1,
+   "denominator": 9,
+   "value": 11.1,
+   "unit": "percent",
+   "status": "derived",
+   "source": {
+    "file": "<temp>/helpdesk_legacy_holdout/unresolved_queries.json; <temp>/helpdesk_legacy_holdout/summary.json; evidence/evaluation/helpdesk_legacy_holdout/evaluation.json",
+    "derivation": "manual-review rate = (live sites unresolved at the recovery stage + live sites unresolved at the conversion stage) / live sites. Each site is counted once; non-live sites (commented-out or dead code) are excluded; ambiguous ground-truth sites are included in both counts and listed separately. Live sites: evidence/evaluation/helpdesk_legacy_holdout/evaluation.json gt_live_sites."
+   },
+   "note": "Proxy: counts sites, not developer hours. It is not a measurement of developer effort."
+  },
+  {
+   "id": "news_buzz|current code|manual_review_rate",
+   "app": "news_buzz",
+   "stage": "current-code",
+   "stage_label": "current code",
+   "category": "review",
+   "metric": "manual_review_rate",
+   "label": "Manual-review rate (live sites not converted / live sites)",
+   "numerator": 2,
+   "denominator": 32,
+   "value": 6.2,
+   "unit": "percent",
+   "status": "derived",
+   "source": {
+    "file": "<temp>/news_buzz/unresolved_queries.json; <temp>/news_buzz/summary.json; evidence/evaluation/news_buzz/evaluation_post_escape_fix.json",
+    "derivation": "manual-review rate = (live sites unresolved at the recovery stage + live sites unresolved at the conversion stage) / live sites. Each site is counted once; non-live sites (commented-out or dead code) are excluded; ambiguous ground-truth sites are included in both counts and listed separately. Live sites: evidence/evaluation/news_buzz/evaluation_post_escape_fix.json gt_live_sites."
+   },
+   "note": "Proxy: counts sites, not developer hours. It is not a measurement of developer effort."
+  },
+  {
+   "id": "fee_rainbow|current code|manual_review_rate",
+   "app": "fee_rainbow",
+   "stage": "current-code",
+   "stage_label": "current code",
+   "category": "review",
+   "metric": "manual_review_rate",
+   "label": "Manual-review rate (live sites not converted / live sites)",
+   "numerator": 14,
+   "denominator": 54,
+   "value": 25.9,
+   "unit": "percent",
+   "status": "derived",
+   "source": {
+    "file": "<temp>/fee_rainbow/unresolved_queries.json; <temp>/fee_rainbow/summary.json; evidence/evaluation/fee_rainbow/evaluation_wrapper_support.json",
+    "derivation": "manual-review rate = (live sites unresolved at the recovery stage + live sites unresolved at the conversion stage) / live sites. Each site is counted once; non-live sites (commented-out or dead code) are excluded; ambiguous ground-truth sites are included in both counts and listed separately. Live sites: evidence/evaluation/fee_rainbow/evaluation_wrapper_support.json gt_live_sites."
+   },
+   "note": "Proxy: counts sites, not developer hours. It is not a measurement of developer effort."
+  },
+  {
+   "id": "clinic_inventory_legacy_hard|current code|manual_review_rate",
+   "app": "clinic_inventory_legacy_hard",
+   "stage": "current-code",
+   "stage_label": "current code",
+   "category": "review",
+   "metric": "manual_review_rate",
+   "label": "Manual-review rate (live sites not converted / live sites)",
+   "numerator": 0,
+   "denominator": 22,
+   "value": 0.0,
+   "unit": "percent",
+   "status": "derived",
+   "source": {
+    "file": "<temp>/clinic_inventory_legacy_hard/unresolved_queries.json; <temp>/clinic_inventory_legacy_hard/summary.json",
+    "derivation": "manual-review rate = (live sites unresolved at the recovery stage + live sites unresolved at the conversion stage) / live sites. Each site is counted once; non-live sites (commented-out or dead code) are excluded; ambiguous ground-truth sites are included in both counts and listed separately. Live sites: summary.json total_queries (no ground truth)."
+   },
+   "note": "Proxy: counts sites, not developer hours. It is not a measurement of developer effort. Pipeline counts, not verified."
+  },
+  {
+   "id": "simple_crud|current code|manual_review_rate",
+   "app": "simple_crud",
+   "stage": "current-code",
+   "stage_label": "current code",
+   "category": "review",
+   "metric": "manual_review_rate",
+   "label": "Manual-review rate (live sites not converted / live sites)",
+   "numerator": 0,
+   "denominator": 4,
+   "value": 0.0,
+   "unit": "percent",
+   "status": "derived",
+   "source": {
+    "file": "<temp>/simple_crud/unresolved_queries.json; <temp>/simple_crud/summary.json",
+    "derivation": "manual-review rate = (live sites unresolved at the recovery stage + live sites unresolved at the conversion stage) / live sites. Each site is counted once; non-live sites (commented-out or dead code) are excluded; ambiguous ground-truth sites are included in both counts and listed separately. Live sites: summary.json total_queries (no ground truth)."
+   },
+   "note": "Proxy: counts sites, not developer hours. It is not a measurement of developer effort. Pipeline counts, not verified."
+  },
+  {
+   "id": "mixed_crud|current code|manual_review_rate",
+   "app": "mixed_crud",
+   "stage": "current-code",
+   "stage_label": "current code",
+   "category": "review",
+   "metric": "manual_review_rate",
+   "label": "Manual-review rate (live sites not converted / live sites)",
+   "numerator": 1,
+   "denominator": 6,
+   "value": 16.7,
+   "unit": "percent",
+   "status": "derived",
+   "source": {
+    "file": "<temp>/mixed_crud/unresolved_queries.json; <temp>/mixed_crud/summary.json",
+    "derivation": "manual-review rate = (live sites unresolved at the recovery stage + live sites unresolved at the conversion stage) / live sites. Each site is counted once; non-live sites (commented-out or dead code) are excluded; ambiguous ground-truth sites are included in both counts and listed separately. Live sites: summary.json total_queries (no ground truth)."
+   },
+   "note": "Proxy: counts sites, not developer hours. It is not a measurement of developer effort. Pipeline counts, not verified."
+  },
+  {
    "id": "hard_crud|current code|manual_review_rate",
    "app": "hard_crud",
    "stage": "current-code",
    "stage_label": "current code",
    "category": "review",
    "metric": "manual_review_rate",
-   "label": "Manual-review rate (unresolved / detected)",
+   "label": "Manual-review rate (live sites not converted / live sites)",
    "numerator": 3,
    "denominator": 5,
    "value": 60.0,
    "unit": "percent",
    "status": "derived",
    "source": {
-    "file": "<temp>/hard_crud/summary.json",
-    "derivation": "unresolved_total / total_queries"
+    "file": "<temp>/hard_crud/unresolved_queries.json; <temp>/hard_crud/summary.json",
+    "derivation": "manual-review rate = (live sites unresolved at the recovery stage + live sites unresolved at the conversion stage) / live sites. Each site is counted once; non-live sites (commented-out or dead code) are excluded; ambiguous ground-truth sites are included in both counts and listed separately. Live sites: summary.json total_queries (no ground truth)."
    },
-   "note": "Share of detected sites flagged for human review. It is not a measurement of developer effort."
+   "note": "Proxy: counts sites, not developer hours. It is not a measurement of developer effort. Pipeline counts, not verified."
+  },
+  {
+   "id": "hms_kishan0725|current code (timing, 2026-10-18)|execution_time",
+   "app": "hms_kishan0725",
+   "stage": "current-code",
+   "stage_label": "current code (timing, 2026-10-18)",
+   "category": "performance",
+   "metric": "execution_time",
+   "label": "End-to-end CLI analysis time (median of 3 runs)",
+   "numerator": null,
+   "denominator": null,
+   "value": 0.866,
+   "unit": "seconds",
+   "status": "measured",
+   "source": {
+    "file": "evidence/performance/2026-10-18/execution_time.json",
+    "fields": {
+     "value": "apps.hms_kishan0725.median_seconds"
+    }
+   },
+   "note": "end-to-end CLI analysis time on this machine, includes Python start-up; no database. Runs: 0.866, 0.854, 1.014 s. One machine (11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz); not a benchmark of other hardware."
+  },
+  {
+   "id": "dignity_dev_hms|current code (timing, 2026-10-18)|execution_time",
+   "app": "dignity_dev_hms",
+   "stage": "current-code",
+   "stage_label": "current code (timing, 2026-10-18)",
+   "category": "performance",
+   "metric": "execution_time",
+   "label": "End-to-end CLI analysis time (median of 3 runs)",
+   "numerator": null,
+   "denominator": null,
+   "value": 0.748,
+   "unit": "seconds",
+   "status": "measured",
+   "source": {
+    "file": "evidence/performance/2026-10-18/execution_time.json",
+    "fields": {
+     "value": "apps.dignity_dev_hms.median_seconds"
+    }
+   },
+   "note": "end-to-end CLI analysis time on this machine, includes Python start-up; no database. Runs: 0.748, 0.739, 0.811 s. One machine (11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz); not a benchmark of other hardware."
+  },
+  {
+   "id": "helpdesk_legacy_holdout|current code (timing, 2026-10-18)|execution_time",
+   "app": "helpdesk_legacy_holdout",
+   "stage": "current-code",
+   "stage_label": "current code (timing, 2026-10-18)",
+   "category": "performance",
+   "metric": "execution_time",
+   "label": "End-to-end CLI analysis time (median of 3 runs)",
+   "numerator": null,
+   "denominator": null,
+   "value": 0.625,
+   "unit": "seconds",
+   "status": "measured",
+   "source": {
+    "file": "evidence/performance/2026-10-18/execution_time.json",
+    "fields": {
+     "value": "apps.helpdesk_legacy_holdout.median_seconds"
+    }
+   },
+   "note": "end-to-end CLI analysis time on this machine, includes Python start-up; no database. Runs: 0.610, 0.729, 0.625 s. One machine (11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz); not a benchmark of other hardware."
+  },
+  {
+   "id": "news_buzz|current code (timing, 2026-10-18)|execution_time",
+   "app": "news_buzz",
+   "stage": "current-code",
+   "stage_label": "current code (timing, 2026-10-18)",
+   "category": "performance",
+   "metric": "execution_time",
+   "label": "End-to-end CLI analysis time (median of 3 runs)",
+   "numerator": null,
+   "denominator": null,
+   "value": 0.976,
+   "unit": "seconds",
+   "status": "measured",
+   "source": {
+    "file": "evidence/performance/2026-10-18/execution_time.json",
+    "fields": {
+     "value": "apps.news_buzz.median_seconds"
+    }
+   },
+   "note": "end-to-end CLI analysis time on this machine, includes Python start-up; no database. Runs: 0.949, 1.037, 0.976 s. One machine (11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz); not a benchmark of other hardware."
+  },
+  {
+   "id": "fee_rainbow|current code (timing, 2026-10-18)|execution_time",
+   "app": "fee_rainbow",
+   "stage": "current-code",
+   "stage_label": "current code (timing, 2026-10-18)",
+   "category": "performance",
+   "metric": "execution_time",
+   "label": "End-to-end CLI analysis time (median of 3 runs)",
+   "numerator": null,
+   "denominator": null,
+   "value": 0.929,
+   "unit": "seconds",
+   "status": "measured",
+   "source": {
+    "file": "evidence/performance/2026-10-18/execution_time.json",
+    "fields": {
+     "value": "apps.fee_rainbow.median_seconds"
+    }
+   },
+   "note": "end-to-end CLI analysis time on this machine, includes Python start-up; no database. Runs: 0.929, 1.018, 0.896 s. One machine (11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz); not a benchmark of other hardware."
+  },
+  {
+   "id": "clinic_inventory_legacy_hard|current code (timing, 2026-10-18)|execution_time",
+   "app": "clinic_inventory_legacy_hard",
+   "stage": "current-code",
+   "stage_label": "current code (timing, 2026-10-18)",
+   "category": "performance",
+   "metric": "execution_time",
+   "label": "End-to-end CLI analysis time (median of 3 runs)",
+   "numerator": null,
+   "denominator": null,
+   "value": 0.924,
+   "unit": "seconds",
+   "status": "measured",
+   "source": {
+    "file": "evidence/performance/2026-10-18/execution_time.json",
+    "fields": {
+     "value": "apps.clinic_inventory_legacy_hard.median_seconds"
+    }
+   },
+   "note": "end-to-end CLI analysis time on this machine, includes Python start-up; no database. Runs: 0.924, 1.019, 0.889 s. One machine (11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz); not a benchmark of other hardware."
+  },
+  {
+   "id": "simple_crud|current code (timing, 2026-10-18)|execution_time",
+   "app": "simple_crud",
+   "stage": "current-code",
+   "stage_label": "current code (timing, 2026-10-18)",
+   "category": "performance",
+   "metric": "execution_time",
+   "label": "End-to-end CLI analysis time (median of 3 runs)",
+   "numerator": null,
+   "denominator": null,
+   "value": 0.601,
+   "unit": "seconds",
+   "status": "measured",
+   "source": {
+    "file": "evidence/performance/2026-10-18/execution_time.json",
+    "fields": {
+     "value": "apps.simple_crud.median_seconds"
+    }
+   },
+   "note": "end-to-end CLI analysis time on this machine, includes Python start-up; no database. Runs: 0.571, 0.610, 0.601 s. One machine (11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz); not a benchmark of other hardware."
+  },
+  {
+   "id": "mixed_crud|current code (timing, 2026-10-18)|execution_time",
+   "app": "mixed_crud",
+   "stage": "current-code",
+   "stage_label": "current code (timing, 2026-10-18)",
+   "category": "performance",
+   "metric": "execution_time",
+   "label": "End-to-end CLI analysis time (median of 3 runs)",
+   "numerator": null,
+   "denominator": null,
+   "value": 0.592,
+   "unit": "seconds",
+   "status": "measured",
+   "source": {
+    "file": "evidence/performance/2026-10-18/execution_time.json",
+    "fields": {
+     "value": "apps.mixed_crud.median_seconds"
+    }
+   },
+   "note": "end-to-end CLI analysis time on this machine, includes Python start-up; no database. Runs: 0.565, 0.615, 0.592 s. One machine (11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz); not a benchmark of other hardware."
+  },
+  {
+   "id": "hard_crud|current code (timing, 2026-10-18)|execution_time",
+   "app": "hard_crud",
+   "stage": "current-code",
+   "stage_label": "current code (timing, 2026-10-18)",
+   "category": "performance",
+   "metric": "execution_time",
+   "label": "End-to-end CLI analysis time (median of 3 runs)",
+   "numerator": null,
+   "denominator": null,
+   "value": 0.65,
+   "unit": "seconds",
+   "status": "measured",
+   "source": {
+    "file": "evidence/performance/2026-10-18/execution_time.json",
+    "fields": {
+     "value": "apps.hard_crud.median_seconds"
+    }
+   },
+   "note": "end-to-end CLI analysis time on this machine, includes Python start-up; no database. Runs: 0.611, 0.925, 0.650 s. One machine (11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz); not a benchmark of other hardware."
   },
   {
    "id": "clinic_inventory_legacy_hard|current code|general_rule_share",
@@ -4832,24 +5021,6 @@
    }
   },
   {
-   "id": "all|not measured|execution_time",
-   "app": "all",
-   "stage": "not-measured",
-   "stage_label": "not measured",
-   "category": "not_measured",
-   "metric": "execution_time",
-   "label": "Pipeline execution time",
-   "numerator": null,
-   "denominator": null,
-   "value": null,
-   "unit": "none",
-   "status": "not_measured",
-   "source": {
-    "file": null
-   },
-   "note": "Only single wall-clock runs exist in run logs; no systematic timing."
-  },
-  {
    "id": "all|not measured|migration_effort",
    "app": "all",
    "stage": "not-measured",
@@ -4865,7 +5036,7 @@
    "source": {
     "file": null
    },
-   "note": "Not measured. The manual-review rate is derived, not effort."
+   "note": "Not measured. The manual-review rate is a derived proxy (sites), not developer effort."
   },
   {
    "id": "all|not measured|sqlacodegen_baseline",
@@ -9914,6 +10085,572 @@
    "warnings": 1,
    "head": "6e927117e42893a734a93bd9c2c0e0eb5276cb70",
    "note": "Non-MySQL suite; the 61 skipped tests need MySQL. An earlier attempt failed only on the Windows 260-character path limit (disclosed in the log)."
+  },
+  "performance": {
+   "file": "evidence/performance/2026-10-18/execution_time.json",
+   "label": "end-to-end CLI analysis time on this machine, includes Python start-up; no database",
+   "git_head": "6769ae010bb6a2e0f55f18a8490805be7c8e6bfc",
+   "started_at": "2026-10-18T15:12:03+05:30",
+   "rounds": 3,
+   "order": "round-robin: round 1 runs all 9 apps, then round 2, then round 3; one run at a time",
+   "timer": "time.perf_counter() around the whole subprocess (process start to exit)",
+   "machine": {
+    "os": "Microsoft Windows 11 Pro (version 10.0.26200, build 26200)",
+    "cpu": "11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz",
+    "physical_cores": 4,
+    "logical_processors": 8,
+    "max_clock_mhz": 2419,
+    "ram_gb": 15.7,
+    "python": "3.13.5",
+    "python_implementation": "CPython",
+    "php": "8.2.12",
+    "platform": "Windows-11-10.0.26200-SP0"
+   },
+   "apps": {
+    "hms_kishan0725": {
+     "runs_seconds": [
+      0.866,
+      0.854,
+      1.014
+     ],
+     "median_seconds": 0.866,
+     "sites_detected": 44
+    },
+    "dignity_dev_hms": {
+     "runs_seconds": [
+      0.748,
+      0.739,
+      0.811
+     ],
+     "median_seconds": 0.748,
+     "sites_detected": 14
+    },
+    "helpdesk_legacy_holdout": {
+     "runs_seconds": [
+      0.61,
+      0.729,
+      0.625
+     ],
+     "median_seconds": 0.625,
+     "sites_detected": 9
+    },
+    "news_buzz": {
+     "runs_seconds": [
+      0.949,
+      1.037,
+      0.976
+     ],
+     "median_seconds": 0.976,
+     "sites_detected": 32
+    },
+    "fee_rainbow": {
+     "runs_seconds": [
+      0.929,
+      1.018,
+      0.896
+     ],
+     "median_seconds": 0.929,
+     "sites_detected": 54
+    },
+    "clinic_inventory_legacy_hard": {
+     "runs_seconds": [
+      0.924,
+      1.019,
+      0.889
+     ],
+     "median_seconds": 0.924,
+     "sites_detected": 22
+    },
+    "simple_crud": {
+     "runs_seconds": [
+      0.571,
+      0.61,
+      0.601
+     ],
+     "median_seconds": 0.601,
+     "sites_detected": 4
+    },
+    "mixed_crud": {
+     "runs_seconds": [
+      0.565,
+      0.615,
+      0.592
+     ],
+     "median_seconds": 0.592,
+     "sites_detected": 6
+    },
+    "hard_crud": {
+     "runs_seconds": [
+      0.611,
+      0.925,
+      0.65
+     ],
+     "median_seconds": 0.65,
+     "sites_detected": 5
+    }
+   },
+   "readme": "evidence/performance/2026-10-18/README.md"
+  }
+ },
+ "manual_review": {
+  "formula": "manual-review rate = (live sites unresolved at the recovery stage + live sites unresolved at the conversion stage) / live sites. Each site is counted once; non-live sites (commented-out or dead code) are excluded; ambiguous ground-truth sites are included in both counts and listed separately.",
+  "limits": "A proxy for how much of the data layer still needs a person: it counts sites, not developer hours. It says nothing about how long each site takes to migrate by hand, and nothing about whether the converted code is correct. It is not a measurement of developer effort.",
+  "apps": {
+   "hms_kishan0725": {
+    "app": "HMS (kishan0725)",
+    "verified_ground_truth": true,
+    "label": null,
+    "live_sites": 44,
+    "live_sites_source": "evidence/evaluation/hms_kishan0725/evaluation.json gt_live_sites",
+    "unresolved_recovery_live": 0,
+    "unresolved_conversion_live": 0,
+    "not_converted_live": 0,
+    "value": 0.0,
+    "sites": [],
+    "ambiguous": [
+     {
+      "gt_id": "G041",
+      "site": "include/header.php:35",
+      "converted": true,
+      "included": true
+     }
+    ],
+    "excluded_non_live": [],
+    "summary_counts": {
+     "total_queries": 44,
+     "unresolved_total": 0,
+     "unresolved_recovery_stage": 0,
+     "unresolved_conversion_stage": 0
+    }
+   },
+   "dignity_dev_hms": {
+    "app": "Dignity-Dev",
+    "verified_ground_truth": true,
+    "label": null,
+    "live_sites": 13,
+    "live_sites_source": "evidence/evaluation/dignity_dev_hms/evaluation.json gt_live_sites",
+    "unresolved_recovery_live": 6,
+    "unresolved_conversion_live": 3,
+    "not_converted_live": 9,
+    "value": 69.2,
+    "sites": [
+     {
+      "query_id": "Q001",
+      "gt_id": "G001",
+      "site": "library.php:31",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q002",
+      "gt_id": "G002",
+      "site": "library.php:53",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q003",
+      "gt_id": "G003",
+      "site": "library.php:96",
+      "stage": "recovery",
+      "reason_code": "LOOP_OR_SWITCH_CONTROL_FLOW",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q006",
+      "gt_id": "G006",
+      "site": "library.php:203",
+      "stage": "recovery",
+      "reason_code": "BRANCHING",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q007",
+      "gt_id": "G007",
+      "site": "library.php:219",
+      "stage": "conversion",
+      "reason_code": "CONVERSION_UNSUPPORTED",
+      "gt_label": "recoverable"
+     },
+     {
+      "query_id": "Q008",
+      "gt_id": "G008",
+      "site": "library.php:226",
+      "stage": "conversion",
+      "reason_code": "CONVERSION_UNSUPPORTED",
+      "gt_label": "recoverable"
+     },
+     {
+      "query_id": "Q009",
+      "gt_id": "G009",
+      "site": "library.php:233",
+      "stage": "conversion",
+      "reason_code": "CONVERSION_UNSUPPORTED",
+      "gt_label": "recoverable"
+     },
+     {
+      "query_id": "Q013",
+      "gt_id": "G013",
+      "site": "library.php:313",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q014",
+      "gt_id": "G014",
+      "site": "library.php:320",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": "non-recoverable"
+     }
+    ],
+    "ambiguous": [],
+    "excluded_non_live": [
+     {
+      "query_id": "Q010",
+      "gt_id": null,
+      "site": "library.php:249",
+      "stage": "recovery",
+      "reason_code": "UNSUPPORTED_SHAPE",
+      "gt_label": "non-live (dead_code_empty_sql)"
+     }
+    ],
+    "summary_counts": {
+     "total_queries": 14,
+     "unresolved_total": 10,
+     "unresolved_recovery_stage": 7,
+     "unresolved_conversion_stage": 3
+    }
+   },
+   "helpdesk_legacy_holdout": {
+    "app": "Helpdesk",
+    "verified_ground_truth": true,
+    "label": null,
+    "live_sites": 9,
+    "live_sites_source": "evidence/evaluation/helpdesk_legacy_holdout/evaluation.json gt_live_sites",
+    "unresolved_recovery_live": 0,
+    "unresolved_conversion_live": 1,
+    "not_converted_live": 1,
+    "value": 11.1,
+    "sites": [
+     {
+      "query_id": "Q007",
+      "gt_id": "G007",
+      "site": "report.php:5",
+      "stage": "conversion",
+      "reason_code": "CONVERSION_UNSUPPORTED",
+      "gt_label": "recoverable"
+     }
+    ],
+    "ambiguous": [],
+    "excluded_non_live": [],
+    "summary_counts": {
+     "total_queries": 9,
+     "unresolved_total": 1,
+     "unresolved_recovery_stage": 0,
+     "unresolved_conversion_stage": 1
+    }
+   },
+   "news_buzz": {
+    "app": "NEWS-BUZZ",
+    "verified_ground_truth": true,
+    "label": null,
+    "live_sites": 32,
+    "live_sites_source": "evidence/evaluation/news_buzz/evaluation_post_escape_fix.json gt_live_sites",
+    "unresolved_recovery_live": 2,
+    "unresolved_conversion_live": 0,
+    "not_converted_live": 2,
+    "value": 6.2,
+    "sites": [
+     {
+      "query_id": "Q002",
+      "gt_id": "G002",
+      "site": "admin/editposts.php:17",
+      "stage": "recovery",
+      "reason_code": "BRANCHING",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q006",
+      "gt_id": "G006",
+      "site": "admin/post.php:17",
+      "stage": "recovery",
+      "reason_code": "BRANCHING",
+      "gt_label": "non-recoverable"
+     }
+    ],
+    "ambiguous": [],
+    "excluded_non_live": [],
+    "summary_counts": {
+     "total_queries": 32,
+     "unresolved_total": 2,
+     "unresolved_recovery_stage": 2,
+     "unresolved_conversion_stage": 0
+    }
+   },
+   "fee_rainbow": {
+    "app": "Fee-Rainbow",
+    "verified_ground_truth": true,
+    "label": null,
+    "live_sites": 54,
+    "live_sites_source": "evidence/evaluation/fee_rainbow/evaluation_wrapper_support.json gt_live_sites",
+    "unresolved_recovery_live": 12,
+    "unresolved_conversion_live": 2,
+    "not_converted_live": 14,
+    "value": 25.9,
+    "sites": [
+     {
+      "query_id": "Q007",
+      "gt_id": "G007",
+      "site": "admin/app/models/categories.php:100",
+      "stage": "conversion",
+      "reason_code": "CONVERSION_UNSUPPORTED",
+      "gt_label": "ambiguous"
+     },
+     {
+      "query_id": "Q021",
+      "gt_id": "G021",
+      "site": "admin/config/helpers.php:4",
+      "stage": "recovery",
+      "reason_code": "UNKNOWN_EXPR",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q022",
+      "gt_id": "G022",
+      "site": "config/helpers.php:4",
+      "stage": "recovery",
+      "reason_code": "UNKNOWN_EXPR",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q023",
+      "gt_id": "G023",
+      "site": "admin/app/models/categories.php:7",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q024",
+      "gt_id": "G024",
+      "site": "admin/app/models/categories.php:21",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q025",
+      "gt_id": "G025",
+      "site": "admin/app/models/occasions.php:7",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q026",
+      "gt_id": "G026",
+      "site": "admin/app/models/occasions.php:14",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q027",
+      "gt_id": "G027",
+      "site": "admin/app/models/products.php:17",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q028",
+      "gt_id": "G028",
+      "site": "admin/app/models/products.php:42",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q029",
+      "gt_id": "G029",
+      "site": "admin/app/models/subcategories.php:7",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q030",
+      "gt_id": "G030",
+      "site": "admin/app/models/subcategories.php:24",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q049",
+      "gt_id": "G051",
+      "site": "app/models/products.php:17",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q050",
+      "gt_id": "G052",
+      "site": "app/models/products.php:42",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": "non-recoverable"
+     },
+     {
+      "query_id": "Q054",
+      "gt_id": "G058",
+      "site": "app/views/products/detail.php:8",
+      "stage": "conversion",
+      "reason_code": "CONVERSION_UNSUPPORTED",
+      "gt_label": "recoverable"
+     }
+    ],
+    "ambiguous": [
+     {
+      "gt_id": "G007",
+      "site": "admin/app/models/categories.php:100",
+      "converted": false,
+      "included": true
+     },
+     {
+      "gt_id": "G011",
+      "site": "admin/app/models/occasions.php:92",
+      "converted": true,
+      "included": true
+     }
+    ],
+    "excluded_non_live": [],
+    "summary_counts": {
+     "total_queries": 54,
+     "unresolved_total": 14,
+     "unresolved_recovery_stage": 12,
+     "unresolved_conversion_stage": 2
+    }
+   },
+   "clinic_inventory_legacy_hard": {
+    "app": "Clinic",
+    "verified_ground_truth": false,
+    "label": "pipeline counts, not verified",
+    "live_sites": 22,
+    "live_sites_source": "summary.json total_queries (no ground truth)",
+    "unresolved_recovery_live": 0,
+    "unresolved_conversion_live": 0,
+    "not_converted_live": 0,
+    "value": 0.0,
+    "sites": [],
+    "ambiguous": [],
+    "excluded_non_live": [],
+    "summary_counts": {
+     "total_queries": 22,
+     "unresolved_total": 0,
+     "unresolved_recovery_stage": 0,
+     "unresolved_conversion_stage": 0
+    }
+   },
+   "simple_crud": {
+    "app": "simple_crud",
+    "verified_ground_truth": false,
+    "label": "pipeline counts, not verified",
+    "live_sites": 4,
+    "live_sites_source": "summary.json total_queries (no ground truth)",
+    "unresolved_recovery_live": 0,
+    "unresolved_conversion_live": 0,
+    "not_converted_live": 0,
+    "value": 0.0,
+    "sites": [],
+    "ambiguous": [],
+    "excluded_non_live": [],
+    "summary_counts": {
+     "total_queries": 4,
+     "unresolved_total": 0,
+     "unresolved_recovery_stage": 0,
+     "unresolved_conversion_stage": 0
+    }
+   },
+   "mixed_crud": {
+    "app": "mixed_crud",
+    "verified_ground_truth": false,
+    "label": "pipeline counts, not verified",
+    "live_sites": 6,
+    "live_sites_source": "summary.json total_queries (no ground truth)",
+    "unresolved_recovery_live": 1,
+    "unresolved_conversion_live": 0,
+    "not_converted_live": 1,
+    "value": 16.7,
+    "sites": [
+     {
+      "query_id": "Q006",
+      "gt_id": null,
+      "site": "06_dynamic_function.php:8",
+      "stage": "recovery",
+      "reason_code": "UNKNOWN_EXPR",
+      "gt_label": null
+     }
+    ],
+    "ambiguous": [],
+    "excluded_non_live": [],
+    "summary_counts": {
+     "total_queries": 6,
+     "unresolved_total": 1,
+     "unresolved_recovery_stage": 1,
+     "unresolved_conversion_stage": 0
+    }
+   },
+   "hard_crud": {
+    "app": "hard_crud",
+    "verified_ground_truth": false,
+    "label": "pipeline counts, not verified",
+    "live_sites": 5,
+    "live_sites_source": "summary.json total_queries (no ground truth)",
+    "unresolved_recovery_live": 3,
+    "unresolved_conversion_live": 0,
+    "not_converted_live": 3,
+    "value": 60.0,
+    "sites": [
+     {
+      "query_id": "Q002",
+      "gt_id": null,
+      "site": "02_dynamic_order.php:9",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": null
+     },
+     {
+      "query_id": "Q003",
+      "gt_id": null,
+      "site": "03_dynamic_in.php:9",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "gt_label": null
+     },
+     {
+      "query_id": "Q004",
+      "gt_id": null,
+      "site": "04_conditional_append.php:11",
+      "stage": "recovery",
+      "reason_code": "BRANCHING",
+      "gt_label": null
+     }
+    ],
+    "ambiguous": [],
+    "excluded_non_live": [],
+    "summary_counts": {
+     "total_queries": 5,
+     "unresolved_total": 3,
+     "unresolved_recovery_stage": 3,
+     "unresolved_conversion_stage": 0
+    }
+   }
   }
  },
  "disclosures": {
@@ -10123,6 +10860,13 @@
   {
    "title": "FR status (reviewed, drives the Functions view)",
    "path": "docs/c3_fr_status.json",
+   "exists": true,
+   "downloadable": false,
+   "note": "Repository file; open it in the repository (not served by the dashboard)."
+  },
+  {
+   "title": "Execution time, 18 Oct 2026 (method and limits)",
+   "path": "evidence/performance/2026-10-18/README.md",
    "exists": true,
    "downloadable": false,
    "note": "Repository file; open it in the repository (not served by the dashboard)."

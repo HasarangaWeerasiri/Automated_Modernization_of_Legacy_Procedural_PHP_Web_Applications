@@ -507,6 +507,83 @@ def _historical(measurements, stage_sites):
             for d in data["details"] + data.get("ambiguous_sites", []) if d["outcome"] in ("FN", "FP", "TN", "EXCLUDED_AMBIGUOUS")]
 
 
+MANUAL_REVIEW_FORMULA = ("manual-review rate = (live sites unresolved at the recovery stage + live sites unresolved at the "
+                         "conversion stage) / live sites. Each site is counted once; non-live sites (commented-out or dead code) "
+                         "are excluded; ambiguous ground-truth sites are included in both counts and listed separately.")
+MANUAL_REVIEW_LIMITS = ("A proxy for how much of the data layer still needs a person: it counts sites, not developer hours. It says "
+                        "nothing about how long each site takes to migrate by hand, and nothing about whether the converted code is "
+                        "correct. It is not a measurement of developer effort.")
+NOT_VERIFIED = "pipeline counts, not verified"
+PERFORMANCE_FILE = "evidence/performance/2026-10-18/execution_time.json"
+
+
+def compute_manual_review(base) -> dict:
+    """Per app: live sites not converted automatically, from the current-code run (one function for both outputs)."""
+
+    result = {}
+    for app_label, folder, php, schema, has_gt in CURRENT_RUNS:
+        out = base / folder
+        summary = json.loads((out / "summary.json").read_text(encoding="utf-8"))
+        unresolved = json.loads((out / "unresolved_queries.json").read_text(encoding="utf-8"))
+        queries = json.loads((out / "queries.json").read_text(encoding="utf-8"))
+        php_root = (APPS / php).resolve()
+        latest = APP_INFO[folder][2]
+        labels = _gt_labels(latest)[1] if latest else {}
+
+        def is_live(site):
+            if not latest:
+                return True  # no ground truth: every detected site is treated as live (pipeline counts, not verified)
+            gt_label = labels.get(site, (None, None))[1]
+            if gt_label is None:
+                raise SystemExit(f"{folder}: detected site {site} is not in the ground truth; cannot classify it as live or not")
+            return not gt_label.startswith("non-live")
+
+        detected_live = sum(1 for q in queries if is_live(site_label(q, php_root)))
+        live_sites = load(latest)["gt_live_sites"] if latest else summary["total_queries"]
+        if detected_live != live_sites:
+            raise SystemExit(f"{folder}: {detected_live} live sites detected but {live_sites} live sites in the ground truth; "
+                             "the manual-review rate would miss undetected sites")
+
+        counted, excluded = [], []
+        for u in unresolved:
+            site = site_label(u, php_root)
+            gt_id, gt_label = labels.get(site, (None, None))
+            entry = {"query_id": u["query_id"], "gt_id": gt_id, "site": site, "stage": u["stage"],
+                     "reason_code": u["reason_code"], "gt_label": gt_label}
+            (counted if is_live(site) else excluded).append(entry)
+        if len({e["site"] for e in counted}) != len(counted):
+            raise SystemExit(f"{folder}: a live site appears twice in unresolved_queries.json")
+        if len(counted) + len(excluded) != summary["unresolved_total"]:
+            raise SystemExit(f"{folder}: manual-review sites do not reconcile with summary.json unresolved_total")
+        for stage, field in (("recovery", "unresolved_recovery_stage"), ("conversion", "unresolved_conversion_stage")):
+            if sum(e["stage"] == stage for e in counted + excluded) != summary[field]:
+                raise SystemExit(f"{folder}: {stage}-stage sites do not reconcile with summary.json {field}")
+
+        unresolved_sites = {e["site"] for e in counted}
+        ambiguous = [{"gt_id": gt_id, "site": site, "converted": site not in unresolved_sites, "included": True}
+                     for site, (gt_id, gt_label) in sorted(labels.items()) if gt_label == "ambiguous"]
+        result[folder] = {
+            "app": app_label, "verified_ground_truth": has_gt, "label": None if has_gt else NOT_VERIFIED,
+            "live_sites": live_sites,
+            "live_sites_source": f"evidence/evaluation/{latest} gt_live_sites" if latest else "summary.json total_queries (no ground truth)",
+            "unresolved_recovery_live": sum(e["stage"] == "recovery" for e in counted),
+            "unresolved_conversion_live": sum(e["stage"] == "conversion" for e in counted),
+            "not_converted_live": len(counted), "value": _pct(len(counted), live_sites),
+            "sites": counted, "ambiguous": ambiguous, "excluded_non_live": excluded,
+            "summary_counts": {k: summary[k] for k in ("total_queries", "unresolved_total", "unresolved_recovery_stage",
+                                                       "unresolved_conversion_stage")},
+        }
+    return result
+
+
+def load_performance() -> dict:
+    data = json.loads((ROOT / PERFORMANCE_FILE).read_text(encoding="utf-8"))
+    return {"file": PERFORMANCE_FILE, "label": data["label"], "git_head": data["git_head"], "started_at": data["started_at"],
+            "rounds": data["rounds"], "order": data["order"], "timer": data["timer"], "machine": data["machine"],
+            "apps": {app: {k: v[k] for k in ("runs_seconds", "median_seconds", "sites_detected")} for app, v in data["apps"].items()},
+            "readme": "evidence/performance/2026-10-18/README.md"}
+
+
 def _current(base, measurements):
     apps, records, artifacts, joins = {}, {}, {}, []
     for app_label, folder, php, schema, has_gt in CURRENT_RUNS:
@@ -563,12 +640,6 @@ def _current(base, measurements):
             measurements.append(_measurement(folder, "current-code", "current code", category, metric, text,
                                              value=summary[field], unit="count", status="measured", file=file,
                                              fields={"value": field}))
-        measurements.append(_measurement(
-            folder, "current-code", "current code", "review", "manual_review_rate",
-            "Manual-review rate (unresolved / detected)", numerator=summary["unresolved_total"],
-            denominator=summary["total_queries"], value=_pct(summary["unresolved_total"], summary["total_queries"]),
-            unit="percent", status="derived", file=file, derivation="unresolved_total / total_queries",
-            note="Share of detected sites flagged for human review. It is not a measurement of developer effort."))
         if latest:
             gt_data = load(latest)
             recoverable = gt_data["recovery"]["TP"] + gt_data["recovery"]["FN"]
@@ -772,6 +843,7 @@ def _reports():
         ("Non-MySQL test run, 17 Oct 2026", TEST_LOG),
         ("Commit hash map (history rewrite)", "evidence/commit_hash_map_2026-10-15.md"),
         ("FR status (reviewed, drives the Functions view)", "docs/c3_fr_status.json"),
+        ("Execution time, 18 Oct 2026 (method and limits)", "evidence/performance/2026-10-18/README.md"),
     ]
     return [{"title": t, "path": p, "exists": (ROOT / p).is_file(), "downloadable": False,
              "note": "Repository file; open it in the repository (not served by the dashboard)."} for t, p in entries] + [
@@ -833,11 +905,30 @@ def write_dashboard_json(target: Path, base: Path, head: str) -> None:
     measurements, stage_sites = [], {}
     _historical(measurements, stage_sites)
     apps, records, artifacts, joins = _current(base, measurements)
+    manual_review = compute_manual_review(base)
+    for folder, review in manual_review.items():
+        measurements.append(_measurement(
+            folder, "current-code", "current code", "review", "manual_review_rate",
+            "Manual-review rate (live sites not converted / live sites)", numerator=review["not_converted_live"],
+            denominator=review["live_sites"], value=review["value"], unit="percent", status="derived",
+            file=f"{TEMP}/{folder}/unresolved_queries.json; {TEMP}/{folder}/summary.json"
+                 + (f"; {review['live_sites_source'].split(' ')[0]}" if review["verified_ground_truth"] else ""),
+            derivation=MANUAL_REVIEW_FORMULA + f" Live sites: {review['live_sites_source']}.",
+            note=("Proxy: counts sites, not developer hours. It is not a measurement of developer effort."
+                  + ("" if review["verified_ground_truth"] else f" {NOT_VERIFIED.capitalize()}."))))
+    performance = load_performance()
+    for folder, timing in performance["apps"].items():
+        runs = ", ".join(f"{s:.3f}" for s in timing["runs_seconds"])
+        measurements.append(_measurement(
+            folder, "current-code", "current code (timing, 2026-10-18)", "performance", "execution_time",
+            "End-to-end CLI analysis time (median of 3 runs)", value=timing["median_seconds"], unit="seconds",
+            status="measured", file=PERFORMANCE_FILE, fields={"value": f"apps.{folder}.median_seconds"},
+            note=f"{performance['label']}. Runs: {runs} s. One machine ({performance['machine']['cpu']}); not a benchmark of other hardware."))
     disclosures = _disclosures(records, measurements)
     e1, e2, e3, e4, tests, e2_dates, e3_dates = _experiments(measurements)
     for metric, label, note in [
-        ("execution_time", "Pipeline execution time", "Only single wall-clock runs exist in run logs; no systematic timing."),
-        ("migration_effort", "Measured migration effort (developer time)", "Not measured. The manual-review rate is derived, not effort."),
+        ("migration_effort", "Measured migration effort (developer time)",
+         "Not measured. The manual-review rate is a derived proxy (sites), not developer effort."),
         ("sqlacodegen_baseline", "Schema-only baseline (sqlacodegen)", "Planned, not run."),
     ]:
         measurements.append(_not_measured("all", "not_measured", metric, label, note))
@@ -852,7 +943,9 @@ def write_dashboard_json(target: Path, base: Path, head: str) -> None:
         "stage_sites": stage_sites,
         "records": records,
         "artifacts": artifacts,
-        "experiments": {"e1": e1, "e2": e2, "e2_dates": e2_dates, "e3": e3, "e3_dates": e3_dates, "e4": e4, "tests": tests},
+        "experiments": {"e1": e1, "e2": e2, "e2_dates": e2_dates, "e3": e3, "e3_dates": e3_dates, "e4": e4, "tests": tests,
+                        "performance": performance},
+        "manual_review": {"formula": MANUAL_REVIEW_FORMULA, "limits": MANUAL_REVIEW_LIMITS, "apps": manual_review},
         "disclosures": disclosures,
         "limitations": [
             {"fr": "FR2", "title": "Branch-dependent SQL",
@@ -897,6 +990,52 @@ def main(argv=None) -> None:
         write_dashboard_json(args.dashboard_json, base, head)
 
 
+def manual_review_section(review: dict, sources: list) -> list[str]:
+    lines = ["", "## Manual-review rate (current code)", "",
+             f"- **Formula:** {MANUAL_REVIEW_FORMULA}",
+             f"- **What it does not measure:** {MANUAL_REVIEW_LIMITS}",
+             f"- **Apps without author-verified ground truth** (Clinic, simple_crud, mixed_crud, hard_crud): every detected site is "
+             f"treated as live; {NOT_VERIFIED}.", "",
+             "| App | Live sites | Not converted at recovery | Not converted at conversion | Not converted (total) | Rate | "
+             "Ambiguous sites (included) | Non-live sites excluded | Note |",
+             "|---|---|---|---|---|---|---|---|---|"]
+    for folder, r in review.items():
+        ambiguous = ", ".join(f"{a['gt_id']} ({'converted' if a['converted'] else 'not converted'})" for a in r["ambiguous"]) or "none"
+        excluded = ", ".join(f"{e['query_id']} `{e['site']}`" for e in r["excluded_non_live"]) or "none"
+        lines.append(f"| {r['app']} | {r['live_sites']} | {r['unresolved_recovery_live']} | {r['unresolved_conversion_live']} | "
+                     f"{r['not_converted_live']} | {r['value']}% | {ambiguous} | {excluded} | {r['label'] or ''} |")
+        summary_path = f"{TEMP}/{folder}/summary.json"
+        sources.append((r["app"], "current code", "manual-review numerator", str(r["not_converted_live"]),
+                        f"{TEMP}/{folder}/unresolved_queries.json", "live entries (stage recovery or conversion), each site once"))
+        sources.append((r["app"], "current code", "manual-review denominator (live sites)", str(r["live_sites"]),
+                        r["live_sites_source"].split(" ")[0] if r["verified_ground_truth"] else summary_path,
+                        "gt_live_sites" if r["verified_ground_truth"] else "total_queries"))
+    lines += ["", "Sites counted (query ID / ground-truth ID, file:line, stage, reason code):", ""]
+    for folder, r in review.items():
+        listed = "; ".join(f"{s['query_id']}/{s['gt_id'] or '-'} `{s['site']}` {s['stage']} {s['reason_code']}" for s in r["sites"])
+        lines.append(f"- **{r['app']}** ({r['not_converted_live']}): {listed or 'none'}")
+    return lines
+
+
+def execution_time_section(sources: list) -> list[str]:
+    perf = load_performance()
+    m = perf["machine"]
+    lines = ["", "## Execution time (current code)", "",
+             f"- **What:** {perf['label']}.",
+             f"- **Machine:** {m['os']}; {m['cpu']}, {m['physical_cores']} cores / {m['logical_processors']} logical processors; "
+             f"{m['ram_gb']} GB RAM; Python {m['python']}; PHP {m['php']}.",
+             f"- **Method:** {perf['rounds']} runs per app, {perf['order']}; code `{perf['git_head']}`. Limits and the full "
+             f"method: `{perf['readme']}`. One machine; not a benchmark of other hardware.", "",
+             "| App | Sites detected | Run 1 (s) | Run 2 (s) | Run 3 (s) | Median (s) |", "|---|---|---|---|---|---|"]
+    for folder, t in perf["apps"].items():
+        r = t["runs_seconds"]
+        label = APP_INFO[folder][0]
+        lines.append(f"| {label} | {t['sites_detected']} | {r[0]:.3f} | {r[1]:.3f} | {r[2]:.3f} | {t['median_seconds']:.3f} |")
+        sources.append((label, "current code (timing)", "median execution time (s)", f"{t['median_seconds']:.3f}",
+                        PERFORMANCE_FILE, f"apps.{folder}.median_seconds"))
+    return lines
+
+
 def write_markdown(base, head) -> None:
     sources, missing, missing_converted = [], [], []
     rows, used_files = historical_rows(sources, missing_converted)
@@ -930,6 +1069,8 @@ def write_markdown(base, head) -> None:
 
     current_lines, head, date = current_code_section(base, head, sources)
     lines += current_lines
+    lines += manual_review_section(compute_manual_review(base), sources)
+    lines += execution_time_section(sources)
 
     # ------------------------------------------------------------- limits
     lines += ["", "## Limits (measured)", ""]

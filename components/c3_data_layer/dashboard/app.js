@@ -62,6 +62,7 @@ const Evidence = (() => {
   function formatValue(m) {
     if (!m || m.status === "not_measured") return NOT_MEASURED;
     if (m.value === null || m.value === undefined) return NOT_APPLICABLE;
+    if (m.unit === "seconds") return `${m.value} s`;
     return m.unit === "percent" ? `${m.value}%` : String(m.value);
   }
   function ratio(m) {
@@ -97,6 +98,23 @@ const Evidence = (() => {
   }
 
   function relatedSites(m) {
+    const review = m.metric === "manual_review_rate" && DATA.manual_review ? DATA.manual_review.apps[m.app] : null;
+    if (review) {
+      return h("div", {},
+        h("h4", { text: "Live sites not converted automatically (counted)" }),
+        review.sites.length ? table(["Query ID", "Ground-truth ID", "PHP site", "Stage", "Reason code"],
+          review.sites.map((s) => [s.query_id, s.gt_id || "—", h("code", { text: s.site }), s.stage, s.reason_code || "—"]))
+          : h("p", { class: "muted", text: "None." }),
+        h("h4", { text: "Ambiguous ground-truth sites (included in both counts)" }),
+        review.ambiguous.length ? table(["Ground-truth ID", "PHP site", "Converted"],
+          review.ambiguous.map((a) => [a.gt_id, h("code", { text: a.site }), a.converted ? "yes" : "no"]))
+          : h("p", { class: "muted", text: "None." }),
+        h("h4", { text: "Non-live sites (excluded)" }),
+        review.excluded_non_live.length ? table(["Query ID", "PHP site", "Ground-truth label"],
+          review.excluded_non_live.map((e) => [e.query_id, h("code", { text: e.site }), e.gt_label || "—"]))
+          : h("p", { class: "muted", text: "None." }),
+        h("p", { class: "muted", text: `${DATA.manual_review.formula} ${DATA.manual_review.limits}` }));
+    }
     const stageSites = DATA.stage_sites[`${m.app}|${m.stage_label}`];
     if (stageSites) {
       const wanted = { recovery_precision: ["FP"], recovery_recall: ["FN"], correct_abstention: ["TN"] }[m.metric];
@@ -431,6 +449,14 @@ const Evidence = (() => {
         }),
         h("div", { class: "notice", text: DATA.disclosures.clinic.text }),
         h("div", { class: "notice", text: DATA.disclosures.fee_rainbow.text })),
+      card("Manual-review rate (current code)", DATA.manual_review.formula,
+        metricChart(cur("manual_review_rate"), { title: "Manual-review rate", label: () => "live sites not converted" }),
+        h("p", { class: "muted", text: DATA.manual_review.limits })),
+      card("Execution time (current code)", `${DATA.experiments.performance.label}. ${DATA.experiments.performance.machine.cpu}, `
+        + `${DATA.experiments.performance.machine.ram_gb} GB RAM, Python ${DATA.experiments.performance.machine.python}. One machine; not a benchmark of other hardware.`,
+        table(["Application", "Runs (s)", "Median"], measurements((m) => m.metric === "execution_time").map((m) => [appLabel(m.app),
+          DATA.experiments.performance.apps[m.app].runs_seconds.join(" · "),
+          h("button", { type: "button", class: "button", onclick: () => showMeasurement(m), text: formatValue(m) })]))),
       card("E1 behavioural equivalence on MySQL", "Legacy PHP vs generated function on real MySQL, per SQL site. INCONCLUSIVE is not PASS.",
         e1Chart(),
         h("p", { class: "muted" }, "Not measured: ", measurements((m) => m.metric === "e1_equivalence").map((m) => appLabel(m.app)).join(", "),

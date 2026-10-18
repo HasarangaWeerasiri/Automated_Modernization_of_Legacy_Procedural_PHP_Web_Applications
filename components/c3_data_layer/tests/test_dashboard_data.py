@@ -184,8 +184,9 @@ def test_stage_labels_are_preserved(data):
 
 def test_missing_measurements_are_not_measured_never_zero(data):
     missing = {m["metric"]: m for m in data["measurements"] if m["status"] == "not_measured"}
-    for metric in ("execution_time", "migration_effort", "sqlacodegen_baseline", "e1_equivalence"):
+    for metric in ("migration_effort", "sqlacodegen_baseline", "e1_equivalence"):
         assert metric in missing
+    assert "execution_time" not in missing  # measured since 2026-10-18 (evidence/performance/2026-10-18)
     assert all(m["value"] is None and m["numerator"] is None for m in missing.values())
     code = (DASHBOARD / "app.js").read_text(encoding="utf-8")
     assert 'const NOT_MEASURED = "Not yet measured"' in code
@@ -204,6 +205,86 @@ def test_zero_denominator_is_not_applicable_not_missing(data):
 def test_manual_review_rate_is_derived_not_effort(data):
     rates = [m for m in data["measurements"] if m["metric"] == "manual_review_rate"]
     assert rates and all(m["status"] == "derived" and "not a measurement of developer effort" in m["note"] for m in rates)
+
+
+# Manual-review rate ---------------------------------------------------------------------------------
+
+def _measurement(data, app, metric):
+    return next(m for m in data["measurements"] if m["app"] == app and m["metric"] == metric and m["stage"] == "current-code")
+
+
+def test_manual_review_reconciles_with_each_apps_summary_counts(data):
+    review = data["manual_review"]["apps"]
+    assert set(review) == set(data["apps"])
+    for app, r in review.items():
+        counts = r["summary_counts"]
+        # summary_counts are the run's summary.json values; they must match the current-code measurements too
+        assert counts["total_queries"] == _measurement(data, app, "sql_detected")["value"]
+        assert counts["unresolved_total"] == _measurement(data, app, "unresolved_total")["value"]
+        assert counts["unresolved_recovery_stage"] == _measurement(data, app, "unresolved_recovery")["value"]
+        assert counts["unresolved_conversion_stage"] == _measurement(data, app, "unresolved_conversion")["value"]
+        # every unresolved site is either counted (live) or excluded (non-live), once
+        assert r["not_converted_live"] + len(r["excluded_non_live"]) == counts["unresolved_total"]
+        recovery = sum(s["stage"] == "recovery" for s in r["sites"] + r["excluded_non_live"])
+        conversion = sum(s["stage"] == "conversion" for s in r["sites"] + r["excluded_non_live"])
+        assert (recovery, conversion) == (counts["unresolved_recovery_stage"], counts["unresolved_conversion_stage"])
+        assert r["not_converted_live"] == len(r["sites"]) == len({s["site"] for s in r["sites"]})
+        assert r["not_converted_live"] == r["unresolved_recovery_live"] + r["unresolved_conversion_live"]
+        assert not {s["site"] for s in r["sites"]} & {e["site"] for e in r["excluded_non_live"]}
+        assert r["value"] == round(100 * r["not_converted_live"] / r["live_sites"], 1)
+        m = _measurement(data, app, "manual_review_rate")
+        assert (m["numerator"], m["denominator"], m["value"], m["status"]) == (r["not_converted_live"], r["live_sites"], r["value"], "derived")
+
+
+def test_manual_review_denominator_is_live_sites(data):
+    for app, r in data["manual_review"]["apps"].items():
+        latest = data["apps"][app]["latest_evaluation"]
+        if latest:
+            evaluation = json.loads((ROOT / latest).read_text(encoding="utf-8"))
+            assert r["live_sites"] == evaluation["gt_live_sites"] and r["verified_ground_truth"] and r["label"] is None
+            ambiguous = {a["site"] for a in evaluation.get("ambiguous_sites", [])}
+            assert {a["site"] for a in r["ambiguous"]} == ambiguous and all(a["included"] for a in r["ambiguous"])
+            assert all(not e["gt_label"] or e["gt_label"].startswith("non-live") for e in r["excluded_non_live"])
+        else:
+            assert r["live_sites"] == r["summary_counts"]["total_queries"] and r["label"] == "pipeline counts, not verified"
+            assert not r["excluded_non_live"]
+
+
+def test_manual_review_values_and_wording(data):
+    review = data["manual_review"]
+    values = {app: (r["not_converted_live"], r["live_sites"]) for app, r in review["apps"].items()}
+    assert values["hms_kishan0725"][0] == 0 and values["dignity_dev_hms"] == (9, 13)
+    assert {e["query_id"] for e in review["apps"]["dignity_dev_hms"]["excluded_non_live"]} == {"Q010"}
+    assert "not a measurement of developer effort" in review["limits"] and "counted once" in review["formula"]
+
+
+def test_markdown_and_dashboard_share_the_manual_review_numbers(data):
+    summary = (ROOT / "docs" / "C3_results_summary.md").read_text(encoding="utf-8")
+    section = summary.split("## Manual-review rate (current code)", 1)[1].split("\n## ", 1)[0]
+    for app, r in data["manual_review"]["apps"].items():
+        row = next(line for line in section.splitlines() if line.startswith(f"| {r['app']} | "))
+        cells = [c.strip() for c in row.strip("|").split("|")]
+        assert cells[1:6] == [str(r["live_sites"]), str(r["unresolved_recovery_live"]), str(r["unresolved_conversion_live"]),
+                              str(r["not_converted_live"]), f"{r['value']}%"], app
+
+
+# Execution time --------------------------------------------------------------------------------------
+
+def test_execution_time_comes_from_the_evidence_file(data):
+    import statistics
+    path = summarize.PERFORMANCE_FILE
+    evidence = json.loads((ROOT / path).read_text(encoding="utf-8"))
+    timings = [m for m in data["measurements"] if m["metric"] == "execution_time"]
+    assert {m["app"] for m in timings} == set(data["apps"]) == set(evidence["apps"])
+    for m in timings:
+        runs = evidence["apps"][m["app"]]["runs_seconds"]
+        assert m["status"] == "measured" and m["unit"] == "seconds" and m["source"]["file"] == path
+        assert m["source"]["fields"] == {"value": f"apps.{m['app']}.median_seconds"}
+        assert m["value"] == evidence["apps"][m["app"]]["median_seconds"] == round(statistics.median(runs), 3)
+        assert len(runs) == evidence["rounds"] == 3
+    performance = data["experiments"]["performance"]
+    assert performance["machine"] == evidence["machine"] and performance["git_head"] == evidence["git_head"]
+    assert "includes Python start-up; no database" in performance["label"]
 
 
 def test_no_overall_accuracy_score(data):
