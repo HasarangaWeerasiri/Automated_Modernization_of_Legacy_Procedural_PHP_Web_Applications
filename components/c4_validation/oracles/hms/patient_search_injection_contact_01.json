@@ -15,6 +15,7 @@
     "status_code": 200,
     "outcome": "no_effect",
     "records": [],
+    "columns": {},
     "messages": [
       "No entries found! Please enter valid details"
     ]
@@ -25,5 +26,5 @@
   },
   "excluded_fields": [],
   "capture_runs": 2,
-  "captured_at": "2026-10-15T06:42:29+00:00"
+  "captured_at": "2026-10-18T16:08:35+00:00"
 }

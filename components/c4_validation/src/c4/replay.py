@@ -13,8 +13,8 @@ is read from the scenario file, which stands in for the endpoint map.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any
+from dataclasses import dataclass, field
+from typing import Any, Mapping
 
 import requests
 
@@ -37,6 +37,9 @@ class Replay:
     records: tuple[dict[str, Any], ...] | None
     problem: str | None
     delta: dict[str, dict[str, list]]
+    # The database column each response field holds, by field path, as the endpoint
+    # map gives it; empty when the map says nothing.
+    columns: Mapping[str, str] = field(default_factory=dict)
 
 
 def _records(response: requests.Response, records_at: str) -> tuple[tuple | None, str | None]:
@@ -126,4 +129,5 @@ def replay(
         records=records,
         problem=problem,
         delta=dbstate.delta(before, after),
+        columns=request.get("fields") or {},
     )

@@ -15,6 +15,7 @@
     "status_code": 200,
     "outcome": "success",
     "records": [],
+    "columns": {},
     "messages": []
   },
   "db_state": {
@@ -26,7 +27,7 @@
             "id": 20,
             "name": "Erica Nichols",
             "comment": "Partner even floor should",
-            "created_on": "2026-10-18 15:32:07"
+            "created_on": "2026-10-18 16:11:25"
           }
         ],
         "updated": [],
@@ -42,5 +43,5 @@
     }
   ],
   "capture_runs": 2,
-  "captured_at": "2026-10-18T15:32:09+00:00"
+  "captured_at": "2026-10-18T16:11:27+00:00"
 }

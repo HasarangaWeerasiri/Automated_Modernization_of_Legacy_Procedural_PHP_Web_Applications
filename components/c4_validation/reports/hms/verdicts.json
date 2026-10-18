@@ -3,6 +3,15 @@
   "endpoints": {
     "GET /api/me/appointments": {
       "verdict": "INCONCLUSIVE",
+      "fields_compared": {
+        "by_label": [
+          "Doctor Name",
+          "Consultancy Fees",
+          "Appointment Date",
+          "Appointment Time"
+        ],
+        "by_value": []
+      },
       "scenarios": [
         {
           "scenario_id": "patient_appointments_typical_01",
@@ -216,6 +225,20 @@
     },
     "GET /api/me/prescriptions": {
       "verdict": "PASS",
+      "fields_compared": {
+        "by_label": [
+          "Doctor Name",
+          "Appointment ID",
+          "Appointment Date",
+          "Appointment Time",
+          "Diseases",
+          "Allergies",
+          "Prescriptions"
+        ],
+        "by_value": [
+          "Bill Payment"
+        ]
+      },
       "scenarios": [
         {
           "scenario_id": "patient_prescriptions_typical_01",
@@ -236,6 +259,19 @@
     },
     "GET /api/patients": {
       "verdict": "INCONCLUSIVE",
+      "fields_compared": {
+        "by_label": [
+          "Patient ID",
+          "First Name",
+          "Last Name",
+          "Gender",
+          "Email",
+          "Contact"
+        ],
+        "by_value": [
+          "Password"
+        ]
+      },
       "scenarios": [
         {
           "scenario_id": "patient_list_typical_01",
@@ -554,6 +590,10 @@
     },
     "POST /api/contact": {
       "verdict": "PASS",
+      "fields_compared": {
+        "by_label": [],
+        "by_value": []
+      },
       "scenarios": [
         {
           "scenario_id": "contact_form_boundary_contact_empty",

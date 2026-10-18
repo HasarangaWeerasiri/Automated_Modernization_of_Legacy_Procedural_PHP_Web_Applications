@@ -3,6 +3,13 @@
   "endpoints": {
     "GET /api/guestbook": {
       "verdict": "PASS",
+      "fields_compared": {
+        "by_label": [
+          "p.comment",
+          "p"
+        ],
+        "by_value": []
+      },
       "scenarios": [
         {
           "scenario_id": "guestbook_list_typical_01",
@@ -23,6 +30,15 @@
     },
     "GET /api/pictures/recent": {
       "verdict": "PASS",
+      "fields_compared": {
+        "by_label": [
+          "link",
+          "image (2)"
+        ],
+        "by_value": [
+          "image"
+        ]
+      },
       "scenarios": [
         {
           "scenario_id": "recent_pictures_typical_01",
@@ -43,6 +59,16 @@
     },
     "GET /api/pictures/search": {
       "verdict": "PASS",
+      "fields_compared": {
+        "by_label": [
+          "h2",
+          "link",
+          "image (2)"
+        ],
+        "by_value": [
+          "image"
+        ]
+      },
       "scenarios": [
         {
           "scenario_id": "picture_search_typical_01",
@@ -99,6 +125,15 @@
     },
     "GET /api/users/{userid}": {
       "verdict": "PASS",
+      "fields_compared": {
+        "by_label": [
+          "link",
+          "image (2)"
+        ],
+        "by_value": [
+          "image"
+        ]
+      },
       "scenarios": [
         {
           "scenario_id": "user_pictures_typical_01",
@@ -134,6 +169,10 @@
     },
     "POST /api/guestbook": {
       "verdict": "INCONCLUSIVE",
+      "fields_compared": {
+        "by_label": [],
+        "by_value": []
+      },
       "scenarios": [
         {
           "scenario_id": "guestbook_sign_boundary_comment_empty",
@@ -176,8 +215,8 @@
               "detail": {
                 "values_changed": {
                   "root['guestbook']['inserted'][0]['created_on']": {
-                    "new_value": "2026-10-18 15:37:29",
-                    "old_value": "2026-10-18 15:31:34"
+                    "new_value": "2026-10-18 16:13:22",
+                    "old_value": "2026-10-18 16:10:51"
                   }
                 }
               }
@@ -260,8 +299,8 @@
               "detail": {
                 "values_changed": {
                   "root['guestbook']['inserted'][0]['created_on']": {
-                    "new_value": "2026-10-18 15:37:31",
-                    "old_value": "2026-10-18 15:31:44"
+                    "new_value": "2026-10-18 16:13:24",
+                    "old_value": "2026-10-18 16:11:01"
                   }
                 }
               }
@@ -326,8 +365,8 @@
               "detail": {
                 "values_changed": {
                   "root['guestbook']['inserted'][0]['created_on']": {
-                    "new_value": "2026-10-18 15:37:33",
-                    "old_value": "2026-10-18 15:32:07"
+                    "new_value": "2026-10-18 16:13:26",
+                    "old_value": "2026-10-18 16:11:25"
                   }
                 }
               }
@@ -357,8 +396,8 @@
               "detail": {
                 "values_changed": {
                   "root['guestbook']['inserted'][0]['created_on']": {
-                    "new_value": "2026-10-18 15:37:34",
-                    "old_value": "2026-10-18 15:32:10"
+                    "new_value": "2026-10-18 16:13:27",
+                    "old_value": "2026-10-18 16:11:27"
                   }
                 }
               }
@@ -388,8 +427,8 @@
               "detail": {
                 "values_changed": {
                   "root['guestbook']['inserted'][0]['created_on']": {
-                    "new_value": "2026-10-18 15:37:35",
-                    "old_value": "2026-10-18 15:32:13"
+                    "new_value": "2026-10-18 16:13:28",
+                    "old_value": "2026-10-18 16:11:30"
                   }
                 }
               }
@@ -400,6 +439,10 @@
     },
     "POST /api/users": {
       "verdict": "INCONCLUSIVE",
+      "fields_compared": {
+        "by_label": [],
+        "by_value": []
+      },
       "scenarios": [
         {
           "scenario_id": "user_register_boundary_againpass_empty",
@@ -489,20 +532,20 @@
               "detail": {
                 "values_changed": {
                   "root['users']['inserted'][0]['password']": {
-                    "new_value": "e0067b56b886814367152a789b7a727ef60e8b73",
-                    "old_value": "56652d0e1b5632a836aab078e5cbbd57d6b97292"
+                    "new_value": "a6f44c081fef98041f7d463611712d3cc768d005",
+                    "old_value": "b799fc49bd1aa1c0f0bcb52448d631b3a170f834"
                   },
                   "root['users']['inserted'][0]['salt']": {
-                    "new_value": "NTc0",
-                    "old_value": "NDk="
+                    "new_value": "NjY2",
+                    "old_value": "NTU="
                   },
                   "root['users']['inserted'][0]['created_on']": {
-                    "new_value": "2026-10-18 15:37:41",
-                    "old_value": "2026-10-18 15:32:48"
+                    "new_value": "2026-10-18 16:13:34",
+                    "old_value": "2026-10-18 16:12:06"
                   },
                   "root['users']['inserted'][0]['last_login_on']": {
-                    "new_value": "2026-10-18 15:37:41",
-                    "old_value": "2026-10-18 15:32:48"
+                    "new_value": "2026-10-18 16:13:34",
+                    "old_value": "2026-10-18 16:12:06"
                   }
                 }
               }
@@ -597,20 +640,20 @@
               "detail": {
                 "values_changed": {
                   "root['users']['inserted'][0]['password']": {
-                    "new_value": "01808530f2060bb27210002a8cfabc1b06b0f025",
-                    "old_value": "564d10197152f21b935439cf7dca758848412bc8"
+                    "new_value": "0cd90d49588fab732d94f34851025e32ad999c36",
+                    "old_value": "ec2e39a1299600775e0efd8a614d28c23a7a6570"
                   },
                   "root['users']['inserted'][0]['salt']": {
-                    "new_value": "ODgz",
-                    "old_value": "NzY0"
+                    "new_value": "NjQ2",
+                    "old_value": "NjQz"
                   },
                   "root['users']['inserted'][0]['created_on']": {
-                    "new_value": "2026-10-18 15:37:43",
-                    "old_value": "2026-10-18 15:32:58"
+                    "new_value": "2026-10-18 16:13:36",
+                    "old_value": "2026-10-18 16:12:15"
                   },
                   "root['users']['inserted'][0]['last_login_on']": {
-                    "new_value": "2026-10-18 15:37:43",
-                    "old_value": "2026-10-18 15:32:58"
+                    "new_value": "2026-10-18 16:13:36",
+                    "old_value": "2026-10-18 16:12:15"
                   }
                 }
               }
@@ -745,20 +788,20 @@
               "detail": {
                 "values_changed": {
                   "root['users']['inserted'][0]['password']": {
-                    "new_value": "9565a694beb068aafcbc869269b3dde5473df4cf",
-                    "old_value": "8a813d3a07b1470baff1093a68960b0bac3f3903"
+                    "new_value": "f4189c429e50f2f4ce8d4a0543b62c983d57397b",
+                    "old_value": "09ce6683fb9bda043fc7ac2d8dfa6d903f00167d"
                   },
                   "root['users']['inserted'][0]['salt']": {
-                    "new_value": "MzU2",
-                    "old_value": "ODYy"
+                    "new_value": "Nzkw",
+                    "old_value": "NjE4"
                   },
                   "root['users']['inserted'][0]['created_on']": {
-                    "new_value": "2026-10-18 15:37:46",
-                    "old_value": "2026-10-18 15:33:12"
+                    "new_value": "2026-10-18 16:13:38",
+                    "old_value": "2026-10-18 16:12:30"
                   },
                   "root['users']['inserted'][0]['last_login_on']": {
-                    "new_value": "2026-10-18 15:37:46",
-                    "old_value": "2026-10-18 15:33:12"
+                    "new_value": "2026-10-18 16:13:38",
+                    "old_value": "2026-10-18 16:12:30"
                   }
                 }
               }
@@ -832,20 +875,20 @@
               "detail": {
                 "values_changed": {
                   "root['users']['inserted'][0]['password']": {
-                    "new_value": "b742afd25c7948514d281dc07dc4b32067dbab97",
-                    "old_value": "b8b20f1824c6ed81d727f0a20625fed5336c7295"
+                    "new_value": "a3f1d4ee864fb272c96881cb176ceb33128c813d",
+                    "old_value": "43ce44e97f9922e6c10e8fe385b55e04a1ff58ce"
                   },
                   "root['users']['inserted'][0]['salt']": {
-                    "new_value": "NDk1",
-                    "old_value": "NTg4"
+                    "new_value": "Mzkz",
+                    "old_value": "MzU1"
                   },
                   "root['users']['inserted'][0]['created_on']": {
-                    "new_value": "2026-10-18 15:37:48",
-                    "old_value": "2026-10-18 15:33:52"
+                    "new_value": "2026-10-18 16:13:40",
+                    "old_value": "2026-10-18 16:13:09"
                   },
                   "root['users']['inserted'][0]['last_login_on']": {
-                    "new_value": "2026-10-18 15:37:48",
-                    "old_value": "2026-10-18 15:33:52"
+                    "new_value": "2026-10-18 16:13:40",
+                    "old_value": "2026-10-18 16:13:09"
                   }
                 }
               }
@@ -878,20 +921,20 @@
               "detail": {
                 "values_changed": {
                   "root['users']['inserted'][0]['password']": {
-                    "new_value": "f4bbb4d96a6fd58e187c74a9f12098c868c5249e",
-                    "old_value": "86a39d7acbfc0636dd057fd204569c8d4d596dff"
+                    "new_value": "def3827b55ca3cb02ba871b2a4435d60553b53fc",
+                    "old_value": "11db4e4d5f63269dd60bb6bd10544b30d6788a21"
                   },
                   "root['users']['inserted'][0]['salt']": {
-                    "new_value": "NzAz",
-                    "old_value": "MTE0"
+                    "new_value": "MjE4",
+                    "old_value": "MTEz"
                   },
                   "root['users']['inserted'][0]['created_on']": {
-                    "new_value": "2026-10-18 15:37:49",
-                    "old_value": "2026-10-18 15:33:55"
+                    "new_value": "2026-10-18 16:13:41",
+                    "old_value": "2026-10-18 16:13:12"
                   },
                   "root['users']['inserted'][0]['last_login_on']": {
-                    "new_value": "2026-10-18 15:37:49",
-                    "old_value": "2026-10-18 15:33:55"
+                    "new_value": "2026-10-18 16:13:41",
+                    "old_value": "2026-10-18 16:13:12"
                   }
                 }
               }
@@ -924,20 +967,20 @@
               "detail": {
                 "values_changed": {
                   "root['users']['inserted'][0]['password']": {
-                    "new_value": "2e36d34a6b0357406806745df393aa3ac8beb2f0",
-                    "old_value": "af0685d923dc40a8b699ed183ffb7151e82a1d85"
+                    "new_value": "245dd121c793e02921faf4f4343e22891d6f8522",
+                    "old_value": "c883933ded1f7e7d8da0ff7a6012bed188094732"
                   },
                   "root['users']['inserted'][0]['salt']": {
-                    "new_value": "Mjg=",
-                    "old_value": "NTg4"
+                    "new_value": "ODIy",
+                    "old_value": "NTQ0"
                   },
                   "root['users']['inserted'][0]['created_on']": {
-                    "new_value": "2026-10-18 15:37:50",
-                    "old_value": "2026-10-18 15:33:57"
+                    "new_value": "2026-10-18 16:13:42",
+                    "old_value": "2026-10-18 16:13:15"
                   },
                   "root['users']['inserted'][0]['last_login_on']": {
-                    "new_value": "2026-10-18 15:37:50",
-                    "old_value": "2026-10-18 15:33:57"
+                    "new_value": "2026-10-18 16:13:42",
+                    "old_value": "2026-10-18 16:13:15"
                   }
                 }
               }

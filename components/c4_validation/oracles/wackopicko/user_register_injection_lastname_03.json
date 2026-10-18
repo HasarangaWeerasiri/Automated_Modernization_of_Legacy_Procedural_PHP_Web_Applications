@@ -18,6 +18,7 @@
     "status_code": 303,
     "outcome": "success",
     "records": [],
+    "columns": {},
     "messages": []
   },
   "db_state": {
@@ -30,11 +31,11 @@
             "login": "Crystal Newton",
             "firstname": "David Horton",
             "lastname": "' OR 1=1 -- ",
-            "password": "810b0efb87b4e7c4652fde2369a9930bcecf9657",
-            "salt": "NTc5",
+            "password": "2df7ceb442b3a993acf8400d8f6c11835e215f01",
+            "salt": "OTQ=",
             "tradebux": 100,
-            "created_on": "2026-10-18 15:33:33",
-            "last_login_on": "2026-10-18 15:33:33"
+            "created_on": "2026-10-18 16:12:51",
+            "last_login_on": "2026-10-18 16:12:51"
           }
         ],
         "updated": [],
@@ -65,5 +66,5 @@
     }
   ],
   "capture_runs": 2,
-  "captured_at": "2026-10-18T15:33:35+00:00"
+  "captured_at": "2026-10-18T16:12:53+00:00"
 }

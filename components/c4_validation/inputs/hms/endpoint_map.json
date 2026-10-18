@@ -6,6 +6,15 @@
       "method": "GET",
       "path": "/api/patients",
       "records_at": "patients",
+      "fields": {
+        "pid": "patreg.pid",
+        "fname": "patreg.fname",
+        "lname": "patreg.lname",
+        "gender": "patreg.gender",
+        "email": "patreg.email",
+        "contact": "patreg.contact",
+        "password": "patreg.password"
+      },
       "sources": [
         {
           "source_id": "patient_search",
@@ -94,6 +103,15 @@
       "method": "GET",
       "path": "/api/me/prescriptions",
       "records_at": "prescriptions",
+      "fields": {
+        "doctor": "prestb.doctor",
+        "ID": "prestb.ID",
+        "appdate": "prestb.appdate",
+        "apptime": "prestb.apptime",
+        "disease": "prestb.disease",
+        "allergy": "prestb.allergy",
+        "prescription": "prestb.prescription"
+      },
       "sources": [
         {
           "source_id": "patient_prescriptions",
@@ -114,6 +132,15 @@
       "method": "GET",
       "path": "/api/me/appointments",
       "records_at": "appointments",
+      "fields": {
+        "ID": "appointmenttb.ID",
+        "doctor": "appointmenttb.doctor",
+        "docFees": "appointmenttb.docFees",
+        "appdate": "appointmenttb.appdate",
+        "apptime": "appointmenttb.apptime",
+        "userStatus": "appointmenttb.userStatus",
+        "doctorStatus": "appointmenttb.doctorStatus"
+      },
       "sources": [
         {
           "source_id": "patient_appointments",

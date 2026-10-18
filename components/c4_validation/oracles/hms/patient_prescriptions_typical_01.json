@@ -23,6 +23,15 @@
         "Bill Payment": ""
       }
     ],
+    "columns": {
+      "Doctor Name": "prestb.doctor",
+      "Appointment ID": "prestb.ID",
+      "Appointment Date": "prestb.appdate",
+      "Appointment Time": "prestb.apptime",
+      "Diseases": "prestb.disease",
+      "Allergies": "prestb.allergy",
+      "Prescriptions": "prestb.prescription"
+    },
     "messages": []
   },
   "db_state": {
@@ -31,5 +40,5 @@
   },
   "excluded_fields": [],
   "capture_runs": 2,
-  "captured_at": "2026-10-17T17:40:31+00:00"
+  "captured_at": "2026-10-18T16:08:23+00:00"
 }

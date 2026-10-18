@@ -144,11 +144,16 @@ def expect_outcome(response, legacy_outcome: str) -> None:
     )
 
 
-def expect_records(response, at, records: list[dict[str, Any]], excluded: tuple[str, ...] = ()) -> None:
+def expect_records(
+    response, at, records: list[dict[str, Any]], excluded: tuple[str, ...] = (),
+    columns: dict[str, str] | None = None, fields: dict[str, str] | None = None,
+) -> None:
     """Each record the legacy page showed is reproduced by a record of its own.
 
-    Fields are matched by value, not by name: the page labels its columns with header
-    text, the API with JSON keys. Extra values in an API record are not a difference.
+    Fields are matched by value: the page labels its columns with header text, the API
+    with JSON keys. Extra values in an API record are not a difference. Where both the
+    page's field (`columns`) and the API's field (`fields`) are known to hold the same
+    database column, the value must also sit under that column.
     """
     if at is None:
         return  # this endpoint returns no records
@@ -161,7 +166,12 @@ def expect_records(response, at, records: list[dict[str, Any]], excluded: tuple[
 
     needed = [_values(value for label, value in item.items() if label not in excluded) for item in records]
     offered = [_values(_leaves(item)) for item in found]
-    pairs = _match(needed, offered)
+    columns = {label: column for label, column in (columns or {}).items() if label not in excluded}
+    fields = fields or {}
+    compared = set(columns.values()) & set(fields.values())
+    wanted = [_by_column(item, columns, compared) for item in records]
+    held = [_by_column(_flat(item), fields, compared) for item in found]
+    pairs = _match(needed, offered, wanted, held)
     missing = [records[i] for i in range(len(records)) if i not in pairs]
     unexpected = [found[m] for m in range(len(found)) if m not in pairs.values()]
     assert not missing and not unexpected, "\n".join([

@@ -58,6 +58,10 @@
         "image (2)": "doggie/Dog.jpg"
       }
     ],
+    "columns": {
+      "link": "pictures.id",
+      "image (2)": "pictures.filename"
+    },
     "messages": []
   },
   "db_state": {
@@ -66,5 +70,5 @@
   },
   "excluded_fields": [],
   "capture_runs": 2,
-  "captured_at": "2026-10-18T15:29:53+00:00"
+  "captured_at": "2026-10-18T16:11:45+00:00"
 }

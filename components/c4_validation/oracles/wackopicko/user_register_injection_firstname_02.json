@@ -18,6 +18,7 @@
     "status_code": 303,
     "outcome": "success",
     "records": [],
+    "columns": {},
     "messages": []
   },
   "db_state": {
@@ -30,11 +31,11 @@
             "login": "Crystal Newton",
             "firstname": "' OR '1'='1",
             "lastname": "Christian Wilkinson",
-            "password": "95b22463ee79410501ceb49d93ed5c22a7d2e328",
-            "salt": "NzU3",
+            "password": "f1cae2674f6d83710f03628008dfde08a127b170",
+            "salt": "NTE1",
             "tradebux": 100,
-            "created_on": "2026-10-18 15:33:22",
-            "last_login_on": "2026-10-18 15:33:22"
+            "created_on": "2026-10-18 16:12:40",
+            "last_login_on": "2026-10-18 16:12:40"
           }
         ],
         "updated": [],
@@ -65,5 +66,5 @@
     }
   ],
   "capture_runs": 2,
-  "captured_at": "2026-10-18T15:33:25+00:00"
+  "captured_at": "2026-10-18T16:12:42+00:00"
 }

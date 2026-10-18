@@ -46,7 +46,7 @@ import json
 import re
 import statistics
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 from typing import Any, Mapping
@@ -116,6 +116,9 @@ class Endpoint:
     # Where the list of records sits in the JSON response; None for no records.
     records_at: str | None
     sources: Mapping[str, Source]
+    # The database column, "table.column", each field of a returned record holds, by
+    # its path in the record ("user.login" for a nested one).
+    fields: Mapping[str, str] = field(default_factory=dict)
 
 
 EndpointMap = Mapping[str, Endpoint]
@@ -185,12 +188,19 @@ def _read_stand_in(document: Mapping[str, Any]) -> dict[str, Endpoint]:
                 login=item.get("login"),
             )
 
+        fields = entry.get("fields", {})
+        if not isinstance(fields, dict) or not all(
+            isinstance(column, str) and column.count(".") == 1 for column in fields.values()
+        ):
+            raise EndpointMapError(f"The fields of '{endpoint_id}' must each name a column as \"table.column\".")
+
         endpoints[endpoint_id] = Endpoint(
             endpoint_id=endpoint_id,
             method=entry["method"],
             path=entry["path"],
             records_at=entry["records_at"],
             sources=sources,
+            fields=dict(fields),
         )
     return endpoints
 
@@ -298,6 +308,7 @@ def resolve(
             "params": migrated["query"],
             "body": migrated["body"] or None,
             "records_at": endpoint.records_at,
+            "fields": dict(endpoint.fields),
         },
     }
     if source.records != "only":

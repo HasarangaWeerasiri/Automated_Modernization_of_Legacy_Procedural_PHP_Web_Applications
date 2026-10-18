@@ -70,14 +70,42 @@ def _values(values: Iterable[Any]) -> Counter:
     # are the same content.
     return Counter(text for text in map(normalise, values) if text)
 
-def _match(needed: list[Counter], offered: list[Counter]) -> dict[int, int]:
+def _flat(record: dict[str, Any], prefix: str = "") -> dict[str, Any]:
+    """A record's plain values by path: "user.login" for {"user": {"login": ...}}."""
+    flat: dict[str, Any] = {}
+    for key, value in record.items():
+        if isinstance(value, dict):
+            flat.update(_flat(value, f"{prefix}{key}."))
+        else:
+            flat[f"{prefix}{key}"] = value
+    return flat
+
+def _by_column(values: dict[str, Any], columns: dict[str, str], compared: set) -> dict[str, str]:
+    """The values of fields linked to a compared column, keyed by the column."""
+    return {
+        columns[field]: normalise(value)
+        for field, value in values.items()
+        if columns.get(field) in compared and normalise(value)
+    }
+
+def _match(
+    needed: list[Counter], offered: list[Counter],
+    wanted: list[dict[str, str]] | None = None, held: list[dict[str, str]] | None = None,
+) -> dict[int, int]:
     """Pair each legacy record with a migrated record of its own that reproduces it.
+
+    `wanted` and `held` give, per record, the values of the fields linked to a column
+    on both sides: a pair must then agree on every one of them as well.
 
     Returns legacy index -> migrated index for the largest set of pairs possible,
     so the result does not depend on the order either side lists its records in.
     """
     candidates = [
-        [m for m, have in enumerate(offered) if not need - have] for need in needed
+        [
+            m for m, have in enumerate(offered)
+            if not need - have and (wanted is None or all(held[m].get(c) == v for c, v in wanted[i].items()))
+        ]
+        for i, need in enumerate(needed)
     ]
     taken: dict[int, int] = {}  # migrated index -> legacy index
 
@@ -310,11 +338,16 @@ def expect_outcome(response, legacy_outcome: str) -> None:
     )
 
 
-def expect_records(response, at, records: list[dict[str, Any]], excluded: tuple[str, ...] = ()) -> None:
+def expect_records(
+    response, at, records: list[dict[str, Any]], excluded: tuple[str, ...] = (),
+    columns: dict[str, str] | None = None, fields: dict[str, str] | None = None,
+) -> None:
     """Each record the legacy page showed is reproduced by a record of its own.
 
-    Fields are matched by value, not by name: the page labels its columns with header
-    text, the API with JSON keys. Extra values in an API record are not a difference.
+    Fields are matched by value: the page labels its columns with header text, the API
+    with JSON keys. Extra values in an API record are not a difference. Where both the
+    page's field (`columns`) and the API's field (`fields`) are known to hold the same
+    database column, the value must also sit under that column.
     """
     if at is None:
         return  # this endpoint returns no records
@@ -327,7 +360,12 @@ def expect_records(response, at, records: list[dict[str, Any]], excluded: tuple[
 
     needed = [_values(value for label, value in item.items() if label not in excluded) for item in records]
     offered = [_values(_leaves(item)) for item in found]
-    pairs = _match(needed, offered)
+    columns = {label: column for label, column in (columns or {}).items() if label not in excluded}
+    fields = fields or {}
+    compared = set(columns.values()) & set(fields.values())
+    wanted = [_by_column(item, columns, compared) for item in records]
+    held = [_by_column(_flat(item), fields, compared) for item in found]
+    pairs = _match(needed, offered, wanted, held)
     missing = [records[i] for i in range(len(records)) if i not in pairs]
     unexpected = [found[m] for m in range(len(found)) if m not in pairs.values()]
     assert not missing and not unexpected, "\n".join([

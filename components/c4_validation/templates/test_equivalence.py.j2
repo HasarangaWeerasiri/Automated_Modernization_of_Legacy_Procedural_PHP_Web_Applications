@@ -39,7 +39,9 @@ from c4_checks import expect_database_change, expect_outcome, expect_records, ex
         response,
         at={{ test.at | py(8) }},
         excluded={{ test.excluded_response | py(8) }},
-        records=[
+{% if test.columns %}        columns={{ test.columns | py(8) }},
+        fields={{ test.fields | py(8) }},
+{% endif %}        records=[
 {% for record in test.records %}            {{ record | py(12) }},
 {% endfor %}        ],
     )

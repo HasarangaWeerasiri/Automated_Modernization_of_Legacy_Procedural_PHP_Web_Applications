@@ -17,6 +17,7 @@
     "status_code": 200,
     "outcome": "success",
     "records": [],
+    "columns": {},
     "messages": [
       "Message sent successfully!"
     ]
@@ -40,5 +41,5 @@
   },
   "excluded_fields": [],
   "capture_runs": 2,
-  "captured_at": "2026-10-15T06:41:33+00:00"
+  "captured_at": "2026-10-18T16:07:04+00:00"
 }

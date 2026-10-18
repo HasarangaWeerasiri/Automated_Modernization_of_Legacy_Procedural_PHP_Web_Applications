@@ -232,16 +232,19 @@ def test_a_faulty_write_does_not_spoil_the_scenario_after_it(stub, judge):
     assert judge(LIST).verdict == PASS
 
 
-# ---------------------------------------------------------------------- known gap
+# ------------------------------------------------------------ labelled comparison
 
 
-def test_known_gap_swapped_fields_are_not_detected_without_labels(stub, judge):
-    # Records are matched by their values, not by field names, so two fields that
-    # exchange values still match. Recorded here as a measured limit of the current
-    # comparison; this test changes when values are compared under labels.
+def test_swapped_fields_are_detected_under_their_columns(stub, judge):
+    # Until values were compared under their columns, two fields that exchange values
+    # still matched and this gave PASS: the gap labelled comparison closes.
     stub("swaps_first_and_last_name")
 
-    assert judge(LIST).verdict == PASS
+    result = judge(LIST)
+
+    assert result.verdict == FAIL
+    misplaced = [d["values_under_another_column"] for d in result.differences if "values_under_another_column" in d]
+    assert misplaced and {"patreg.fname", "patreg.lname"} <= {e["column"] for m in misplaced for e in m.values()}
 
 
 # ---------------------------------------------------------------- injection rubric

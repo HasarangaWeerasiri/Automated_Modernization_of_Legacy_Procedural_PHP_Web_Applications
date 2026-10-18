@@ -69,6 +69,12 @@
         "Action": ""
       }
     ],
+    "columns": {
+      "Doctor Name": "appointmenttb.doctor",
+      "Consultancy Fees": "appointmenttb.docFees",
+      "Appointment Date": "appointmenttb.appdate",
+      "Appointment Time": "appointmenttb.apptime"
+    },
     "messages": []
   },
   "db_state": {
@@ -88,5 +94,5 @@
     }
   ],
   "capture_runs": 2,
-  "captured_at": "2026-10-18T02:17:31+00:00"
+  "captured_at": "2026-10-18T16:08:19+00:00"
 }

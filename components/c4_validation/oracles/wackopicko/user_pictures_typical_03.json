@@ -25,6 +25,10 @@
         "image (2)": "flowers/flweofoee"
       }
     ],
+    "columns": {
+      "link": "pictures.id",
+      "image (2)": "pictures.filename"
+    },
     "messages": []
   },
   "db_state": {
@@ -33,5 +37,5 @@
   },
   "excluded_fields": [],
   "capture_runs": 2,
-  "captured_at": "2026-10-18T15:30:06+00:00"
+  "captured_at": "2026-10-18T16:11:58+00:00"
 }

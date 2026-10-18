@@ -6,6 +6,12 @@
       "method": "GET",
       "path": "/api/guestbook",
       "records_at": "entries",
+      "fields": {
+        "id": "guestbook.id",
+        "name": "guestbook.name",
+        "comment": "guestbook.comment",
+        "created_on": "guestbook.created_on"
+      },
       "sources": [
         {
           "source_id": "guestbook_list",
@@ -55,6 +61,17 @@
       "method": "GET",
       "path": "/api/pictures/recent",
       "records_at": "pictures",
+      "fields": {
+        "id": "pictures.id",
+        "title": "pictures.title",
+        "width": "pictures.width",
+        "height": "pictures.height",
+        "tag": "pictures.tag",
+        "filename": "pictures.filename",
+        "price": "pictures.price",
+        "created_on": "pictures.created_on",
+        "user_id": "pictures.user_id"
+      },
       "sources": [
         {
           "source_id": "recent_pictures",
@@ -72,6 +89,17 @@
       "method": "GET",
       "path": "/api/pictures/search",
       "records_at": "pictures",
+      "fields": {
+        "id": "pictures.id",
+        "title": "pictures.title",
+        "width": "pictures.width",
+        "height": "pictures.height",
+        "tag": "pictures.tag",
+        "filename": "pictures.filename",
+        "price": "pictures.price",
+        "created_on": "pictures.created_on",
+        "user_id": "pictures.user_id"
+      },
       "sources": [
         {
           "source_id": "picture_search",
@@ -97,6 +125,17 @@
       "method": "GET",
       "path": "/api/users/{userid}",
       "records_at": "pictures",
+      "fields": {
+        "id": "pictures.id",
+        "title": "pictures.title",
+        "width": "pictures.width",
+        "height": "pictures.height",
+        "tag": "pictures.tag",
+        "filename": "pictures.filename",
+        "price": "pictures.price",
+        "created_on": "pictures.created_on",
+        "user_id": "pictures.user_id"
+      },
       "sources": [
         {
           "source_id": "user_pictures",

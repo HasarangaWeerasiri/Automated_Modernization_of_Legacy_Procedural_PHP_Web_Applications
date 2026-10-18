@@ -18,6 +18,7 @@
     "status_code": 303,
     "outcome": "success",
     "records": [],
+    "columns": {},
     "messages": []
   },
   "db_state": {
@@ -30,11 +31,11 @@
             "login": "Dr. Anne Boyd",
             "firstname": "Maureen Lewis",
             "lastname": "Jacob Ramos",
-            "password": "86a39d7acbfc0636dd057fd204569c8d4d596dff",
-            "salt": "MTE0",
+            "password": "11db4e4d5f63269dd60bb6bd10544b30d6788a21",
+            "salt": "MTEz",
             "tradebux": 100,
-            "created_on": "2026-10-18 15:33:55",
-            "last_login_on": "2026-10-18 15:33:55"
+            "created_on": "2026-10-18 16:13:12",
+            "last_login_on": "2026-10-18 16:13:12"
           }
         ],
         "updated": [],
@@ -65,5 +66,5 @@
     }
   ],
   "capture_runs": 2,
-  "captured_at": "2026-10-18T15:33:57+00:00"
+  "captured_at": "2026-10-18T16:13:14+00:00"
 }

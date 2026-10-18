@@ -175,7 +175,7 @@ def test_one_value_reaches_each_system_under_that_systems_own_name(endpoint_map)
     }
     assert resolved["migrated_request"] == {
         "method": "GET", "path": "/api/things", "params": {"q": "laptop"},
-        "body": None, "records_at": "things",
+        "body": None, "records_at": "things", "fields": {},
     }
 
 
@@ -209,7 +209,7 @@ def test_path_query_and_body_values_each_go_to_their_place(endpoint_map):
 
     assert resolved["migrated_request"] == {
         "method": "PUT", "path": "/api/things/7", "params": {},
-        "body": {"name": "Lamp", "fee": 550}, "records_at": None,
+        "body": {"name": "Lamp", "fee": 550}, "records_at": None, "fields": {},
     }
     assert resolved["legacy_request"] == {
         "method": "POST", "path": "/edit.php", "params": {"thing_id": 7},

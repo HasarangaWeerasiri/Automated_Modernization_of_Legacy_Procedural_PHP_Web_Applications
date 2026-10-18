@@ -18,6 +18,7 @@
     "status_code": 200,
     "outcome": "no_effect",
     "records": [],
+    "columns": {},
     "messages": []
   },
   "db_state": {
@@ -26,5 +27,5 @@
   },
   "excluded_fields": [],
   "capture_runs": 2,
-  "captured_at": "2026-10-15T06:42:10+00:00"
+  "captured_at": "2026-10-18T16:07:52+00:00"
 }

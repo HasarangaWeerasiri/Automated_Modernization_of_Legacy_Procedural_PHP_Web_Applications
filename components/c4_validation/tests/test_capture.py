@@ -59,7 +59,7 @@ def test_record_holds_what_the_legacy_system_was_observed_to_do(config, monkeypa
     assert record["scenario_type"] == "typical"
     assert record["input"] == {"method": "POST", "params": {}, "body": {"q": "abc"}}
     assert record["legacy_response"] == {
-        "status_code": 200, "outcome": "success", "records": [row], "messages": [],
+        "status_code": 200, "outcome": "success", "records": [row], "columns": {}, "messages": [],
     }
     assert record["db_state"] == {"baseline_fingerprint": "sha256:baseline", "delta": {}}
     assert record["excluded_fields"] == []
@@ -338,7 +338,7 @@ def test_a_write_that_fails_silently_is_a_request_with_no_effect(config, page):
 
     response = capture(config, {**SCENARIO, "legacy_table": "none"}, BASELINES)["legacy_response"]
 
-    assert response == {"status_code": 200, "outcome": "no_effect", "records": [], "messages": []}
+    assert response == {"status_code": 200, "outcome": "no_effect", "records": [], "columns": {}, "messages": []}
 
 
 def test_a_write_that_changes_the_database_is_a_success_whatever_it_shows(config, monkeypatch):

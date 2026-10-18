@@ -43,6 +43,8 @@ _COPIED = (
     compare.normalise,
     compare._leaves,
     compare._values,
+    compare._flat,
+    compare._by_column,
     compare._match,
     compare._plain_delta,
     compare.injection_effects,
@@ -134,7 +136,12 @@ def _test_for(scenario: dict[str, Any], record: dict[str, Any], oracle: str, ski
         "delta": record["db_state"]["delta"],
         "excluded_response": tuple(e["field"] for e in excluded if e["scope"] == "response"),
         "excluded_database": tuple(e["field"] for e in excluded if e["scope"] == "database"),
+        # Labelled comparison, written into a test only where both sides link a column.
+        "columns": record["legacy_response"].get("columns", {}),
+        "fields": request.get("fields") or {},
     })
+    if not set(test["columns"].values()) & set(test["fields"].values()):
+        test["columns"], test["fields"] = {}, {}
     return test
 
 

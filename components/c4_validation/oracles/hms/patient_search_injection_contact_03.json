@@ -23,6 +23,12 @@
         "Password": "ram123"
       }
     ],
+    "columns": {
+      "First Name": "patreg.fname",
+      "Last Name": "patreg.lname",
+      "Email": "patreg.email",
+      "Contact": "patreg.contact"
+    },
     "messages": []
   },
   "db_state": {
@@ -31,5 +37,5 @@
   },
   "excluded_fields": [],
   "capture_runs": 2,
-  "captured_at": "2026-10-15T06:42:30+00:00"
+  "captured_at": "2026-10-18T16:08:39+00:00"
 }

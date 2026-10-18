@@ -84,6 +84,8 @@ class Observation:
     shown: bool = True
     # When the request was sent, on a clock that only moves forward.
     sent_at: float = 0.0
+    # The rows of every table after the request, when the database was read.
+    tables: Any = None
 
 
 def _observe(
@@ -173,6 +175,7 @@ def _observe(
         messages=messages,
         shown=shown,
         sent_at=sent_at,
+        tables=after_rows,
     )
 
 
@@ -283,6 +286,51 @@ def _computed_labels(
     return computed
 
 
+def _field_columns(
+    records: tuple[dict[str, str], ...], tables: Any, skip: list[str]
+) -> dict[str, str]:
+    """The database column, "table.column", each field of the records holds.
+
+    Each record shows one row of a table: the row that holds the most of its values,
+    at least two, and holds more of them than any other row of that table. The table
+    whose row holds the most is the record's own; the others are joined in. A field
+    holds a column when, in every record that shows a value for it, that row's column
+    holds the same value, and no other column does as well: first in the record's own
+    row, then in the joined ones. A field that cannot be linked so is left out, and is
+    compared by value alone.
+    """
+    from c4.compare import normalise  # here, not at the top: compare imports this module's users
+
+    if not tables or not records:
+        return {}
+    plain = {
+        table: [{column: normalise(value) for column, value in row.items()} for row in rows]
+        for table, rows in tables.items()
+    }
+    candidates: dict[str, set[str]] = {}
+    for record in records:
+        values = {normalise(value) for label, value in record.items() if label not in skip} - {""}
+        shown: list[tuple[int, str, dict[str, str]]] = []  # (values held, table, row)
+        for table, rows in plain.items():
+            scored = sorted(((len(values & set(row.values())), n) for n, row in enumerate(rows)), reverse=True)
+            if scored and scored[0][0] >= 2 and (len(scored) == 1 or scored[1][0] < scored[0][0]):
+                shown.append((scored[0][0], table, rows[scored[0][1]]))
+        if not shown:
+            return {}  # a record that shows no row: nothing can be linked safely
+        shown.sort(key=lambda item: -item[0])
+        own = [item for item in shown if item[0] == shown[0][0]]
+        joined = [item for item in shown if item[0] < shown[0][0]]
+        for label, value in record.items():
+            value = normalise(value)
+            if label in skip or not value:
+                continue
+            found = {f"{table}.{column}" for _, table, row in own for column, held in row.items() if held == value}
+            if not found:
+                found = {f"{table}.{column}" for _, table, row in joined for column, held in row.items() if held == value}
+            candidates[label] = candidates[label] & found if label in candidates else found
+    return {label: next(iter(found)) for label, found in candidates.items() if len(found) == 1}
+
+
 def outcome_of(status_code: int) -> str:
     """The class of result a status code stands for.
 
@@ -314,6 +362,7 @@ def capture(
     volatile, volatile_columns = _volatile(scenario["scenario_id"], observations)
     observed = observations[0]
     computed = _computed_labels(observed, baselines["legacy"], volatile)
+    columns = _field_columns(observed.records, observed.tables, [*volatile, *computed])
     request = scenario["legacy_request"]
     return {
         "endpoint_id": scenario["endpoint_id"],
@@ -329,6 +378,9 @@ def capture(
             "status_code": observed.status_code,
             "outcome": legacy_outcome(observed),
             "records": list(observed.records),
+            # The database column each field holds, where the rows shown say so
+            # unambiguously: what labelled comparison holds the migrated side to.
+            "columns": columns,
             # What the page told the user in a pop-up. Kept for the reader; its
             # wording is presentation and is not compared.
             "messages": list(observed.messages),

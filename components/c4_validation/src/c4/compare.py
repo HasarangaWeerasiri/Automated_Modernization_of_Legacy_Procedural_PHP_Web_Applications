@@ -12,14 +12,18 @@ Three results are possible for a scenario:
                   or the exclusions leave nothing to compare
     PASS          everything compared agrees
 
-Response records are matched without using field names, because the two sides name
-their fields differently (a page header against a JSON key). Each legacy record must
-be reproduced by a migrated record of its own: every value the legacy record shows
-must appear in that migrated record. Two consequences follow, and both are accepted
-limits of comparing without labels:
+Response records are matched by value, because the two sides name their fields
+differently (a page header against a JSON key). Each legacy record must be reproduced
+by a migrated record of its own: every value the legacy record shows must appear in
+that migrated record. A migrated record may carry extra values the page did not show.
 
-  - a migrated record may carry extra values the page did not show;
-  - two fields whose values are swapped still match.
+Where both sides say which database column a field holds, the value must also sit
+under that column (labelled comparison). The legacy side learns it at capture, from
+the database row each record shows (`legacy_response.columns`); the migrated side
+takes it from the endpoint map (`fields`). This is what tells two swapped fields
+apart. A field that only one side, or neither, links to a column is compared by value
+alone, as before: it can never cause a difference on its own, and the comparison says
+which fields were compared each way.
 """
 
 from __future__ import annotations
@@ -49,6 +53,9 @@ class Comparison:
     differences: tuple[dict[str, Any], ...]
     # Disagreements the engine cannot judge: these make it INCONCLUSIVE.
     abstentions: tuple[dict[str, Any], ...]
+    # The legacy fields compared under their column, and those compared by value alone.
+    by_label: tuple[str, ...] = ()
+    by_value: tuple[str, ...] = ()
 
 
 def normalise(value: Any) -> str:
@@ -86,14 +93,44 @@ def _values(values: Iterable[Any]) -> Counter:
     return Counter(text for text in map(normalise, values) if text)
 
 
-def _match(needed: list[Counter], offered: list[Counter]) -> dict[int, int]:
+def _flat(record: dict[str, Any], prefix: str = "") -> dict[str, Any]:
+    """A record's plain values by path: "user.login" for {"user": {"login": ...}}."""
+    flat: dict[str, Any] = {}
+    for key, value in record.items():
+        if isinstance(value, dict):
+            flat.update(_flat(value, f"{prefix}{key}."))
+        else:
+            flat[f"{prefix}{key}"] = value
+    return flat
+
+
+def _by_column(values: dict[str, Any], columns: dict[str, str], compared: set) -> dict[str, str]:
+    """The values of fields linked to a compared column, keyed by the column."""
+    return {
+        columns[field]: normalise(value)
+        for field, value in values.items()
+        if columns.get(field) in compared and normalise(value)
+    }
+
+
+def _match(
+    needed: list[Counter], offered: list[Counter],
+    wanted: list[dict[str, str]] | None = None, held: list[dict[str, str]] | None = None,
+) -> dict[int, int]:
     """Pair each legacy record with a migrated record of its own that reproduces it.
+
+    `wanted` and `held` give, per record, the values of the fields linked to a column
+    on both sides: a pair must then agree on every one of them as well.
 
     Returns legacy index -> migrated index for the largest set of pairs possible,
     so the result does not depend on the order either side lists its records in.
     """
     candidates = [
-        [m for m, have in enumerate(offered) if not need - have] for need in needed
+        [
+            m for m, have in enumerate(offered)
+            if not need - have and (wanted is None or all(held[m].get(c) == v for c, v in wanted[i].items()))
+        ]
+        for i, need in enumerate(needed)
     ]
     taken: dict[int, int] = {}  # migrated index -> legacy index
 
@@ -138,22 +175,32 @@ def _compare_response(record: dict[str, Any], replayed: Replay) -> tuple[list, l
     if replayed.records is None:
         if replayed.outcome == "success":
             differences.append({"where": "response", "kind": "unreadable", "detail": replayed.problem})
-            return differences, abstentions
+            return differences, abstentions, (), ()
         # A rejection or error carries no records; whether that outcome is right was
         # decided above.
-        replayed = Replay(replayed.status_code, replayed.outcome, (), None, replayed.delta)
+        replayed = Replay(replayed.status_code, replayed.outcome, (), None, replayed.delta, replayed.columns)
 
     excluded = {
         entry["field"]: entry["reason"] for entry in record["excluded_fields"] if entry["scope"] == "response"
     }
     legacy_records = legacy["records"]
     migrated_records = list(replayed.records)
+    # Labelled comparison where both sides link a field to the same column.
+    columns = {label: column for label, column in legacy.get("columns", {}).items() if label not in excluded}
+    migrated_columns = dict(replayed.columns)
+    compared = set(columns.values()) & set(migrated_columns.values())
+    wanted = [_by_column(item, columns, compared) for item in legacy_records]
+    held = [_by_column(_flat(item), migrated_columns, compared) for item in migrated_records]
+    labels = list(dict.fromkeys(label for item in legacy_records for label in item if label not in excluded))
+    by_label = tuple(label for label in labels if columns.get(label) in compared)
+    by_value = tuple(label for label in labels if columns.get(label) not in compared)
+
     needed = [
         _values(value for label, value in item.items() if label not in excluded)
         for item in legacy_records
     ]
     offered = [_values(_leaves(item)) for item in migrated_records]
-    pairs = _match(needed, offered)
+    pairs = _match(needed, offered, wanted, held)
     unused = [m for m in range(len(migrated_records)) if m not in pairs.values()]
 
     if legacy_records and not any(needed):
@@ -185,7 +232,7 @@ def _compare_response(record: dict[str, Any], replayed: Replay) -> tuple[list, l
         if closest is not None:
             unused.remove(closest)  # reported here, as the altered form of this record
         lacking = needed[index] - (offered[closest] if closest is not None else Counter())
-        differences.append({
+        difference = {
             "where": "response", "kind": "record_not_reproduced",
             "legacy_record": item,
             "values_not_found": {
@@ -193,14 +240,26 @@ def _compare_response(record: dict[str, Any], replayed: Replay) -> tuple[list, l
                 if label not in excluded and normalise(value) in lacking
             },
             "closest_migrated_record": migrated_records[closest] if closest is not None else None,
-        })
+        }
+        if closest is not None:
+            # A value present in the closest record but under another column.
+            at_column = {migrated_columns[path]: value for path, value in _flat(migrated_records[closest]).items()
+                         if path in migrated_columns}
+            misplaced = {
+                label: {"column": columns[label], "legacy": item[label], "migrated": at_column.get(columns[label])}
+                for label in by_label
+                if label in item and normalise(item[label]) and wanted[index].get(columns[label]) != held[closest].get(columns[label])
+            }
+            if misplaced:
+                difference["values_under_another_column"] = misplaced
+        differences.append(difference)
 
     for m in unused:
         differences.append({
             "where": "response", "kind": "unexpected_record",
             "migrated_record": migrated_records[m],
         })
-    return differences, abstentions
+    return differences, abstentions, by_label, by_value
 
 
 def _plain_delta(delta: dict[str, Any], excluded: set[str]) -> dict[str, Any]:
@@ -263,7 +322,7 @@ def _compare_database(record: dict[str, Any], replayed: Replay) -> tuple[list, l
 
 def compare(record: dict[str, Any], replayed: Replay) -> Comparison:
     """Compare what the migrated system did against what the oracle record expects."""
-    response_differences, response_abstentions = _compare_response(record, replayed)
+    response_differences, response_abstentions, by_label, by_value = _compare_response(record, replayed)
     database_differences, database_abstentions = _compare_database(record, replayed)
     differences = (*response_differences, *database_differences)
     abstentions = (*response_abstentions, *database_abstentions)
@@ -274,7 +333,7 @@ def compare(record: dict[str, Any], replayed: Replay) -> Comparison:
         verdict = INCONCLUSIVE
     else:
         verdict = PASS
-    return Comparison(verdict, differences, abstentions)
+    return Comparison(verdict, differences, abstentions, by_label, by_value)
 
 
 # ------------------------------------------------------- conflicting expectations
@@ -284,7 +343,10 @@ def _as_replay(record: dict[str, Any]) -> Replay:
     """What the legacy system did, presented as if a migrated system had done it."""
     response = record["legacy_response"]
     outcome = "success" if response["outcome"] == "no_effect" else response["outcome"]
-    return Replay(response["status_code"], outcome, tuple(response["records"]), None, record["db_state"]["delta"])
+    return Replay(
+        response["status_code"], outcome, tuple(response["records"]), None, record["db_state"]["delta"],
+        response.get("columns", {}),
+    )
 
 
 def _compatible(a: dict[str, Any], b: dict[str, Any]) -> bool:

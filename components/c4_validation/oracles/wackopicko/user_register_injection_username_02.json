@@ -18,6 +18,7 @@
     "status_code": 303,
     "outcome": "success",
     "records": [],
+    "columns": {},
     "messages": []
   },
   "db_state": {
@@ -30,11 +31,11 @@
             "login": "' OR '1'='1",
             "firstname": "David Horton",
             "lastname": "Christian Wilkinson",
-            "password": "8649d41893432f1ea9101ce8770fedac70a53296",
-            "salt": "Mzg=",
+            "password": "241add98a33b9f5e1b37a0cce97f85e17fa20e43",
+            "salt": "Mjcy",
             "tradebux": 100,
-            "created_on": "2026-10-18 15:33:47",
-            "last_login_on": "2026-10-18 15:33:47"
+            "created_on": "2026-10-18 16:13:04",
+            "last_login_on": "2026-10-18 16:13:04"
           }
         ],
         "updated": [],
@@ -65,5 +66,5 @@
     }
   ],
   "capture_runs": 2,
-  "captured_at": "2026-10-18T15:33:49+00:00"
+  "captured_at": "2026-10-18T16:13:06+00:00"
 }

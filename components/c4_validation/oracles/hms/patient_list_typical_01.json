@@ -112,6 +112,14 @@
         "Password": "shraddha123"
       }
     ],
+    "columns": {
+      "Patient ID": "patreg.pid",
+      "First Name": "patreg.fname",
+      "Last Name": "patreg.lname",
+      "Gender": "patreg.gender",
+      "Email": "patreg.email",
+      "Contact": "patreg.contact"
+    },
     "messages": []
   },
   "db_state": {
@@ -120,5 +128,5 @@
   },
   "excluded_fields": [],
   "capture_runs": 2,
-  "captured_at": "2026-10-12T15:53:58+00:00"
+  "captured_at": "2026-10-18T16:08:21+00:00"
 }

@@ -85,11 +85,23 @@ def evaluate(config: Config, baselines: dict[str, dbstate.Snapshot]) -> dict[str
             "differences": differences,
             "abstentions": abstentions,
         })
+        fields = endpoints[record["endpoint_id"]].setdefault("fields", {"by_label": {}, "by_value": {}})
+        fields["by_label"].update(dict.fromkeys(result.by_label))
+        fields["by_value"].update(dict.fromkeys(result.by_value))
+
+    def compared(entry: dict[str, Any]) -> dict[str, list[str]]:
+        # A field compared under its column anywhere is listed there only.
+        by_label = list(entry["fields"]["by_label"])
+        return {"by_label": by_label, "by_value": [f for f in entry["fields"]["by_value"] if f not in by_label]}
+
     return {
         "benchmark": config.benchmark,
         "endpoints": {
             endpoint: {
                 "verdict": endpoint_verdict(s["verdict"] for s in entry["scenarios"]),
+                # Which legacy fields were held to their database column, and which
+                # were compared by value alone.
+                "fields_compared": compared(entry),
                 "scenarios": entry["scenarios"],
             }
             for endpoint, entry in sorted(endpoints.items())
@@ -179,6 +191,14 @@ _EXCLUSION_REASONS = {
 }
 
 
+def _misplaced(found: dict[str, dict[str, Any]]) -> str:
+    """A value the migrated record has, but under another column than the page's field."""
+    return "; ".join(
+        f"'{label}' ({entry['column']}): legacy {entry['legacy']!r}, migrated {entry['migrated']!r}"
+        for label, entry in found.items()
+    )
+
+
 def _describe(finding: dict[str, Any]) -> str:
     kind = finding["kind"]
     if kind in ("delta_differs", "excluded_field_differs") and "detail" in finding:
@@ -187,7 +207,10 @@ def _describe(finding: dict[str, Any]) -> str:
             prefix = f"{finding['note']}: "
         return prefix + _describe_delta(finding["detail"])
     if kind == "record_not_reproduced":
-        return f"values not reproduced: {json.dumps(finding['values_not_found'], ensure_ascii=False)}"
+        text = f"values not reproduced: {json.dumps(finding['values_not_found'], ensure_ascii=False)}"
+        if finding.get("values_under_another_column"):
+            text += "; " + _misplaced(finding["values_under_another_column"])
+        return text
     if kind == "unexpected_record":
         return f"record the legacy system did not show: {json.dumps(finding['migrated_record'], ensure_ascii=False, default=str)}"
     if kind == "outcome_differs":
@@ -232,7 +255,13 @@ def _rows(finding: dict[str, Any]) -> list[tuple[str, str]]:
         rows = [
             (where, f'"{label}" = `{_json(value)}` not reproduced')
             for label, value in finding["values_not_found"].items()
-        ] or [(where, f"record not reproduced: `{_json(finding['legacy_record'])}`")]
+        ]
+        rows += [
+            (where, f'"{label}" = `{_json(entry["legacy"])}` is under another column: '
+                    f'`{entry["column"]}` holds `{_json(entry["migrated"])}`')
+            for label, entry in (finding.get("values_under_another_column") or {}).items()
+        ]
+        rows = rows or [(where, f"record not reproduced: `{_json(finding['legacy_record'])}`")]
         closest = finding.get("closest_migrated_record")
         rows.append((where, f"closest migrated record: `{_json(closest)}`" if closest is not None
                      else "no migrated record comes close"))
@@ -273,6 +302,20 @@ def differential_report(report: dict[str, Any], injection: dict[str, Any]) -> st
         )
         failing += [(endpoint, s) for s in entry["scenarios"] if s["verdict"] == FAIL]
         inconclusive += [(endpoint, s) for s in entry["scenarios"] if s["verdict"] == INCONCLUSIVE]
+
+    lines += [
+        "", "## Fields compared", "",
+        "A field held to its database column on both sides is compared by column, which also "
+        "catches two fields whose values are swapped; any other field is compared by value only.",
+        "",
+    ]
+    for endpoint, entry in report["endpoints"].items():
+        fields = entry.get("fields_compared") or {}
+        if fields.get("by_label") or fields.get("by_value"):
+            lines.append(
+                f"- `{endpoint}`: by column: {', '.join(fields['by_label']) or 'none'}; "
+                f"by value only: {', '.join(fields['by_value']) or 'none'}"
+            )
 
     lines += ["", "## Failing scenarios", ""]
     if not failing:
