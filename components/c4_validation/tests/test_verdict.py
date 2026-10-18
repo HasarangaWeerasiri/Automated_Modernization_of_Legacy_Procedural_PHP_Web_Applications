@@ -58,6 +58,7 @@ def _add(config, scenario_id, endpoint, *, captured=True):
     if captured:
         (config.oracle_dir / f"{scenario_id}.json").write_text(json.dumps({
             "scenario_id": scenario_id, "scenario_type": "typical", "endpoint_id": endpoint,
+            "legacy_url": "/page.php", "input": {"method": "GET", "params": {}, "body": None},
         }))
 
 
@@ -230,3 +231,124 @@ def test_a_conflict_makes_both_scenarios_inconclusive_and_keeps_what_was_seen(co
     assert _describe(abstention) == (
         "two legacy pages expect different results for the same request to this endpoint (also: list_01)"
     )
+
+
+# ------------------------------------------------------------- differential report
+
+from c4.verdict import differential_report  # noqa: E402
+
+_REQUEST = {"method": "GET", "path": "/api/patients", "params": {"contact": "8683619153"}, "body": None}
+
+
+def _scenario(scenario_id, verdict, differences=(), abstentions=(), request=_REQUEST):
+    return {
+        "scenario_id": scenario_id, "scenario_type": "typical", "verdict": verdict,
+        "request": request, "legacy_request": "POST /patientsearch.php",
+        "oracle_record": f"oracles/demo/{scenario_id}.json",
+        "differences": list(differences), "abstentions": list(abstentions),
+    }
+
+
+ALTERED = {
+    "where": "response", "kind": "record_not_reproduced",
+    "legacy_record": {"First Name": "William", "Last Name": "Blake"},
+    "values_not_found": {"Last Name": "Blake"},
+    "closest_migrated_record": {"fname": "William", "lname": "Blakex"},
+}
+SUPPRESSED = {"where": "database", "kind": "delta_differs", "detail": {"dictionary_item_removed": ["root['contact']"]}}
+CONFLICT = {
+    "where": "scenario", "kind": "conflicting_expectations", "with": ["patient_list_typical_01"],
+    "detail": "two legacy pages expect different results for the same request to this endpoint",
+}
+WRITE = {"method": "POST", "path": "/api/contact", "params": {}, "body": {"name": "Anu", "message": "hello"}}
+
+
+def _report():
+    return {"benchmark": "demo", "endpoints": {
+        "GET /api/patients": {"verdict": FAIL, "scenarios": [
+            _scenario("search_01", FAIL, [ALTERED]),
+            _scenario("search_02", PASS),
+            _scenario("search_missing", INCONCLUSIVE, abstentions=[CONFLICT]),
+        ]},
+        "POST /api/contact": {"verdict": FAIL, "scenarios": [
+            _scenario("contact_01", FAIL, [SUPPRESSED], request=WRITE),
+        ]},
+    }}
+
+
+INJECTION = {"summary": {"security improvement": 2, "vulnerability kept": 1}, "probes": [
+    {"scenario_id": "search_injection_01", "label": "vulnerability kept", "probe": "' OR '1'='1"},
+    {"scenario_id": "search_injection_02", "label": "security improvement", "probe": "'"},
+    {"scenario_id": "contact_injection_01", "label": "security improvement", "probe": "'"},
+]}
+
+
+def test_the_summary_counts_every_scenario_of_every_endpoint():
+    text = differential_report(_report(), INJECTION)
+
+    assert "| `GET /api/patients` | **FAIL** | 1 | 1 | 1 |" in text
+    assert "| `POST /api/contact` | **FAIL** | 0 | 1 | 0 |" in text
+
+
+def test_a_failing_response_names_the_field_and_the_closest_migrated_record():
+    text = differential_report(_report(), INJECTION)
+
+    assert "### FAIL: search_01" in text
+    assert "`GET /api/patients?contact=8683619153` · legacy page: `POST /patientsearch.php`" in text
+    assert '| Response | "Last Name" = `"Blake"` not reproduced |' in text
+    assert '| Response | closest migrated record: `{"fname": "William", "lname": "Blakex"}` |' in text
+
+
+def test_a_failing_write_shows_its_request_body_and_the_database_row():
+    text = differential_report(_report(), INJECTION)
+
+    assert '```json\n{"name": "Anu", "message": "hello"}\n```' in text
+    assert "| Database | `contact: missing on the migrated side` |" in text
+
+
+def test_every_failing_scenario_links_to_the_oracle_record_it_rests_on():
+    text = differential_report(_report(), INJECTION)
+
+    assert "[search_01.json](../../oracles/demo/search_01.json)" in text
+    assert "[contact_01.json](../../oracles/demo/contact_01.json)" in text
+
+
+def test_passing_scenarios_appear_only_in_the_counts():
+    assert "search_02" not in differential_report(_report(), INJECTION)
+
+
+def test_an_inconclusive_scenario_is_listed_with_its_reason():
+    text = differential_report(_report(), INJECTION)
+
+    assert (
+        "- **search_missing** (`GET /api/patients`): two legacy pages expect different results "
+        "for the same request to this endpoint (also: patient_list_typical_01)"
+    ) in text
+
+
+def test_injection_probes_are_summarised_and_only_the_unsafe_ones_listed():
+    text = differential_report(_report(), INJECTION)
+
+    assert "| vulnerability kept | 1 |" in text
+    assert "- **vulnerability kept**: search_injection_01, probe `' OR '1'='1`" in text
+    assert "contact_injection_01" not in text
+
+
+def test_a_clean_run_says_so_plainly():
+    clean = {"benchmark": "demo", "endpoints": {"GET /api/x": {"verdict": PASS, "scenarios": [_scenario("x_01", PASS)]}}}
+
+    text = differential_report(clean, {"summary": {}, "probes": []})
+
+    assert "## Failing scenarios\n\nNone." in text
+    assert "## Inconclusive scenarios\n\nNone." in text
+
+
+def test_a_table_cell_cannot_be_broken_by_a_value_containing_a_bar():
+    finding = {"where": "response", "kind": "unexpected_record", "migrated_record": {"name": "a|b"}}
+    report = {"benchmark": "demo", "endpoints": {"GET /api/x": {"verdict": FAIL, "scenarios": [_scenario("x_01", FAIL, [finding])]}}}
+
+    assert r'{"name": "a\|b"}' in differential_report(report, {"summary": {}, "probes": []})
+
+
+def test_the_report_is_identical_for_identical_findings():
+    assert differential_report(_report(), INJECTION) == differential_report(_report(), INJECTION)

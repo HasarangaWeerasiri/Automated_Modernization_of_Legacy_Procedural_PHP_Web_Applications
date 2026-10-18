@@ -31,6 +31,15 @@ class Api:
     def request(self, method, path, **options):
         return self.session.request(method, self.base_url + path, timeout=30, allow_redirects=False, **options)
 
+    def login(self, method, path, body, token_at):
+        """Log in as the seed user a test needs, and return the header that carries it."""
+        response = self.request(method, path, json=body)
+        found = response.json() if response.status_code < 400 else None
+        for key in filter(None, token_at.split(".")):
+            found = found.get(key) if isinstance(found, dict) else None
+        assert isinstance(found, str) and found, f"Logging in did not give a token (status {response.status_code})."
+        return {"Authorization": f"Bearer {found}"}
+
 
 @pytest.fixture(scope="session")
 def api():
@@ -60,9 +69,3 @@ def db(database):
     engine, baseline = database
     c4_checks.reset(engine, baseline)
     return engine
-
-
-@pytest.fixture
-def before(db):
-    """The database as it is before the request under test."""
-    return c4_checks.snapshot(db) if db is not None else None

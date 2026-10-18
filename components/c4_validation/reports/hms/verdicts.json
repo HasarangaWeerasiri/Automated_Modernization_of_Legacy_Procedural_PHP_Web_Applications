@@ -1,6 +1,26 @@
 {
   "benchmark": "hms",
   "endpoints": {
+    "GET /api/me/prescriptions": {
+      "verdict": "PASS",
+      "scenarios": [
+        {
+          "scenario_id": "patient_prescriptions_typical_01",
+          "scenario_type": "typical",
+          "verdict": "PASS",
+          "request": {
+            "method": "GET",
+            "path": "/api/me/prescriptions",
+            "params": {},
+            "body": null
+          },
+          "legacy_request": "GET /admin-panel.php",
+          "oracle_record": "oracles/hms/patient_prescriptions_typical_01.json",
+          "differences": [],
+          "abstentions": []
+        }
+      ]
+    },
     "GET /api/patients": {
       "verdict": "INCONCLUSIVE",
       "scenarios": [
@@ -8,6 +28,13 @@
           "scenario_id": "patient_list_typical_01",
           "scenario_type": "typical",
           "verdict": "INCONCLUSIVE",
+          "request": {
+            "method": "GET",
+            "path": "/api/patients",
+            "params": {},
+            "body": null
+          },
+          "legacy_request": "GET /admin-panel1.php",
           "oracle_record": "oracles/hms/patient_list_typical_01.json",
           "differences": [],
           "abstentions": [
@@ -26,6 +53,15 @@
           "scenario_id": "patient_search_boundary_contact_empty",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "GET",
+            "path": "/api/patients",
+            "params": {
+              "contact": ""
+            },
+            "body": null
+          },
+          "legacy_request": "POST /patientsearch.php",
           "oracle_record": "oracles/hms/patient_search_boundary_contact_empty.json",
           "differences": [],
           "abstentions": []
@@ -34,6 +70,15 @@
           "scenario_id": "patient_search_boundary_contact_longest",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "GET",
+            "path": "/api/patients",
+            "params": {
+              "contact": "9999999999"
+            },
+            "body": null
+          },
+          "legacy_request": "POST /patientsearch.php",
           "oracle_record": "oracles/hms/patient_search_boundary_contact_longest.json",
           "differences": [],
           "abstentions": []
@@ -42,6 +87,13 @@
           "scenario_id": "patient_search_boundary_contact_missing",
           "scenario_type": "boundary",
           "verdict": "INCONCLUSIVE",
+          "request": {
+            "method": "GET",
+            "path": "/api/patients",
+            "params": {},
+            "body": null
+          },
+          "legacy_request": "POST /patientsearch.php",
           "oracle_record": "oracles/hms/patient_search_boundary_contact_missing.json",
           "differences": [],
           "abstentions": [
@@ -204,6 +256,15 @@
           "scenario_id": "patient_search_boundary_contact_too_long",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "GET",
+            "path": "/api/patients",
+            "params": {
+              "contact": "99999999999"
+            },
+            "body": null
+          },
+          "legacy_request": "POST /patientsearch.php",
           "oracle_record": "oracles/hms/patient_search_boundary_contact_too_long.json",
           "differences": [],
           "abstentions": []
@@ -212,6 +273,15 @@
           "scenario_id": "patient_search_not_found_01",
           "scenario_type": "typical",
           "verdict": "PASS",
+          "request": {
+            "method": "GET",
+            "path": "/api/patients",
+            "params": {
+              "contact": "0000000000"
+            },
+            "body": null
+          },
+          "legacy_request": "POST /patientsearch.php",
           "oracle_record": "oracles/hms/patient_search_not_found_01.json",
           "differences": [],
           "abstentions": []
@@ -220,6 +290,15 @@
           "scenario_id": "patient_search_typical_01",
           "scenario_type": "typical",
           "verdict": "PASS",
+          "request": {
+            "method": "GET",
+            "path": "/api/patients",
+            "params": {
+              "contact": "8683619153"
+            },
+            "body": null
+          },
+          "legacy_request": "POST /patientsearch.php",
           "oracle_record": "oracles/hms/patient_search_typical_01.json",
           "differences": [],
           "abstentions": []
@@ -228,6 +307,15 @@
           "scenario_id": "patient_search_typical_02",
           "scenario_type": "typical",
           "verdict": "PASS",
+          "request": {
+            "method": "GET",
+            "path": "/api/patients",
+            "params": {
+              "contact": "9070897653"
+            },
+            "body": null
+          },
+          "legacy_request": "POST /patientsearch.php",
           "oracle_record": "oracles/hms/patient_search_typical_02.json",
           "differences": [],
           "abstentions": []
@@ -236,6 +324,15 @@
           "scenario_id": "patient_search_typical_03",
           "scenario_type": "typical",
           "verdict": "PASS",
+          "request": {
+            "method": "GET",
+            "path": "/api/patients",
+            "params": {
+              "contact": "9876543210"
+            },
+            "body": null
+          },
+          "legacy_request": "POST /patientsearch.php",
           "oracle_record": "oracles/hms/patient_search_typical_03.json",
           "differences": [],
           "abstentions": []
@@ -249,6 +346,18 @@
           "scenario_id": "contact_form_boundary_contact_empty",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "Mark Shah",
+              "email": "zachary99@example.com",
+              "contact": "",
+              "message": "Katherine Barnes"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_boundary_contact_empty.json",
           "differences": [],
           "abstentions": []
@@ -257,6 +366,18 @@
           "scenario_id": "contact_form_boundary_contact_longest",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "Mark Shah",
+              "email": "zachary99@example.com",
+              "contact": "9999999999",
+              "message": "Katherine Barnes"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_boundary_contact_longest.json",
           "differences": [],
           "abstentions": []
@@ -265,6 +386,17 @@
           "scenario_id": "contact_form_boundary_contact_missing",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "Mark Shah",
+              "email": "zachary99@example.com",
+              "message": "Katherine Barnes"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_boundary_contact_missing.json",
           "differences": [],
           "abstentions": []
@@ -273,6 +405,18 @@
           "scenario_id": "contact_form_boundary_contact_too_long",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "Mark Shah",
+              "email": "zachary99@example.com",
+              "contact": "99999999999",
+              "message": "Katherine Barnes"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_boundary_contact_too_long.json",
           "differences": [],
           "abstentions": []
@@ -281,6 +425,18 @@
           "scenario_id": "contact_form_boundary_email_empty",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "Mark Shah",
+              "email": "",
+              "contact": "8546936914",
+              "message": "Katherine Barnes"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_boundary_email_empty.json",
           "differences": [],
           "abstentions": []
@@ -289,6 +445,17 @@
           "scenario_id": "contact_form_boundary_email_missing",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "Mark Shah",
+              "contact": "8546936914",
+              "message": "Katherine Barnes"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_boundary_email_missing.json",
           "differences": [],
           "abstentions": []
@@ -297,6 +464,18 @@
           "scenario_id": "contact_form_boundary_email_very_long",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "Mark Shah",
+              "email": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "contact": "8546936914",
+              "message": "Katherine Barnes"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_boundary_email_very_long.json",
           "differences": [],
           "abstentions": []
@@ -305,6 +484,18 @@
           "scenario_id": "contact_form_boundary_message_empty",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "Mark Shah",
+              "email": "zachary99@example.com",
+              "contact": "8546936914",
+              "message": ""
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_boundary_message_empty.json",
           "differences": [],
           "abstentions": []
@@ -313,6 +504,18 @@
           "scenario_id": "contact_form_boundary_message_longest",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "Mark Shah",
+              "email": "zachary99@example.com",
+              "contact": "8546936914",
+              "message": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_boundary_message_longest.json",
           "differences": [],
           "abstentions": []
@@ -321,6 +524,17 @@
           "scenario_id": "contact_form_boundary_message_missing",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "Mark Shah",
+              "email": "zachary99@example.com",
+              "contact": "8546936914"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_boundary_message_missing.json",
           "differences": [],
           "abstentions": []
@@ -329,6 +543,18 @@
           "scenario_id": "contact_form_boundary_message_too_long",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "Mark Shah",
+              "email": "zachary99@example.com",
+              "contact": "8546936914",
+              "message": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_boundary_message_too_long.json",
           "differences": [],
           "abstentions": []
@@ -337,6 +563,18 @@
           "scenario_id": "contact_form_boundary_name_empty",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "",
+              "email": "zachary99@example.com",
+              "contact": "8546936914",
+              "message": "Katherine Barnes"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_boundary_name_empty.json",
           "differences": [],
           "abstentions": []
@@ -345,6 +583,18 @@
           "scenario_id": "contact_form_boundary_name_longest",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "email": "zachary99@example.com",
+              "contact": "8546936914",
+              "message": "Katherine Barnes"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_boundary_name_longest.json",
           "differences": [],
           "abstentions": []
@@ -353,6 +603,17 @@
           "scenario_id": "contact_form_boundary_name_missing",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "email": "zachary99@example.com",
+              "contact": "8546936914",
+              "message": "Katherine Barnes"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_boundary_name_missing.json",
           "differences": [],
           "abstentions": []
@@ -361,6 +622,18 @@
           "scenario_id": "contact_form_boundary_name_too_long",
           "scenario_type": "boundary",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "email": "zachary99@example.com",
+              "contact": "8546936914",
+              "message": "Katherine Barnes"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_boundary_name_too_long.json",
           "differences": [],
           "abstentions": []
@@ -369,6 +642,18 @@
           "scenario_id": "contact_form_typical_01",
           "scenario_type": "typical",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "Mark Shah",
+              "email": "zachary99@example.com",
+              "contact": "8546936914",
+              "message": "Katherine Barnes"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_typical_01.json",
           "differences": [],
           "abstentions": []
@@ -377,6 +662,18 @@
           "scenario_id": "contact_form_typical_02",
           "scenario_type": "typical",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "Debra Wall",
+              "email": "lisa21@example.net",
+              "contact": "3079144511",
+              "message": "Lindsey Barnes"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_typical_02.json",
           "differences": [],
           "abstentions": []
@@ -385,6 +682,18 @@
           "scenario_id": "contact_form_typical_03",
           "scenario_type": "typical",
           "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/contact",
+            "params": {},
+            "body": {
+              "name": "Laura Carroll",
+              "email": "gabriellejefferson@example.org",
+              "contact": "8884595548",
+              "message": "Ashley Rivera"
+            }
+          },
+          "legacy_request": "POST /contact.php",
           "oracle_record": "oracles/hms/contact_form_typical_03.json",
           "differences": [],
           "abstentions": []

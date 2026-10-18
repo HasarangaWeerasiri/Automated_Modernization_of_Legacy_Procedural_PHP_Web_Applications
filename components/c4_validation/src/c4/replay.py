@@ -55,6 +55,30 @@ def _records(response: requests.Response, records_at: str) -> tuple[tuple | None
     return tuple(found), None
 
 
+def _token(config: Config, session: requests.Session, scenario: dict[str, Any], login: dict[str, Any]) -> str:
+    """Log in on the migrated system as the same seed user, and return the header to send."""
+    response = session.request(
+        login["method"],
+        config.migrated.base_url + login["path"],
+        params=login.get("params") or None,
+        json=login.get("body"),
+        timeout=config.request_timeout,
+        allow_redirects=False,
+    )
+    try:
+        found: Any = response.json()
+        for key in filter(None, login["token_at"].split(".")):
+            found = found[key]
+    except (ValueError, KeyError, TypeError):
+        found = None
+    if response.status_code >= 400 or not isinstance(found, str) or not found:
+        raise ReplayError(
+            f"{scenario['scenario_id']}: logging in as '{scenario['login']}' on the migrated system "
+            f"did not give a token (status {response.status_code})."
+        )
+    return f"Bearer {found}"
+
+
 def replay(
     config: Config,
     scenario: dict[str, Any],
@@ -74,6 +98,10 @@ def replay(
     session = requests.Session()  # a fresh session: no cookies carried between runs
     session.trust_env = False
     try:
+        if scenario.get("migrated_login"):
+            session.headers["Authorization"] = _token(config, session, scenario, scenario["migrated_login"])
+            # Measured from after the login, as on the legacy side.
+            before = dbstate.snapshot(config.migrated)
         response = session.request(
             request["method"],
             config.migrated.base_url + request["path"],

@@ -190,6 +190,11 @@ def snapshot(engine) -> dict[str, dict[str, Any]]:
         }
 
 
+def start(engine):
+    """The database as it is just before the request under test, or None without one."""
+    return snapshot(engine) if engine is not None else None
+
+
 def _key(values: dict[str, Any]) -> str:
     return json.dumps(values, sort_keys=True, ensure_ascii=False)
 

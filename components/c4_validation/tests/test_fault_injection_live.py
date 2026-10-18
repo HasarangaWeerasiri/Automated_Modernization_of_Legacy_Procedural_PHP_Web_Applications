@@ -281,3 +281,19 @@ def test_injection_probes_never_change_an_endpoints_verdict(stub, at_baseline, b
     judged = [s["scenario_id"] for entry in report["endpoints"].values() for s in entry["scenarios"]]
     assert not [scenario_id for scenario_id in judged if "_injection_" in scenario_id]
     assert len(report["injection_probes_not_judged_here"]) == 15
+
+
+# ------------------------------------------------------------- pages behind a login
+
+
+def test_a_page_behind_a_login_passes_when_the_same_user_sees_the_same_data(stub, judge):
+    assert judge("patient_prescriptions_typical_01").verdict == PASS
+
+
+def test_showing_other_users_data_fails(stub, judge):
+    stub("shows_everyones_prescriptions")
+
+    result = judge("patient_prescriptions_typical_01")
+
+    assert result.verdict == FAIL
+    assert {d["kind"] for d in result.differences} == {"unexpected_record"}

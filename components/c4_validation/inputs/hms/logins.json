@@ -1,0 +1,19 @@
+{
+  "format": "c4-stand-in/1",
+  "logins": {
+    "patient": {
+      "legacy": {
+        "method": "POST",
+        "path": "/func.php",
+        "body": { "email": "kishansmart0@gmail.com", "password2": "kishan123", "patsub": "Login" },
+        "expect_redirect": "admin-panel.php"
+      },
+      "migrated": {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "body": { "email": "kishansmart0@gmail.com", "password": "kishan123" },
+        "token_at": "access_token"
+      }
+    }
+  }
+}

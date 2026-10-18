@@ -19,7 +19,7 @@ The fault switch exists only in this stub. A real migrated system has no such th
 import os
 from typing import Any, Callable
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import create_engine, text
 
@@ -61,6 +61,8 @@ OTHER_FAULTS = (
     "inserts_contact_twice",
     # Builds its SQL by pasting the input into the statement, as the legacy pages do.
     "concatenates_input",
+    # The prescriptions endpoint ignores whose token it was given.
+    "shows_everyones_prescriptions",
 )
 
 active_fault: str | None = None
@@ -153,3 +155,47 @@ def create_contact(body: ContactMessage) -> dict[str, str]:
         for _ in range(copies):
             connection.execute(insert, row)
     return {"message": "Contact saved"}
+
+
+class Credentials(BaseModel):
+    email: str
+    password: str
+
+
+def _patient(authorization: str | None) -> int:
+    """The patient a bearer token stands for. Tokens here are not secrets: this is a stub."""
+    scheme, _, token = (authorization or "").partition(" ")
+    role, _, pid = token.partition(":")
+    if scheme != "Bearer" or role != "patient" or not pid.isdigit():
+        raise HTTPException(status_code=401, detail="A patient token is required.")
+    return int(pid)
+
+
+@app.post("/api/auth/login")
+def log_in(body: Credentials) -> dict[str, str]:
+    """Log a patient in, as the legacy patient login form does, and give a token."""
+    with engine.connect() as connection:
+        pid = connection.execute(
+            text("SELECT pid FROM patreg WHERE email = :email AND password = :password"),
+            body.model_dump(),
+        ).scalar()
+    if pid is None:
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+    return {"access_token": f"patient:{pid}", "token_type": "bearer"}
+
+
+@app.get("/api/me/prescriptions")
+def my_prescriptions(authorization: str | None = Header(None)) -> dict[str, Any]:
+    """The logged-in patient's prescriptions, as the patient dashboard lists them."""
+    pid = _patient(authorization)
+    # TIME columns are returned as text, as a model with a Time column would render them.
+    query = (
+        "SELECT doctor, ID, appdate, CAST(apptime AS CHAR) AS apptime, disease, allergy, prescription "
+        "FROM prestb"
+    )
+    with engine.connect() as connection:
+        if active_fault == "shows_everyones_prescriptions":
+            rows = connection.execute(text(query)).mappings().all()
+        else:
+            rows = connection.execute(text(query + " WHERE pid = :pid"), {"pid": pid}).mappings().all()
+    return {"prescriptions": [dict(row) for row in rows]}

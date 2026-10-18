@@ -153,6 +153,7 @@ def test_one_test_per_scenario_with_the_expected_values_written_out(benchmark):
     assert "{'Name': 'Ram'}" in tests and "{'Name': 'Alia'}" in tests
     assert "expect_safe_handling(response, db, before, probe=\"' OR '1'='1\", at='things')" in tests
     assert "Oracle record: oracles/demo/list_typical_01.json" in tests
+    assert tests.count("    headers = {}\n    before = start(db)") == 2  # no login needed here
     assert json.loads((folder / "baseline.json").read_text()) == {
         "tables": {"things": [{"id": 1, "name": "Ram"}, {"id": 2, "name": "Alia"}]},
         "auto_increment": {"things": 3},

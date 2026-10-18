@@ -112,6 +112,7 @@ def _test_for(scenario: dict[str, Any], record: dict[str, Any], oracle: str, ski
         "params": request["params"] or {},
         "body": request["body"],
         "at": request["records_at"],
+        "login": scenario.get("migrated_login"),
     }
     if scenario["scenario_type"] == "injection":
         behaviour, _ = compare.legacy_injection_behaviour(record, scenario)

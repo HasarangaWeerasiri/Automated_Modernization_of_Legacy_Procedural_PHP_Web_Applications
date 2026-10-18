@@ -10,6 +10,12 @@ else works on the classes below, so a map in another format needs another reader
 here and nothing more. The format read today is a stand-in written for C4 while the
 real map does not exist yet.
 
+A legacy page that is only reachable after logging in names a login in the map.
+`load_logins` reads the benchmark's logins: per name, how to log in as one fixed seed
+user on the legacy system, and how to obtain a token for the same user from the
+migrated system. Logging in is a precondition for reaching a page, never something
+that is tested.
+
 Scenario values are generated, never written by hand (FR4). For every source page of
 every endpoint:
 
@@ -88,6 +94,8 @@ class Source:
     fixed: Mapping[str, str]
     records: str | int
     parameters: tuple[Parameter, ...]
+    # The named login a page needs before it shows anything, if any.
+    login: str | None = None
 
 
 @dataclass(frozen=True)
@@ -157,6 +165,7 @@ def _read_stand_in(document: Mapping[str, Any]) -> dict[str, Endpoint]:
                 fixed=dict(item["legacy"].get("fixed", {})),
                 records=records,
                 parameters=tuple(parameters),
+                login=item.get("login"),
             )
 
         endpoints[endpoint_id] = Endpoint(
@@ -190,7 +199,28 @@ def load_endpoint_map(path: Path) -> EndpointMap:
     return reader(document)
 
 
-def resolve(endpoint_map: EndpointMap, scenario: Mapping[str, Any]) -> dict[str, Any]:
+def load_logins(path: Path) -> dict[str, dict[str, Any]]:
+    """Read the named logins of a benchmark; a benchmark without the file has none."""
+    if not path.is_file():
+        return {}
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as error:
+        raise EndpointMapError(f"{path.name} is not valid JSON: {error}") from None
+    if document.get("format") != STAND_IN_FORMAT:
+        raise EndpointMapError(f"{path.name} has no known format. Known: {STAND_IN_FORMAT}.")
+    logins = document.get("logins", {})
+    for name, login in logins.items():
+        for side, keys in (("legacy", ("method", "path")), ("migrated", ("method", "path", "token_at"))):
+            if side not in login:
+                raise EndpointMapError(f"Login '{name}' does not say how to log in on the {side} system.")
+            _require(login[side], keys, f"The {side} side of login '{name}'")
+    return logins
+
+
+def resolve(
+    endpoint_map: EndpointMap, scenario: Mapping[str, Any], logins: Mapping[str, Any] | None = None
+) -> dict[str, Any]:
     """Turn a scenario's values into the request for each system.
 
     A parameter the scenario gives no value for is left out of both requests.
@@ -251,19 +281,26 @@ def resolve(endpoint_map: EndpointMap, scenario: Mapping[str, Any]) -> dict[str,
     }
     if source.records != "only":
         resolved["legacy_table"] = source.records
+    if source.login:
+        if not logins or source.login not in logins:
+            raise ScenarioError(f"{scenario_id}: the page needs the login '{source.login}', which is not described.")
+        resolved["login"] = source.login
+        resolved["legacy_login"] = logins[source.login]["legacy"]
+        resolved["migrated_login"] = logins[source.login]["migrated"]
     return resolved
 
 
 def load_all(config: Config) -> list[dict[str, Any]]:
     """Every scenario of the benchmark, resolved against its endpoint map."""
     endpoint_map = load_endpoint_map(config.endpoint_map_file)
+    logins = load_logins(config.logins_file)
     resolved = []
     for file in sorted(config.scenario_dir.glob("*.json")):
         try:
             scenario = json.loads(file.read_text(encoding="utf-8"))
         except ValueError as error:
             raise ScenarioError(f"{file.name} is not valid JSON: {error}") from None
-        resolved.append(resolve(endpoint_map, scenario))
+        resolved.append(resolve(endpoint_map, scenario, logins))
     return resolved
 
 

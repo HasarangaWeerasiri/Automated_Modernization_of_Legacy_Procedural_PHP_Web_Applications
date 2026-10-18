@@ -12,7 +12,9 @@
           "legacy": {
             "method": "POST",
             "path": "/patientsearch.php",
-            "fixed": { "patient_search_submit": "1" },
+            "fixed": {
+              "patient_search_submit": "1"
+            },
             "records": "only"
           },
           "parameters": [
@@ -30,7 +32,9 @@
           "legacy": {
             "method": "GET",
             "path": "/admin-panel1.php",
-            "records": { "table": 1 }
+            "records": {
+              "table": 1
+            }
           },
           "parameters": []
         }
@@ -47,15 +51,61 @@
           "legacy": {
             "method": "POST",
             "path": "/contact.php",
-            "fixed": { "btnSubmit": "1" },
+            "fixed": {
+              "btnSubmit": "1"
+            },
             "records": "none"
           },
           "parameters": [
-            { "name": "name", "in": "body", "legacy_name": "txtName", "legacy_in": "body", "column": "contact.name" },
-            { "name": "email", "in": "body", "legacy_name": "txtEmail", "legacy_in": "body", "column": "contact.email" },
-            { "name": "contact", "in": "body", "legacy_name": "txtPhone", "legacy_in": "body", "column": "contact.contact" },
-            { "name": "message", "in": "body", "legacy_name": "txtMsg", "legacy_in": "body", "column": "contact.message" }
+            {
+              "name": "name",
+              "in": "body",
+              "legacy_name": "txtName",
+              "legacy_in": "body",
+              "column": "contact.name"
+            },
+            {
+              "name": "email",
+              "in": "body",
+              "legacy_name": "txtEmail",
+              "legacy_in": "body",
+              "column": "contact.email"
+            },
+            {
+              "name": "contact",
+              "in": "body",
+              "legacy_name": "txtPhone",
+              "legacy_in": "body",
+              "column": "contact.contact"
+            },
+            {
+              "name": "message",
+              "in": "body",
+              "legacy_name": "txtMsg",
+              "legacy_in": "body",
+              "column": "contact.message"
+            }
           ]
+        }
+      ]
+    },
+    {
+      "endpoint_id": "GET /api/me/prescriptions",
+      "method": "GET",
+      "path": "/api/me/prescriptions",
+      "records_at": "prescriptions",
+      "sources": [
+        {
+          "source_id": "patient_prescriptions",
+          "login": "patient",
+          "legacy": {
+            "method": "GET",
+            "path": "/admin-panel.php",
+            "records": {
+              "table": 1
+            }
+          },
+          "parameters": []
         }
       ]
     }

@@ -79,6 +79,11 @@ def _observe(
     session = requests.Session()  # a fresh session: no cookies carried between runs
     session.trust_env = False
     try:
+        if scenario.get("legacy_login"):
+            _log_in(config, session, scenario["scenario_id"], scenario["login"], scenario["legacy_login"])
+            # Logging in may itself write, a last-login time for instance. The
+            # scenario's change is measured from after it.
+            before = dbstate.snapshot(config.legacy)
         response = session.request(
             request["method"],
             config.legacy.base_url + request["path"],
@@ -129,6 +134,25 @@ def _observe(
         messages=messages,
         shown=shown,
     )
+
+
+def _log_in(config: Config, session: requests.Session, scenario_id: str, name: str, login: dict[str, Any]) -> None:
+    """Log in on the legacy system as the seed user a page needs."""
+    response = session.request(
+        login["method"],
+        config.legacy.base_url + login["path"],
+        params=login.get("params") or None,
+        data=login.get("body") or None,
+        timeout=config.request_timeout,
+        allow_redirects=False,
+    )
+    expected = login.get("expect_redirect")
+    redirected = response.headers.get("Location", "")
+    if response.status_code >= 400 or (expected and expected not in redirected):
+        raise CaptureError(
+            f"{scenario_id}: logging in as '{name}' on the legacy system did not succeed "
+            f"(status {response.status_code}{', redirected to ' + redirected if redirected else ''})."
+        )
 
 
 def _volatile_labels(scenario_id: str, observations: list[Observation]) -> list[str]:

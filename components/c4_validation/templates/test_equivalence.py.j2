@@ -13,21 +13,25 @@ Do not edit: generate it again instead.
 
 import pytest
 
-from c4_checks import expect_database_change, expect_outcome, expect_records, expect_safe_handling
+from c4_checks import expect_database_change, expect_outcome, expect_records, expect_safe_handling, start
 {% for test in tests %}
 
 {% if test.skip %}@pytest.mark.skip(reason={{ test.skip | py(0) }})
-{% endif %}def test_{{ test.name }}(api, db, before):
+{% endif %}def test_{{ test.name }}(api, db):
     """{{ test.title }}
 
     {{ test.description }}
     Oracle record: {{ test.oracle }}
     """
+{% if test.login %}    headers = api.login({{ test.login.method | py(4) }}, {{ test.login.path | py(4) }}, {{ test.login.get("body") | py(4) }}, token_at={{ test.login.token_at | py(4) }})
+{% else %}    headers = {}
+{% endif %}    before = start(db)
     response = api.request(
         {{ test.method | py(8) }},
         {{ test.path | py(8) }},
         params={{ test.params | py(8) }},
         json={{ test.body | py(8) }},
+        headers=headers,
     )
 {% if test.kind == "injection" %}    expect_safe_handling(response, db, before, probe={{ test.probe | py(4) }}, at={{ test.at | py(4) }})
 {% else %}    expect_outcome(response, {{ test.outcome | py(4) }})
