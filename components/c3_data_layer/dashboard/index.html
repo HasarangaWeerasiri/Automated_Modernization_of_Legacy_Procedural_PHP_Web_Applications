@@ -59,8 +59,7 @@
         </div>
       </div>
 
-      <div class="notice">The local migration connection is not available yet. Uploads are not sent anywhere and nothing is analysed
-        in this version.</div>
+      <div class="notice" id="tryit-status" role="status">Checking the local migration connection…</div>
 
       <div class="grid two">
         <div class="upload">
@@ -74,21 +73,30 @@
           <span class="muted" id="schema-sql-name">No file selected.</span>
         </div>
       </div>
+      <p class="muted" id="tryit-limits"></p>
 
-      <p><button type="button" class="button primary" id="run-migration" disabled aria-disabled="true">Local migration connection pending</button></p>
+      <p class="tryit-actions">
+        <button type="button" class="button primary" id="run-migration" disabled aria-disabled="true">Local migration connection pending</button>
+        <button type="button" class="button" id="load-sample">Load recorded sample run</button>
+      </p>
+      <div class="notice info" id="tryit-progress" role="status" aria-live="polite" hidden></div>
+      <div class="notice error" id="tryit-error" role="alert" hidden></div>
 
+      <div class="tryit-result-head">
+        <span class="badge" id="tryit-source" hidden></span>
+        <p class="muted" id="tryit-count-label">Counts from this upload, no ground truth, not an accuracy figure</p>
+      </div>
       <div class="grid kpis" aria-label="Results of the uploaded project">
-        <div class="kpi"><div class="kpi-label">SQL detected</div><div class="kpi-value">—</div><div class="kpi-foot">No analysis run</div></div>
-        <div class="kpi"><div class="kpi-label">SQL recovered</div><div class="kpi-value">—</div><div class="kpi-foot">No analysis run</div></div>
-        <div class="kpi"><div class="kpi-label">Converted functions</div><div class="kpi-value">—</div><div class="kpi-foot">No analysis run</div></div>
-        <div class="kpi"><div class="kpi-label">Unresolved sites</div><div class="kpi-value">—</div><div class="kpi-foot">No analysis run</div></div>
+        <div class="kpi"><div class="kpi-label">SQL detected</div><div id="tryit-detected" class="kpi-value">—</div><div class="kpi-foot">pipeline count</div></div>
+        <div class="kpi"><div class="kpi-label">SQL recovered</div><div id="tryit-recovered" class="kpi-value">—</div><div class="kpi-foot">pipeline count</div></div>
+        <div class="kpi"><div class="kpi-label">Converted functions</div><div id="tryit-converted" class="kpi-value">—</div><div class="kpi-foot">pipeline count</div></div>
+        <div class="kpi"><div class="kpi-label">Unresolved sites</div><div id="tryit-unresolved-count" class="kpi-value">—</div><div class="kpi-foot">flagged for review</div></div>
       </div>
+      <p class="muted" id="tryit-breakdown">No analysis run yet.</p>
 
-      <div class="grid two">
-        <div class="card"><h3>Query explorer</h3><div class="placeholder">Recovered and unresolved SQL sites of your project will be listed here.</div></div>
-        <div class="card"><h3>Generated code preview</h3><div class="placeholder">models.py and data_access.py of your project will be previewed here.</div></div>
-      </div>
-      <div class="card"><h3>Download results</h3><div class="placeholder">A download of the generated data layer will be offered here after a run.</div></div>
+      <div class="card"><h3>Unresolved sites (query explorer)</h3><div id="tryit-unresolved"></div></div>
+      <div class="card"><h3>Generated code preview</h3><div id="tryit-code"></div></div>
+      <div class="card"><h3>Download results</h3><div id="tryit-download"></div></div>
     </section>
   </main>
 

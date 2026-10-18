@@ -24,6 +24,8 @@ const LAYOUT = {
   percentScale: 100,
   bytesPerKb: 1024,
   shortHash: 7,
+  msPerSecond: 1000,
+  secondsPerMinute: 60,
 };
 /* ===== END LAYOUT ===== */
 
@@ -513,24 +515,195 @@ const Evidence = (() => {
 
 /* ===== TRY IT (no evidence data) ===== */
 const TryIt = (() => {
-  // UI only. No upload, extraction or migration happens here: the local
-  // migration bridge is a separate, later piece of work. This block must never
-  // read the evidence data, so benchmark results can never appear as results
-  // of an uploaded project.
+  // Talks only to the local bridge (server.py, /api/...) and to the recorded
+  // sample file. It never reads the evidence data, so benchmark results can never
+  // appear as results of an uploaded project, and it never computes a percentage:
+  // uploads have no ground truth.
+  const API = "/api/";
+  const SAMPLE = "data/sample_run.json";
+  const $ = (id) => document.getElementById(id);
+  const state = { connected: false, busy: false, run: null, source: null, previews: {}, timer: null };
+
+  async function getJson(url, options) {
+    const response = await fetch(url, Object.assign({ cache: "no-store" }, options || {}));
+    let body = null;
+    try { body = await response.json(); } catch (error) { body = null; }
+    if (!response.ok) throw new Error((body && body.error) || `Request failed (HTTP ${response.status}).`);
+    return body;
+  }
+
+  const megabytes = (bytes) => Math.round(bytes / (LAYOUT.bytesPerKb * LAYOUT.bytesPerKb));
+  const chosen = (id) => { const input = $(id); return input.files && input.files[0] ? input.files[0] : null; };
+
   function describe(input, target) {
     const file = input.files && input.files[0];
     target.textContent = file
-      ? `${file.name} (${Math.max(1, Math.round(file.size / LAYOUT.bytesPerKb))} KB) selected. Not uploaded: the migration connection is pending.`
+      ? `${file.name} (${Math.max(1, Math.round(file.size / LAYOUT.bytesPerKb))} KB) selected. It stays on this computer.`
       : "No file selected.";
+    updateButton();
   }
+
+  function updateButton() {
+    const run = $("run-migration");
+    run.textContent = state.connected ? (state.busy ? "Analysing…" : "Analyze & Generate Data Layer") : "Local migration connection pending";
+    const ready = state.connected && !state.busy && chosen("php-zip") && chosen("schema-sql");
+    run.disabled = !ready;
+    run.setAttribute("aria-disabled", String(!ready));
+    $("load-sample").disabled = state.busy;
+  }
+
+  function showError(message) { $("tryit-error").textContent = message; $("tryit-error").hidden = !message; }
+
+  function progress(message) {
+    const box = $("tryit-progress");
+    box.textContent = message || "";
+    box.hidden = !message;
+  }
+
+  function startTimer() {
+    const started = Date.now();
+    progress("Uploading and running C3 on your project…");
+    state.timer = setInterval(() => {
+      progress(`Running C3 on your project… ${Math.floor((Date.now() - started) / LAYOUT.msPerSecond)} s elapsed`);
+    }, LAYOUT.msPerSecond);
+  }
+  function stopTimer() { clearInterval(state.timer); state.timer = null; progress(""); }
+
+  function clearResults() {
+    state.run = null;
+    state.source = null;
+    state.previews = {};
+    for (const id of ["tryit-detected", "tryit-recovered", "tryit-converted", "tryit-unresolved-count"]) $(id).textContent = "—";
+    $("tryit-breakdown").textContent = "No analysis run yet.";
+    $("tryit-source").hidden = true;
+    fill($("tryit-unresolved"), h("div", { class: "placeholder", text: "Unresolved SQL sites of your project will be listed here." }));
+    fill($("tryit-code"), h("div", { class: "placeholder", text: "models.py and data_access.py of your project will be previewed here." }));
+    fill($("tryit-download"), h("div", { class: "placeholder", text: "A download of the generated data layer will be offered here after a run." }));
+  }
+
+  function render(summary, unresolved, source, note) {
+    const c = summary.counts;
+    state.run = summary.run_id;
+    state.source = source;
+    $("tryit-count-label").textContent = summary.label;
+    $("tryit-detected").textContent = String(c.sql_detected);
+    $("tryit-recovered").textContent = String(c.sql_recovered);
+    $("tryit-converted").textContent = String(c.converted_functions);
+    $("tryit-unresolved-count").textContent = String(c.unresolved_sites);
+    $("tryit-breakdown").textContent = `Converted by general rules: ${c.converted_by_general_rules}; by query-specific templates: `
+      + `${c.converted_by_query_specific_template}. Unresolved at recovery: ${c.unresolved_recovery_stage}; at conversion: `
+      + `${c.unresolved_conversion_stage}. Upload: ${summary.upload.zip_name} (${summary.upload.php_files} .php files used, `
+      + `${summary.upload.files_skipped} other files ignored) with ${summary.upload.schema_name}; C3 ran for ${summary.duration_seconds} s.`;
+    const badge = $("tryit-source");
+    badge.textContent = source === "live" ? "Live run on this computer" : `Recorded run, not live${note ? ` · ${note}` : ""}`;
+    badge.className = `badge ${source === "live" ? "good" : "warn"}`;
+    badge.hidden = false;
+
+    const sites = unresolved.sites;
+    fill($("tryit-unresolved"), sites.length ? h("div", { class: "table-wrap" }, h("table", {},
+      h("thead", {}, h("tr", {}, ["Query ID", "PHP file:line", "Stage", "Reason"].map((x) => h("th", { text: x })))),
+      h("tbody", {}, sites.map((s) => h("tr", {},
+        h("td", { text: s.query_id }), h("td", {}, h("code", { text: `${s.file}:${s.line}` })), h("td", { text: s.stage }),
+        h("td", { text: s.reason ? `${s.reason_code}: ${s.reason}` : (s.reason_code || "—") }))))))
+      : h("p", { class: "muted", text: "C3 converted every detected SQL site of this upload; nothing was flagged for review." }));
+
+    fill($("tryit-code"),
+      h("div", { class: "code-tabs", role: "tablist" }, ["models.py", "data_access.py"].map((name) =>
+        h("button", { type: "button", class: "sub-tab code-tab", role: "tab", "data-file": name, text: name,
+          onclick: () => renderPreviewInto(name) }))),
+      h("div", { id: "tryit-code-view" }));
+    renderPreviewInto("models.py");
+
+    fill($("tryit-download"), source === "live"
+      ? [h("a", { class: "button primary", href: `${API}runs/${state.run}/download`, download: "", text: "Download generated outputs (.zip)",
+        onclick: () => setTimeout(() => fill($("tryit-download"), h("p", { class: "muted",
+          text: "Downloaded. The temporary run folder is deleted after the download; run the analysis again to regenerate it." })), LAYOUT.msPerSecond) }),
+        h("p", { class: "muted", text: "Contains models.py, data_access.py, unresolved_queries.json, the reports and the alembic folder." })]
+      : h("p", { class: "muted", text: "Download is only available for live runs." }));
+  }
+
+  function renderPreviewInto(name) {
+    const view = $("tryit-code-view");
+    for (const tab of document.querySelectorAll(".code-tab")) tab.setAttribute("aria-selected", String(tab.dataset.file === name));
+    const show = (p) => fill(view,
+      p.truncated ? h("p", { class: "muted", text: `Preview truncated: showing the first part of ${p.file}. Download the outputs for the full file.` }) : null,
+      h("pre", { class: "code-preview" }, h("code", { text: p.text })));
+    if (state.previews[name]) return show(state.previews[name]);
+    if (state.source !== "live") return fill(view, h("p", { class: "muted", text: "No preview recorded for this file." }));
+    fill(view, h("p", { class: "muted", text: `Loading ${name}…` }));
+    return getJson(`${API}runs/${state.run}/file/${name}`)
+      .then((p) => { state.previews[name] = p; show(p); })
+      .catch((error) => fill(view, h("p", { class: "muted", text: error.message })));
+  }
+
+  async function analyze() {
+    const zip = chosen("php-zip");
+    const sql = chosen("schema-sql");
+    if (!zip) return showError("Choose the PHP project ZIP first.");
+    if (!sql) return showError("Choose the MySQL schema (.sql) file first.");
+    showError("");
+    clearResults();
+    state.busy = true;
+    updateButton();
+    startTimer();
+    const form = new FormData();
+    form.append("php_zip", zip, zip.name);
+    form.append("schema_sql", sql, sql.name);
+    try {
+      const summary = await getJson(`${API}analyze`, { method: "POST", body: form });
+      const unresolved = await getJson(`${API}runs/${summary.run_id}/unresolved`);
+      render(summary, unresolved, "live");
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      stopTimer();
+      state.busy = false;
+      updateButton();
+    }
+  }
+
+  async function loadSample() {
+    showError("");
+    clearResults();
+    try {
+      const sample = await getJson(SAMPLE);
+      state.previews = sample.previews || {};
+      render(sample.summary, sample.unresolved, "recorded", `${sample.app} · recorded ${sample.recorded_at}`);
+    } catch (error) {
+      showError(`No recorded sample run is available (${error.message}).`);
+    }
+  }
+
+  async function connect() {
+    try {
+      const info = await getJson(`${API}limits`);
+      const l = info.limits;
+      state.connected = true;
+      $("tryit-status").className = "notice info";
+      $("tryit-status").textContent = "Connected to the local C3 bridge on this computer. Uploads go only to this computer and are "
+        + "processed in a temporary folder outside the repository, which is deleted after the download or after an hour.";
+      $("tryit-limits").textContent = `Limits: ZIP up to ${megabytes(l.zip_bytes)} MB and ${l.zip_files} files `
+        + `(${megabytes(l.extracted_bytes)} MB extracted); schema up to ${megabytes(l.sql_bytes)} MB; `
+        + `${l.timeout_seconds / LAYOUT.secondsPerMinute} minute timeout; one run at a time. Only .php files are used.`;
+    } catch (error) {
+      state.connected = false;
+      $("tryit-status").className = "notice";
+      $("tryit-status").textContent = "Local migration connection not available. Start the local server with "
+        + "components/c3_data_layer/dashboard/server.py to analyse your own project.";
+    }
+    updateButton();
+  }
+
   function init() {
-    const zip = document.getElementById("php-zip");
-    const sql = document.getElementById("schema-sql");
-    zip.addEventListener("change", () => describe(zip, document.getElementById("php-zip-name")));
-    sql.addEventListener("change", () => describe(sql, document.getElementById("schema-sql-name")));
-    const run = document.getElementById("run-migration");
-    run.disabled = true;
-    run.setAttribute("aria-disabled", "true");
+    const zip = $("php-zip");
+    const sql = $("schema-sql");
+    zip.addEventListener("change", () => describe(zip, $("php-zip-name")));
+    sql.addEventListener("change", () => describe(sql, $("schema-sql-name")));
+    $("run-migration").addEventListener("click", analyze);
+    $("load-sample").addEventListener("click", loadSample);
+    clearResults();
+    updateButton();
+    connect();
   }
   return { init };
 })();

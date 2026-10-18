@@ -7,6 +7,7 @@ Reads the generated data file and the dashboard sources; runs no pipeline.
 import importlib.util
 import json
 import re
+import sys
 from pathlib import Path
 
 import pytest
@@ -15,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[3]
 DASHBOARD = ROOT / "components" / "c3_data_layer" / "dashboard"
 DATA_FILE = DASHBOARD / "data" / "dashboard_data.json"
 
+sys.dont_write_bytecode = True  # importing the script must not create scripts/__pycache__
 spec = importlib.util.spec_from_file_location("summarize_evidence", ROOT / "scripts" / "summarize_evidence.py")
 summarize = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(summarize)
@@ -213,16 +215,19 @@ def test_no_overall_accuracy_score(data):
 def test_try_it_never_reads_evidence_data():
     code = (DASHBOARD / "app.js").read_text(encoding="utf-8")
     block = re.search(r"/\* ===== TRY IT \(no evidence data\) ===== \*/(.*?)/\* ===== END TRY IT ===== \*/", code, re.S).group(1)
-    for forbidden in ("DATA", "measurement", "Evidence", "fetch(", "dashboard_data", "records", "experiments"):
+    for forbidden in ("DATA", "measurement", "Evidence", "dashboard_data", "records", "experiments"):
         assert forbidden not in block, forbidden
+    # it may only talk to the local bridge and the recorded sample file
+    assert set(re.findall(r'"((?:/|data/)[^"]*)"', block)) == {"/api/", "data/sample_run.json"}
 
 
-def test_try_it_panel_is_ui_only():
+def test_try_it_panel_starts_empty_and_disabled():
     html = (DASHBOARD / "index.html").read_text(encoding="utf-8")
     panel = re.search(r'<section id="panel-tryit".*?</section>', html, re.S).group(0)
     assert re.search(r'<button[^>]*id="run-migration"[^>]*\bdisabled\b[^>]*>Local migration connection pending</button>', panel)
     assert not NUMBER.findall(re.sub(r"<[^>]+>", " ", panel))
     assert panel.count('class="kpi-value">—<') == 4
+    assert "Counts from this upload, no ground truth, not an accuracy figure" in panel
 
 
 # Privacy ----------------------------------------------------------------------------------------

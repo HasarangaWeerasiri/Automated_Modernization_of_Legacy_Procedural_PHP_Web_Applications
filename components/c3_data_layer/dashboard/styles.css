@@ -200,6 +200,15 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: now
   border: 1px dashed var(--border); border-radius: 8px; font-size: 0.88rem; text-align: center; padding: 16px;
 }
 
+.tryit-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.tryit-result-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 6px 0 8px; }
+.tryit-result-head p { margin: 0; }
+.code-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+.code-preview {
+  margin: 0; max-height: 480px; overflow: auto; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px; font-size: 0.8rem; line-height: 1.45;
+}
+
 footer { color: var(--muted); font-size: 0.78rem; text-align: center; padding: 18px 24px 30px; }
 
 @media (max-width: 720px) {
