@@ -10,7 +10,9 @@ Usage, from component2_frontend/ (after tools/runtime/replay/generate.py <app>):
 (`--rules`: the boundary rules version, default the config's (v1.1); it is recorded in lists.json. `--no-data`: no
 substitute contract / map, built as output/test-app/c2-build/<app>-nodata-runtime: the same rules without the data
 wiring, the baseline classify.py --before takes to tell List rows from static elements. `--build <name>`: build
-into output/test-app/c2-build/<name>/ instead, so several builds can be served at once.)
+into output/test-app/c2-build/<name>/ instead, so several builds can be served at once. `--routes`: add the
+opt-in routing layer, tools/routing/routes.py, to the build so legacy .php links navigate; a deployment aid, never
+used for a measured run.)
 then start it:
     API_BASE_URL=http://127.0.0.1:18090 node output/test-app/node_modules/next/dist/bin/next start \\
         output/test-app/c2-build/hms-runtime -p 18100
@@ -25,7 +27,9 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]  # component2_frontend/
 sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(ROOT / "tools" / "harness"))
+sys.path.insert(0, str(ROOT / "tools" / "routing"))
 import compile_check  # noqa: E402
+import routes  # noqa: E402
 from app import app_timelines  # noqa: E402
 from run_apps import NEXT_APP, run_app  # noqa: E402
 
@@ -64,6 +68,10 @@ def main(argv: list[str]) -> int:
     failing = [p["key"] for p in index["pages"] if p["tsc"] not in (0, None)]
     build = argv[argv.index("--build") + 1] if "--build" in argv else f"{app}-{'nodata-' if not data else ''}runtime"
     ok, text = compile_check.next_build(build, pipeline / app / NEXT_APP)
+    if ok and "--routes" in argv:
+        table, ok, text = routes.apply(build, pipeline / app / "index.json")
+        print(f"  routing layer: {len(table['rewrites'])} rewrites, {len(table['redirects'])} redirects, "
+              f"{len(table['noPage'])} files with no page")
     found = lists(pipeline / app)
     summary = collections.Counter((f["result"], f["reason"]) for f in found)
     report = {"app": app, "rules": rules, "crashes": crashes, "tscFailing": failing, "nextBuild": ok, "lists": found,

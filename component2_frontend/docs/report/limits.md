@@ -65,3 +65,16 @@ yet"; if they do not arrive, "row 7 is closed as 'blocked — harness used', and
 | Inline JS / AJAX is out of scope: "detect and flag it, never convert it" | `CONTEXT.md` §2 |
 | The HMS rehearsal numbers are **not evaluation results**: HMS is a discovery app and the practice keys were drafted with knowledge of the rules, so they are biased upward | `CONTEXT.md` §6 (Phase 5R2); `docs/phase5r-rehearsal.md` |
 | Every file is a page unit: POST endpoints and include-only files are generated as (empty) pages | `docs/phase5r-rehearsal.md` §5 item 5 |
+
+## 7. Links between generated pages
+
+Links and form actions to `.php` pages are "kept as literal strings. Flag `legacy_link` (info; routing is not C2's
+job)" (`docs/generation-spec.md` §5), while a page's route has no `.php` (§8a): in the generated app a click on a
+legacy link finds no route. The opt-in routing layer (`docs/routing.md`, not part of the pipeline, **not measured**)
+serves the legacy URLs with the routes for a demonstration; it does not cover:
+
+| Limitation | Recorded in |
+|---|---|
+| Links built by a PHP expression are reached only if the page prints the same URL; links to files with no page (`noPage`: not generated, crashed, outside the document root), to files the app does not have, or to static files stay broken (404) | `docs/routing.md` §2, §6 |
+| `.htaccess` / server rewrite rules of the legacy app are not read | `docs/routing.md` §6 |
+| A link reaches a page, but a POST, a login or a redirect needs Component 1 | `docs/routing.md` §6; `docs/phase4-results.md` §7 |
