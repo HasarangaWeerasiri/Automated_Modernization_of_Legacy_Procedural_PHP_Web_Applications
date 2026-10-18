@@ -216,12 +216,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", type=Path, default=Path("analysis-out"), help="output folder (default: analysis-out)")
     ap.add_argument("--php", help="php binary (default: $C1_PHP or `php`)")
     ap.add_argument("--ext", action="append", help="file extension to include, repeatable (default: .php .inc)")
-    ap.add_argument("--exclude-dir", action="append", help="directory name to skip, repeatable (default: .git node_modules)")
+    ap.add_argument("--exclude-dir", action="append", help="extra directory name to skip, repeatable (always skipped: .git node_modules)")
     ap.add_argument("--pretty", action="store_true", help="indent AST files (bigger, easier to read)")
     args = ap.parse_args(argv)
 
     exts = tuple(e if e.startswith(".") else "." + e for e in args.ext) if args.ext else DEFAULT_EXTENSIONS
-    excl = tuple(args.exclude_dir) if args.exclude_dir else DEFAULT_EXCLUDE_DIRS
+    excl = DEFAULT_EXCLUDE_DIRS + tuple(args.exclude_dir or ())
     try:
         m = extract_tree(args.src_root, args.out, php=args.php, extensions=exts, exclude_dirs=excl, pretty=args.pretty)
     except ExtractError as e:
