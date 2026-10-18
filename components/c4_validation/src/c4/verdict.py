@@ -12,7 +12,9 @@ Every verdict is written with the path of the oracle record it rests on and the
 differences that were found, so it can be traced back to its evidence (NFR3).
 
 Injection probes are replayed too, and each gets a label of its own (see compare.py)
-in a separate injection-safety report. They never change an endpoint's verdict.
+in a separate injection-safety report. They never change an endpoint's verdict. A
+probe that cannot be judged (see compare.not_judged) is listed with the reason and is
+not replayed.
 
     python -m c4.verdict
 """
@@ -30,7 +32,7 @@ import requests
 
 from c4 import containers, dbstate, scenarios
 from c4.capture import CaptureError
-from c4.compare import FAIL, INCONCLUSIVE, PASS, compare, conflicts, judge_probe
+from c4.compare import FAIL, INCONCLUSIVE, NOT_JUDGED, PASS, compare, conflicts, judge_probe, not_judged
 from c4.config import Config, ConfigError, load_config
 from c4.replay import ReplayError, replay
 
@@ -106,7 +108,22 @@ def evaluate_injection(config: Config, baselines: dict[str, dbstate.Snapshot]) -
         if not stored.is_file():
             continue
         record = json.loads(stored.read_text(encoding="utf-8"))
-        judged = judge_probe(record, scenario, replay(config, scenario, record, baselines))
+        base_file = config.oracle_dir / f"{scenario['base']}.json" if scenario.get("base") else None
+        base = json.loads(base_file.read_text(encoding="utf-8")) if base_file and base_file.is_file() else None
+        reason = not_judged(record, scenario, base)
+        if reason:
+            judged = {
+                "scenario_id": record["scenario_id"],
+                "endpoint_id": record["endpoint_id"],
+                "parameter": scenario["parameter"],
+                "probe": scenario["values"][scenario["parameter"]],
+                "label": NOT_JUDGED,
+                "reason": reason,
+                "base": scenario.get("base"),
+                "legacy": {"outcome": record["legacy_response"]["outcome"]},
+            }
+        else:
+            judged = judge_probe(record, scenario, replay(config, scenario, record, baselines))
         judged["oracle_record"] = stored.relative_to(config.root).as_posix()
         probes.append(judged)
     labels = sorted({probe["label"] for probe in probes})
@@ -298,7 +315,8 @@ def differential_report(report: dict[str, Any], injection: dict[str, Any]) -> st
         lines.append("")
         for probe in injection["probes"]:
             if probe["label"] not in ("security improvement", "safe, as before"):
-                lines.append(f"- **{probe['label']}**: {probe['scenario_id']}, probe `{probe['probe']}`")
+                why = f": {probe['reason']}" if probe.get("reason") else ""
+                lines.append(f"- **{probe['label']}**: {probe['scenario_id']}, probe `{probe['probe']}`{why}")
     return "\n".join(lines).rstrip() + "\n"
 
 

@@ -480,3 +480,22 @@ def test_a_resolved_scenario_carries_its_parameter_and_values_for_judging_probes
     resolved = resolve(endpoint_map, probe)
 
     assert (resolved["case"], resolved["parameter"], resolved["values"]) == ("probe", "q", {"q": "' OR '1'='1"})
+
+
+def test_a_probe_names_the_scenario_that_sends_the_same_request_without_it(tmp_path):
+    scenarios = generate(_map(tmp_path, [FORM, LISTING], method="POST", records_at=None), SEED)
+
+    bases = {s["base"] for s in scenarios if s["scenario_type"] == "injection"}
+    assert bases == {"form_typical_01"}
+    assert all("base" not in s for s in scenarios if s["scenario_type"] != "injection")
+
+
+def test_a_resolved_probe_carries_its_base_and_the_column_of_its_parameter(tmp_path):
+    endpoint_map = _map(tmp_path, [SIGN_UP], method="POST", records_at=None)
+    scenarios = by_id(generate(endpoint_map, SEED))
+
+    named = resolve(endpoint_map, scenarios["sign_up_injection_name_01"])
+    unnamed = resolve(endpoint_map, scenarios["sign_up_injection_password_01"])
+
+    assert (named["base"], named["column"]) == ("sign_up_typical_01", "people.name")
+    assert (unnamed["base"], unnamed["column"]) == ("sign_up_typical_01", None)

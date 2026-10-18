@@ -193,16 +193,17 @@ def expect_database_change(engine, before, expected: dict[str, Any], excluded: t
         pytest.skip("Only excluded columns differ, which cannot be judged.")
 
 
-def expect_safe_handling(response, engine, before, probe: str, at) -> None:
+def expect_safe_handling(response, engine, before, probe: str, at, placed: bool = True) -> None:
     """An injection probe was treated as plain text: no leak, no alteration, no crash.
 
     This is not an equivalence check. A legacy page that leaked data on this input is
-    not something to reproduce.
+    not something to reproduce. `placed` is False when it is not known where the value
+    is stored, so a row written without the probe text is no evidence.
     """
     assert response.status_code < 500, (
         f"The probe {probe!r} caused a server error (status {response.status_code})."
     )
     found = records_from(response, at) if at is not None else None
     changes = delta(before, snapshot(engine)) if engine is not None else {}
-    effects = injection_effects(probe, found or [], changes)
+    effects = injection_effects(probe, found or [], changes, placed=placed)
     assert not effects, f"The probe {probe!r} changed what the query did: {effects}"

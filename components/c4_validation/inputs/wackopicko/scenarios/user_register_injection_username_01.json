@@ -11,5 +11,6 @@
     "lastname": "Christian Wilkinson",
     "password": "indeed",
     "againpass": "indeed"
-  }
+  },
+  "base": "user_register_typical_01"
 }

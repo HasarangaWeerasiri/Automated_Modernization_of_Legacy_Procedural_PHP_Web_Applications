@@ -7,5 +7,6 @@
   "source_id": "user_pictures",
   "values": {
     "userid": "'"
-  }
+  },
+  "base": "user_pictures_typical_01"
 }

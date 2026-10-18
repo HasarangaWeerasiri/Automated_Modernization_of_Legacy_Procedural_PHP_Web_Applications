@@ -333,26 +333,69 @@ def conflicts(cases: list[tuple[dict[str, Any], dict[str, Any]]]) -> dict[str, l
 #
 # Limit: a probe that changes several rows to its own literal text, as a widened
 # UPDATE would, is not detected; only single changes that lose the text are.
+#
+# A probe is not judged at all when what it did cannot be told apart from what the
+# same request does without it (see `not_judged`): the legacy page must have acted on
+# that request, and a row written without the probe text is evidence only when the
+# map says where the value is stored. A page may store a value changed, as a password
+# is stored hashed.
 
 IMPROVEMENT = "security improvement"
 SAFE_AS_BEFORE = "safe, as before"
 VULNERABILITY_KEPT = "vulnerability kept"
 VULNERABILITY_INTRODUCED = "vulnerability introduced"
 UNHANDLED = "unhandled input"
+NOT_JUDGED = "not judged"
 
 
-def injection_effects(probe: Any, records: Iterable[dict[str, Any]], delta: dict[str, Any]) -> list[dict[str, Any]]:
-    """What a probe made a system do beyond treating it as plain text."""
+def not_judged(record: dict[str, Any], scenario: dict[str, Any], base: dict[str, Any] | None) -> str | None:
+    """Why a probe cannot be judged, or None when it can.
+
+    `base` is the oracle record of the same request without the probe.
+    """
+    if base is None:
+        return "the same request without the probe was not captured"
+    if base["legacy_response"]["outcome"] != "success":
+        return (
+            "the same request without the probe had no effect on the legacy system either, "
+            "so what the probe did cannot be told apart from that"
+        )
+    if _unplaced(scenario):
+        probe = scenario["values"][scenario["parameter"]]
+        if injection_effects(probe, (), record["db_state"]["delta"]) != injection_effects(
+            probe, (), record["db_state"]["delta"], placed=False
+        ):
+            return (
+                f"the map does not say where '{scenario['parameter']}' is stored, so a row "
+                "written without the probe text is no evidence either way"
+            )
+    return None
+
+
+def _unplaced(scenario: dict[str, Any]) -> bool:
+    # A scenario resolved against a map always says which column its parameter
+    # relates to, None when the map names none.
+    return "column" in scenario and scenario["column"] is None
+
+
+def injection_effects(
+    probe: Any, records: Iterable[dict[str, Any]], delta: dict[str, Any], placed: bool = True
+) -> list[dict[str, Any]]:
+    """What a probe made a system do beyond treating it as plain text.
+
+    `placed` is False when it is not known where the value is stored: a row written
+    without the probe text is then no evidence, and only deleted rows count.
+    """
     text = normalise(probe)
     effects: list[dict[str, Any]] = []
     for item in records:
         if text not in {normalise(value) for value in _leaves(item)}:
             effects.append({"kind": "leak", "record": item})
     for table, changes in delta.items():
-        for row in changes["inserted"]:
+        for row in changes["inserted"] if placed else ():
             if text not in {normalise(value) for value in row.values()}:
                 effects.append({"kind": "alteration", "table": table, "inserted": row})
-        for item in changes["updated"]:
+        for item in changes["updated"] if placed else ():
             if text not in {normalise(change["after"]) for change in item["changes"].values()}:
                 effects.append({"kind": "alteration", "table": table, "updated": item})
         for row in changes["deleted"]:
@@ -364,7 +407,7 @@ def legacy_injection_behaviour(record: dict[str, Any], scenario: dict[str, Any])
     """What a probe did to the legacy system: vulnerable, broken or no sign of injection."""
     probe = scenario["values"][scenario["parameter"]]
     legacy = record["legacy_response"]
-    effects = injection_effects(probe, legacy["records"], record["db_state"]["delta"])
+    effects = injection_effects(probe, legacy["records"], record["db_state"]["delta"], placed=not _unplaced(scenario))
     if effects:
         return "vulnerable", effects
     if scenario.get("legacy_table") == "none" and legacy["outcome"] == "no_effect":
@@ -381,7 +424,7 @@ def judge_probe(record: dict[str, Any], scenario: dict[str, Any], replayed: Repl
     legacy = record["legacy_response"]
     legacy_label, legacy_effects = legacy_injection_behaviour(record, scenario)
 
-    migrated_effects = injection_effects(probe, replayed.records or (), replayed.delta)
+    migrated_effects = injection_effects(probe, replayed.records or (), replayed.delta, placed=not _unplaced(scenario))
     if replayed.outcome == "error":
         migrated_label, label = "server error", UNHANDLED
     elif migrated_effects:

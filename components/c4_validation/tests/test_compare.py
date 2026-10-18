@@ -495,3 +495,59 @@ def test_a_server_error_is_unhandled_input_not_safe():
     judged = judge_probe(probe_record({"Name": "Ram"}), probe_scenario(), migrated(status=500, outcome="error", problem="not JSON"))
 
     assert judged["label"] == UNHANDLED
+
+
+# ------------------------------------------------------------ probes not judged
+
+from c4.compare import not_judged  # noqa: E402
+
+HASHED = inserted("users", {"login": "anu", "password": "2b01978f4778911febee6ebac6732314c61c8e22"})
+
+
+def test_a_probe_is_judged_when_the_same_request_without_it_succeeded():
+    assert not_judged(probe_record(outcome="no_effect"), probe_scenario(writes=True), probe_record(outcome="success")) is None
+
+
+def test_a_probe_whose_request_does_nothing_even_without_it_is_not_judged():
+    # A form whose other values are refused anyway: the probe's own effect cannot be seen.
+    reason = not_judged(probe_record(outcome="no_effect"), probe_scenario(writes=True), probe_record(outcome="no_effect"))
+
+    assert "without the probe had no effect" in reason
+
+
+def test_a_probe_without_the_same_request_to_compare_with_is_not_judged():
+    assert "was not captured" in not_judged(probe_record(), probe_scenario(), None)
+
+
+def test_a_row_written_without_the_probe_text_is_no_evidence_when_the_column_is_unknown():
+    # A page that stores a password hashed: the probe text is nowhere in the row.
+    scenario = {**probe_scenario(writes=True), "column": None}
+
+    reason = not_judged(probe_record(delta=HASHED), scenario, probe_record())
+
+    assert "does not say where 'q' is stored" in reason
+
+
+def test_the_same_row_is_an_alteration_when_the_map_names_the_column():
+    scenario = {**probe_scenario(writes=True), "column": "users.login"}
+
+    assert not_judged(probe_record(delta=HASHED), scenario, probe_record()) is None
+    assert judge_probe(probe_record(delta=HASHED), scenario, migrated(status=201, delta=HASHED))["label"] == VULNERABILITY_KEPT
+
+
+def test_an_unknown_column_still_counts_leaks_and_deletions():
+    both = {"users": {**HASHED["users"], "deleted": [{"login": "bob"}]}}
+
+    kinds = [effect["kind"] for effect in injection_effects(PROBE, [{"Name": "Ram"}], both, placed=False)]
+
+    assert kinds == ["leak", "alteration"]
+    assert injection_effects(PROBE, [], HASHED, placed=False) == []
+
+
+def test_on_the_migrated_side_an_unknown_column_does_not_turn_a_hashed_row_into_a_vulnerability():
+    scenario = {**probe_scenario(writes=True), "column": None}
+
+    judged = judge_probe(probe_record(outcome="no_effect"), scenario, migrated(status=201, delta=HASHED))
+
+    assert judged["label"] == IMPROVEMENT
+    assert judged["migrated"]["effects"] == []

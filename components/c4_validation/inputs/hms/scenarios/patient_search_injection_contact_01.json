@@ -7,5 +7,6 @@
   "source_id": "patient_search",
   "values": {
     "contact": "'"
-  }
+  },
+  "base": "patient_search_typical_01"
 }

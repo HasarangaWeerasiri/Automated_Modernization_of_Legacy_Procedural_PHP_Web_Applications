@@ -8,5 +8,6 @@
   "values": {
     "name": "Erica Nichols",
     "comment": "'"
-  }
+  },
+  "base": "guestbook_sign_typical_01"
 }

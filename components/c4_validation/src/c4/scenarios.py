@@ -280,6 +280,10 @@ def resolve(
         # Which parameter the scenario varies, and all its values: needed to judge
         # what an injection probe did.
         "parameter": scenario.get("parameter"),
+        # The column that parameter relates to, None when the map names none, and the
+        # scenario that sends the same request without the probe.
+        "column": next((p.column for p in source.parameters if p.name == scenario.get("parameter")), None),
+        "base": scenario.get("base"),
         "values": values,
         "endpoint_id": endpoint.endpoint_id,
         "legacy_request": {
@@ -507,7 +511,7 @@ def generate(endpoint_map: EndpointMap, seed: SeedFacts) -> list[dict[str, Any]]
     scenarios: list[dict[str, Any]] = []
 
     def add(source: Source, endpoint: Endpoint, scenario_id: str, kind: str, case: str,
-            values: dict[str, Any], parameter: str | None = None) -> None:
+            values: dict[str, Any], parameter: str | None = None, base_id: str | None = None) -> None:
         # A parameter that must repeat another takes its value, left out with it,
         # unless it is the one this scenario varies: then the two differ on purpose.
         values = dict(values)
@@ -522,6 +526,8 @@ def generate(endpoint_map: EndpointMap, seed: SeedFacts) -> list[dict[str, Any]]
             "endpoint_id": endpoint.endpoint_id,
             "source_id": source.source_id,
             "values": {name: value for name, value in values.items() if value is not _MISSING},
+            # The scenario that sends the same request without this one's change.
+            **({"base": base_id} if base_id else {}),
         })
 
     for endpoint in endpoint_map.values():
@@ -551,7 +557,8 @@ def generate(endpoint_map: EndpointMap, seed: SeedFacts) -> list[dict[str, Any]]
                     continue
                 for number, probe in enumerate(INJECTION_PROBES, start=1):
                     add(source, endpoint, f"{source.source_id}_injection_{parameter.name}_{number:02d}",
-                        "injection", "probe", {**base, parameter.name: probe}, parameter.name)
+                        "injection", "probe", {**base, parameter.name: probe}, parameter.name,
+                        f"{source.source_id}_typical_01" if typical else None)
     return scenarios
 
 

@@ -8,5 +8,6 @@
   "values": {
     "name": "'",
     "comment": "Partner even floor should"
-  }
+  },
+  "base": "guestbook_sign_typical_01"
 }

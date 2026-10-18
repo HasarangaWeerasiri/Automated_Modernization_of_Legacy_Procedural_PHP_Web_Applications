@@ -11,5 +11,6 @@
     "lastname": "' OR 1=1 -- ",
     "password": "indeed",
     "againpass": "indeed"
-  }
+  },
+  "base": "user_register_typical_01"
 }

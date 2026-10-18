@@ -33,7 +33,7 @@ from c4_checks import expect_database_change, expect_outcome, expect_records, ex
         json={{ test.body | py(8) }},
         headers=headers,
     )
-{% if test.kind == "injection" %}    expect_safe_handling(response, db, before, probe={{ test.probe | py(4) }}, at={{ test.at | py(4) }})
+{% if test.kind == "injection" %}    expect_safe_handling(response, db, before, probe={{ test.probe | py(4) }}, at={{ test.at | py(4) }}{% if not test.placed %}, placed=False{% endif %})
 {% else %}    expect_outcome(response, {{ test.outcome | py(4) }})
     expect_records(
         response,

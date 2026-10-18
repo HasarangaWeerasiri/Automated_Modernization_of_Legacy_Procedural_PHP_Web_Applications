@@ -7,5 +7,6 @@
   "source_id": "picture_search",
   "values": {
     "query": "'"
-  }
+  },
+  "base": "picture_search_typical_01"
 }

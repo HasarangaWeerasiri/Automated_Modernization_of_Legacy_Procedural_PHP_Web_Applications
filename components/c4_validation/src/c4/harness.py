@@ -118,6 +118,7 @@ def _test_for(scenario: dict[str, Any], record: dict[str, Any], oracle: str, ski
         behaviour, _ = compare.legacy_injection_behaviour(record, scenario)
         probe = scenario["values"][scenario["parameter"]]
         test["probe"] = probe
+        test["placed"] = not compare._unplaced(scenario)
         test["description"] = textwrap.fill(
             f"Injection probe on '{scenario['parameter']}'. The legacy page was {behaviour} "
             "for this input; the migrated system must treat it as plain text.",
@@ -148,12 +149,17 @@ def build(config: Config, baseline: dbstate.Snapshot) -> Path:
         raise HarnessError("No oracle records yet: run python -m c4.capture first.")
 
     conflicting = compare.conflicts([(s, r) for s, r, _ in cases if s["scenario_type"] != "injection"])
+    records = {scenario["scenario_id"]: record for scenario, record, _ in cases}
     tests = []
     for scenario, record, stored in cases:
         skip = None
         if scenario["scenario_id"] in conflicting:
             others = ", ".join(sorted(conflicting[scenario["scenario_id"]]))
             skip = f"Two legacy pages expect different results for this request (also: {others})."
+        if scenario["scenario_type"] == "injection":
+            reason = compare.not_judged(record, scenario, records.get(scenario.get("base")))
+            if reason:
+                skip = f"Not judged: {reason}."
         tests.append(_test_for(scenario, record, stored.relative_to(config.root).as_posix(), skip))
 
     environment = Environment(
