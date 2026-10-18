@@ -1,4 +1,4 @@
-"""Phase 5 scorer: the owner's gold standard against the tool's outputs, by docs/eval-mapping.md v1.1, exactly.
+"""Phase 5 scorer: the owner's gold standard against the tool's outputs, by docs/eval-mapping.md v1.2, exactly.
 
 Reads `gold/<app>.csv` (docs/gold-standard-guide.md section 3) and the tool's outputs written by
 tools/eval/run_eval.py (`output/eval/runs/<app>/v1.0/` and `v1.1/`, each the Stage 1-5 outputs of every unit of
@@ -19,13 +19,15 @@ line), `unmapped` (a tool result the mapping table does not name for that decisi
 row by row for manual review, mapping v1.1 section 3). Gold rows with `unsure` in their notes, and gold decisions the
 mapping table does not name (e.g. loop `cannot_migrate`, unit `layout_part`), are not scored: they are listed.
 
-Phase 5R fixes (the scorer was stricter than the mapping's own words; scores reported before and after, mapping
-section 5): where the mapping's "wrong" column says the output is rendered — `unit not_ui` ("a page that renders
-content"), `if request_handler` ("handler output rendered unconditionally", also an R-I1 on an `if not_ui`) and
-`loop not_ui` ("a List or inline map that renders output") — a generated page that renders nothing and a List in a
-function that nothing calls are results the table does not name: `unmapped`, listed. An `if not_ui` whose only effect
-is a `header_redirect` flag has no Stage 2 node: "no node", correct. (`if not_ui` against a conditional whose content
-is hidden stays `wrong`: "a rendered conditional" may mean the conditional itself; an open question for the owner.)
+Mapping v1.2 (Phase 5R2): **wrong needs output that renders**; a result that is not the gold's decision but renders
+nothing is `abstain`. So: a generated page that renders nothing (`unit not_ui`), an R-I1 whose page renders nothing
+(`if request_handler` / `not_ui`), a conditional whose content renders nothing (`if not_ui`: hidden by
+`unresolvedCondition`, or spec v0.16 chose no arm), a List or a component in a function nothing calls (`loop not_ui`,
+`function not_ui`) are `abstain`. An `if` / loop with no output at all (e.g. `header()` only) is "no node". A
+`function` row matches the call on its line (guide v1.1: the call line, in the calling file); a `function not_ui` row
+with no call on its line matches the function **defined** on that line, found in the app's source tree named by
+run.json (its sha256 must still be `sourceDigest`): no component for it is correct, a component nothing calls is
+abstain, a component rendered at a call site is wrong.
 
 Usage, from component2_frontend/:
     venv/Scripts/python.exe tools/eval/score.py <app> [--key <name>] [--gold-dir gold] [--runs output/eval/runs]
@@ -48,7 +50,7 @@ SCORED = {  # docs/eval-mapping.md section 2: the decisions it maps
     "loop": {"list", "inline_map", "not_ui"},
     "if": {"page_guard", "list_guard", "attribute", "attribute_presence", "inline", "own_component",
            "redirect_guard", "auth_check", "request_handler", "not_ui"},
-    "function": {"component", "shell"},
+    "function": {"component", "shell", "not_ui"},  # not_ui: mapping v1.2
     "include": {"shell", "not_ui"},
     "unit": {"page", "not_ui"},
     "read": None,  # every binding
@@ -61,6 +63,20 @@ GENERIC_REASONS = {"unlabelled", "no_endpoint"}
 
 class Refused(Exception):
     """Mapping section 4.1 is not met: no score is computed."""
+
+
+def source_digest(folder: Path) -> str:
+    """sha256 over every file of the app (relative path and bytes, sorted): which tree was run."""
+    import hashlib
+
+    digest = hashlib.sha256()
+    for path in sorted(p for p in folder.rglob("*") if p.is_file()):
+        digest.update(path.relative_to(folder).as_posix().encode() + b"\0" + path.read_bytes() + b"\0")
+    return digest.hexdigest()
+
+
+FUNCTION_DEF = re.compile(r"^\s*(?:(?:public|private|protected|static|final|abstract)\s+)*function\s+&?\s*"
+                          r"([A-Za-z_]\w*)\s*\(", re.I)
 
 
 # ---------------------------------------------------------------- section 4.1: gold before the tool
@@ -147,8 +163,10 @@ def _walk(node, parents=()):
 class ToolRun:
     """One run (one rules version) of one app: its constructs indexed by file and start line."""
 
-    def __init__(self, folder: Path):
+    def __init__(self, folder: Path, source: Path | None = None):
         self.folder = folder
+        self.source = source  # the app's source tree (checked against run.json's sourceDigest by the caller)
+        self.printing_arms = {}  # if id -> the branches (then / elseif / else) that have output in the timeline
         self.index = json.loads((folder / "index.json").read_text(encoding="utf-8"))
         self.units = {e["key"]: e for e in self.index["pages"]}
         self.loops, self.ifs, self.calls, self.reads = {}, {}, {}, {}
@@ -168,6 +186,8 @@ class ToolRun:
                 for e in item["enclosedBy"]:
                     self.inside.setdefault(e["nodeId"], []).extend(
                         [item["id"]] + [p["nodeId"] for p in item.get("parts", [])])
+                    if e["role"] == "branch" and item["kind"] not in ("call", "include"):
+                        self.printing_arms.setdefault(e["nodeId"], set()).add(e["branch"])
                 line = (item.get("loc") or {}).get("startLine")
                 if item["kind"] in ("call", "include"):
                     self.calls.setdefault((path, line), []).append((key, item))
@@ -267,6 +287,22 @@ class ToolRun:
                 and b not in ("return (", ");", "<>", "</>")]
         return bool(rest)
 
+    def renders_nothing(self, if_id: str) -> bool:
+        """A conditional whose content never renders (mapping v1.2): spec v0.16 chose no arm, or its condition is an
+        unresolvedCondition and no other arm prints."""
+        if any(f["kind"] == "C2Todo" and f["detail"].startswith("untranslatable condition: no arm is chosen")
+               for f in self.flags.get(if_id, [])):
+            return True
+        return self.unresolved(if_id) is not None and not (self.printing_arms.get(if_id, set()) - {"then"})
+
+    def defined_function(self, path: str, line: int | None) -> str | None:
+        """The name of the function defined on that line of that file of the app's source, or None."""
+        if self.source is None or line is None or not (self.source / path).is_file():
+            return None
+        lines = (self.source / path).read_bytes().decode("utf-8", errors="replace").splitlines()
+        found = FUNCTION_DEF.match(lines[line - 1]) if 0 < line <= len(lines) else None
+        return found.group(1) if found else None
+
     def unresolved(self, if_id: str) -> str | None:
         """The reason of an `unresolvedCondition` on this if (its content never renders), or None."""
         found = [f["reason"] for f in self.flags.get(if_id, []) if f["kind"] == "unresolvedCondition"]
@@ -302,7 +338,7 @@ def loop_result(run: ToolRun, row: dict, loop: str) -> tuple[str, str]:
     statics = [n for _, n, _ in found if n["type"] == "Static" and set(n["rules"]) & {"R-L5", "R-I7"}]
     decision = row["decision"]
     if lists and decision == "not_ui" and all(run.units[k]["role"] == "not_called" for k, _ in lists):
-        return "unmapped", "List in a function that nothing calls (renders no output; Phase 5R)"
+        return "abstain", "List in a function that nothing calls (renders nothing; mapping v1.2)"
     if lists:
         key, node = lists[0]
         inline = bool({"R-L3", "R-L3b"} & set(node["rules"]))
@@ -399,13 +435,15 @@ def if_result(run: ToolRun, row: dict, if_id: str) -> tuple[str, str]:
         if hidden == "needs_request_context" or kind == "R-I7":
             return "correct", described
         if kind == "R-I1" and not rendered_page:  # the handler's output renders nothing (e.g. only inline JS)
-            return "unmapped", described + ", the page renders nothing"
+            return "abstain", described + ", the page renders nothing"
         return ("wrong" if kind == "R-I1" else "unmapped"), described
     if decision == "not_ui":
         if kind in ("R-I7", "none", "header_redirect"):  # header_redirect: no Stage 2 node, only an info flag
             return "correct", described
         if kind == "R-I1" and not rendered_page:
-            return "unmapped", described + ", the page renders nothing"
+            return "abstain", described + ", the page renders nothing"
+        if conditional and run.renders_nothing(if_id):  # mapping v1.2: hidden, flagged
+            return "abstain", described + ", content renders nothing"
         return ("wrong" if conditional or kind == "R-I1" else "unmapped"), described
     return "unmapped", described
 
@@ -445,13 +483,24 @@ def call_result(run: ToolRun, row: dict, key: str, call: dict) -> tuple[str, str
     return "unmapped", described
 
 
+def definition_result(run: ToolRun, path: str, name: str) -> tuple[str, str]:
+    """A `function not_ui` row on a definition line (mapping v1.2): no component -> correct; a component nothing
+    calls -> abstain (renders nothing); a component rendered at a call site -> wrong."""
+    units = [e for e in run.units.values() if e["path"] == path and (e.get("function") or "").lower() == name.lower()]
+    if not units:
+        return "correct", f"function {name}(): no component"
+    if all(e["role"] == "not_called" for e in units):
+        return "abstain", f"function {name}(): a component nothing calls"
+    return "wrong", f"function {name}(): component {units[0].get('component') or units[0]['key']} rendered at its calls"
+
+
 def unit_result(run: ToolRun, row: dict) -> tuple[str, str]:
     entries = [e for e in run.units.values() if e["path"] == row["file"] and e.get("function") is None
                and e["role"] in ("page", "not_called")]
     generated = [e for e in entries if not e.get("notGenerated")]
     if generated:
         if row["decision"] == "not_ui" and not any(run.renders(e["key"]) for e in generated):
-            return "unmapped", "generated page that renders nothing"
+            return "abstain", "generated page that renders nothing"
         return ("correct" if row["decision"] == "page" else "wrong"), "generated page"
     described = f"not generated ({entries[0]['notGenerated'].get('reason')})" if entries else "no unit"
     return ("correct" if row["decision"] == "not_ui" else "wrong"), described
@@ -502,6 +551,10 @@ def score_row(run: ToolRun, row: dict, used: set) -> dict:
         if calls:
             ids = [calls[0][1]["id"]]
             result, described = call_result(run, row, *calls[0])
+        elif construct == "function" and row["decision"] == "not_ui":  # guide v1.1: a never-called function
+            name = run.defined_function(*where)
+            if name is not None:
+                result, described = definition_result(run, row["file"], name)
     elif construct == "unit":
         result, described = unit_result(run, row)
     elif construct == "read":
@@ -596,16 +649,29 @@ def agreement(gold_dir: Path, key: str, rows: list) -> dict | None:
 # ---------------------------------------------------------------- one app, both versions
 
 
+def run_source(runs: Path, app: str) -> Path | None:
+    """The app's source tree as run.json names it, when it is still the tree that was run (same sourceDigest)."""
+    run = json.loads((runs / app / "run.json").read_text(encoding="utf-8"))
+    source = Path(run["source"])
+    source = source if source.is_absolute() else ROOT / source
+    if not source.is_dir():
+        return None
+    if source_digest(source) != run.get("sourceDigest"):
+        raise Refused(f"{source} is no longer the tree that was run (sourceDigest differs)")
+    return source
+
+
 def score_app(app: str, gold_dir: Path, runs: Path, key: str | None = None) -> dict:
     key = key or app
     order = check_order(gold_dir, runs, app, key)
     gold = load_gold(gold_dir / f"{key}.csv")
-    report = {"app": app, "mapping": "docs/eval-mapping.md v1.1", "order": order, "versions": {},
+    report = {"app": app, "mapping": "docs/eval-mapping.md v1.2", "order": order, "versions": {},
               "agreement": agreement(gold_dir, key, gold)}
     if key != app:
         report["key"] = key
+    source = run_source(runs, app)
     for version in VERSIONS:
-        run = ToolRun(runs / app / f"v{version}" / app)
+        run = ToolRun(runs / app / f"v{version}" / app, source)
         used, rows = set(), []
         for row in gold:
             entry = {k: row[k] for k in ("row", "file", "line", "construct", "decision", "container", "item_root",
@@ -661,7 +727,7 @@ ROWS = (("Scored gold rows", "scoredRows"), ("Boundary precision", "boundaryPrec
 def write_doc(out: Path, doc: Path) -> None:
     reports = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(out.glob("*.json"))]
     lines = ["# Component 2 — Phase 5 Evaluation Results", "",
-             "Generated by `tools/eval/score.py` from `output/eval/<app>.json` (mapping: `docs/eval-mapping.md` v1.1). "
+             "Generated by `tools/eval/score.py` from `output/eval/<app>.json` (mapping: `docs/eval-mapping.md` v1.2). "
              "Every metric for **v1.0** (frozen rules, `27c380e`) and **v1.1** (v1.1-final: post-freeze changes 1–5, "
              "`535e2e6`), side by side.", ""]
     columns = [(r.get("key", r["app"]), r["versions"]) for r in reports]

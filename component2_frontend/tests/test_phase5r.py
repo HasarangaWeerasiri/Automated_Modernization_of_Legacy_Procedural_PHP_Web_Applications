@@ -182,16 +182,16 @@ def test_a_generated_page_renders_only_what_is_not_hidden_or_a_gap(tmp_path):
     assert [run.renders(k) for k in ("a.php", "b.php", "c.php", "d.php")] == [False, False, True, True]
 
 
-@pytest.mark.parametrize("page, result", [(EMPTY_PAGE, "unmapped"), (HIDDEN_PAGE, "unmapped"), (ELSE_PAGE, "wrong")])
+@pytest.mark.parametrize("page, result", [(EMPTY_PAGE, "abstain"), (HIDDEN_PAGE, "abstain"), (ELSE_PAGE, "wrong")])
 def test_a_not_ui_unit_is_wrong_only_when_its_page_renders_content(tmp_path, page, result):
     """Mapping: unit `not_ui` is wrong when "generated as a page that renders content" (HMS contact.php, func*.php,
-    header.php, include/config.php: empty pages)."""
+    header.php, include/config.php: empty pages); an empty page is abstain (mapping v1.2; 5R: unmapped)."""
     run = fake_run(tmp_path, {"a.php": page})
     assert score.unit_result(run, {"file": "a.php", "decision": "not_ui"})[0] == result
     assert score.unit_result(run, {"file": "a.php", "decision": "page"})[0] == "correct"
 
 
-@pytest.mark.parametrize("page, result", [(EMPTY_PAGE, "unmapped"), (ELSE_PAGE, "wrong")])
+@pytest.mark.parametrize("page, result", [(EMPTY_PAGE, "abstain"), (ELSE_PAGE, "wrong")])
 def test_an_r_i1_request_handler_is_wrong_only_when_its_output_renders(tmp_path, page, result):
     """Mapping: `request_handler` is wrong when the "handler output [is] rendered unconditionally" (v1.0 R-I1 on HMS
     search.php: wrong; on func.php, whose handler prints only a JS alert: nothing renders)."""
@@ -215,6 +215,6 @@ def test_a_list_in_a_function_nothing_calls_is_not_rendered_output(tmp_path):
     run = fake_run(tmp_path, {"lib.php#f": EMPTY_PAGE}, roles={"lib.php#f": "not_called"})
     node = {"type": "List", "rules": ["R-L1", "R-L3"], "status": "ok", "reason": "", "children": []}
     run.nodes["f1#00005"] = [("lib.php#f", node, False)]
-    assert score.loop_result(run, {"decision": "not_ui"}, "f1#00005")[0] == "unmapped"
+    assert score.loop_result(run, {"decision": "not_ui"}, "f1#00005")[0] == "abstain"  # mapping v1.2
     run.units["lib.php#f"]["role"] = "page"
     assert score.loop_result(run, {"decision": "not_ui"}, "f1#00005")[0] == "wrong"

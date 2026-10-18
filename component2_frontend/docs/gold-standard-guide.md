@@ -1,8 +1,8 @@
-# Component 2 — Gold Standard Guide (v1.0)
+# Component 2 — Gold Standard Guide (v1.1)
 
 | Item | Value |
 |---|---|
-| Date | 15 October 2026 |
+| Date | 15 October 2026 (v1.1, 18 Oct: line conventions and two hard cases from the HMS rehearsal, before any gold standard was committed) |
 | Annotator | Jayawardhana R D L L (IT23213876); second annotator for the agreement check: one team member (name it in §6) |
 | Purpose | The answer key for the Phase 5 evaluation: what a **correct** migration of each sampled page would do, decided **by hand, from the PHP source only** |
 | When | After the freeze commit (boundary-rules v1.0), **before** the tool is run on any evaluation app |
@@ -29,7 +29,7 @@ sampled pages use are annotated too (as `function` / `include` rows).
 
 | Column | What to write |
 |---|---|
-| `app`, `file`, `line` | Where the construct starts (the keyword line for `if` / loops; the call / include line) |
+| `app`, `file`, `line` | Where the construct starts (the keyword line for `if` / loops; the call / include line). **v1.1 conventions:** a `read` row goes on the line where the value is **printed** (the `echo` / `<td>$x</td>` / attribute line), not where it is copied (`$x = $row['x']`); a `function` row goes on the **call** line, in the calling file (one row per call); a function that is never called gets one row on its definition line, decision `not_ui` |
 | `construct` | `loop`, `if`, `function`, `include`, `read`, `unit` |
 | `decision` | From the table below |
 | `container` | For a loop: the tag that should be the List's container and its line (e.g. `table@34`), or `fragment` |
@@ -66,6 +66,8 @@ sampled pages use are annotated too (as `function` / `include` rows).
 - `if ($_SESSION['role'] == 'admin') { …admin menu… }` → `auth_check`.
 - `if (isset($_POST['save'])) { …update… echo "Saved"; }` → `request_handler`.
 - A page printing `json_encode(...)` and no markup → `unit` = `not_ui`.
+- An `if` that only sets a variable printed later (`$status = "Active"` … `echo $status`) → label it by what a correct migration shows (usually `inline`), on the `if` line. The tool may miss it; that is a fair miss.
+- Code inside an HTML comment (`<!-- <?php … ?> -->`) still runs but shows nothing → `not_ui`.
 
 ## 6. Agreement check
 

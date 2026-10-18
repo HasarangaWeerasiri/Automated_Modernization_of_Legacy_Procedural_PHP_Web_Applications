@@ -139,3 +139,69 @@ ifs unmapped → correct. Tables: `output/eval/practice/phase5-tables-before-fix
    print): patterns like `appsearch.php` stay `unresolved` (abstain, not wrong). A documented limit, it will show in the
    evaluation apps too.
 7. `gold/practice/` lives inside `gold/`: it must stay committed, or every real run is refused (fix 1, by design).
+
+## 6. Phase 5R2: mapping v1.2, guide v1.1, two practice keys
+
+Mapping v1.2 (owner, 18 Oct, before any evaluation run) states the principle **wrong needs output that renders; a
+non-gold result that renders nothing is abstain**, and fills the five gaps of §5 with it; guide v1.1 fixes the line
+conventions. `tools/eval/score.py` implements v1.2 exactly (rows in `tests/test_phase5r2.py`, one test per new or
+changed row): `if not_ui` / `request_handler`, `loop not_ui`, `unit not_ui` results that render nothing → abstain;
+`function not_ui` (new row) — on a call line as any function row, on a definition line (a never-called function) by
+the function defined there, read from the app's source tree that run.json names (refused if its sha256 is no longer
+`sourceDigest`): no component → correct, a component nothing calls → abstain, a component rendered → wrong.
+
+**Keys.** `gold/practice/hms-practice-gold.csv` (5R, `0e0c61d`, unchanged) and `hms-practice-gold-v2.csv` (owner,
+`b72f1e3`: the same key with only guide v1.1 line conventions applied — 23 read rows on print lines, the 2
+`newfunc` function rows on their call lines; 25 rows differ). The v2 key was committed after the 5R run, so §4.1
+refused it against that run (as it must); it was scored against a new run (`output/eval/runs-v2/`, from `b72f1e3`,
+`codeChanges: []`), whose 786 output files are byte-identical to the 5R run's (only the folder name differs inside
+some files).
+
+| Metric | 5R key 1 v1.0 | 5R key 1 v1.1 | v1.2 key 1 v1.0 | v1.2 key 1 v1.1 | v1.2 key 2 v1.0 | v1.2 key 2 v1.1 |
+|---|---|---|---|---|---|---|
+| Boundary precision | 0.963 | 0.982 | 0.981 | **1.000** | 0.982 | **1.000** |
+| Boundary recall | 0.811 | 0.850 | 0.784 | 0.821 | 0.798 | 0.836 |
+| Unsound (strict) | 4 | 2 | 2 | **0** | 2 | **0** |
+| Unsound (flag-adjusted) | 2 | 0 | 2 | 0 | 2 | 0 |
+| Abstain rate | 0.051 | 0.051 | 0.119 | 0.108 | 0.150 | 0.139 |
+| Binding accuracy | 0.746 | 0.746 | 0.746 | 0.746 | 0.865 | 0.865 |
+| Wrong bindings | 0 | 0 | 0 | 0 | 0 | 0 |
+| Compile rate | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
+| Flag rate per page | 20.00 | 16.88 | 20.00 | 16.88 | 20.00 | 16.88 |
+| Scored rows | 253 | 253 | 260 | 260 | 260 | 260 |
+| Correct / abstain / wrong / miss / unmapped | 197 / 13 / 4 / 28 / 11 | 202 / 13 / 2 / 28 / 8 | 199 / 31 / 2 / 28 / 0 | 204 / 28 / 0 / 28 / 0 | 216 / 39 / 2 / 3 / 0 | 221 / 36 / 0 / 3 / 0 |
+| Not scored: not_in_mapping / unsure | 7 / 4 | 7 / 4 | 0 / 4 | 0 / 4 | 0 / 4 | 0 / 4 |
+
+Recall moves down from 5R to v1.2 key 1 because the 7 `function not_ui` rows are now scored (2 correct, 5 abstain:
+`display_admin_panel()` / `display_docs()` components nothing calls); precision moves up because the 2 hidden
+`mysqli_error` conditionals and v1.0's 11 nothing-rendering results are abstain, not wrong.
+
+**Targets met:** unmapped 0 and not_in_mapping 0, both keys, both versions.
+
+**Every remaining non-correct row (v2 key):**
+
+| Row | Gold | v1.0 | v1.1-final | Verdict |
+|---|---|---|---|---|
+| `search.php:4` if | request_handler | wrong: R-I1 renders the POST-only results on GET | correct (conditional, `needs_request_context`) | **Tool** (v1.0), fixed by post-freeze change 1 |
+| `include/config.php:1` unit | not_ui | wrong: R-I1 renders the connect-error text | abstain (page renders nothing) | **Tool** (v1.0), same cause |
+| `appsearch.php:52`, `:56`, `:61` if | inline | miss | miss | **Tool limitation by design**: the ifs only set `$appstatus` (data flow, no node); guide v1.1 calls it a fair miss |
+
+Key 1 has the same rows plus its 25 convention misses (§3.3). The abstains (36 under v1.1, v2 key) are: 13 of 5R
+(§3.5), 8 `appsearch.php` reads now on their print lines (copy propagation stops at the ifs between copy and print),
+and the v1.2 nothing-rendering results (6 empty pages, 2 Lists and 5 components in never-called functions, 2 hidden
+`mysqli_error` conditionals).
+
+**The 28 misses of 5R:**
+
+| Change | Misses removed | Rows |
+|---|---|---|
+| Guide v1.1 line conventions (key v2) | **25** | 23 read rows moved to print lines (13 doctor / mes / patient search → correct, 8 appsearch → abstain, 2 func1 / func3 `unknown` → correct), 2 function rows moved to `admin-panel.php` 331 / 359 → correct (R-F1) |
+| Mapping v1.2 | 0 | it changes results the tool did produce (unmapped, not_in_mapping, wrong → abstain / correct), not rows the tool has no construct for |
+| Remaining | 3 | `appsearch.php` 52 / 56 / 61 (above) |
+
+**Scorer change log (Phase 5R2, before any evaluation run):** mapping v1.2 implemented (the 5R "wrong needs rendered
+output" fix is its first application: its `unmapped` results are now `abstain`, as v1.2 says); `function not_ui`
+rows matched on call lines and on definition lines; `source_digest` shared by run_eval and score (score refuses a
+source tree that is no longer the run's). Synthetic test pins changed (`tests/test_phase4d.py`): `index.php` 31 / 32
+`if not_ui` against a hidden conditional wrong → abstain; v1.0 counts correct / wrong / abstain 25 / 4 / 3 → 25 / 2 / 5,
+unsound strict / flag-adjusted 6 / 4 → 4 / 4.

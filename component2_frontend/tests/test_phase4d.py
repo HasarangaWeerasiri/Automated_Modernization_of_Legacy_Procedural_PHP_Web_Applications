@@ -130,8 +130,9 @@ EXPECTED = {  # (file, line, construct, gold) -> (v1.0, v1.1)
     ("index.php", 28, "if", "own_component"): ("correct", "correct"),
     ("index.php", 29, "if", "inline"): ("correct", "correct"),  # R-I5: size is a style choice (mapping v1.1)
     ("index.php", 30, "if", "inline"): ("correct", "correct"),  # with or without a "large" note
-    ("index.php", 31, "if", "not_ui"): ("wrong", "wrong"),
-    ("index.php", 32, "if", "not_ui"): ("wrong", "wrong"),
+    # mapping v1.2 (Phase 5R2): a conditional whose content renders nothing (hidden, flagged) is abstain, not wrong
+    ("index.php", 31, "if", "not_ui"): ("abstain", "abstain"),
+    ("index.php", 32, "if", "not_ui"): ("abstain", "abstain"),
     ("index.php", 32, "if", "inline"): ("unsure", "unsure"),
     ("index.php", 22, "if", "auth_check"): ("correct", "correct"),
     ("index.php", 23, "if", "request_handler"): ("correct", "correct"),
@@ -166,8 +167,9 @@ def test_every_gold_row_gets_the_mapped_result(scored):
 def test_every_mapped_decision_and_every_outcome_is_exercised(scored):
     rows = scored["report"]["versions"]["1.0"]["rows"]
     decisions = {(r["construct"], r["decision"]) for r in rows if r["status"] == "scored" and r["construct"] != "read"}
-    wanted = {(c, d) for c, ds in score.SCORED.items() if ds for d in ds} - {("include", "shell")}
-    assert wanted <= decisions  # (function and include `shell` share one mapping row: the function row covers it)
+    wanted = {(c, d) for c, ds in score.SCORED.items() if ds for d in ds} - {("include", "shell"), ("function", "not_ui")}
+    assert wanted <= decisions  # (function and include `shell` share one mapping row: the function row covers it;
+    # function `not_ui`, mapping v1.2, is exercised in tests/test_phase5r2.py)
     bindings = {r["binding"].split(".")[0] if "." in r["binding"] else r["binding"] for r in rows
                 if r["construct"] == "read"}
     assert bindings >= {"items", "users", "unknown", "session", "request", "literal"}
@@ -177,14 +179,15 @@ def test_every_mapped_decision_and_every_outcome_is_exercised(scored):
 
 def test_the_metrics_follow_section_3(scored):
     v10, v11 = (scored["report"]["versions"][v]["metrics"] for v in ("1.0", "1.1"))
-    # boundary rows: 33 scored (25 correct, 4 wrong); abstain counts every scored row (2 boundary + 1 read)
-    assert v10["counts"] == {"correct": 25, "wrong": 4, "abstain": 3, "readsCorrect": 6}
-    assert (v10["boundaryPrecision"], v10["boundaryRecall"]) == (round(25 / 29, 4), round(25 / 33, 4))
-    assert v10["abstainRate"] == round(3 / 42, 4)
-    assert v11["counts"]["correct"] == 24 and v11["counts"]["abstain"] == 4  # guard.php under v1.1
-    # strict: every wrong decision; flag-adjusted: not the two ifs whose node carries a specific review
-    # (condition_not_translatable / exclusivity_not_verified): `unlabelled` and `no_endpoint` are on every node
-    assert (v10["unsoundStrict"], v10["unsoundFlagAdjusted"]) == (6, 4)
+    # boundary rows: 33 scored (25 correct, 2 wrong); abstain counts every scored row (4 boundary + 1 read).
+    # Mapping v1.2: the two hidden not_ui conditionals (index.php 31, 32) are abstain, no longer wrong
+    assert v10["counts"] == {"correct": 25, "wrong": 2, "abstain": 5, "readsCorrect": 6}
+    assert (v10["boundaryPrecision"], v10["boundaryRecall"]) == (round(25 / 27, 4), round(25 / 33, 4))
+    assert v10["abstainRate"] == round(5 / 42, 4)
+    assert v11["counts"]["correct"] == 24 and v11["counts"]["abstain"] == 6  # guard.php under v1.1
+    # strict: every wrong decision (2 boundary + 2 bindings); flag-adjusted: those whose node carries no specific
+    # review (`unlabelled` and `no_endpoint` are on every node). Before v1.2: (6, 4), the two hidden ifs carried one
+    assert (v10["unsoundStrict"], v10["unsoundFlagAdjusted"]) == (4, 4)
     assert (v10["bindingAccuracy"], v10["wrongBindings"]) == (round(6 / 9, 4), 2)
     assert v10["compileRate"] is None  # tsc did not run
     assert scored["report"]["agreement"]["pairs"] == 8 and scored["report"]["agreement"]["agreement"] == 0.875

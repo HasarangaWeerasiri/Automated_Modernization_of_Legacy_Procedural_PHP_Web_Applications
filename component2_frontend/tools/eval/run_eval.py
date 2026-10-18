@@ -13,7 +13,6 @@ Usage, from component2_frontend/ (the app unpacked from the owner's archive and 
         [--out output/eval/runs] [--gold-dir gold] [--key <name>] [--no-tsc]
 """
 
-import hashlib
 import json
 import sys
 import time
@@ -26,17 +25,9 @@ sys.path.insert(0, str(ROOT / "tools" / "eval"))
 
 from app import dir_timelines  # noqa: E402
 from run_apps import run_app  # noqa: E402
-from score import VERSIONS, Refused, git, gold_commit_time  # noqa: E402
+from score import VERSIONS, Refused, git, gold_commit_time, source_digest  # noqa: E402
 
 PIPELINE = ("src", "config", "tools/harness")  # the code whose version a run depends on (rules, stages, harness)
-
-
-def source_digest(folder: Path) -> str:
-    """sha256 over every file of the app (relative path and bytes, sorted): which tree was run."""
-    digest = hashlib.sha256()
-    for path in sorted(p for p in folder.rglob("*") if p.is_file()):
-        digest.update(path.relative_to(folder).as_posix().encode() + b"\0" + path.read_bytes() + b"\0")
-    return digest.hexdigest()
 
 
 def code_state() -> dict:

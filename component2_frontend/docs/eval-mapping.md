@@ -1,8 +1,8 @@
-# Component 2 — Evaluation Mapping and Scoring (v1.1)
+# Component 2 — Evaluation Mapping and Scoring (v1.2)
 
 | Item | Value |
 |---|---|
-| Date | 16 October 2026 — **fixed before the tool runs on any evaluation app** (v1.1, 16 Oct: three clarifications from the synthetic scorer test, still before any evaluation run — §5) |
+| Date | 16 October 2026 — **fixed before the tool runs on any evaluation app** (v1.1, 16 Oct: three clarifications from the synthetic scorer test; v1.2, 18 Oct: one principle + five gaps from the HMS rehearsal (Phase 5R) — both still before any evaluation run, §5) |
 | Used by | `tools/eval/score.py` (Phase 5) |
 | Inputs | `gold/<app>.csv` (owner's gold standard, gold-standard-guide.md) and the tool's Stage 2 / 3 / 5 outputs for the same app, under rules **v1.0** and **v1.1** |
 
@@ -14,11 +14,13 @@ gold does not list are reported separately (`extra`) and not scored.
 
 ## 2. Decision mapping
 
+**Principle (v1.2).** **Wrong** needs output that renders. A tool result that is not the gold's decision but renders **nothing** (a hidden, flagged conditional; an empty page; a component nothing renders) is **abstain**: a cost to recall, not an unsound decision. An `if` / loop that produces no output at all (e.g. `header()` only) counts as "no node".
+
 | Gold decision | Tool result counted **correct** | Tool result counted **abstain** (a miss, not wrong) | Tool result counted **wrong** |
 |---|---|---|---|
 | loop `list` | List (R-L1 / R-L2a / R-L2b / R-L4), **and** container tag + line and Item root match | any abstain on the loop | inline map; container or Item root differs; not a boundary |
 | loop `inline_map` | R-L3 / R-L3b | abstain | List with a different item shape; not a boundary |
-| loop `not_ui` | R-L5, R-I7, or no node | — | a List or inline map that renders output |
+| loop `not_ui` | R-L5, R-I7, or no node | a List / inline map that never renders (e.g. inside a function nothing calls) | a List or inline map that renders output |
 | if `page_guard` | R-I1 | v1.1 conditional with `unresolvedCondition` (content hidden, flagged) | content rendered under a different, translated condition |
 | if `list_guard` | R-I2 / R-I2b | abstain; v1.1 conditional | R-I4 / R-I5 rendering the loop unguarded |
 | if `attribute` | R-I3 | abstain, attribute omitted | anything that renders the attribute unconditionally |
@@ -27,13 +29,14 @@ gold does not list are reported separately (`extra`) and not scored.
 | if `own_component` | R-I5, **R-I4** (size is a style choice) | abstain | rendered unconditionally |
 | if `redirect_guard` | R-I8 redirect guard, `header_redirect` flag | abstain | content of the redirect arm rendered |
 | if `auth_check` | abstain `cuts_across_business_logic`; any conditional whose condition is `unresolvedCondition(needs_auth_context)` | — | content rendered **unconditionally** |
-| if `request_handler` | any conditional whose condition is `unresolvedCondition(needs_request_context)` or a translated request condition; R-I7 | abstain | handler output rendered unconditionally (e.g. v1.0 R-I1 on a POST-only page) |
-| if `not_ui` | R-I7, or no node | — | a rendered conditional |
+| if `request_handler` | any conditional whose condition is `unresolvedCondition(needs_request_context)` or a translated request condition; R-I7 | abstain; v1.0 R-I1 whose content renders nothing (JS only, dropped and flagged) | handler output rendered unconditionally (e.g. v1.0 R-I1 on a POST-only page) |
+| if `not_ui` | R-I7, or no node | a conditional whose content renders nothing (hidden, flagged; e.g. `mysqli_error` output) | a conditional whose content renders |
 | function `component` | R-F1 | `unresolved_call`, abstain | not a component and its output lost **without** a flag |
+| function `not_ui` | no component | a component that is never rendered | a component whose output renders on a page |
 | function / include `shell` | R-F2 | `tag_crosses_function`, `output_outside_shell`, `cross_file_output` | — |
 | include `not_ui` | no unit, `error_output_only`, whitespace-only | — | rendered as content |
 | unit `page` | a generated page | — | not generated |
-| unit `not_ui` | `notGenerated` (`non_html_response`, `ajax_endpoint`, `error_output_only`) or no unit | — | generated as a page that renders content |
+| unit `not_ui` | `notGenerated` (`non_html_response`, `ajax_endpoint`, `error_output_only`) or no unit | a generated page that renders nothing | generated as a page that renders content |
 | read `table.column` | tool read resolves to the same `table.column` | tool `unresolved` / `ambiguous` | tool resolves to a **different** `table.column` |
 | read `unknown` | tool `unresolved` / `ambiguous` | — | tool resolves to any `table.column` |
 | read `session` / `request` / `literal` | same `sourceKind` | `unresolved` | a different `sourceKind` |
@@ -68,6 +71,7 @@ Every metric is reported **per app and in total**, for **v1.0 and v1.1**, side b
 | Date | Change |
 |---|---|
 | 16 Oct 2026 | v1.0 — written before any evaluation run |
+| 18 Oct 2026 | v1.2 — still before any evaluation run, from the HMS rehearsal (a discovery app, Phase 5R): the "wrong needs rendered output" principle (made explicit; the scorer already applied it after the 5R fix), and five gaps filled by it: `if not_ui` hidden conditional, v1.0 R-I1 on JS-only handlers, `loop not_ui` List never rendered, `function not_ui` (new row), `unit not_ui` empty page. Line conventions for `read` / `function` rows are in gold-standard-guide v1.1 |
 | 16 Oct 2026 | v1.1 — still before any evaluation run: R-I4 / R-I5 count as interchangeable for `inline` / `own_component` (the v1.0 "wrong only if the condition is translated wrongly" needed a human and the gold has no condition column); `unmapped` rows are listed; `no_endpoint` counts as generic (like `unlabelled`) in the flag-adjusted unsound count |
 
 (The numbering of §4's rules is unchanged.) A bug found during Phase 5 is logged, fixed after scoring,
