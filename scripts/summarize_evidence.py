@@ -771,11 +771,43 @@ def _reports():
         ("E4 injection check, 17 Oct 2026", "evidence/e4/2026-10-17/README.md"),
         ("Non-MySQL test run, 17 Oct 2026", TEST_LOG),
         ("Commit hash map (history rewrite)", "evidence/commit_hash_map_2026-10-15.md"),
+        ("FR status (reviewed, drives the Functions view)", "docs/c3_fr_status.json"),
     ]
     return [{"title": t, "path": p, "exists": (ROOT / p).is_file(), "downloadable": False,
              "note": "Repository file; open it in the repository (not served by the dashboard)."} for t, p in entries] + [
         {"title": "Dashboard data (this file)", "path": "components/c3_data_layer/dashboard/data/dashboard_data.json",
          "exists": True, "downloadable": True, "href": "data/dashboard_data.json", "note": "Served with the dashboard."}]
+
+
+FR_STATUS_FILE = ROOT / "docs" / "c3_fr_status.json"
+ID_TOKEN = re.compile(r"\b(?:FR|Q|G|S|E|H)\d+\b")  # identifiers such as FR6, Q014, G007, E1, H1 are not results
+
+
+def _functions(measurements, experiments, limitations):
+    """docs/c3_fr_status.json, checked against the audit and the generated measurements."""
+    spec = json.loads(FR_STATUS_FILE.read_text(encoding="utf-8"))
+    audit = (ROOT / spec["requirements_source"]).read_text(encoding="utf-8")
+    ids = {m["id"] for m in measurements}
+    limitation_frs = {l["fr"] for l in limitations}
+    for entry in spec["functions"]:
+        where = f"{FR_STATUS_FILE.relative_to(ROOT)} {entry['fr']}"
+        if entry["status"] not in spec["statuses"]:
+            raise SystemExit(f"{where}: unknown status {entry['status']!r}")
+        if f'"{entry["requirement"]}"' not in audit:
+            raise SystemExit(f"{where}: requirement text is not verbatim in {spec['requirements_source']}")
+        for field in ("title", "requirement", "limitation"):
+            if re.search(r"\d", ID_TOKEN.sub("", entry[field])):
+                raise SystemExit(f"{where}: {field} contains a number; result numbers must come from measurements")
+        unknown = [m for m in entry["measurements"] if m not in ids]
+        if unknown:
+            raise SystemExit(f"{where}: unknown measurement id(s): {unknown}")
+        missing = [k for k in entry["experiments"] if k not in experiments]
+        if missing:
+            raise SystemExit(f"{where}: unknown experiment key(s): {missing}")
+        if entry.get("site_list") and entry["site_list"] not in limitation_frs:
+            raise SystemExit(f"{where}: site_list {entry['site_list']!r} is not a limitations entry")
+    return {"source": FR_STATUS_FILE.relative_to(ROOT).as_posix(), "requirements_source": spec["requirements_source"],
+            "statuses": spec["statuses"], "items": spec["functions"]}
 
 
 def _privacy_check(node, path="$"):
@@ -840,6 +872,7 @@ def write_dashboard_json(target: Path, base: Path, head: str) -> None:
         ],
         "reports": _reports(),
     }
+    data["functions"] = _functions(measurements, data["experiments"], data["limitations"])
     _privacy_check(data)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")

@@ -432,9 +432,52 @@ def start_cleanup(bridge: Bridge, interval: int = 60) -> None:
 SAMPLE_FILE = DASHBOARD / "data" / "sample_run.json"
 
 
+def _strings(node):
+    if isinstance(node, dict):
+        for value in node.values():
+            yield from _strings(value)
+    elif isinstance(node, list):
+        for value in node:
+            yield from _strings(value)
+    elif isinstance(node, str):
+        yield node
+
+
+def sample_problems(sample: dict, schema_sql: bytes) -> list[str]:
+    """Reasons a recorded sample must not be saved: absolute paths, credentials, or SQL for tables
+    that the uploaded schema does not define (i.e. SQL from another app)."""
+    problems = set()
+    checks = [
+        (re.compile(r"(?<![\w])[A-Za-z]:[\\/]"), "absolute Windows path"),
+        (re.compile(r"/Users/|\\Users\\|AppData|/home/\w"), "user directory path"),
+        (re.compile(r"mysql\+\w+://|\w+://[^/\s]+:[^@\s]+@"), "database URL or URL with credentials"),
+        (re.compile(r"C3_DB_PASSWORD|C3_BENCH_DB_PASSWORD"), "credential variable"),
+        (re.compile(r"(?i)\b(password|passwd|pwd|secret|token)\s*=\s*['\"][^'\"]+['\"]"), "credential literal"),
+    ]
+    for text in _strings(sample):
+        for pattern, what in checks:
+            if pattern.search(text):
+                problems.add(what)
+    defined = {name.lower() for name in re.findall(r"create\s+table\s+(?:if\s+not\s+exists\s+)?`?(\w+)`?",
+                                                    schema_sql.decode("utf-8", "replace"), re.I)}
+    previews = sample.get("previews", {})
+    referenced = set()
+    code = previews.get("data_access.py", {}).get("text", "")
+    for statement in re.findall(r"text\(\s*(['\"])(.*?)\1\s*\)", code, re.S):
+        referenced |= {t.lower() for t in re.findall(r"\b(?:FROM|JOIN|INTO|UPDATE)\s+`?(\w+)`?", statement[1], re.I)}
+    referenced |= {t.lower() for t in re.findall(r"__tablename__\s*=\s*['\"](\w+)['\"]", previews.get("models.py", {}).get("text", ""))}
+    referenced |= {t.lower() for t in re.findall(r"Table\(\s*['\"](\w+)['\"]", previews.get("models.py", {}).get("text", ""))}
+    foreign = sorted(referenced - defined)
+    if foreign:
+        problems.add(f"SQL or models for tables not in the uploaded schema: {', '.join(foreign)}")
+    if not referenced:
+        problems.add("no table references found in the previews (cannot check them)")
+    return sorted(problems)
+
+
 def record_sample(app_label: str, php_dir: Path, schema: Path, target: Path = SAMPLE_FILE, bridge: Bridge | None = None,
-                  allow_hms: bool = False) -> dict:
-    """Run one app through the bridge and save it as the Try It fallback ("Recorded run, not live")."""
+                  allow_hms: bool = False, label: str = "Recorded run, not live") -> dict:
+    """Run one app through the bridge and save it as the Try It fallback (a recorded run, not live)."""
     php_dir, schema = Path(php_dir).resolve(), Path(schema).resolve()
     if "hms_kishan0725" in php_dir.as_posix() and not allow_hms:
         raise SystemExit("HMS (kishan0725) has no licence; it is not recorded unless explicitly allowed (--allow-hms).")
@@ -449,12 +492,15 @@ def record_sample(app_label: str, php_dir: Path, schema: Path, target: Path = SA
     run_id = summary["run_id"]
     try:
         sample = {
-            "recorded": True, "label": "Recorded run, not live", "app": app_label,
+            "recorded": True, "label": label, "app": app_label,
             "recorded_at": time.strftime("%Y-%m-%d %H:%M"), "summary": summary, "unresolved": bridge.unresolved(run_id),
             "previews": {name: bridge.preview(run_id, name) for name in PREVIEW_FILES},
         }
     finally:
         bridge.delete(run_id)
+    problems = sample_problems(sample, schema.read_bytes())
+    if problems:
+        raise SystemExit("sample not saved: " + "; ".join(problems))
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(sample, indent=1) + "\n", encoding="utf-8")
     return sample
@@ -467,11 +513,12 @@ def main(argv=None) -> None:
     parser.add_argument("--php", type=Path, help="with --record-sample: the app's PHP folder")
     parser.add_argument("--schema", type=Path, help="with --record-sample: the app's schema .sql")
     parser.add_argument("--allow-hms", action="store_true", help="with --record-sample: allow the unlicensed HMS app")
+    parser.add_argument("--label", default="Recorded run, not live", help="with --record-sample: label shown in Try It")
     args = parser.parse_args(argv)
     if args.record_sample:
         if not (args.php and args.schema):
             parser.error("--record-sample needs --php and --schema")
-        sample = record_sample(args.record_sample, args.php, args.schema, allow_hms=args.allow_hms)
+        sample = record_sample(args.record_sample, args.php, args.schema, allow_hms=args.allow_hms, label=args.label)
         print(f"wrote {SAMPLE_FILE} ({sample['app']}: {sample['summary']['counts']})")
         return
     server = make_server(args.port)

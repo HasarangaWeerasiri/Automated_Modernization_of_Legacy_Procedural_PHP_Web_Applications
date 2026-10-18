@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": {
   "by": "scripts/summarize_evidence.py --dashboard-json",
-  "date": "2026-10-17T15:45:21+05:30",
-  "git_head": "6e927117e42893a734a93bd9c2c0e0eb5276cb70",
+  "date": "2026-10-18T12:12:35+05:30",
+  "git_head": "2785650e7dd34dcc808f758a7cc4e93a39eb1d16",
   "pipeline_unchanged_since_head": true,
   "current_code_run": "fresh C3 run of all 9 apps into a temp folder outside the repo (written <temp>)"
  },
@@ -10121,6 +10121,13 @@
    "note": "Repository file; open it in the repository (not served by the dashboard)."
   },
   {
+   "title": "FR status (reviewed, drives the Functions view)",
+   "path": "docs/c3_fr_status.json",
+   "exists": true,
+   "downloadable": false,
+   "note": "Repository file; open it in the repository (not served by the dashboard)."
+  },
+  {
    "title": "Dashboard data (this file)",
    "path": "components/c3_data_layer/dashboard/data/dashboard_data.json",
    "exists": true,
@@ -10128,5 +10135,186 @@
    "href": "data/dashboard_data.json",
    "note": "Served with the dashboard."
   }
- ]
+ ],
+ "functions": {
+  "source": "docs/c3_fr_status.json",
+  "requirements_source": "docs/C3_audit_2026-10-17.md",
+  "statuses": [
+   "Implemented and measured",
+   "Partial",
+   "Not implemented"
+  ],
+  "items": [
+   {
+    "fr": "FR1",
+    "title": "SQL Operation Identification",
+    "requirement": "The system must identify database query operations within the legacy PHP source code. This includes 'mysqli', 'mysql', and PDO-based queries.",
+    "status": "Implemented and measured",
+    "limitation": "PDO detection is tested on fixtures only (no third-party benchmark app uses PDO); wrapper detection covers the single-parameter wrapper shape only.",
+    "measurements": [
+     "hms_kishan0725|post-adaptation (after H1)|sql_detection",
+     "dignity_dev_hms|fresh holdout (first run)|sql_detection",
+     "helpdesk_legacy_holdout|post-adaptation|sql_detection",
+     "news_buzz|post-fix (escape decoder)|sql_detection",
+     "fee_rainbow|post-fix (wrapper support + fragment rule)|sql_detection"
+    ],
+    "experiments": []
+   },
+   {
+    "fr": "FR2",
+    "title": "SQL Recovery",
+    "requirement": "SQL queries constructed using variables, string concatenation, or conditional statements must be reconstructed whenever they can be safely resolved.",
+    "status": "Partial",
+    "limitation": "SQL whose text differs between if/else branches is not rebuilt by a general rule; only the Clinic query-specific templates Q014 and Q016 do this.",
+    "measurements": [
+     "hms_kishan0725|post-adaptation (after H1)|recovery_recall",
+     "dignity_dev_hms|fresh holdout (first run)|recovery_recall",
+     "helpdesk_legacy_holdout|post-adaptation|recovery_recall",
+     "news_buzz|post-fix (escape decoder)|recovery_recall",
+     "fee_rainbow|post-fix (wrapper support + fragment rule)|recovery_recall",
+     "hms_kishan0725|post-adaptation (after H1)|recovery_precision",
+     "dignity_dev_hms|fresh holdout (first run)|recovery_precision",
+     "helpdesk_legacy_holdout|post-adaptation|recovery_precision",
+     "news_buzz|post-fix (escape decoder)|recovery_precision",
+     "fee_rainbow|post-fix (wrapper support + fragment rule)|recovery_precision"
+    ],
+    "experiments": []
+   },
+   {
+    "fr": "FR3",
+    "title": "Schema Analysis",
+    "requirement": "Database tables, columns, data types, primary keys, foreign keys, and relationships must be identified from the MySQL schema.",
+    "status": "Implemented and measured",
+    "limitation": "Relationships are inferred from declared foreign keys only.",
+    "measurements": [
+     "all|post-adaptation (E2, 2026-10-15)|e2_schema_match"
+    ],
+    "experiments": [
+     "e2"
+    ]
+   },
+   {
+    "fr": "FR4",
+    "title": "Query and Column Analysis",
+    "requirement": "The tables and columns used by each recovered query must be identified, as well as how those columns are subsequently used within the application logic.",
+    "status": "Partial",
+    "limitation": "Column use is identified per SQL statement only; how result columns are used later in the PHP application logic is not traced.",
+    "measurements": [
+     "dignity_dev_hms|fresh holdout (first run)|column_use_read",
+     "dignity_dev_hms|fresh holdout (first run)|column_use_write",
+     "dignity_dev_hms|fresh holdout (first run)|column_use_filter",
+     "hms_kishan0725|post-adaptation (after H1)|column_use_read",
+     "hms_kishan0725|post-adaptation (after H1)|column_use_write",
+     "hms_kishan0725|post-adaptation (after H1)|column_use_filter",
+     "helpdesk_legacy_holdout|post-adaptation|column_use_write",
+     "news_buzz|post-fix (escape decoder)|column_use_write",
+     "fee_rainbow|post-fix (wrapper support + fragment rule)|column_use_write"
+    ],
+    "experiments": []
+   },
+   {
+    "fr": "FR5",
+    "title": "ORM Generation",
+    "requirement": "The system must generate SQLAlchemy models with appropriate data types, keys, and relationships.",
+    "status": "Implemented and measured",
+    "limitation": "Tables without a primary key become Core Table objects, not ORM classes; there is no schema-only (sqlacodegen) baseline comparison.",
+    "measurements": [
+     "all|post-adaptation (E2, 2026-10-15)|e2_schema_match"
+    ],
+    "experiments": [
+     "e2"
+    ]
+   },
+   {
+    "fr": "FR6",
+    "title": "Data Access Generation",
+    "requirement": "SQL operations that can be safely recovered must be converted into parameterized SQLAlchemy data access functions.",
+    "status": "Partial",
+    "limitation": "Only static INNER JOIN SELECTs are converted: LEFT JOIN and implicit comma-join sites are recovered but not converted. MySQL behavioural equivalence (E1) exists for HMS only.",
+    "measurements": [
+     "hms_kishan0725|current code|conversion_coverage_gt",
+     "dignity_dev_hms|current code|conversion_coverage_gt",
+     "helpdesk_legacy_holdout|current code|conversion_coverage_gt",
+     "news_buzz|current code|conversion_coverage_gt",
+     "fee_rainbow|current code|conversion_coverage_gt",
+     "clinic_inventory_legacy_hard|current code|general_rule_share",
+     "hms_kishan0725|post-adaptation (E1 re-run)|e1_pass",
+     "hms_kishan0725|post-adaptation (E1 re-run)|e1_fail",
+     "hms_kishan0725|post-adaptation (E1 re-run)|e1_inconclusive"
+    ],
+    "experiments": [
+     "e1"
+    ],
+    "site_list": "FR6"
+   },
+   {
+    "fr": "FR7",
+    "title": "Safety Checking",
+    "requirement": "It must be verified whether runtime values can be safely parameterized, and dynamic values used in structural positions such as table names or column names must be identified.",
+    "status": "Implemented and measured",
+    "limitation": "E4 is a recording-session check with a fixed payload set (no database); runtime hostile testing on MySQL exists for HMS only.",
+    "measurements": [
+     "simple_crud|current code (E4, 2026-10-17)|e4_safe_functions",
+     "mixed_crud|current code (E4, 2026-10-17)|e4_safe_functions",
+     "hard_crud|current code (E4, 2026-10-17)|e4_safe_functions",
+     "clinic_inventory_legacy_hard|current code (E4, 2026-10-17)|e4_safe_functions",
+     "helpdesk_legacy_holdout|current code (E4, 2026-10-17)|e4_safe_functions",
+     "hms_kishan0725|current code (E4, 2026-10-17)|e4_safe_functions",
+     "news_buzz|current code (E4, 2026-10-17)|e4_safe_functions",
+     "fee_rainbow|current code (E4, 2026-10-17)|e4_safe_functions",
+     "dignity_dev_hms|current code (E4, 2026-10-17)|e4_safe_functions"
+    ],
+    "experiments": [
+     "e4"
+    ]
+   },
+   {
+    "fr": "FR8",
+    "title": "Safe Abstention",
+    "requirement": "Queries that cannot be migrated confidently or safely must be flagged for human review rather than generating incorrect code.",
+    "status": "Implemented and measured",
+    "limitation": "Correct abstention is measurable only where the ground truth has non-recoverable sites; flagged sites get a reason and a stub, never generated SQL.",
+    "measurements": [
+     "dignity_dev_hms|fresh holdout (first run)|correct_abstention",
+     "news_buzz|post-fix (escape decoder)|correct_abstention",
+     "fee_rainbow|post-fix (wrapper support + fragment rule)|correct_abstention",
+     "dignity_dev_hms|fresh holdout (first run)|recovery_precision",
+     "news_buzz|post-fix (escape decoder)|recovery_precision",
+     "fee_rainbow|post-fix (wrapper support + fragment rule)|recovery_precision"
+    ],
+    "experiments": []
+   },
+   {
+    "fr": "FR9",
+    "title": "Migration Support",
+    "requirement": "Alembic migration information required for the modernized data layer must be generated.",
+    "status": "Implemented and measured",
+    "limitation": "Initial-schema revision only, no data migration; the latest MySQL round trip predates the SQLite URL fix in the generated env.py.",
+    "measurements": [
+     "all|post-adaptation (E3, 2026-10-15)|e3_roundtrip_pass"
+    ],
+    "experiments": [
+     "e3"
+    ]
+   },
+   {
+    "fr": "FR10",
+    "title": "Traceability",
+    "requirement": "The original PHP file and source location must be maintained for each recovered database operation. This information can be used for review and debugging purposes.",
+    "status": "Implemented and measured",
+    "limitation": "Checked by matching every evaluated site on file and line; whether the frozen HMS handoff labels changed after the label fix was not checked.",
+    "measurements": [
+     "hms_kishan0725|post-adaptation (after H1)|recovery_recall",
+     "dignity_dev_hms|fresh holdout (first run)|recovery_recall",
+     "helpdesk_legacy_holdout|post-adaptation|recovery_recall",
+     "news_buzz|post-fix (escape decoder)|recovery_recall",
+     "fee_rainbow|post-fix (wrapper support + fragment rule)|recovery_recall",
+     "all|current code (tests, 2026-10-17)|tests_passed"
+    ],
+    "experiments": [
+     "tests"
+    ]
+   }
+  ]
+ }
 }

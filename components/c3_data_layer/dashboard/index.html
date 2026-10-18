@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,20 +8,22 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="app-header">
-    <div class="brand">
-      <h1>C3 Migration Studio</h1>
-      <p>Data Layer Migration: legacy procedural PHP + MySQL to SQLAlchemy</p>
-    </div>
-    <div class="header-actions">
-      <button type="button" class="button" id="theme-toggle" aria-pressed="false">Light theme</button>
-    </div>
-  </header>
+  <div class="topbar">
+    <header class="app-header">
+      <div class="brand">
+        <h1>C3 Migration Studio</h1>
+        <p>Data Layer Migration: legacy procedural PHP + MySQL to SQLAlchemy</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="button" id="theme-toggle" aria-pressed="false">Dark theme</button>
+      </div>
+    </header>
 
-  <nav class="main-tabs" role="tablist" aria-label="Main sections">
-    <button type="button" class="main-tab" role="tab" id="tab-evidence" data-tab="evidence" aria-controls="panel-evidence">Evidence</button>
-    <button type="button" class="main-tab" role="tab" id="tab-tryit" data-tab="tryit" aria-controls="panel-tryit">Try It</button>
-  </nav>
+    <nav class="main-tabs" role="tablist" aria-label="Main sections">
+      <button type="button" class="main-tab" role="tab" id="tab-evidence" data-tab="evidence" aria-controls="panel-evidence">Evidence</button>
+      <button type="button" class="main-tab" role="tab" id="tab-tryit" data-tab="tryit" aria-controls="panel-tryit">Try It</button>
+    </nav>
+  </div>
 
   <main>
     <!-- ======================= EVIDENCE ======================= -->
@@ -29,6 +31,7 @@
       <div id="load-status" class="notice info">Loading evidence data…</div>
 
       <nav class="sub-tabs" role="tablist" aria-label="Evidence sections">
+        <button type="button" class="sub-tab" role="tab" data-section="functions">Functions</button>
         <button type="button" class="sub-tab" role="tab" data-section="overview">Overview</button>
         <button type="button" class="sub-tab" role="tab" data-section="sql">SQL Results</button>
         <button type="button" class="sub-tab" role="tab" data-section="models">Models &amp; Migration</button>
@@ -42,7 +45,8 @@
         </label>
       </div>
 
-      <section id="section-overview" class="evidence-section" data-section="overview"></section>
+      <section id="section-functions" class="evidence-section" data-section="functions"></section>
+      <section id="section-overview" class="evidence-section" data-section="overview" hidden></section>
       <section id="section-sql" class="evidence-section" data-section="sql" hidden></section>
       <section id="section-models" class="evidence-section" data-section="models" hidden></section>
       <section id="section-evaluation" class="evidence-section" data-section="evaluation" hidden></section>

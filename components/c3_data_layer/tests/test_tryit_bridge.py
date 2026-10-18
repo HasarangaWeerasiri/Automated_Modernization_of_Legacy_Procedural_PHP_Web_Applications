@@ -305,6 +305,30 @@ def test_recorded_sample_refuses_hms(tmp_path):
                              ROOT / "benchmarks" / "apps" / "hms_kishan0725" / "myhmsdb.sql", target=tmp_path / "s.json")
 
 
+def test_sample_check_flags_paths_credentials_and_foreign_tables():
+    schema = b"CREATE TABLE posts (id INT PRIMARY KEY);"
+    clean = {"previews": {"data_access.py": {"text": "text('SELECT id FROM posts WHERE id = :id')"},
+                          "models.py": {"text": "__tablename__ = \"posts\""}}}
+    assert server.sample_problems(clean, schema) == []
+    leaky = json.loads(json.dumps(clean))
+    leaky["upload"] = {"zip_name": "C:\\Users\\someone\\app.zip"}
+    leaky["previews"]["data_access.py"]["text"] += "\npassword = \"hunter2\"\ntext('SELECT * FROM appointmenttb')"
+    problems = " ".join(server.sample_problems(leaky, schema))
+    assert "absolute Windows path" in problems and "credential literal" in problems and "appointmenttb" in problems
+
+
+def test_saved_news_buzz_sample_is_clean():
+    sample_file = DASHBOARD / "data" / "sample_run.json"
+    if not sample_file.is_file():
+        pytest.skip("no recorded sample")
+    sample = json.loads(sample_file.read_text(encoding="utf-8"))
+    assert sample["label"] == "Recorded run of the NEWS-BUZZ benchmark, not live"
+    assert server.sample_problems(sample, (ROOT / "benchmarks/apps/news_buzz/db/NEWSBUZZ.sql").read_bytes()
+                                  if (ROOT / "benchmarks/apps/news_buzz/db/NEWSBUZZ.sql").is_file()
+                                  else b"CREATE TABLE posts (id INT); CREATE TABLE users (id INT);") == []
+    assert "%" not in json.dumps(sample["summary"]) + json.dumps(sample["unresolved"])
+
+
 @needs_php
 def test_recorded_sample_writes_only_its_target(tmp_path):
     target = tmp_path / "sample_run.json"

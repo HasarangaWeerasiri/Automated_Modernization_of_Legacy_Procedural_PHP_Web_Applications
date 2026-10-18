@@ -230,6 +230,65 @@ def test_try_it_panel_starts_empty_and_disabled():
     assert "Counts from this upload, no ground truth, not an accuracy figure" in panel
 
 
+# Functions view (FR1-FR10) ------------------------------------------------------------------------
+
+FR_STATUS = ROOT / "docs" / "c3_fr_status.json"
+AUDIT = ROOT / "docs" / "C3_audit_2026-10-17.md"
+
+
+def _fr_spec():
+    return json.loads(FR_STATUS.read_text(encoding="utf-8"))
+
+
+def test_fr_status_file_holds_no_result_numbers():
+    for item in _fr_spec()["functions"]:
+        for field in ("title", "requirement", "limitation"):
+            assert not re.search(r"\d", summarize.ID_TOKEN.sub("", item[field])), (item["fr"], field)
+        assert set(item) <= {"fr", "title", "requirement", "status", "limitation", "measurements", "experiments", "site_list"}
+
+
+def test_fr_requirements_are_verbatim_and_statuses_match_the_audit():
+    audit = AUDIT.read_text(encoding="utf-8")
+    rows = {cells[1].strip(): cells for cells in (line.split("|") for line in audit.splitlines() if re.match(r"^\| FR\d+ \|", line))}
+    spec = _fr_spec()
+    assert [i["fr"] for i in spec["functions"]] == [f"FR{n}" for n in range(1, 11)]
+    for item in spec["functions"]:
+        cells = rows[item["fr"]]
+        assert cells[2].strip() == f'"{item["requirement"]}"', item["fr"]
+        assert cells[7].strip().startswith(f"**{item['status']}**"), (item["fr"], cells[7].strip())
+
+
+def test_functions_are_copied_and_every_reference_exists(data):
+    spec = _fr_spec()
+    assert data["functions"]["items"] == spec["functions"]
+    assert data["functions"]["source"] == "docs/c3_fr_status.json"
+    ids = {m["id"] for m in data["measurements"]}
+    for item in spec["functions"]:
+        assert item["measurements"], item["fr"]
+        assert set(item["measurements"]) <= ids, item["fr"]
+        assert set(item["experiments"]) <= set(data["experiments"]), item["fr"]
+        if item.get("site_list"):
+            assert any(l["fr"] == item["site_list"] for l in data["limitations"])
+
+
+def test_status_summary_counts_come_from_the_file(data):
+    from collections import Counter
+    counts = Counter(i["status"] for i in data["functions"]["items"])
+    assert counts == Counter({"Implemented and measured": 7, "Partial": 3})
+    assert {i["fr"] for i in data["functions"]["items"] if i["status"] == "Partial"} == {"FR2", "FR4", "FR6"}
+    code = (DASHBOARD / "app.js").read_text(encoding="utf-8")
+    assert "fn.statuses.filter((s) => counts[s])" in code  # the summary line is counted, not typed
+
+
+def test_function_cards_take_numbers_only_from_referenced_measurements():
+    code = (DASHBOARD / "app.js").read_text(encoding="utf-8")
+    card = re.search(r"function frCard\(item\) \{(.*?)\n  \}\n", code, re.S).group(1)
+    assert "item.measurements.map(byId)" in card
+    # every value on a card is formatted from a referenced measurement (or counted from the limitation's site list)
+    assert re.findall(r"formatValue\((\w+)\)", card) and set(re.findall(r"formatValue\((\w+)\)", card)) == {"m"}
+    assert "DATA.measurements" not in card and "DATA.experiments" not in card
+
+
 # Privacy ----------------------------------------------------------------------------------------
 
 def test_export_contains_no_sql_values_credentials_or_paths(data):
