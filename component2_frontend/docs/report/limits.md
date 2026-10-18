@@ -78,3 +78,17 @@ serves the legacy URLs with the routes for a demonstration; it does not cover:
 | Links built by a PHP expression are reached only if the page prints the same URL; links to files with no page (`noPage`: not generated, crashed, outside the document root), to files the app does not have, or to static files stay broken (404) | `docs/routing.md` §2, §6 |
 | `.htaccess` / server rewrite rules of the legacy app are not read | `docs/routing.md` §6 |
 | A link reaches a page, but a POST, a login or a redirect needs Component 1 | `docs/routing.md` §6; `docs/phase4-results.md` §7 |
+
+## 8. Styles and script behaviour of the generated pages
+
+A plain page's `<head>` is dropped (`document_shell`) and every `<script>` is dropped (`inline_js_dropped`: "detect
+and flag it, never convert it", `CONTEXT.md` §2), so the generated pages show the legacy markup without the
+legacy stylesheets (plain pages) and without the legacy script behaviour (e.g. Bootstrap tabs). The opt-in assets
+layer (`docs/assets-layer.md`, owner decision 18 Oct 2026, not part of the pipeline, **not measured**) loads the
+legacy page's own stylesheets and script files as they were, for a demonstration; it does not cover:
+
+| Limitation | Recorded in |
+|---|---|
+| Inline scripts (`<script>…</script>`, `onclick=`) are neither loaded nor converted | `docs/assets-layer.md` §6 |
+| Stylesheet / script tags built by PHP and includes by an expression are skipped; the scan is file-level (a tag under a condition is collected whatever the condition) | `docs/assets-layer.md` §2, §6 |
+| Scripts from the legacy `<head>` load at the end of `<body>`; legacy scripts change DOM that React rendered (safe for Server Components without client state, not in general) | `docs/assets-layer.md` §6 |

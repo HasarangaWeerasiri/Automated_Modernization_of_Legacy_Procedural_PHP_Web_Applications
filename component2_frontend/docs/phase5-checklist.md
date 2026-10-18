@@ -56,8 +56,9 @@ venv/Scripts/python.exe tools/eval/run_eval.py <dir> --name <app> --docroot <doc
 - [ ] It prints, per version, the units, crashes and units not compiling. Check `output/eval/runs/<app>/run.json`:
       `goldCommitted` < `firstRun`, `codeChanges: []`, `codeCommit` = the commit of step 0, `rules: ["1.0", "1.1"]`.
 - [ ] Run it **once** per app. A second run keeps `firstRun`; never delete `output/eval/runs/<app>/` to start over.
-- [ ] **No routing layer**: never run `tools/routing/routes.py` or `generated_app.py --routes` on an evaluation app
-      (eval-mapping §4 item 2, no other setting; `docs/routing.md` §4). It is a deployment aid, not measured.
+- [ ] **No routing or assets layer**: never run `tools/routing/routes.py`, `tools/assets/legacy_assets.py` or
+      `generated_app.py --routes / --assets` on an evaluation app (eval-mapping §4 item 2, no other setting;
+      `docs/routing.md` §4, `docs/assets-layer.md` §4). They are deployment aids, not measured.
 
 ## 3. Scoring and tables
 

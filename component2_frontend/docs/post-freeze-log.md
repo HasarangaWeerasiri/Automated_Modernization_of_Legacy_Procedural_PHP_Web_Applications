@@ -21,3 +21,7 @@ the evaluation (Phase 5) has run, the evaluation is re-run and reported both bef
 ## Not a change: the routing layer (18 Oct 2026)
 
 `tools/routing/routes.py` (opt-in, `docs/routing.md`) serves a generated app's legacy `.php` URLs with its routes through `next.config.ts` rewrites, written into a build project after Stage 5. It changes no rule, no spec and no decision, reads only `index.json`, and is outside the pipeline (`src/`, `config/`, `tools/harness/`): `--rules v1.0` stays byte-identical to the freeze (five apps `ba8e4ac7…25d9`, mocks `71b746eb…0cf6`). It is therefore **not a post-freeze change** (change 5 stays the last; rules v1.1 stay closed) and is **not measured**: a deployment aid, off in every measured run (Phase 4 and Phase 5).
+
+## Not a change: the assets layer (18 Oct 2026)
+
+`tools/assets/legacy_assets.py` (opt-in, owner decision, `docs/assets-layer.md`) loads a generated page's legacy stylesheets and script files, as they were, and serves the legacy static files, written into a build project after Stage 5. No script is converted: the rule "detect and flag it, never convert it" and the flags `document_shell` / `inline_js_dropped` stand. It changes no rule, no spec and no decision of the pipeline, reads only `index.json` and the legacy source, and is outside the pipeline: `--rules v1.0` stays byte-identical to the freeze. **Not a post-freeze change, not measured**: a deployment aid, off in every measured run.

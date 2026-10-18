@@ -87,10 +87,12 @@ The original build `hms-final-runtime` was not touched (Phase 4's results stay a
 - **Links built by a PHP expression** (`href="post.php?id=<?= $id ?>"`) are reached only if the generated page
   prints the same URL; the layer rewrites paths, it does not translate links.
 - **Links to files with no page** (`noPage`), to files the app does not have, or to static files (`.html`, CSS,
-  images; HMS's `document_shell`) stay broken: 404.
+  images; HMS's `document_shell`) stay broken: 404. (Static files: the assets layer serves them,
+  `docs/assets-layer.md`, also opt-in and not measured.)
 - **`.htaccess` / server rewrite rules** of the legacy app are not read.
 - **Forms and session:** a link reaches a page, but a POST to it, a login or a redirect is Component 1's
   (form actions are kept literal; nothing is posted in Phase 4).
 - **Inline JS** (e.g. Bootstrap tabs, `#list-pat`) is not converted ("detect and flag it, never convert it");
-  a `#` link changes nothing.
+  a `#` link changes nothing here. The assets layer (`docs/assets-layer.md`) loads the legacy script files as they
+  were, so Bootstrap tabs work again; inline scripts stay dropped.
 - No "link coverage" number is measured or reported as a result.

@@ -11,8 +11,9 @@ Usage, from component2_frontend/ (after tools/runtime/replay/generate.py <app>):
 substitute contract / map, built as output/test-app/c2-build/<app>-nodata-runtime: the same rules without the data
 wiring, the baseline classify.py --before takes to tell List rows from static elements. `--build <name>`: build
 into output/test-app/c2-build/<name>/ instead, so several builds can be served at once. `--routes`: add the
-opt-in routing layer, tools/routing/routes.py, to the build so legacy .php links navigate; a deployment aid, never
-used for a measured run.)
+opt-in routing layer, tools/routing/routes.py, to the build so legacy .php links navigate. `--assets`: add the
+opt-in assets layer, tools/assets/legacy_assets.py: the legacy page's own stylesheets and script files, and its
+static files. Both are deployment aids, never used for a measured run.)
 then start it:
     API_BASE_URL=http://127.0.0.1:18090 node output/test-app/node_modules/next/dist/bin/next start \\
         output/test-app/c2-build/hms-runtime -p 18100
@@ -28,7 +29,9 @@ ROOT = HERE.parents[1]  # component2_frontend/
 sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(ROOT / "tools" / "harness"))
 sys.path.insert(0, str(ROOT / "tools" / "routing"))
+sys.path.insert(0, str(ROOT / "tools" / "assets"))
 import compile_check  # noqa: E402
+import legacy_assets  # noqa: E402
 import routes  # noqa: E402
 from app import app_timelines  # noqa: E402
 from run_apps import NEXT_APP, run_app  # noqa: E402
@@ -68,10 +71,13 @@ def main(argv: list[str]) -> int:
     failing = [p["key"] for p in index["pages"] if p["tsc"] not in (0, None)]
     build = argv[argv.index("--build") + 1] if "--build" in argv else f"{app}-{'nodata-' if not data else ''}runtime"
     ok, text = compile_check.next_build(build, pipeline / app / NEXT_APP)
-    if ok and "--routes" in argv:
-        table, ok, text = routes.apply(build, pipeline / app / "index.json")
+    if ok and "--routes" in argv:  # (built once, after the last layer)
+        table, ok, text = routes.apply(build, pipeline / app / "index.json", build="--assets" not in argv)
         print(f"  routing layer: {len(table['rewrites'])} rewrites, {len(table['redirects'])} redirects, "
               f"{len(table['noPage'])} files with no page")
+    if ok and "--assets" in argv:
+        table, copied, ok, text = legacy_assets.apply(build, pipeline / app / "index.json")
+        print(f"  assets layer: {legacy_assets.summary(table)}; {copied} static files")
     found = lists(pipeline / app)
     summary = collections.Counter((f["result"], f["reason"]) for f in found)
     report = {"app": app, "rules": rules, "crashes": crashes, "tscFailing": failing, "nextBuild": ok, "lists": found,
