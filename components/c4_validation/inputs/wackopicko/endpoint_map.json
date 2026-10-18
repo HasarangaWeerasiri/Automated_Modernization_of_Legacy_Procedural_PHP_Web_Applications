@@ -165,7 +165,8 @@
               "in": "body",
               "legacy_name": "againpass",
               "legacy_in": "body",
-              "column": null
+              "column": null,
+              "same_as": "password"
             }
           ]
         }

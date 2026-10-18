@@ -402,6 +402,53 @@ def test_every_parameter_gets_every_injection_probe(tmp_path):
     assert probes == [(name, probe) for name in ("name", "age", "note") for probe in INJECTION_PROBES]
 
 
+SIGN_UP = {"source_id": "sign_up", "legacy": {"method": "POST", "path": "/register.php", "records": "none"},
+           "parameters": [_param("name", "people.name", "body"), _param("password", None, "body"),
+                          {**_param("again", None, "body"), "same_as": "password"}]}
+
+
+def test_a_parameter_that_repeats_another_is_given_its_value(tmp_path):
+    scenarios = generate(_map(tmp_path, [SIGN_UP], method="POST", records_at=None), SEED)
+
+    for scenario in scenarios:
+        values = scenario["values"]
+        if scenario["parameter"] != "again":
+            assert values.get("again", "<left out>") == values.get("password", "<left out>"), scenario["scenario_id"]
+
+
+def test_the_repeated_value_follows_the_boundary_and_probe_of_the_parameter_it_repeats(tmp_path):
+    scenarios = by_id(generate(_map(tmp_path, [SIGN_UP], method="POST", records_at=None), SEED))
+
+    assert scenarios["sign_up_boundary_password_empty"]["values"]["again"] == ""
+    assert "again" not in scenarios["sign_up_boundary_password_missing"]["values"]
+    assert scenarios["sign_up_injection_password_02"]["values"]["again"] == INJECTION_PROBES[1]
+
+
+def test_the_repeating_parameter_still_varies_alone_at_its_own_boundaries(tmp_path):
+    scenarios = by_id(generate(_map(tmp_path, [SIGN_UP], method="POST", records_at=None), SEED))
+    base = scenarios["sign_up_typical_01"]["values"]
+
+    assert scenarios["sign_up_boundary_again_empty"]["values"] == {**base, "again": ""}
+    assert "again" not in scenarios["sign_up_boundary_again_missing"]["values"]
+    assert "password" in scenarios["sign_up_boundary_again_missing"]["values"]
+
+
+def test_the_repeating_parameter_gets_no_injection_probes_of_its_own(tmp_path):
+    scenarios = generate(_map(tmp_path, [SIGN_UP], method="POST", records_at=None), SEED)
+
+    probed = {s["parameter"] for s in scenarios if s["scenario_type"] == "injection"}
+    assert probed == {"name", "password"}
+
+
+@pytest.mark.parametrize("same_as", ["nobody", "again", "loop"])
+def test_a_parameter_must_repeat_another_parameter_that_repeats_nothing(tmp_path, same_as):
+    parameters = [_param("password", None, "body"), {**_param("again", None, "body"), "same_as": same_as},
+                  {**_param("loop", None, "body"), "same_as": "password"}]
+
+    with pytest.raises(EndpointMapError, match="must repeat"):
+        _map(tmp_path, [{**SIGN_UP, "parameters": parameters}], method="POST", records_at=None)
+
+
 def test_generating_twice_gives_identical_scenarios(tmp_path):
     endpoint_map = _map(tmp_path, [SEARCH, LISTING])
 

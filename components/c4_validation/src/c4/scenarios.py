@@ -26,6 +26,11 @@ every endpoint:
                character over, and left out (other column types get their own edges)
     injection  per parameter, a fixed list of probes that depends on no application
 
+A parameter the map says must repeat another (`same_as`), such as a field that asks
+for the password again, is given the other's value in every scenario except its own
+boundary cases: there it differs on purpose. It gets no injection probes of its own;
+those of the parameter it repeats reach it.
+
 Everything is derived from the endpoint map, the database schema and the seed data,
 and nothing random reaches a scenario: choices are made by position in sorted data,
 and new values come from Faker seeded with the scenario's own name. The scenarios are
@@ -77,6 +82,9 @@ class Parameter:
     legacy_location: str
     # The database column the value is compared with or written to, "table.column".
     column: str | None
+    # Another parameter of the same page whose value this one must repeat, as a
+    # "repeat your password" field must.
+    same_as: str | None = None
 
 
 @dataclass(frozen=True)
@@ -156,7 +164,16 @@ def _read_stand_in(document: Mapping[str, Any]) -> dict[str, Endpoint]:
                     legacy_name=parameter["legacy_name"],
                     legacy_location=parameter["legacy_in"],
                     column=parameter.get("column"),
+                    same_as=parameter.get("same_as"),
                 ))
+            by_name = {parameter.name: parameter for parameter in parameters}
+            for parameter in parameters:
+                target = by_name.get(parameter.same_as) if parameter.same_as else None
+                if parameter.same_as and (target is None or target is parameter or target.same_as):
+                    raise EndpointMapError(
+                        f"Parameter '{parameter.name}' of '{endpoint_id}' must repeat '{parameter.same_as}', "
+                        "which is not another parameter of the same page that repeats nothing itself."
+                    )
 
             sources[item["source_id"]] = Source(
                 source_id=item["source_id"],
@@ -491,6 +508,12 @@ def generate(endpoint_map: EndpointMap, seed: SeedFacts) -> list[dict[str, Any]]
 
     def add(source: Source, endpoint: Endpoint, scenario_id: str, kind: str, case: str,
             values: dict[str, Any], parameter: str | None = None) -> None:
+        # A parameter that must repeat another takes its value, left out with it,
+        # unless it is the one this scenario varies: then the two differ on purpose.
+        values = dict(values)
+        for item in source.parameters:
+            if item.same_as and item.name != parameter:
+                values[item.name] = values.get(item.same_as, _MISSING)
         scenarios.append({
             "scenario_id": scenario_id,
             "scenario_type": kind,
@@ -521,6 +544,11 @@ def generate(endpoint_map: EndpointMap, seed: SeedFacts) -> list[dict[str, Any]]
                     add(source, endpoint, f"{source.source_id}_boundary_{parameter.name}_{case}",
                         "boundary", case, {**base, parameter.name: value}, parameter.name)
             for parameter in source.parameters:
+                if parameter.same_as:
+                    # A probe here alone would only make the two values differ, and the
+                    # page would refuse it for that. The probes of the parameter it
+                    # repeats already reach it.
+                    continue
                 for number, probe in enumerate(INJECTION_PROBES, start=1):
                     add(source, endpoint, f"{source.source_id}_injection_{parameter.name}_{number:02d}",
                         "injection", "probe", {**base, parameter.name: probe}, parameter.name)
