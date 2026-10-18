@@ -22,10 +22,12 @@ objects. Anything that is not migrated is listed in migration_notes.md.
 """
 
 import json
+import keyword
 import re
 from pathlib import Path
 
 from c3.conversion.type_map import mysql_to_sqlalchemy
+from c3.generation.identifiers import ORM_RESERVED, assign_names, python_name
 
 
 def _singularize(name: str) -> str:
@@ -69,7 +71,16 @@ def table_to_class_name(table_name: str) -> str:
     if not name or name[0].isdigit():
         name = "Table" + name
 
+    if keyword.iskeyword(name):  # None, True, False
+        name += "_"
+
     return name
+
+
+def column_attributes(table: dict) -> dict[str, str]:
+    """Column name -> attribute name on the mapped class (unchanged unless invalid or reserved)."""
+
+    return assign_names([column["name"] for column in table.get("columns", [])], ORM_RESERVED)
 
 
 def load_schema(
@@ -205,11 +216,15 @@ def _build_column(
 
     arguments, sqlalchemy_type = _column_arguments(table, column)
     column_name = column["name"]
+    attribute = column_attributes(table)[column_name]
 
     if core:
         declaration = f'    Column("{column_name}", ' + ", ".join(arguments) + "),"
-    else:
+    elif attribute == column_name:
         declaration = f"    {column_name} = mapped_column(" + ", ".join(arguments) + ")"
+    else:
+        # Not a usable Python name: the attribute is renamed, the database column keeps its name.
+        declaration = f"    {attribute} = mapped_column({json.dumps(column_name)}, " + ", ".join(arguments) + ")"
 
     if sqlalchemy_type.startswith("UnmappedMySQLType("):
         declaration += (
@@ -282,8 +297,11 @@ def _build_relationships(
     mapped = {table["name"]: table for table in tables if has_primary_key(table)}
 
     relationships: dict[str, list[str]] = {table["name"]: [] for table in tables}
+    attributes = {name: column_attributes(table) for name, table in mapped.items()}
     taken = {
         name: {column["name"].lower() for column in table.get("columns", [])}
+        | {attribute.lower() for attribute in attributes[name].values()}
+        | {reserved.lower() for reserved in ORM_RESERVED}
         for name, table in mapped.items()
     }
 
@@ -310,12 +328,14 @@ def _build_relationships(
             base = column[:-3] if column.lower().endswith("_id") and len(column) > 3 else f"{column}_ref"
             if base.lower() in {c["name"].lower() for c in child.get("columns", [])}:
                 base = f"{base}_ref"
-            child_attribute = _unique_name(base, taken[child_name])
+            child_attribute = _unique_name(python_name(base), taken[child_name])
 
             parent_base = f"{child_name}_via_{column}" if several else child_name
-            parent_attribute = _unique_name(parent_base, taken[parent_name])
+            parent_attribute = _unique_name(python_name(parent_base), taken[parent_name])
 
-            fk_spec = f'foreign_keys="[{child_class}.{column}]"' if several or self_reference else None
+            # Relationship arguments name the mapped attributes, which differ from the column only when renamed.
+            fk_attribute = attributes[child_name].get(column, column)
+            fk_spec = f'foreign_keys="[{child_class}.{fk_attribute}]"' if several or self_reference else None
 
             child_arguments = [f'"{parent_class}"', f'back_populates="{parent_attribute}"']
             parent_arguments = [f'"{child_class}"', f'back_populates="{child_attribute}"']
@@ -325,8 +345,9 @@ def _build_relationships(
                 parent_arguments.append(fk_spec)
 
             if self_reference:
+                referenced = foreign_key["referenced_column"]
                 child_arguments.append(
-                    f'remote_side="{parent_class}.{foreign_key["referenced_column"]}"'
+                    f'remote_side="{parent_class}.{attributes[parent_name].get(referenced, referenced)}"'
                 )
 
             relationships[child_name].append(
@@ -425,7 +446,7 @@ def generate_models_source(
                 [
                     "# No primary key in the schema: generated as a Core table,",
                     "# not ORM-mapped. See migration_notes.md.",
-                    f"{table_name}_table = Table(",
+                    f"{python_name(f'{table_name}_table')} = Table(",
                     f'    "{table_name}",',
                     "    Base.metadata,",
                 ]

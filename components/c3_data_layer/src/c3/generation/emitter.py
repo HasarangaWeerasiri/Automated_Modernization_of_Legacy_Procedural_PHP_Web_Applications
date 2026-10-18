@@ -18,6 +18,7 @@ from c3.conversion.conditional_converter import (
     EXPECTED_CONDITION,
 )
 from c3.generation.runtime_inliner import inline_helpers
+from c3.generation.identifiers import DATA_ACCESS_RESERVED, assign_names
 from c3.generation.branch_emitter import (
     generate_conditional_select_source,
 )
@@ -81,10 +82,17 @@ def _function_name(query: dict) -> str:
     )
 
 
-def _parameter_doc_lines(query: dict, parameters: list[str]) -> list[str]:
+def _python_parameter_names(parameters: list[str]) -> dict[str, str]:
+    """Bind name -> Python argument name (unchanged unless it is not a valid, free identifier)."""
+
+    return assign_names(parameters, DATA_ACCESS_RESERVED)
+
+
+def _parameter_doc_lines(query: dict, parameters: list[str], python_names: dict[str, str] | None = None) -> list[str]:
     """Docstring lines naming the PHP value behind each parameter."""
 
     sources = query.get("parameter_sources") or {}
+    python_names = python_names or {}
     if not parameters:
         return []
     lines = ["", "    Parameters (PHP value at the call):"]
@@ -95,7 +103,7 @@ def _parameter_doc_lines(query: dict, parameters: list[str]) -> list[str]:
             origin = f"prepared-statement placeholder {name.split('_', 1)[1]}"
         else:
             origin = f"${name}"
-        lines.append(f"        {name}: {origin}")
+        lines.append(f"        {python_names.get(name, name)}: {origin}")
     return lines
 
 
@@ -136,8 +144,11 @@ def _build_function(query: dict) -> str:
         "source_line"
     )
 
+    # Bind keys and SQL keep the original names; only the Python argument names change.
+    python_names = _python_parameter_names(parameters)
+
     signature_parts = ["session"]
-    signature_parts.extend(parameters)
+    signature_parts.extend(python_names[parameter] for parameter in parameters)
 
     is_write = query["operation"] != "SELECT"
 
@@ -161,12 +172,13 @@ def _build_function(query: dict) -> str:
     row_count_parameters = _row_count_parameters(query["parameterized_sql"])
 
     for parameter in parameters:
+        argument = python_names[parameter]
         if parameter in like_wildcard_parameters:
-            value_expression = f'f"%{{{parameter}}}%"'
+            value_expression = f'f"%{{{argument}}}%"'
         elif parameter in row_count_parameters:
-            value_expression = f"to_row_count({parameter}, {parameter!r})"
+            value_expression = f"to_row_count({argument}, {parameter!r})"
         else:
-            value_expression = parameter
+            value_expression = argument
 
         parameter_lines.append(
             f'        "{parameter}": {value_expression},'
@@ -184,7 +196,7 @@ def _build_function(query: dict) -> str:
             f"    Original query ID: "
             f"{query['query_id']}."
         ),
-        *_parameter_doc_lines(query, parameters),
+        *_parameter_doc_lines(query, parameters, python_names),
         '    """',
         "",
         f"    statement = text({sql!r})",

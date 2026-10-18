@@ -29,6 +29,22 @@ PRIMARY_OUTPUTS = (
 )
 
 
+class GeneratedCodeError(RuntimeError):
+    """A generated Python file does not compile; raised by the stage that wrote it."""
+
+
+def check_generated_python(path: Path, stage: str) -> None:
+    """Compile a generated file (no bytecode is written) and name the file, line and text if it is not valid Python."""
+
+    try:
+        compile(path.read_text(encoding="utf-8"), path.name, "exec", dont_inherit=True)
+    except SyntaxError as error:
+        text = (error.text or "").strip()
+        raise GeneratedCodeError(
+            f"{stage}: generated {path.name} is not valid Python at line {error.lineno} ({error.msg}): {text}"
+        ) from error
+
+
 def build_summary(
     queries: list[dict],
     converted: list[dict],
@@ -149,9 +165,11 @@ def run_pipeline(
         models_file,
         notes_file=output_dir / "migration_notes.md",
     )
+    check_generated_python(models_file, "stage 3/7 (SQLAlchemy models)")
 
     print("[4/7] Generating data-access functions...")
     generate_data_access(converted_file, data_access_file, source_root=php_path)
+    check_generated_python(data_access_file, "stage 4/7 (data-access functions)")
 
     print("[5/7] Generating column-use report...")
     generate_column_usage(queries_file, column_usage_file, converted_file, schema_json_file)
