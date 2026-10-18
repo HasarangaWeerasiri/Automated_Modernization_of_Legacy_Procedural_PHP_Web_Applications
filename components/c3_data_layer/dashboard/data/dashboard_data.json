@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": {
   "by": "scripts/summarize_evidence.py --dashboard-json",
-  "date": "2026-10-19T00:10:20+05:30",
-  "git_head": "bae8e6b27fb826a9f58d74dcd7407d8a5b33faef",
+  "date": "2026-10-19T01:30:15+05:30",
+  "git_head": "881e9b8af4069eb31dfd5539983a53d14a07cd67",
   "pipeline_unchanged_since_head": true,
   "current_code_run": "fresh C3 run of all 9 apps into a temp folder outside the repo (written <temp>)"
  },
@@ -12,7 +12,7 @@
   "post-adaptation": "Pipeline after general rules that were developed or reviewed using this app.",
   "post-fix": "Post-adaptation run after a specific disclosed fix (escape decoder or wrapper support).",
   "fresh-holdout": "App run untouched; no rule was changed for it (Dignity-Dev only).",
-  "current-code": "Fresh run of the current pipeline (recorded HEAD) by this script; conversion counts come from here."
+  "current-code": "Current pipeline code. Conversion counts, review rates and site lists come from this script's fresh run (recorded HEAD); tests, E3, E4, timing and the sqlacodegen baseline cite their own saved evidence file, date and HEAD (see the stage label and evidence file)."
  },
  "apps": {
   "hms_kishan0725": {
@@ -4573,6 +4573,28 @@
    }
   },
   {
+   "id": "clinic_inventory_legacy_hard|saved log (2026-10-18, HEAD 1d93e93)|mysql_equivalence_tests_passed",
+   "app": "clinic_inventory_legacy_hard",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-18, HEAD 1d93e93)",
+   "category": "mysql_tests",
+   "metric": "mysql_equivalence_tests_passed",
+   "label": "MySQL equivalence tests passed (Clinic suite, not the E1 harness)",
+   "numerator": 63,
+   "denominator": 63,
+   "value": 63,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt",
+    "fields": {
+     "value": "summary line '63 passed in 9.86s'",
+     "denominator": "line 'collected 63 items'"
+    }
+   },
+   "note": "MySQL 8.0.39. Clinic's own pytest MySQL equivalence suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. It includes test_q002_sql_injection_is_blocked."
+  },
+  {
    "id": "dignity_dev_hms|not measured|e1_equivalence",
    "app": "dignity_dev_hms",
    "stage": "not-measured",
@@ -4660,7 +4682,7 @@
    "source": {
     "file": null
    },
-   "note": "No E1 run. Successful conversion is not behavioural equivalence."
+   "note": "No E1-harness run. Clinic has a separate MySQL equivalence test suite (see the E1 card)."
   },
   {
    "id": "simple_crud|not measured|e1_equivalence",
@@ -4735,6 +4757,25 @@
    }
   },
   {
+   "id": "all|current code (E3, 2026-10-19)|e3_roundtrip_pass",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "current code (E3, 2026-10-19)",
+   "category": "e3",
+   "metric": "e3_roundtrip_pass",
+   "label": "E3 Alembic round trip on MySQL: apps PASS",
+   "numerator": 9,
+   "denominator": 9,
+   "value": 9,
+   "unit": "count",
+   "status": "derived",
+   "source": {
+    "file": "evidence/mysql_runs/2026-10-19_000500/e3/<app>.json",
+    "derivation": "count verdict == PASS (each checked against summary.txt)"
+   },
+   "note": "Run 2026-10-19, git HEAD bae8e6b (from evidence/mysql_runs/2026-10-19_000500/e3/summary.txt)."
+  },
+  {
    "id": "all|post-adaptation (E3, 2026-10-15)|e3_roundtrip_pass",
    "app": "all",
    "stage": "post-adaptation",
@@ -4749,8 +4790,9 @@
    "status": "derived",
    "source": {
     "file": "evidence/mysql_runs/2026-10-15_173218/e3/<app>.json",
-    "derivation": "count verdict == PASS"
-   }
+    "derivation": "count verdict == PASS (each checked against summary.txt)"
+   },
+   "note": "Run 2026-10-15, git HEAD a791cd8 (from evidence/mysql_runs/2026-10-15_173218/e3/summary.txt)."
   },
   {
    "id": "simple_crud|current code (E4, 2026-10-17)|e4_safe_functions",
@@ -4960,6 +5002,129 @@
    }
   },
   {
+   "id": "all|saved log (2026-10-18, HEAD 1d93e93)|tests_passed",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-18, HEAD 1d93e93)",
+   "category": "tests",
+   "metric": "tests_passed",
+   "label": "Non-MySQL tests passed",
+   "numerator": null,
+   "denominator": null,
+   "value": 873,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/final/2026-10-19/test_run_non_mysql.txt",
+    "fields": {
+     "value": "summary line '873 passed, 61 skipped, 1 warning in 44.62s'"
+    }
+   }
+  },
+  {
+   "id": "all|saved log (2026-10-18, HEAD 1d93e93)|tests_failed",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-18, HEAD 1d93e93)",
+   "category": "tests",
+   "metric": "tests_failed",
+   "label": "Non-MySQL tests failed",
+   "numerator": null,
+   "denominator": null,
+   "value": 0,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/final/2026-10-19/test_run_non_mysql.txt",
+    "fields": {
+     "value": "summary line '873 passed, 61 skipped, 1 warning in 44.62s'"
+    }
+   },
+   "note": "pytest omits zero counts; absent means 0."
+  },
+  {
+   "id": "all|saved log (2026-10-18, HEAD 1d93e93)|tests_skipped",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-18, HEAD 1d93e93)",
+   "category": "tests",
+   "metric": "tests_skipped",
+   "label": "Non-MySQL tests skipped",
+   "numerator": null,
+   "denominator": null,
+   "value": 61,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/final/2026-10-19/test_run_non_mysql.txt",
+    "fields": {
+     "value": "summary line '873 passed, 61 skipped, 1 warning in 44.62s'"
+    }
+   }
+  },
+  {
+   "id": "all|saved log (2026-10-18, HEAD 1d93e93)|tests_with_mysql_passed",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-18, HEAD 1d93e93)",
+   "category": "tests",
+   "metric": "tests_with_mysql_passed",
+   "label": "Full suite with MySQL passed",
+   "numerator": null,
+   "denominator": null,
+   "value": 934,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt",
+    "fields": {
+     "value": "summary line '934 passed, 1 warning in 50.66s'"
+    }
+   }
+  },
+  {
+   "id": "all|saved log (2026-10-18, HEAD 1d93e93)|tests_with_mysql_failed",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-18, HEAD 1d93e93)",
+   "category": "tests",
+   "metric": "tests_with_mysql_failed",
+   "label": "Full suite with MySQL failed",
+   "numerator": null,
+   "denominator": null,
+   "value": 0,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt",
+    "fields": {
+     "value": "summary line '934 passed, 1 warning in 50.66s'"
+    }
+   },
+   "note": "pytest omits zero counts; absent means 0."
+  },
+  {
+   "id": "all|saved log (2026-10-18, HEAD 1d93e93)|tests_with_mysql_skipped",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-18, HEAD 1d93e93)",
+   "category": "tests",
+   "metric": "tests_with_mysql_skipped",
+   "label": "Full suite with MySQL skipped",
+   "numerator": null,
+   "denominator": null,
+   "value": 0,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt",
+    "fields": {
+     "value": "summary line '934 passed, 1 warning in 50.66s'"
+    }
+   },
+   "note": "pytest omits zero counts; absent means 0."
+  },
+  {
    "id": "all|current code (tests, 2026-10-17)|tests_passed",
    "app": "all",
    "stage": "current-code",
@@ -5021,6 +5186,163 @@
    }
   },
   {
+   "id": "all|current code (sqlacodegen baseline, 2026-10-19)|sqlacodegen_tables",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "current code (sqlacodegen baseline, 2026-10-19)",
+   "category": "baseline",
+   "metric": "sqlacodegen_tables",
+   "label": "sqlacodegen baseline: tables matching the C3 models",
+   "numerator": 31,
+   "denominator": 31,
+   "value": 31,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/baseline/2026-10-19/summary.json",
+    "fields": {
+     "numerator": "apps.hms_kishan0725.comparison.counts.tables.matches + apps.dignity_dev_hms.comparison.counts.tables.matches + apps.helpdesk_legacy_holdout.comparison.counts.tables.matches + apps.news_buzz.comparison.counts.tables.matches + apps.fee_rainbow.comparison.counts.tables.matches + apps.clinic_inventory_legacy_hard.comparison.counts.tables.matches + apps.simple_crud.comparison.counts.tables.matches + apps.mixed_crud.comparison.counts.tables.matches + apps.hard_crud.comparison.counts.tables.matches",
+     "denominator": "apps.hms_kishan0725.comparison.counts.tables.compared + apps.dignity_dev_hms.comparison.counts.tables.compared + apps.helpdesk_legacy_holdout.comparison.counts.tables.compared + apps.news_buzz.comparison.counts.tables.compared + apps.fee_rainbow.comparison.counts.tables.compared + apps.clinic_inventory_legacy_hard.comparison.counts.tables.compared + apps.simple_crud.comparison.counts.tables.compared + apps.mixed_crud.comparison.counts.tables.compared + apps.hard_crud.comparison.counts.tables.compared",
+     "value": "apps.hms_kishan0725.comparison.counts.tables.matches + apps.dignity_dev_hms.comparison.counts.tables.matches + apps.helpdesk_legacy_holdout.comparison.counts.tables.matches + apps.news_buzz.comparison.counts.tables.matches + apps.fee_rainbow.comparison.counts.tables.matches + apps.clinic_inventory_legacy_hard.comparison.counts.tables.matches + apps.simple_crud.comparison.counts.tables.matches + apps.mixed_crud.comparison.counts.tables.matches + apps.hard_crud.comparison.counts.tables.matches"
+    }
+   },
+   "note": "Schema-only comparison of generated model files: sqlacodegen reflects the database and writes models; it never reads PHP and does no query recovery or data-access migration. Neither side is ground truth, and matching properties are not a general correctness guarantee for the C3 models."
+  },
+  {
+   "id": "all|current code (sqlacodegen baseline, 2026-10-19)|sqlacodegen_columns",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "current code (sqlacodegen baseline, 2026-10-19)",
+   "category": "baseline",
+   "metric": "sqlacodegen_columns",
+   "label": "sqlacodegen baseline: columns matching the C3 models",
+   "numerator": 161,
+   "denominator": 161,
+   "value": 161,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/baseline/2026-10-19/summary.json",
+    "fields": {
+     "numerator": "apps.hms_kishan0725.comparison.counts.columns.matches + apps.dignity_dev_hms.comparison.counts.columns.matches + apps.helpdesk_legacy_holdout.comparison.counts.columns.matches + apps.news_buzz.comparison.counts.columns.matches + apps.fee_rainbow.comparison.counts.columns.matches + apps.clinic_inventory_legacy_hard.comparison.counts.columns.matches + apps.simple_crud.comparison.counts.columns.matches + apps.mixed_crud.comparison.counts.columns.matches + apps.hard_crud.comparison.counts.columns.matches",
+     "denominator": "apps.hms_kishan0725.comparison.counts.columns.compared + apps.dignity_dev_hms.comparison.counts.columns.compared + apps.helpdesk_legacy_holdout.comparison.counts.columns.compared + apps.news_buzz.comparison.counts.columns.compared + apps.fee_rainbow.comparison.counts.columns.compared + apps.clinic_inventory_legacy_hard.comparison.counts.columns.compared + apps.simple_crud.comparison.counts.columns.compared + apps.mixed_crud.comparison.counts.columns.compared + apps.hard_crud.comparison.counts.columns.compared",
+     "value": "apps.hms_kishan0725.comparison.counts.columns.matches + apps.dignity_dev_hms.comparison.counts.columns.matches + apps.helpdesk_legacy_holdout.comparison.counts.columns.matches + apps.news_buzz.comparison.counts.columns.matches + apps.fee_rainbow.comparison.counts.columns.matches + apps.clinic_inventory_legacy_hard.comparison.counts.columns.matches + apps.simple_crud.comparison.counts.columns.matches + apps.mixed_crud.comparison.counts.columns.matches + apps.hard_crud.comparison.counts.columns.matches"
+    }
+   },
+   "note": "Schema-only comparison of generated model files: sqlacodegen reflects the database and writes models; it never reads PHP and does no query recovery or data-access migration. Neither side is ground truth, and matching properties are not a general correctness guarantee for the C3 models."
+  },
+  {
+   "id": "all|current code (sqlacodegen baseline, 2026-10-19)|sqlacodegen_primary_keys",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "current code (sqlacodegen baseline, 2026-10-19)",
+   "category": "baseline",
+   "metric": "sqlacodegen_primary_keys",
+   "label": "sqlacodegen baseline: primary keys matching the C3 models",
+   "numerator": 31,
+   "denominator": 31,
+   "value": 31,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/baseline/2026-10-19/summary.json",
+    "fields": {
+     "numerator": "apps.hms_kishan0725.comparison.counts.primary_keys.matches + apps.dignity_dev_hms.comparison.counts.primary_keys.matches + apps.helpdesk_legacy_holdout.comparison.counts.primary_keys.matches + apps.news_buzz.comparison.counts.primary_keys.matches + apps.fee_rainbow.comparison.counts.primary_keys.matches + apps.clinic_inventory_legacy_hard.comparison.counts.primary_keys.matches + apps.simple_crud.comparison.counts.primary_keys.matches + apps.mixed_crud.comparison.counts.primary_keys.matches + apps.hard_crud.comparison.counts.primary_keys.matches",
+     "denominator": "apps.hms_kishan0725.comparison.counts.primary_keys.compared + apps.dignity_dev_hms.comparison.counts.primary_keys.compared + apps.helpdesk_legacy_holdout.comparison.counts.primary_keys.compared + apps.news_buzz.comparison.counts.primary_keys.compared + apps.fee_rainbow.comparison.counts.primary_keys.compared + apps.clinic_inventory_legacy_hard.comparison.counts.primary_keys.compared + apps.simple_crud.comparison.counts.primary_keys.compared + apps.mixed_crud.comparison.counts.primary_keys.compared + apps.hard_crud.comparison.counts.primary_keys.compared",
+     "value": "apps.hms_kishan0725.comparison.counts.primary_keys.matches + apps.dignity_dev_hms.comparison.counts.primary_keys.matches + apps.helpdesk_legacy_holdout.comparison.counts.primary_keys.matches + apps.news_buzz.comparison.counts.primary_keys.matches + apps.fee_rainbow.comparison.counts.primary_keys.matches + apps.clinic_inventory_legacy_hard.comparison.counts.primary_keys.matches + apps.simple_crud.comparison.counts.primary_keys.matches + apps.mixed_crud.comparison.counts.primary_keys.matches + apps.hard_crud.comparison.counts.primary_keys.matches"
+    }
+   },
+   "note": "Schema-only comparison of generated model files: sqlacodegen reflects the database and writes models; it never reads PHP and does no query recovery or data-access migration. Neither side is ground truth, and matching properties are not a general correctness guarantee for the C3 models."
+  },
+  {
+   "id": "all|current code (sqlacodegen baseline, 2026-10-19)|sqlacodegen_nullability",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "current code (sqlacodegen baseline, 2026-10-19)",
+   "category": "baseline",
+   "metric": "sqlacodegen_nullability",
+   "label": "sqlacodegen baseline: nullability matching the C3 models",
+   "numerator": 161,
+   "denominator": 161,
+   "value": 161,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/baseline/2026-10-19/summary.json",
+    "fields": {
+     "numerator": "apps.hms_kishan0725.comparison.counts.nullability.matches + apps.dignity_dev_hms.comparison.counts.nullability.matches + apps.helpdesk_legacy_holdout.comparison.counts.nullability.matches + apps.news_buzz.comparison.counts.nullability.matches + apps.fee_rainbow.comparison.counts.nullability.matches + apps.clinic_inventory_legacy_hard.comparison.counts.nullability.matches + apps.simple_crud.comparison.counts.nullability.matches + apps.mixed_crud.comparison.counts.nullability.matches + apps.hard_crud.comparison.counts.nullability.matches",
+     "denominator": "apps.hms_kishan0725.comparison.counts.nullability.compared + apps.dignity_dev_hms.comparison.counts.nullability.compared + apps.helpdesk_legacy_holdout.comparison.counts.nullability.compared + apps.news_buzz.comparison.counts.nullability.compared + apps.fee_rainbow.comparison.counts.nullability.compared + apps.clinic_inventory_legacy_hard.comparison.counts.nullability.compared + apps.simple_crud.comparison.counts.nullability.compared + apps.mixed_crud.comparison.counts.nullability.compared + apps.hard_crud.comparison.counts.nullability.compared",
+     "value": "apps.hms_kishan0725.comparison.counts.nullability.matches + apps.dignity_dev_hms.comparison.counts.nullability.matches + apps.helpdesk_legacy_holdout.comparison.counts.nullability.matches + apps.news_buzz.comparison.counts.nullability.matches + apps.fee_rainbow.comparison.counts.nullability.matches + apps.clinic_inventory_legacy_hard.comparison.counts.nullability.matches + apps.simple_crud.comparison.counts.nullability.matches + apps.mixed_crud.comparison.counts.nullability.matches + apps.hard_crud.comparison.counts.nullability.matches"
+    }
+   },
+   "note": "Schema-only comparison of generated model files: sqlacodegen reflects the database and writes models; it never reads PHP and does no query recovery or data-access migration. Neither side is ground truth, and matching properties are not a general correctness guarantee for the C3 models."
+  },
+  {
+   "id": "all|current code (sqlacodegen baseline, 2026-10-19)|sqlacodegen_types",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "current code (sqlacodegen baseline, 2026-10-19)",
+   "category": "baseline",
+   "metric": "sqlacodegen_types",
+   "label": "sqlacodegen baseline: types matching the C3 models",
+   "numerator": 161,
+   "denominator": 161,
+   "value": 161,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/baseline/2026-10-19/summary.json",
+    "fields": {
+     "numerator": "apps.hms_kishan0725.comparison.counts.types.matches + apps.dignity_dev_hms.comparison.counts.types.matches + apps.helpdesk_legacy_holdout.comparison.counts.types.matches + apps.news_buzz.comparison.counts.types.matches + apps.fee_rainbow.comparison.counts.types.matches + apps.clinic_inventory_legacy_hard.comparison.counts.types.matches + apps.simple_crud.comparison.counts.types.matches + apps.mixed_crud.comparison.counts.types.matches + apps.hard_crud.comparison.counts.types.matches",
+     "denominator": "apps.hms_kishan0725.comparison.counts.types.compared + apps.dignity_dev_hms.comparison.counts.types.compared + apps.helpdesk_legacy_holdout.comparison.counts.types.compared + apps.news_buzz.comparison.counts.types.compared + apps.fee_rainbow.comparison.counts.types.compared + apps.clinic_inventory_legacy_hard.comparison.counts.types.compared + apps.simple_crud.comparison.counts.types.compared + apps.mixed_crud.comparison.counts.types.compared + apps.hard_crud.comparison.counts.types.compared",
+     "value": "apps.hms_kishan0725.comparison.counts.types.matches + apps.dignity_dev_hms.comparison.counts.types.matches + apps.helpdesk_legacy_holdout.comparison.counts.types.matches + apps.news_buzz.comparison.counts.types.matches + apps.fee_rainbow.comparison.counts.types.matches + apps.clinic_inventory_legacy_hard.comparison.counts.types.matches + apps.simple_crud.comparison.counts.types.matches + apps.mixed_crud.comparison.counts.types.matches + apps.hard_crud.comparison.counts.types.matches"
+    }
+   },
+   "note": "Schema-only comparison of generated model files: sqlacodegen reflects the database and writes models; it never reads PHP and does no query recovery or data-access migration. Neither side is ground truth, and matching properties are not a general correctness guarantee for the C3 models."
+  },
+  {
+   "id": "all|current code (sqlacodegen baseline, 2026-10-19)|sqlacodegen_foreign_keys",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "current code (sqlacodegen baseline, 2026-10-19)",
+   "category": "baseline",
+   "metric": "sqlacodegen_foreign_keys",
+   "label": "sqlacodegen baseline: foreign keys matching the C3 models",
+   "numerator": 12,
+   "denominator": 12,
+   "value": 12,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/baseline/2026-10-19/summary.json",
+    "fields": {
+     "numerator": "apps.hms_kishan0725.comparison.counts.foreign_keys.matches + apps.dignity_dev_hms.comparison.counts.foreign_keys.matches + apps.helpdesk_legacy_holdout.comparison.counts.foreign_keys.matches + apps.news_buzz.comparison.counts.foreign_keys.matches + apps.fee_rainbow.comparison.counts.foreign_keys.matches + apps.clinic_inventory_legacy_hard.comparison.counts.foreign_keys.matches + apps.simple_crud.comparison.counts.foreign_keys.matches + apps.mixed_crud.comparison.counts.foreign_keys.matches + apps.hard_crud.comparison.counts.foreign_keys.matches",
+     "denominator": "apps.hms_kishan0725.comparison.counts.foreign_keys.compared + apps.dignity_dev_hms.comparison.counts.foreign_keys.compared + apps.helpdesk_legacy_holdout.comparison.counts.foreign_keys.compared + apps.news_buzz.comparison.counts.foreign_keys.compared + apps.fee_rainbow.comparison.counts.foreign_keys.compared + apps.clinic_inventory_legacy_hard.comparison.counts.foreign_keys.compared + apps.simple_crud.comparison.counts.foreign_keys.compared + apps.mixed_crud.comparison.counts.foreign_keys.compared + apps.hard_crud.comparison.counts.foreign_keys.compared",
+     "value": "apps.hms_kishan0725.comparison.counts.foreign_keys.matches + apps.dignity_dev_hms.comparison.counts.foreign_keys.matches + apps.helpdesk_legacy_holdout.comparison.counts.foreign_keys.matches + apps.news_buzz.comparison.counts.foreign_keys.matches + apps.fee_rainbow.comparison.counts.foreign_keys.matches + apps.clinic_inventory_legacy_hard.comparison.counts.foreign_keys.matches + apps.simple_crud.comparison.counts.foreign_keys.matches + apps.mixed_crud.comparison.counts.foreign_keys.matches + apps.hard_crud.comparison.counts.foreign_keys.matches"
+    }
+   },
+   "note": "Schema-only comparison of generated model files: sqlacodegen reflects the database and writes models; it never reads PHP and does no query recovery or data-access migration. Neither side is ground truth, and matching properties are not a general correctness guarantee for the C3 models."
+  },
+  {
+   "id": "all|current code (sqlacodegen baseline, 2026-10-19)|sqlacodegen_apps_compared",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "current code (sqlacodegen baseline, 2026-10-19)",
+   "category": "baseline",
+   "metric": "sqlacodegen_apps_compared",
+   "label": "sqlacodegen baseline: applications compared",
+   "numerator": 9,
+   "denominator": 9,
+   "value": 9,
+   "unit": "count",
+   "status": "derived",
+   "source": {
+    "file": "evidence/baseline/2026-10-19/summary.json",
+    "derivation": "apps with status == \"compared\"; sqlacodegen failures are listed in failures"
+   },
+   "note": "Schema-only comparison of generated model files: sqlacodegen reflects the database and writes models; it never reads PHP and does no query recovery or data-access migration. Neither side is ground truth, and matching properties are not a general correctness guarantee for the C3 models."
+  },
+  {
    "id": "all|not measured|migration_effort",
    "app": "all",
    "stage": "not-measured",
@@ -5037,24 +5359,6 @@
     "file": null
    },
    "note": "Not measured. The manual-review rate is a derived proxy (sites), not developer effort."
-  },
-  {
-   "id": "all|not measured|sqlacodegen_baseline",
-   "app": "all",
-   "stage": "not-measured",
-   "stage_label": "not measured",
-   "category": "not_measured",
-   "metric": "sqlacodegen_baseline",
-   "label": "Schema-only baseline (sqlacodegen)",
-   "numerator": null,
-   "denominator": null,
-   "value": null,
-   "unit": "none",
-   "status": "not_measured",
-   "source": {
-    "file": null
-   },
-   "note": "Planned, not run."
   }
  ],
  "stage_sites": {
@@ -9780,6 +10084,19 @@
       "INCONCLUSIVE": 12
      }
     }
+   ],
+   "separate_suites": [
+    {
+     "app": "clinic_inventory_legacy_hard",
+     "file": "evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt",
+     "passed": 63,
+     "collected": 63,
+     "failed": 0,
+     "head": "1d93e93c89106611b81712a998f13bb7443cccb6",
+     "date": "2026-10-18",
+     "mysql_server": "8.0.39",
+     "note": "Clinic's own pytest MySQL equivalence suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. It includes test_q002_sql_injection_is_blocked."
+    }
    ]
   },
   "e2": {
@@ -9962,16 +10279,38 @@
    }
   },
   "e3_dates": {
-   "hms_kishan0725": "2026-10-15",
-   "dignity_dev_hms": "2026-10-15",
-   "helpdesk_legacy_holdout": "2026-10-15",
-   "news_buzz": "2026-10-15",
-   "fee_rainbow": "2026-10-15",
-   "clinic_inventory_legacy_hard": "2026-10-15",
-   "simple_crud": "2026-10-15",
-   "mixed_crud": "2026-10-15",
-   "hard_crud": "2026-10-15"
+   "hms_kishan0725": "2026-10-19",
+   "dignity_dev_hms": "2026-10-19",
+   "helpdesk_legacy_holdout": "2026-10-19",
+   "news_buzz": "2026-10-19",
+   "fee_rainbow": "2026-10-19",
+   "clinic_inventory_legacy_hard": "2026-10-19",
+   "simple_crud": "2026-10-19",
+   "mixed_crud": "2026-10-19",
+   "hard_crud": "2026-10-19"
   },
+  "e3_runs": [
+   {
+    "stage_label": "current code (E3, 2026-10-19)",
+    "dir": "evidence/mysql_runs/2026-10-19_000500/e3",
+    "date": "2026-10-19",
+    "git_head": "bae8e6b27fb826a9f58d74dcd7407d8a5b33faef",
+    "git_head_short": "bae8e6b",
+    "pass": 9,
+    "apps": 9,
+    "current": true
+   },
+   {
+    "stage_label": "post-adaptation (E3, 2026-10-15)",
+    "dir": "evidence/mysql_runs/2026-10-15_173218/e3",
+    "date": "2026-10-15",
+    "git_head": "a791cd8860a0cbc20c13b67107adbb2f4ae16f3f",
+    "git_head_short": "a791cd8",
+    "pass": 9,
+    "apps": 9,
+    "current": false
+   }
+  ],
   "e4": {
    "git_head": "6e927117e42893a734a93bd9c2c0e0eb5276cb70",
    "date_utc": "2026-10-17T09:50:25.593906+00:00",
@@ -10069,22 +10408,69 @@
     "rejected": 120
    },
    "limitations": [
+    "A bounded check with a fixed payload set; it is not a proof of general injection safety.",
     "Recording session: SQL is compiled for the MySQL dialect, never executed on a database.",
     "Only the 12 listed payloads and 4 benign values; not exhaustive.",
     "Functions whose SQL takes no user value pass trivially; Clinic Q013 rejects every benign value too, so its same-SQL comparison is vacuous and it passes by rejection only.",
     "Unresolved sites have no generated code and are not tested.",
-    "Runtime hostile testing on MySQL exists only for HMS (E1)."
+    "Runtime hostile testing on MySQL: HMS through the E1 harness; Clinic has one MySQL test of an injection attempt (test_q002_sql_injection_is_blocked) in its separate equivalence suite."
    ]
   },
   "tests": {
-   "file": "evidence/tests/test_run_non_mysql_2026-10-17.txt",
-   "summary_line": "783 passed, 61 skipped, 1 warning in 34.75s",
-   "passed": 783,
-   "failed": 0,
-   "skipped": 61,
-   "warnings": 1,
-   "head": "6e927117e42893a734a93bd9c2c0e0eb5276cb70",
-   "note": "Non-MySQL suite; the 61 skipped tests need MySQL. An earlier attempt failed only on the Windows 260-character path limit (disclosed in the log)."
+   "runs": [
+    {
+     "key": "non_mysql",
+     "title": "Non-MySQL suite (saved log)",
+     "file": "evidence/final/2026-10-19/test_run_non_mysql.txt",
+     "stage_label": "saved log (2026-10-18, HEAD 1d93e93)",
+     "metric_prefix": "tests",
+     "summary_line": "873 passed, 61 skipped, 1 warning in 44.62s",
+     "date": "2026-10-18",
+     "head": "1d93e93c89106611b81712a998f13bb7443cccb6",
+     "head_short": "1d93e93",
+     "mysql_server": null,
+     "latest": true,
+     "passed": 873,
+     "failed": 0,
+     "skipped": 61,
+     "warnings": 1
+    },
+    {
+     "key": "with_mysql",
+     "title": "Full suite with MySQL (saved log)",
+     "file": "evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt",
+     "stage_label": "saved log (2026-10-18, HEAD 1d93e93)",
+     "metric_prefix": "tests_with_mysql",
+     "summary_line": "934 passed, 1 warning in 50.66s",
+     "date": "2026-10-18",
+     "head": "1d93e93c89106611b81712a998f13bb7443cccb6",
+     "head_short": "1d93e93",
+     "mysql_server": "8.0.39",
+     "latest": true,
+     "passed": 934,
+     "failed": 0,
+     "skipped": 0,
+     "warnings": 1
+    },
+    {
+     "key": "non_mysql_2026_10_17",
+     "title": "Non-MySQL suite, earlier saved log",
+     "file": "evidence/tests/test_run_non_mysql_2026-10-17.txt",
+     "stage_label": "current code (tests, 2026-10-17)",
+     "metric_prefix": "tests",
+     "summary_line": "783 passed, 61 skipped, 1 warning in 34.75s",
+     "date": "2026-10-17",
+     "head": "6e927117e42893a734a93bd9c2c0e0eb5276cb70",
+     "head_short": "6e92711",
+     "mysql_server": null,
+     "latest": false,
+     "passed": 783,
+     "failed": 0,
+     "skipped": 61,
+     "warnings": 1
+    }
+   ],
+   "note": "Only saved (committed) logs are shown; a run without a saved log is not evidence. Counts are copied from each log's pytest summary line; pytest omits zero counts, so an absent count is 0. Skipped tests in the non-MySQL runs are the tests that need MySQL."
   },
   "performance": {
    "file": "evidence/performance/2026-10-18/execution_time.json",
@@ -10190,6 +10576,133 @@
     }
    },
    "readme": "evidence/performance/2026-10-18/README.md"
+  },
+  "baseline": {
+   "file": "evidence/baseline/2026-10-19/summary.json",
+   "readme": "evidence/baseline/2026-10-19/README.md",
+   "date": "2026-10-19",
+   "stage_label": "current code (sqlacodegen baseline, 2026-10-19)",
+   "git_head": "d40a56af6804ab150c6feac33f0f2ce9772fccc2",
+   "tool": {
+    "python": "3.13.5",
+    "sqlacodegen": "4.0.4",
+    "SQLAlchemy": "2.1.5",
+    "PyMySQL": "1.2.3"
+   },
+   "apps_total": 9,
+   "apps_compared": 9,
+   "failures": [],
+   "totals": {
+    "tables": {
+     "compared": 31,
+     "matches": 31,
+     "differences": 0
+    },
+    "columns": {
+     "compared": 161,
+     "matches": 161,
+     "differences": 0
+    },
+    "primary_keys": {
+     "compared": 31,
+     "matches": 31,
+     "differences": 0
+    },
+    "nullability": {
+     "compared": 161,
+     "matches": 161,
+     "differences": 0
+    },
+    "types": {
+     "compared": 161,
+     "matches": 161,
+     "differences": 0
+    },
+    "foreign_keys": {
+     "compared": 12,
+     "matches": 12,
+     "differences": 0
+    }
+   },
+   "foreign_key_apps": [
+    "helpdesk_legacy_holdout",
+    "clinic_inventory_legacy_hard",
+    "simple_crud",
+    "hard_crud"
+   ],
+   "apps": {
+    "hms_kishan0725": {
+     "verdict": "MATCH",
+     "notes": [],
+     "tables": 6,
+     "columns": 42,
+     "foreign_keys": 0
+    },
+    "dignity_dev_hms": {
+     "verdict": "MATCH",
+     "notes": [],
+     "tables": 6,
+     "columns": 25,
+     "foreign_keys": 0
+    },
+    "helpdesk_legacy_holdout": {
+     "verdict": "MATCH",
+     "notes": [],
+     "tables": 3,
+     "columns": 12,
+     "foreign_keys": 2
+    },
+    "news_buzz": {
+     "verdict": "MATCH",
+     "notes": [
+      "2 table(s) use MyISAM (posts, users): MySQL keeps no foreign keys for them, so foreign-key differences on these tables say nothing about either tool"
+     ],
+     "tables": 2,
+     "columns": 16,
+     "foreign_keys": 0
+    },
+    "fee_rainbow": {
+     "verdict": "MATCH",
+     "notes": [],
+     "tables": 1,
+     "columns": 5,
+     "foreign_keys": 0
+    },
+    "clinic_inventory_legacy_hard": {
+     "verdict": "MATCH",
+     "notes": [],
+     "tables": 5,
+     "columns": 25,
+     "foreign_keys": 5
+    },
+    "simple_crud": {
+     "verdict": "MATCH",
+     "notes": [],
+     "tables": 2,
+     "columns": 8,
+     "foreign_keys": 1
+    },
+    "mixed_crud": {
+     "verdict": "MATCH",
+     "notes": [],
+     "tables": 1,
+     "columns": 3,
+     "foreign_keys": 0
+    },
+    "hard_crud": {
+     "verdict": "MATCH",
+     "notes": [],
+     "tables": 5,
+     "columns": 25,
+     "foreign_keys": 4
+    }
+   },
+   "notes": [
+    "Schema-only comparison of generated model files: sqlacodegen reflects the database and writes models; it never reads PHP and does no query recovery or data-access migration. Neither side is ground truth, and matching properties are not a general correctness guarantee for the C3 models.",
+    "Primary-key matches include tables where neither tool finds a primary key.",
+    "Foreign keys can only be compared where a schema declares them; the other applications declare none.",
+    "The C3 query-level counts (live sites, recovered sites, functions, manual review, abstentions) are not applicable to sqlacodegen; no comparison of accuracy or speed is made."
+   ]
   }
  },
  "manual_review": {
@@ -10844,8 +11357,50 @@
    "note": "Repository file; open it in the repository (not served by the dashboard)."
   },
   {
-   "title": "Non-MySQL test run, 17 Oct 2026",
+   "title": "Non-MySQL suite (saved log) (test_run_non_mysql.txt)",
+   "path": "evidence/final/2026-10-19/test_run_non_mysql.txt",
+   "exists": true,
+   "downloadable": false,
+   "note": "Repository file; open it in the repository (not served by the dashboard)."
+  },
+  {
+   "title": "Full suite with MySQL (saved log) (full_suite_with_mysql_log.txt)",
+   "path": "evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt",
+   "exists": true,
+   "downloadable": false,
+   "note": "Repository file; open it in the repository (not served by the dashboard)."
+  },
+  {
+   "title": "Non-MySQL suite, earlier saved log (test_run_non_mysql_2026-10-17.txt)",
    "path": "evidence/tests/test_run_non_mysql_2026-10-17.txt",
+   "exists": true,
+   "downloadable": false,
+   "note": "Repository file; open it in the repository (not served by the dashboard)."
+  },
+  {
+   "title": "Clinic MySQL equivalence test suite (saved log)",
+   "path": "evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt",
+   "exists": true,
+   "downloadable": false,
+   "note": "Repository file; open it in the repository (not served by the dashboard)."
+  },
+  {
+   "title": "E3 Alembic round trip on MySQL, 2026-10-19",
+   "path": "evidence/mysql_runs/2026-10-19_000500/e3/summary.txt",
+   "exists": true,
+   "downloadable": false,
+   "note": "Repository file; open it in the repository (not served by the dashboard)."
+  },
+  {
+   "title": "E3 Alembic round trip on MySQL, 2026-10-15",
+   "path": "evidence/mysql_runs/2026-10-15_173218/e3/summary.txt",
+   "exists": true,
+   "downloadable": false,
+   "note": "Repository file; open it in the repository (not served by the dashboard)."
+  },
+  {
+   "title": "sqlacodegen schema-only baseline (method, version, commands)",
+   "path": "evidence/baseline/2026-10-19/README.md",
    "exists": true,
    "downloadable": false,
    "note": "Repository file; open it in the repository (not served by the dashboard)."
@@ -11035,7 +11590,7 @@
     "status": "Implemented and measured",
     "limitation": "Initial-schema revision only, no data migration.",
     "measurements": [
-     "all|post-adaptation (E3, 2026-10-15)|e3_roundtrip_pass"
+     "all|current code (E3, 2026-10-19)|e3_roundtrip_pass"
     ],
     "experiments": [
      "e3"
@@ -11053,7 +11608,8 @@
      "helpdesk_legacy_holdout|post-adaptation|recovery_recall",
      "news_buzz|post-fix (escape decoder)|recovery_recall",
      "fee_rainbow|post-fix (wrapper support + fragment rule)|recovery_recall",
-     "all|current code (tests, 2026-10-17)|tests_passed"
+     "all|saved log (2026-10-18, HEAD 1d93e93)|tests_passed",
+     "all|saved log (2026-10-18, HEAD 1d93e93)|tests_with_mysql_passed"
     ],
     "experiments": [
      "tests"

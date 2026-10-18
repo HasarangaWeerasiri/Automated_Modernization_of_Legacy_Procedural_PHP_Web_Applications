@@ -7,6 +7,7 @@ Reads the generated data file and the dashboard sources; runs no pipeline.
 import importlib.util
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -133,10 +134,85 @@ def test_e1_e4_and_tests_match_their_evidence(data):
     assert e4["totals"]["unsafe"] == 0 and e4["totals"]["safe"] == e4["totals"]["functions"]
     assert (e4["totals"]["functions"], e4["totals"]["hostile_cases"], e4["totals"]["benign_calls"]) == (159, 1908, 636)
 
-    tests = data["experiments"]["tests"]
-    log = (ROOT / summarize.TEST_LOG).read_text(encoding="utf-8")
-    assert tests["summary_line"] in log
-    assert (tests["passed"], tests["failed"], tests["skipped"]) == (783, 0, 61)
+
+def test_test_counts_come_only_from_saved_committed_logs(data):
+    runs = data["experiments"]["tests"]["runs"]
+    assert [r["file"] for r in runs] == [file for _, _, _, file, _ in summarize.TEST_LOGS]
+    for run in runs:
+        tracked = subprocess.run(["git", "ls-files", "--error-unmatch", run["file"]], cwd=ROOT, capture_output=True)
+        assert tracked.returncode == 0, f"{run['file']} is not a committed log"
+        log = (ROOT / run["file"]).read_text(encoding="utf-8-sig")
+        assert run["summary_line"] in log
+        counts = {k: int(v) for v, k in re.findall(r"(\d+) (passed|failed|skipped)", run["summary_line"])}
+        assert (run["passed"], run["failed"], run["skipped"]) == tuple(counts.get(k, 0) for k in ("passed", "failed", "skipped"))
+        assert re.search(rf"^# git HEAD: {run['head']}$", log, re.M)
+        for metric in ("passed", "failed", "skipped"):
+            m = next(x for x in data["measurements"] if x["stage_label"] == run["stage_label"] and x["metric"] == f"{run['metric_prefix']}_{metric}")
+            assert m["value"] == run[metric] and m["source"]["file"] == run["file"] and m["status"] == "measured"
+    # The earlier log keeps its original measurement id as dated history, not the latest run.
+    assert [r["latest"] for r in runs] == [True, True, False]
+    assert any(m["id"] == "all|current code (tests, 2026-10-17)|tests_passed" for m in data["measurements"])
+
+
+def test_e3_runs_match_their_evidence_and_the_newest_is_shown_per_app(data):
+    runs = data["experiments"]["e3_runs"]
+    assert [r["dir"] for r in runs] == [directory for _, _, directory in summarize.E3_RUNS]
+    for run in runs:
+        summary = (ROOT / run["dir"] / "summary.txt").read_text(encoding="utf-8-sig")
+        assert f"# git HEAD: {run['git_head']}" in summary and f"# date: {run['date']}" in summary
+        verdicts = [json.loads(p.read_text(encoding="utf-8-sig"))["verdict"] for p in (ROOT / run["dir"]).glob("*.json")]
+        assert (run["pass"], run["apps"]) == (verdicts.count("PASS"), len(verdicts))
+        m = next(x for x in data["measurements"] if x["metric"] == "e3_roundtrip_pass" and x["stage_label"] == run["stage_label"])
+        assert (m["numerator"], m["denominator"]) == (run["pass"], run["apps"]) and m["source"]["file"].startswith(run["dir"])
+    current = next(r for r in runs if r["current"])
+    assert set(data["experiments"]["e3_dates"].values()) == {current["date"]}
+    for app_id in data["apps"]:
+        key = summarize.EXPERIMENT_KEY.get(app_id, app_id)
+        source = json.loads((ROOT / current["dir"] / f"{key}.json").read_text(encoding="utf-8-sig"))
+        assert data["experiments"]["e3"][app_id]["verdict"] == source["verdict"]
+        assert data["experiments"]["e3"][app_id]["steps"] == source["steps"]
+    # The 15 Oct run keeps its original measurement id as dated history.
+    assert any(m["id"] == "all|post-adaptation (E3, 2026-10-15)|e3_roundtrip_pass" for m in data["measurements"])
+
+
+def test_fr9_and_fr10_cite_the_newest_committed_evidence(data):
+    items = {item["fr"]: item for item in data["functions"]["items"]}
+    current_e3 = next(r for r in data["experiments"]["e3_runs"] if r["current"])
+    assert items["FR9"]["measurements"] == [f"all|{current_e3['stage_label']}|e3_roundtrip_pass"]
+    latest = [r for r in data["experiments"]["tests"]["runs"] if r["latest"]]
+    expected = [f"all|{r['stage_label']}|{r['metric_prefix']}_passed" for r in latest]
+    assert [m for m in items["FR10"]["measurements"] if "|tests" in m] == expected
+    by_id = {m["id"]: m for m in data["measurements"]}
+    assert all(by_id[m]["source"]["file"] == r["file"] for m, r in zip(expected, latest))
+
+
+def test_clinic_mysql_suite_is_separate_from_the_e1_harness(data):
+    suite = data["experiments"]["e1"]["separate_suites"][0]
+    log = (ROOT / suite["file"]).read_text(encoding="utf-8-sig")
+    assert re.search(rf"collected {suite['collected']} items", log) and re.search(rf"\b{suite['passed']} passed\b", log)
+    assert suite["failed"] == 0 and "not the E1 harness" in suite["note"]
+    m = next(x for x in data["measurements"] if x["metric"] == "mysql_equivalence_tests_passed")
+    assert (m["app"], m["value"], m["denominator"], m["category"]) == (suite["app"], suite["passed"], suite["collected"], "mysql_tests")
+    assert not any(x["category"] == "e1" and x["app"] == suite["app"] and x["status"] != "not_measured" for x in data["measurements"])
+    code = (DASHBOARD / "app.js").read_text(encoding="utf-8")
+    assert "Separate MySQL test suite (not the E1 harness)" in code
+
+
+def test_sqlacodegen_baseline_is_measured_and_matches_its_summary(data):
+    source = json.loads((ROOT / summarize.BASELINE_SUMMARY).read_text(encoding="utf-8"))
+    base = data["experiments"]["baseline"]
+    compared = [e for e in source["apps"].values() if e["status"] == "compared"]
+    assert (base["apps_total"], base["apps_compared"], base["failures"]) == (len(source["apps"]), len(compared), sorted(source["failures"]))
+    for dimension in summarize.BASELINE_DIMENSIONS:
+        expected = {role: sum(e["comparison"]["counts"][dimension][role] for e in compared) for role in ("compared", "matches", "differences")}
+        assert base["totals"][dimension] == expected
+        m = next(x for x in data["measurements"] if x["metric"] == f"sqlacodegen_{dimension}")
+        assert (m["status"], m["numerator"], m["denominator"]) == ("measured", expected["matches"], expected["compared"])
+        assert m["source"]["file"] == summarize.BASELINE_SUMMARY
+    assert base["foreign_key_apps"] == [a for a, e in source["apps"].items() if e["comparison"]["counts"]["foreign_keys"]["compared"]]
+    notes = " ".join(base["notes"])
+    assert "never reads PHP" in notes and "not a general correctness guarantee" in notes and "no comparison of accuracy or speed" in notes
+    assert not any(m["metric"] == "sqlacodegen_baseline" for m in data["measurements"])
 
 
 # 3. Clinic and Fee-Rainbow disclosures ----------------------------------------------------------
@@ -184,9 +260,10 @@ def test_stage_labels_are_preserved(data):
 
 def test_missing_measurements_are_not_measured_never_zero(data):
     missing = {m["metric"]: m for m in data["measurements"] if m["status"] == "not_measured"}
-    for metric in ("migration_effort", "sqlacodegen_baseline", "e1_equivalence"):
+    for metric in ("migration_effort", "e1_equivalence"):
         assert metric in missing
     assert "execution_time" not in missing  # measured since 2026-10-18 (evidence/performance/2026-10-18)
+    assert "sqlacodegen_baseline" not in missing  # completed: evidence/baseline/2026-10-19
     assert all(m["value"] is None and m["numerator"] is None for m in missing.values())
     code = (DASHBOARD / "app.js").read_text(encoding="utf-8")
     assert 'const NOT_MEASURED = "Not yet measured"' in code

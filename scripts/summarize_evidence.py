@@ -352,10 +352,28 @@ E1_RUNS = [("final", "evidence/mysql_runs/2026-10-15_195730/e1/php_vs_sqlalchemy
             "First run; its 5 FAILs were a harness classification defect (evidence/hms/E1_triage/triage.md)")]
 E2_OFFLINE = "evidence/e2/2026-10-15/schema_comparison.json"
 E2_LIVE = "evidence/mysql_runs/2026-10-15_173248/e2/schema_comparison_mysql.json"
-E3_DIR = "evidence/mysql_runs/2026-10-15_173218/e3"
+# E3 runs, newest first. The first one is shown per application (docs/c3_fr_status.json FR9 cites its measurement);
+# the 15 Oct run keeps its measurement as dated history.
+E3_RUNS = [("current-code", "current code (E3, 2026-10-19)", "evidence/mysql_runs/2026-10-19_000500/e3"),
+           ("post-adaptation", "post-adaptation (E3, 2026-10-15)", "evidence/mysql_runs/2026-10-15_173218/e3")]
+E3_DIR = E3_RUNS[0][2]
 E4_REPORT = "evidence/e4/2026-10-17/injection_report.json"
 E4_SCRIPT = "scripts/e4_injection_check.py"
-TEST_LOG = "evidence/tests/test_run_non_mysql_2026-10-17.txt"
+# Saved (committed) pytest logs only, newest first: (key, title, metric prefix, file, fixed stage label or None).
+# A run without a saved log is never shown. docs/c3_fr_status.json FR10 cites the two newest logs; the 17 Oct log keeps
+# its original stage label (and measurement id) as dated history, not the latest run.
+TEST_LOGS = [
+    ("non_mysql", "Non-MySQL suite (saved log)", "tests", "evidence/final/2026-10-19/test_run_non_mysql.txt", None),
+    ("with_mysql", "Full suite with MySQL (saved log)", "tests_with_mysql",
+     "evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt", None),
+    ("non_mysql_2026_10_17", "Non-MySQL suite, earlier saved log", "tests", "evidence/tests/test_run_non_mysql_2026-10-17.txt",
+     "current code (tests, 2026-10-17)"),
+]
+TEST_LOG = TEST_LOGS[0][3]
+CLINIC_MYSQL_LOG = "evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt"
+BASELINE_SUMMARY = "evidence/baseline/2026-10-19/summary.json"
+BASELINE_README = "evidence/baseline/2026-10-19/README.md"
+BASELINE_DIMENSIONS = ("tables", "columns", "primary_keys", "nullability", "types", "foreign_keys")
 
 STAGE_KEYS = {  # evaluation file -> canonical stage key (labels in STAGES are kept verbatim)
     "hms_kishan0725/evaluation_preadaptation.json": "pre-adaptation",
@@ -377,7 +395,9 @@ STAGE_DEFINITIONS = {
     "post-adaptation": "Pipeline after general rules that were developed or reviewed using this app.",
     "post-fix": "Post-adaptation run after a specific disclosed fix (escape decoder or wrapper support).",
     "fresh-holdout": "App run untouched; no rule was changed for it (Dignity-Dev only).",
-    "current-code": "Fresh run of the current pipeline (recorded HEAD) by this script; conversion counts come from here.",
+    "current-code": "Current pipeline code. Conversion counts, review rates and site lists come from this script's fresh run "
+                    "(recorded HEAD); tests, E3, E4, timing and the sqlacodegen baseline cite their own saved evidence file, "
+                    "date and HEAD (see the stage label and evidence file).",
 }
 APP_INFO = {  # run folder -> label, role, latest S15 evaluation, licence / provenance note
     "hms_kishan0725": ("HMS (kishan0725)", "post-adaptation benchmark (third-party)", "hms_kishan0725/evaluation.json",
@@ -750,14 +770,33 @@ def _experiments(measurements):
                     unit="count", status="measured", file=relative,
                     fields={**({"value": f"apps.{app}.verdicts.{verdict}"} if present else {}), "denominator": f"apps.{app}.sites"},
                     derivation=None if present else f"no {verdict} key in apps.{app}.verdicts, so 0 (sites = sum of the other verdicts)"))
+    clinic_suite = _pytest_log(CLINIC_MYSQL_LOG)
+    collected = int(re.search(r"collected (\d+) items", clinic_suite["text"]).group(1))
+    if clinic_suite["passed"] != collected or clinic_suite["failed"]:
+        raise SystemExit(f"{CLINIC_MYSQL_LOG}: not every collected test passed; update the dashboard text before showing it")
+    e1["separate_suites"] = [{
+        "app": "clinic_inventory_legacy_hard", "file": CLINIC_MYSQL_LOG, "passed": clinic_suite["passed"], "collected": collected,
+        "failed": clinic_suite["failed"], "head": clinic_suite["head"], "date": clinic_suite["date"],
+        "mysql_server": clinic_suite["mysql_server"],
+        "note": "Clinic's own pytest MySQL equivalence suite (tests/benchmarks/clinic_hard), not the E1 harness: each test "
+                "passes or fails, there is no INCONCLUSIVE category. It includes test_q002_sql_injection_is_blocked."}]
+    measurements.append(_measurement(
+        "clinic_inventory_legacy_hard", "current-code", f"saved log ({clinic_suite['date']}, HEAD {clinic_suite['head'][:7]})",
+        "mysql_tests", "mysql_equivalence_tests_passed", "MySQL equivalence tests passed (Clinic suite, not the E1 harness)",
+        numerator=clinic_suite["passed"], denominator=collected, value=clinic_suite["passed"], unit="count", status="measured",
+        file=CLINIC_MYSQL_LOG, fields={"value": f"summary line '{clinic_suite['summary_line']}'",
+                                       "denominator": f"line 'collected {collected} items'"},
+        note=f"MySQL {clinic_suite['mysql_server']}. " + e1["separate_suites"][0]["note"]))
     for folder in ("dignity_dev_hms", "helpdesk_legacy_holdout", "news_buzz", "fee_rainbow", "clinic_inventory_legacy_hard",
                    "simple_crud", "mixed_crud", "hard_crud"):
-        measurements.append(_not_measured(folder, "e1", "e1_equivalence", "E1 behavioural equivalence on MySQL",
-                                          "No E1 run. Successful conversion is not behavioural equivalence."))
+        note = "No E1 run. Successful conversion is not behavioural equivalence."
+        if folder == "clinic_inventory_legacy_hard":
+            note = "No E1-harness run. Clinic has a separate MySQL equivalence test suite (see the E1 card)."
+        measurements.append(_not_measured(folder, "e1", "e1_equivalence", "E1 behavioural equivalence on MySQL", note))
 
     e2_offline = json.loads((ROOT / E2_OFFLINE).read_text(encoding="utf-8"))
     e2_live = json.loads((ROOT / E2_LIVE).read_text(encoding="utf-8"))
-    e2, e3, e3_dates = {}, {}, {}
+    e2, e3, e3_dates, e3_runs = {}, {}, {}, []
     e2_dates = {"offline": e2_offline["date_utc"][:len("yyyy-mm-dd")], "live": e2_live["date_utc"][:len("yyyy-mm-dd")]}
     for folder in APP_INFO:
         key = EXPERIMENT_KEY.get(folder, folder)
@@ -765,20 +804,34 @@ def _experiments(measurements):
         e2[folder] = {"A_vs_B": offline["A_vs_B"], "A_vs_C": offline["A_vs_C"], "D_vs_C": live["D_vs_C"],
                       "query_schema_drift": live["query_schema_drift"],
                       "tables": e2_live["apps"][key]["A"]["tables"], "columns": e2_live["apps"][key]["A"]["columns"]}
-        e3_data = json.loads((ROOT / E3_DIR / f"{key}.json").read_text(encoding="utf-8"))
-        e3[folder] = {"verdict": e3_data["verdict"], "steps": e3_data["steps"], "schema_diffs": len(e3_data["schema_diffs"])}
-        e3_dates[folder] = e3_data["date_utc"][:len("yyyy-mm-dd")]
     e2_match = sum(1 for v in e2.values() if v["A_vs_B"] == v["A_vs_C"] == v["D_vs_C"] == "MATCH")
-    e3_pass = sum(1 for v in e3.values() if v["verdict"] == "PASS")
-    measurements += [
+    measurements.append(
         _measurement("all", "post-adaptation", "post-adaptation (E2, 2026-10-15)", "e2", "e2_schema_match",
                      "E2 schema fidelity: apps where every view matches", numerator=e2_match, denominator=len(e2),
                      value=e2_match, unit="count", status="derived", file=f"{E2_OFFLINE}; {E2_LIVE}",
-                     derivation="apps with verdicts A_vs_B, A_vs_C (offline) and D_vs_C (MySQL) all MATCH"),
-        _measurement("all", "post-adaptation", "post-adaptation (E3, 2026-10-15)", "e3", "e3_roundtrip_pass",
-                     "E3 Alembic round trip on MySQL: apps PASS", numerator=e3_pass, denominator=len(e3), value=e3_pass,
-                     unit="count", status="derived", file=f"{E3_DIR}/<app>.json", derivation="count verdict == PASS"),
-    ]
+                     derivation="apps with verdicts A_vs_B, A_vs_C (offline) and D_vs_C (MySQL) all MATCH"))
+    for stage, stage_label, directory in E3_RUNS:
+        header = (ROOT / directory / "summary.txt").read_text(encoding="utf-8-sig")
+        date = re.search(r"^# date: (\d{4}-\d{2}-\d{2})", header, re.M).group(1)  # local date of the run
+        head = re.search(r"^# git HEAD: (\w+)", header, re.M).group(1)
+        verdicts = {}
+        for folder in APP_INFO:
+            key = EXPERIMENT_KEY.get(folder, folder)
+            e3_data = json.loads((ROOT / directory / f"{key}.json").read_text(encoding="utf-8-sig"))
+            if re.search(rf"^{re.escape(key)} : (\w+)", header, re.M).group(1) != e3_data["verdict"]:
+                raise SystemExit(f"{directory}: summary.txt and {key}.json disagree")
+            verdicts[folder] = e3_data["verdict"]
+            if directory == E3_DIR:
+                e3[folder] = {"verdict": e3_data["verdict"], "steps": e3_data["steps"], "schema_diffs": len(e3_data["schema_diffs"])}
+                e3_dates[folder] = date
+        e3_pass = sum(v == "PASS" for v in verdicts.values())
+        e3_runs.append({"stage_label": stage_label, "dir": directory, "date": date, "git_head": head, "git_head_short": head[:7], "pass": e3_pass,
+                        "apps": len(verdicts), "current": directory == E3_DIR})
+        measurements.append(_measurement(
+            "all", stage, stage_label, "e3", "e3_roundtrip_pass", "E3 Alembic round trip on MySQL: apps PASS",
+            numerator=e3_pass, denominator=len(verdicts), value=e3_pass, unit="count", status="derived",
+            file=f"{directory}/<app>.json", derivation="count verdict == PASS (each checked against summary.txt)",
+            note=f"Run {date}, git HEAD {head[:7]} (from {directory}/summary.txt)."))
 
     report = json.loads((ROOT / E4_REPORT).read_text(encoding="utf-8"))
     benign = ast.literal_eval(re.search(r"^BENIGN = (\[.*?\])$", (ROOT / E4_SCRIPT).read_text(encoding="utf-8"), re.M).group(1))
@@ -801,31 +854,92 @@ def _experiments(measurements):
                     "hostile_cases": sum(a["hostile_cases"] for a in e4["apps"].values()),
                     "benign_calls": functions * len(benign), "rejected": sum(a["rejected"] for a in e4["apps"].values())}
     e4["limitations"] = [
+        "A bounded check with a fixed payload set; it is not a proof of general injection safety.",
         "Recording session: SQL is compiled for the MySQL dialect, never executed on a database.",
         "Only the 12 listed payloads and 4 benign values; not exhaustive.",
         "Functions whose SQL takes no user value pass trivially; Clinic Q013 rejects every benign value too, so its "
         "same-SQL comparison is vacuous and it passes by rejection only.",
         "Unresolved sites have no generated code and are not tested.",
-        "Runtime hostile testing on MySQL exists only for HMS (E1).",
+        "Runtime hostile testing on MySQL: HMS through the E1 harness; Clinic has one MySQL test of an injection attempt "
+        "(test_q002_sql_injection_is_blocked) in its separate equivalence suite.",
     ]
     measurements.append(_measurement("all", "current-code", "current code (E4, 2026-10-17)", "e4", "e4_benign_calls",
                                      "E4 benign calls", value=e4["totals"]["benign_calls"], unit="count", status="derived",
                                      file=f"{E4_REPORT}; {E4_SCRIPT}", derivation="functions x len(BENIGN) in the script"))
 
-    log = (ROOT / TEST_LOG).read_text(encoding="utf-8")
-    line = [l for l in log.splitlines() if re.match(r"^\d+ passed", l)][-1]
-    counts = {k: int(v) for v, k in re.findall(r"(\d+) (passed|failed|skipped|warnings?)", line)}
-    tests = {"file": TEST_LOG, "summary_line": line, "passed": counts.get("passed", 0), "failed": counts.get("failed", 0),
-             "skipped": counts.get("skipped", 0), "warnings": counts.get("warning", counts.get("warnings", 0)),
-             "head": re.search(r"^# git HEAD: (\w+)", log, re.M).group(1),
-             "note": "Non-MySQL suite; the 61 skipped tests need MySQL. An earlier attempt failed only on the Windows "
-                     "260-character path limit (disclosed in the log)."}
-    for metric in ("passed", "failed", "skipped"):
-        measurements.append(_measurement("all", "current-code", "current code (tests, 2026-10-17)", "tests", f"tests_{metric}",
-                                         f"Non-MySQL tests {metric}", value=tests[metric], unit="count", status="measured",
-                                         file=TEST_LOG, fields={"value": f"summary line '{line}'"},
-                                         note="pytest omits zero counts; absent means 0." if metric not in counts else None))
-    return e1, e2, e3, e4, tests, e2_dates, e3_dates
+    tests = {"runs": [], "note": "Only saved (committed) logs are shown; a run without a saved log is not evidence. Counts are "
+                                 "copied from each log's pytest summary line; pytest omits zero counts, so an absent count is 0. "
+                                 "Skipped tests in the non-MySQL runs are the tests that need MySQL."}
+    for key, title, prefix, file, fixed_label in TEST_LOGS:
+        log = _pytest_log(file)
+        stage_label = fixed_label or f"saved log ({log['date']}, HEAD {log['head'][:7]})"
+        tests["runs"].append({"key": key, "title": title, "file": file, "stage_label": stage_label, "metric_prefix": prefix,
+                              "summary_line": log["summary_line"], "date": log["date"], "head": log["head"], "head_short": log["head"][:7],
+                              "mysql_server": log["mysql_server"], "latest": key != "non_mysql_2026_10_17",
+                              **{k: log[k] for k in ("passed", "failed", "skipped", "warnings")}})
+        suite = "Full suite with MySQL" if prefix == "tests_with_mysql" else "Non-MySQL tests"
+        for metric in ("passed", "failed", "skipped"):
+            measurements.append(_measurement("all", "current-code", stage_label, "tests", f"{prefix}_{metric}",
+                                             f"{suite} {metric}", value=log[metric], unit="count", status="measured",
+                                             file=file, fields={"value": f"summary line '{log['summary_line']}'"},
+                                             note="pytest omits zero counts; absent means 0." if metric not in log["present"] else None))
+    return e1, e2, e3, e4, tests, e2_dates, e3_dates, e3_runs
+
+
+def _pytest_log(file):
+    """Summary counts, date, HEAD and MySQL version from a saved pytest log (its own header lines)."""
+    text = (ROOT / file).read_text(encoding="utf-8-sig")
+    line = [l.strip() for l in text.splitlines() if re.match(r"^=*\s*\d+ passed", l)][-1].strip("= ")
+    counts = {("warnings" if k.startswith("warning") else k): int(v)
+              for v, k in re.findall(r"(\d+) (passed|failed|skipped|warnings?)", line)}
+    date = re.search(r"^# date(?: \(start\))?: (\d{4}-\d{2}-\d{2})", text, re.M)
+    server = re.search(r"^# MySQL server: (\S+)", text, re.M)
+    return {"text": text, "summary_line": line, "present": set(counts), "date": date.group(1) if date else None,
+            "head": re.search(r"^# git HEAD: (\w+)", text, re.M).group(1), "mysql_server": server.group(1) if server else None,
+            **{k: counts.get(k, 0) for k in ("passed", "failed", "skipped", "warnings")}}
+
+
+def _baseline(measurements):
+    """The sqlacodegen schema-only baseline: model-file comparison counts, summed over the apps in its summary.json."""
+    data = json.loads((ROOT / BASELINE_SUMMARY).read_text(encoding="utf-8"))
+    compared = {app: entry for app, entry in data["apps"].items() if entry.get("status") == "compared"}
+    date = Path(BASELINE_SUMMARY).parent.name
+    stage_label = f"current code (sqlacodegen baseline, {date})"
+    scope = ("Schema-only comparison of generated model files: sqlacodegen reflects the database and writes models; it never "
+             "reads PHP and does no query recovery or data-access migration. Neither side is ground truth, and matching "
+             "properties are not a general correctness guarantee for the C3 models.")
+    totals = {}
+    for dimension in BASELINE_DIMENSIONS:
+        expression = lambda role: " + ".join(f"apps.{app}.comparison.counts.{dimension}.{role}" for app in compared)
+        counts = {role: sum(e["comparison"]["counts"][dimension][role] for e in compared.values())
+                  for role in ("compared", "matches", "differences")}
+        totals[dimension] = counts
+        measurements.append(_measurement(
+            "all", "current-code", stage_label, "baseline", f"sqlacodegen_{dimension}",
+            f"sqlacodegen baseline: {dimension.replace('_', ' ')} matching the C3 models", numerator=counts["matches"],
+            denominator=counts["compared"], value=counts["matches"], unit="count", status="measured", file=BASELINE_SUMMARY,
+            fields={"numerator": expression("matches"), "denominator": expression("compared"), "value": expression("matches")},
+            note=scope))
+    fk_apps = [app for app, e in compared.items() if e["comparison"]["counts"]["foreign_keys"]["compared"]]
+    measurements.append(_measurement(
+        "all", "current-code", stage_label, "baseline", "sqlacodegen_apps_compared",
+        "sqlacodegen baseline: applications compared", numerator=len(compared), denominator=len(data["apps"]),
+        value=len(compared), unit="count", status="derived", file=BASELINE_SUMMARY,
+        derivation="apps with status == \"compared\"; sqlacodegen failures are listed in failures", note=scope))
+    return {
+        "file": BASELINE_SUMMARY, "readme": BASELINE_README, "date": date, "stage_label": stage_label,
+        "git_head": data["generated"]["git_head"], "tool": data["tools"]["sqlacodegen"],
+        "apps_total": len(data["apps"]), "apps_compared": len(compared), "failures": sorted(data["failures"]),
+        "totals": totals, "foreign_key_apps": fk_apps,
+        "apps": {app: {"verdict": e["comparison"]["verdict"], "notes": e.get("notes", []),
+                       **{d: e["comparison"]["counts"][d]["compared"] for d in ("tables", "columns", "foreign_keys")}}
+                 for app, e in compared.items()},
+        "notes": [scope,
+                  "Primary-key matches include tables where neither tool finds a primary key.",
+                  "Foreign keys can only be compared where a schema declares them; the other applications declare none.",
+                  "The C3 query-level counts (live sites, recovered sites, functions, manual review, abstentions) are "
+                  "not applicable to sqlacodegen; no comparison of accuracy or speed is made."],
+    }
 
 
 def _reports():
@@ -840,7 +954,11 @@ def _reports():
         ("Fee-Rainbow S15 evaluation summary", "evidence/evaluation/fee_rainbow/summary.md"),
         ("HMS E1 triage", "evidence/hms/E1_triage/triage.md"),
         ("E4 injection check, 17 Oct 2026", "evidence/e4/2026-10-17/README.md"),
-        ("Non-MySQL test run, 17 Oct 2026", TEST_LOG),
+        *[(f"{title} ({file.split('/')[-1]})", file) for _, title, _, file, _ in TEST_LOGS],
+        ("Clinic MySQL equivalence test suite (saved log)", CLINIC_MYSQL_LOG),
+        *[(f"E3 Alembic round trip on MySQL, {label.split(', ')[-1].rstrip(')')}", f"{directory}/summary.txt")
+          for _, label, directory in E3_RUNS],
+        ("sqlacodegen schema-only baseline (method, version, commands)", BASELINE_README),
         ("Commit hash map (history rewrite)", "evidence/commit_hash_map_2026-10-15.md"),
         ("FR status (reviewed, drives the Functions view)", "docs/c3_fr_status.json"),
         ("Execution time, 18 Oct 2026 (method and limits)", "evidence/performance/2026-10-18/README.md"),
@@ -925,11 +1043,11 @@ def write_dashboard_json(target: Path, base: Path, head: str) -> None:
             status="measured", file=PERFORMANCE_FILE, fields={"value": f"apps.{folder}.median_seconds"},
             note=f"{performance['label']}. Runs: {runs} s. One machine ({performance['machine']['cpu']}); not a benchmark of other hardware."))
     disclosures = _disclosures(records, measurements)
-    e1, e2, e3, e4, tests, e2_dates, e3_dates = _experiments(measurements)
+    e1, e2, e3, e4, tests, e2_dates, e3_dates, e3_runs = _experiments(measurements)
+    baseline = _baseline(measurements)
     for metric, label, note in [
         ("migration_effort", "Measured migration effort (developer time)",
          "Not measured. The manual-review rate is a derived proxy (sites), not developer effort."),
-        ("sqlacodegen_baseline", "Schema-only baseline (sqlacodegen)", "Planned, not run."),
     ]:
         measurements.append(_not_measured("all", "not_measured", metric, label, note))
     data = {
@@ -943,8 +1061,8 @@ def write_dashboard_json(target: Path, base: Path, head: str) -> None:
         "stage_sites": stage_sites,
         "records": records,
         "artifacts": artifacts,
-        "experiments": {"e1": e1, "e2": e2, "e2_dates": e2_dates, "e3": e3, "e3_dates": e3_dates, "e4": e4, "tests": tests,
-                        "performance": performance},
+        "experiments": {"e1": e1, "e2": e2, "e2_dates": e2_dates, "e3": e3, "e3_dates": e3_dates, "e3_runs": e3_runs, "e4": e4,
+                        "tests": tests, "performance": performance, "baseline": baseline},
         "manual_review": {"formula": MANUAL_REVIEW_FORMULA, "limits": MANUAL_REVIEW_LIMITS, "apps": manual_review},
         "disclosures": disclosures,
         "limitations": [

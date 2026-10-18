@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import threading
+import time
 import zipfile
 from pathlib import Path
 
@@ -194,7 +195,19 @@ def test_timeout_stops_the_run_and_cleans_up(tmp_path):
     slow = server.Bridge(run_root=tmp_path / "runs", limits={"timeout_seconds": 0.01})
     error = error_of(slow.analyze, "simple_crud.zip", simple_crud_zip(), "schema.sql", (SIMPLE / "schema.sql").read_bytes())
     assert error.status == 504 and "did not finish" in error.message
-    assert not [p for p in (tmp_path / "runs").iterdir()]
+    runs = tmp_path / "runs"
+    # Windows: a just-killed child of the CLI can still hold the run folder as its working directory for a moment, so
+    # rmtree may delete every file but leave the empty folder. No uploaded file may remain; the empty folder must go
+    # at the next cleanup (made to treat every run as expired here).
+    deadline = time.monotonic() + 5
+    while any(p.is_file() for p in runs.rglob("*")) and time.monotonic() < deadline:
+        time.sleep(0.05)
+    assert not [p for p in runs.rglob("*") if p.is_file()]
+    slow.limits["run_ttl_seconds"] = -1
+    while list(runs.iterdir()) and time.monotonic() < deadline:
+        slow.cleanup()
+        time.sleep(0.05)
+    assert not list(runs.iterdir())
     assert slow.lock.acquire(blocking=False)
 
 

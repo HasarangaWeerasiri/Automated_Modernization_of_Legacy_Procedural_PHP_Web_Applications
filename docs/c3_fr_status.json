@@ -136,7 +136,7 @@
    "requirement": "Alembic migration information required for the modernized data layer must be generated.",
    "status": "Implemented and measured",
    "limitation": "Initial-schema revision only, no data migration.",
-   "measurements": ["all|post-adaptation (E3, 2026-10-15)|e3_roundtrip_pass"],
+   "measurements": ["all|current code (E3, 2026-10-19)|e3_roundtrip_pass"],
    "experiments": ["e3"]
   },
   {
@@ -151,7 +151,8 @@
     "helpdesk_legacy_holdout|post-adaptation|recovery_recall",
     "news_buzz|post-fix (escape decoder)|recovery_recall",
     "fee_rainbow|post-fix (wrapper support + fragment rule)|recovery_recall",
-    "all|current code (tests, 2026-10-17)|tests_passed"
+    "all|saved log (2026-10-18, HEAD 1d93e93)|tests_passed",
+    "all|saved log (2026-10-18, HEAD 1d93e93)|tests_with_mysql_passed"
    ],
    "experiments": ["tests"]
   }

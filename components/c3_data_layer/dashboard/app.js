@@ -410,6 +410,26 @@ const Evidence = (() => {
     );
   }
 
+  // sqlacodegen schema-only baseline: model-file comparison counts from its summary.json (no query migration involved).
+  function baselineCard() {
+    const base = DATA.experiments.baseline;
+    const rows = measurements((m) => m.category === "baseline" && m.metric !== "sqlacodegen_apps_compared").map((m) => {
+      const t = base.totals[m.metric.replace("sqlacodegen_", "")];
+      return [m.label.replace("sqlacodegen baseline: ", ""), t.compared,
+        h("button", { type: "button", class: "button", onclick: () => showMeasurement(m), text: formatValue(m) }), t.differences];
+    });
+    return card("Schema-only baseline (sqlacodegen)",
+      `Completed ${base.date}: sqlacodegen ${base.tool.sqlacodegen} models compared with the C3 models for ${base.apps_compared} of `
+      + `${base.apps_total} applications; sqlacodegen failures: ${base.failures.length ? base.failures.join(", ") : "none"}.`,
+      h("p", {}, statusBadge("measured"), " Counts summed from ", h("code", { text: base.file }), " (apps.<app>.comparison.counts). Method: ",
+        h("code", { text: base.readme }), "."),
+      table(["Property", "Compared", "Matches", "Differences"], rows),
+      table(["Application", "Result", "Tables", "Columns", "Foreign keys compared"], Object.entries(base.apps).map(([id, a]) =>
+        [appLabel(id), a.verdict, a.tables, a.columns, a.foreign_keys])),
+      h("ul", {}, base.notes.map((t) => h("li", { text: t })),
+        Object.entries(base.apps).flatMap(([id, a]) => a.notes.map((t) => h("li", { text: `${appLabel(id)}: ${t}` })))));
+  }
+
   function renderEvaluation(root) {
     const hist = (metric) => measurements((m) => m.metric === metric && m.stage !== "current-code");
     const cur = (metric) => measurements((m) => m.metric === metric && m.stage === "current-code");
@@ -457,9 +477,16 @@ const Evidence = (() => {
         table(["Application", "Runs (s)", "Median"], measurements((m) => m.metric === "execution_time").map((m) => [appLabel(m.app),
           DATA.experiments.performance.apps[m.app].runs_seconds.join(" · "),
           h("button", { type: "button", class: "button", onclick: () => showMeasurement(m), text: formatValue(m) })]))),
-      card("E1 behavioural equivalence on MySQL", "Legacy PHP vs generated function on real MySQL, per SQL site. INCONCLUSIVE is not PASS.",
+      card("E1 behavioural equivalence on MySQL", "Legacy PHP vs generated function on real MySQL, per SQL site (E1 harness). INCONCLUSIVE is not PASS.",
         e1Chart(),
-        h("p", { class: "muted" }, "Not measured: ", measurements((m) => m.metric === "e1_equivalence").map((m) => appLabel(m.app)).join(", "),
+        h("h4", { text: "Separate MySQL test suite (not the E1 harness)" }),
+        table(["Application", "Tests passed", "Run", "Saved log"], DATA.experiments.e1.separate_suites.map((s) => {
+          const m = measurement(s.app, "mysql_equivalence_tests_passed");
+          return [appLabel(s.app), m ? h("button", { type: "button", class: "button", onclick: () => showMeasurement(m), text: `${s.passed} of ${s.collected}` })
+            : `${s.passed} of ${s.collected}`, `${s.date}, MySQL ${s.mysql_server}`, h("code", { text: s.file })];
+        })),
+        h("p", { class: "muted", text: DATA.experiments.e1.separate_suites.map((s) => s.note).join(" ") }),
+        h("p", { class: "muted" }, "Not measured with the E1 harness: ", measurements((m) => m.metric === "e1_equivalence").map((m) => appLabel(m.app)).join(", "),
           ". Conversion alone does not show equivalence.")),
       card("E4 injection negatives", `Recording-session check, ${e4.date_utc} (no database).`,
         metricChart(cur("e4_safe_functions"), { title: "E4", label: () => "functions SAFE", tone: "good" }),
@@ -468,19 +495,28 @@ const Evidence = (() => {
           ["Hostile cases", e4.totals.hostile_cases], ["Benign calls (derived)", e4.totals.benign_calls],
           ["Rejected cases", e4.totals.rejected], ["Payloads per function", e4.payload_count]]),
         h("h4", { text: "Limits of this check" }), h("ul", {}, e4.limitations.map((t) => h("li", { text: t })))),
-      card("E2 schema fidelity and E3 Alembic round trip", `MySQL runs: E2 ${DATA.experiments.e2_dates.live}; E3 per application (see Models & Migration).`,
+      card("E2 schema fidelity and E3 Alembic round trip", `MySQL runs: E2 ${DATA.experiments.e2_dates.live}; E3 `
+        + DATA.experiments.e3_runs.map((r) => `${r.date} (HEAD ${r.git_head_short}, ${r.pass} of ${r.apps} PASS${r.current ? ", current code, shown per application" : ", earlier run kept as history"})`).join("; ") + ".",
         metricChart(measurements((m) => m.category === "e2" || m.category === "e3"), {
           title: "E2/E3", label: (m) => (m.category === "e2" ? "E2: all schema views MATCH" : "E3: round trip PASS"), groupBy: () => "all" }),
-        table(["Application", "E2 A–B", "E2 A–C", "E2 D–C", "E3"], Object.keys(DATA.apps).map((id) => [appLabel(id),
+        table(["Application", "E2 A–B", "E2 A–C", "E2 D–C", `E3 (${DATA.experiments.e3_runs.filter((r) => r.current).map((r) => r.date).join("")})`],
+          Object.keys(DATA.apps).map((id) => [appLabel(id),
           DATA.experiments.e2[id].A_vs_B, DATA.experiments.e2[id].A_vs_C, DATA.experiments.e2[id].D_vs_C, DATA.experiments.e3[id].verdict]))),
+      baselineCard(),
       card("Column-use accuracy", "Per SQL operation, against the ground truth. Select a cell for its source.",
         table(["Application", "Stage", ...fields], [...columnRows.values()].map((row) => [appLabel(row.app), stageBadge(row.stage),
           ...fields.map((f) => { const m = row.cells[f]; return m ? h("button", { type: "button", class: "button",
             onclick: () => showMeasurement(m), text: `${formatValue(m)} ${ratio(m)}` }) : "-"; })]))),
       h("div", { class: "grid two" },
-        card("Regression tests (non-MySQL)", tests.summary_line, table(["Result", "Count"],
-          measurements((m) => m.category === "tests").map((m) => [m.label, h("button", { type: "button", class: "button",
-            onclick: () => showMeasurement(m), text: formatValue(m) })])), h("p", { class: "muted", text: tests.note })),
+        card("Regression tests (saved logs)", tests.note, table(["Run", "Date", "HEAD", "Passed", "Failed", "Skipped", "Saved log"],
+          tests.runs.map((run) => {
+            const cell = (metric) => {
+              const m = measurements((x) => x.category === "tests" && x.stage_label === run.stage_label && x.metric === `${run.metric_prefix}_${metric}`)[0];
+              return m ? h("button", { type: "button", class: "button", onclick: () => showMeasurement(m), text: formatValue(m) }) : "-";
+            };
+            return [run.latest ? run.title : `${run.title} (history)`, run.date || "-", h("code", { text: run.head_short }),
+              cell("passed"), cell("failed"), cell("skipped"), h("code", { text: run.file })];
+          }))),
         card("Not yet measured", "Shown as missing, never as zero.", table(["Measurement", "Application", "Status"],
           notMeasured.map((m) => [m.label, appLabel(m.app), h("span", {}, statusBadge(m.status), " ", NOT_MEASURED)])))),
       card("Known limitations (FR2, FR4, FR6)", null, DATA.limitations.map((l) => h("div", { style: "margin-bottom:var(--space-3)" },
