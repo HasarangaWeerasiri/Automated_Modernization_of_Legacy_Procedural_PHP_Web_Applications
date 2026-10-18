@@ -46,6 +46,23 @@ venv/Scripts/python.exe tools/runtime/phpblog/prepare.py
 docker compose -f tools/runtime/phpblog/docker-compose.yml up -d --build
 ```
 
+### Seed + fixture (Phase 4f)
+
+`initdb/03-fixture.sql` is a small, fixed, **data-only** fixture (owner, Phase 4f), loaded after `database.sql` (01) and
+the replay user (02) only through the override `docker-compose.fixture.yml`. No phpBlog file and no generated code
+changes. It adds 3 published posts in 2 categories (post 1 in Site News, featured; posts 2–3 in a new category
+Tutorials), 1 static page (Terms), 2 approved guest comments, and 1 menu item (Terms → `page?name=terms`); **no users**,
+so nobody logs in. Values are written as phpBlog's admin pages write them: dates `d.m.Y`, times `H:i`, content
+HTML-escaped. Recreate the database to switch seeds (the init scripts run only on an empty volume):
+
+```
+docker compose -f tools/runtime/phpblog/docker-compose.yml -f tools/runtime/phpblog/docker-compose.fixture.yml down -v
+docker compose -f tools/runtime/phpblog/docker-compose.yml -f tools/runtime/phpblog/docker-compose.fixture.yml up -d --build
+```
+
+and classify a fixture run with `--data fixture` (reviewed findings name the data they were reviewed on: a difference
+path depends on it). Back to the shipped seed: the same two commands with the base file only.
+
 ## Generated side, capture, compare, classify
 
 ```
@@ -61,6 +78,10 @@ venv/Scripts/python.exe tools/runtime/classify.py phpblog --before phpblog-nodat
 venv/Scripts/python.exe tools/runtime/simulate_css.py phpblog
 venv/Scripts/python.exe tools/runtime/side_by_side.py phpblog index.php
 ```
+
+Phase 4f runs (folders under `output/runtime/`; each copies its build's `pipeline/` and `lists.json` first):
+`phpblog-v1.0`, `phpblog` (v1.1 before change 4), `phpblog-c4` (v1.1 final) on the shipped seed, and
+`phpblog-v1.0-fx`, `phpblog-pre4-fx`, `phpblog-c4-fx` on seed + fixture, each with its own no-data build as `--before`.
 
 Not generated, so not compared: `rss.php`, `sitemap.php` (`non_html_response`), `core.php`, `install/core.php`
 (`error_output_only`). A page that **redirects** an anonymous GET (a `<meta http-equiv="refresh">`, which a browser

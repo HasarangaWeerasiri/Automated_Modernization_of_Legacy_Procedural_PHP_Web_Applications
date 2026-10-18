@@ -40,14 +40,15 @@ def shape(entry: dict) -> list[tuple]:
     return [(p["kind"], p.get("value", p.get("expr")), p.get("read")) for p in entry["parts"]]
 
 
-def stages(tmp_path, php: str, schema=None) -> dict:
-    """Stages 1-5 on one PHP page: its timeline, the Stage 2 nodes, the Stage 5 report and the generated files."""
+def stages(tmp_path, php: str, schema=None, rules: str | None = None) -> dict:
+    """Stages 1-5 on one PHP page: its timeline, the Stage 2 nodes, the Stage 5 report and the generated files.
+    `rules`: the boundary rules version ("v1.0"; default the config's)."""
     timeline = page(tmp_path, php, schema)
     path = tmp_path / "timeline.json"
     path.write_text(harness_app.dump_timeline(timeline), encoding="utf-8")
     folder = tmp_path / "out"
     folder.mkdir()
-    run_apps.run_page(path, folder, load_boundary_config(), load_generation_config(),
+    run_apps.run_page(path, folder, load_boundary_config(rules=rules), load_generation_config(),
                       load_contract(run_apps.EMPTY_CONTRACT))
     stage2 = json.loads((folder / "stage2.json").read_text(encoding="utf-8"))
     files = {p.relative_to(folder / "generated").as_posix(): p.read_text(encoding="utf-8")

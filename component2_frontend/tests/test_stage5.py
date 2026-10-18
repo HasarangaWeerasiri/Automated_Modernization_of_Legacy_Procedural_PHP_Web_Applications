@@ -214,10 +214,14 @@ def test_admin_guard_is_a_c2todo_with_an_unused_abstained_function(runs):
     page = text(result, "app/admin_dashboard/page.tsx")
     assert '<C2Todo id="f003#00028" reason="cuts_across_business_logic" />' in page
     assert page.count("Abstained_f003_00028") == 1  # defined, never called
-    assert "function Abstained_f003_00028({ data }: { data: AppointmentStats })" in page
+    # spec v0.16 (change 4): the guard's if / else on the session renders no arm; both arms are in Arms_
+    # (rules v1.0: `function Abstained_f003_00028({ data }: ...)` held the ternary)
+    assert 'function Abstained_f003_00028() {\n  return (\n    <C2Todo id="f003#00028" reason="needs_auth_context" />' \
+        in page
+    assert page.count("Arms_f003_00028") == 1 and "function Arms_f003_00028({ data }: { data: AppointmentStats })" in page
     assert "{data.total}" in page and "{data.revenue}" in page
     session = [t.node_id for t in todos(result, "needs_auth_context") if t.kind == "C2Todo"]
-    assert session == ["f003#00025", "f003#00071"]
+    assert session == ["f003#00025", "f003#00028", "f003#00071"]
     assert "export default function Page()" in page  # nothing rendered needs data: no fetch
 
 
@@ -556,7 +560,10 @@ def test_if_elseif_else_of_one_if_is_a_nested_ternary(tmp_path):
     result = tiny(tmp_path, [("if", [("then", "$_SESSION['a']", [html("<p>a</p>")]),
                                      ("elseif", "$_GET['b']", [html("<p>b</p>")]),
                                      ("else", None, [html("<p>c</p>")])])])
-    lines = body(result)
+    # spec v0.16 (change 4): the conditions are untranslatable, so the Page renders no arm; the chain is in Arms_
+    assert body(result) == ['<C2Todo id="t001#00001" reason="needs_auth_context" />']
+    page = text(result, "app/page/page.tsx")
+    lines = [line.strip() for line in page[page.index("function Arms_t001_00001("):].split("\n")]
     start = next(i for i, line in enumerate(lines) if "?" in line)
     assert lines[start:start + 7] == [
         '{unresolvedCondition("t001#00001", "needs_auth_context") ? (', "<p>a</p>",

@@ -33,10 +33,12 @@ the same attribute and tag) explains it, marked `via` that ancestor (weaker evid
 
 Which rules produced the run (`rules` in the folder's lists.json, written by generated_app.py; "1.0" when absent,
 as for the runs made before the switch) decides which reviewed findings apply: each finding names the rules it was
-found under.
+found under. So does the database the legacy app ran on (`--data`, default "seed": the app's shipped seed; Phase 4f:
+"fixture", phpBlog's recorded fixture): a difference path depends on the data (a carousel that renders shifts its
+siblings), so a finding names the data it was reviewed on (`data`: one name or a list, default "seed").
 
 Usage, from component2_frontend/ (after tools/runtime/compare.py <app>):
-    venv/Scripts/python.exe tools/runtime/classify.py hms [--folder hms-4a] [--before hms-4a]
+    venv/Scripts/python.exe tools/runtime/classify.py hms [--folder hms-4a] [--before hms-4a] [--data seed]
 (`--before`: the same pages generated without the data wiring, to tell List rows from static elements; default
 <app>-4a, the Phase 4a capture.)
 """
@@ -523,6 +525,17 @@ def row_paths(before_html: str, after_html: str) -> set:
     return found
 
 
+def _names(value, default: str) -> list:
+    return value if isinstance(value, list) else [value or default]
+
+
+def reviewed_notes(path: Path, rules: str, data: str) -> dict:
+    """{(page, path): finding} of the reviewed findings that apply to a run of these rules on this data."""
+    findings = json.loads(path.read_text(encoding="utf-8"))["findings"] if path.exists() else []
+    return {(n["page"], n["path"]): n for n in findings
+            if rules in _names(n.get("rules"), "1.0") and data in _names(n.get("data"), "seed")}
+
+
 def main(argv: list[str]) -> int:
     if not argv or argv[0].startswith("--"):
         print(__doc__.strip().splitlines()[-1], file=sys.stderr)
@@ -537,9 +550,8 @@ def main(argv: list[str]) -> int:
     report = json.loads((out / "compare.json").read_text(encoding="utf-8"))
     lists_file = out / "lists.json"
     rules = json.loads(lists_file.read_text(encoding="utf-8")).get("rules", "1.0") if lists_file.exists() else "1.0"
-    notes_file = HERE / app / "findings.json"
-    notes = {(n["page"], n["path"]): n for n in (json.loads(notes_file.read_text(encoding="utf-8"))["findings"]
-                                                if notes_file.exists() else []) if n.get("rules", "1.0") == rules}
+    data = argv[argv.index("--data") + 1] if "--data" in argv else "seed"  # the legacy database's contents
+    notes = reviewed_notes(HERE / app / "findings.json", rules, data)
     units = {e["key"]: Unit(e["key"], pipeline / e["key"]) for e in index["pages"]
              if (pipeline / e["key"] / "stage5.json").exists()}
     by_function = {u.function: u for u in units.values() if u.function}
@@ -585,7 +597,7 @@ def main(argv: list[str]) -> int:
     totals_out = {k: v for k, v in totals.items() if not k.startswith("class:")}
     totals_out["renderMatch"] = round(totals["matched"] / totals["legacyElements"], 4)
     totals_out["byClass"] = dict(sorted((k[6:], v) for k, v in totals.items() if k.startswith("class:")))
-    result = {"app": app, "rules": rules,
+    result = {"app": app, "rules": rules, "data": data,
               "classes": {"flag": "a flag the pipeline emitted at that node",
                           "flag-but-wrong": "a flag at that node, but the generated tree contradicts the browser's",
                           "framework": "the target framework renders the generated tree elsewhere (React 19 hoisting)",
@@ -593,7 +605,7 @@ def main(argv: list[str]) -> int:
               "totals": totals_out, "pages": pages}
     (out / "classified.json").write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n", encoding="utf-8",
                                          newline="\n")
-    print(f"rules v{rules}")
+    print(f"rules v{rules}, data {data}")
     print(f"{'page':24} {'legacy':>6} {'match':>6} {'render':>7} {'list':>9} {'static':>9} {'unexpl':>6} {'wrong':>5}"
           "  classes")
     for p in pages:

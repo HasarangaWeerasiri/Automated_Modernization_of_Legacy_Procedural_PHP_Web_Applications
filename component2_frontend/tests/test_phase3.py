@@ -431,7 +431,8 @@ def test_output_before_the_header_keeps_the_reason_of_a_gap_that_is_already_one(
 
 
 def test_an_if_that_prints_only_in_its_else_arm_is_written_with_an_empty_then(tmp_path):
-    result = stages(tmp_path, "<div><?php if ($ok) { $n = 1; } else { echo '<b>no</b>'; } ?></div>")
+    """Rules v1.0. Under v1.1 (spec v0.16, change 4) the else arm is not chosen: tests/test_phase4f.py."""
+    result = stages(tmp_path, "<div><?php if ($ok) { $n = 1; } else { echo '<b>no</b>'; } ?></div>", rules="v1.0")
     text = flat(result["files"]["app/page/page.tsx"])
     (todo,) = [t for t in result["stage5"]["c2todos"] if t["kind"] == "unresolvedCondition"]
     assert (todo["reason"], todo["severity"]) == ("condition_unavailable", "todo")

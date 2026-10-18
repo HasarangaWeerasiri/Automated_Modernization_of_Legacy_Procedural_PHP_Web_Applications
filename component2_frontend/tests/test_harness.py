@@ -756,16 +756,22 @@ def test_whole_app_totals(apps_output):
     # conditionals; three of them hold shell calls and abstain tag_crosses_function)
     # Phase 4d (spec v0.15, change 3): HMS S5 review 385 -> 383 (index1.php's <head> content is no longer dropped as
     # document_shell; prescribe.php's </form> no longer an implicit_close), info 318 -> 322 (implied_end_tag)
-    expected = {"hms": (269, 68, 5, 169, 194, 383, 322), "wackopicko": (384, 62, 13, 307, 170, 301, 126),
-                "phpblog": (801, 186, 15, 832, 591, 1046, 464), "attendance": (176, 34, 11, 95, 85, 167, 287),
-                "warehouse": (418, 64, 62, 243, 270, 270, 378)}
+    # Phase 4f (spec v0.16, change 4): an if / else on an untranslatable condition is one C2Todo (todo); its arms go
+    # to an unused Arms_ function, where their own gaps count as info (like Abstained_). Stage 2 unchanged. HMS todo
+    # 194 -> 164, S5 review 383 -> 338, info 322 -> 404; WackoPicko 170 -> 169, 301 -> 283, 126 -> 153; phpBlog
+    # 591 -> 495, 1046 -> 898, 464 -> 751; attendance 85 -> 84, 167 -> 164, 287 -> 292; warehouse 270 -> 259,
+    # 270 -> 247, 378 -> 451
+    expected = {"hms": (269, 68, 5, 169, 164, 338, 404), "wackopicko": (384, 62, 13, 307, 169, 283, 153),
+                "phpblog": (801, 186, 15, 832, 495, 898, 751), "attendance": (176, 34, 11, 95, 84, 164, 292),
+                "warehouse": (418, 64, 62, 243, 259, 247, 451)}
     # Step 5 (rules v1.0, freeze): warehouse only. Include paths from constants resolve (load.php 6/6), the
     # whitespace-only load.php is no cross_file_output (40 -> 3), ajax.php is an ajax_endpoint (not generated).
     assert totals == {app: expected[app] for app in totals}
     hms = [apps_results_table.page_row(output / "hms", entry) for entry in indexes["hms"]["pages"]]
     # Phase 4c (rules v1.1; v1.0: (171, 3) and (171, 220)): the six HMS R-I1 guards are conditionals now
     assert (sum(r["review_unlabelled"] for r in hms), sum(r["review_other"] for r in hms)) == (166, 3)
-    assert (sum(r["s5review_unlabelled"] for r in hms), sum(r["s5review_other"] for r in hms)) == (166, 217)  # 4d
+    # 4d: (166, 217); 4f (change 4): the reviews inside the seven HMS Arms_ functions are info
+    assert (sum(r["s5review_unlabelled"] for r in hms), sum(r["s5review_other"] for r in hms)) == (134, 204)
     reasons = {}
     for r in hms:
         for reason, n in r["abstains"].items():

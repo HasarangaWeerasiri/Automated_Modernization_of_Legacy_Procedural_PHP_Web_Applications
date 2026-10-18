@@ -1,6 +1,6 @@
 # Component 2 — Agent Context (read this first, every task)
 
-_Version 27 — 16 Oct 2026 (Phase 4d accepted: HMS final render match 0.996, 0 unexplained; Phase 5 scorer ready; Phase 4e = a second runtime app (phpBlog) while the owner writes the gold standard)._
+_Version 28 — 16 Oct 2026 (Phase 4e accepted: phpBlog runtime found an unsound `else`-arm choice; post-freeze change 4 (spec v0.16) fixes it; Phase 4f = implement + re-measure both apps, with a recorded post fixture for phpBlog)._
 
 This file is the handoff between the research chat and the coding agent. It records decisions
 already made. **Do not change a decision recorded here.** If something here looks wrong or a task
@@ -118,6 +118,7 @@ harness, not Member 01's core** (`_provenance.generator = "c2-harness"`).
 - Deliberate contract gap: field **`contact`** (flagged on list pages only). `sku` appears in no schema.
 - `undecided` nodes: edge_cases (1, `auth_or_display`), wp_login (1, placeholder `logic_or_display`), wp_thumbnails (1, placeholder `logic_or_display`).
 - **What the freeze covers (made explicit 15 Oct):** boundary rules (Stage 2), Stage 1–3 decisions and Stage 5 **markup** generation — everything Phase 5 measures. **Data wiring** (Stage 4 mapping to a contract, where fetches happen) is not measured in Phase 5 (the evaluation apps have no contracts) and may change only as a logged post-freeze change **with a proof that, with no contract / endpoint map, every output of the five discovery apps and the mocks is byte-identical**.
+- Phase 4e (16 Oct): phpBlog runs unmodified (`tools/runtime/phpblog/`, PHP 8.2, MariaDB 10.6; `config.php` / `config_settings.php` made exactly as `install/done.php` does, mounted in). 7 of 43 pages compared (36 redirect an anonymous GET), render match 0.520, UNEXPLAINED 0, flag-but-wrong 37 = the `else`-arm unsound decision (core.php 652, blog.php 29). The seed has no posts / users. Comparison tools improved (HMS unchanged).
 - Phase 4d (16 Oct): change 3 (spec v0.15) done; **v1.1 final**. HMS final: render match **0.996** (1380 / 1386), 54 differences, UNEXPLAINED 0, flag-but-wrong 2 = React 19 hoisting `<meta>` into `<head>` (class `framework:react_hoist`, not a generator error). `docs/phase4-results.md` written. Phase 5 tools: `tools/eval/score.py`, `tools/eval/run_eval.py` (tested on `tests/fixtures/eval_synth/` only); `docs/eval-mapping.md` v1.1.
 - Phase 4c (16 Oct): `rules_version` (default 1.1); `--rules v1.0` reproduces the freeze byte for byte (five apps `ba8e4ac7…25d9`, mocks `71b746eb…0cf6`). HMS v1.0 → v1.1: render match 0.947 → **0.991**, UNEXPLAINED 2 → 0, flag-but-wrong 17 → 9. R-I1 sites: 11 → 0 stay R-I1 (WackoPicko login-style pages now conditionals, forms hidden on GET, flagged).
 - Phase 4b (16 Oct): 7 / 16 HMS Lists get replay data; render match 0.588 → **0.947** (1312 / 1386); 69 differences, 67 `flag:`, 2 UNEXPLAINED (`search.php`, R-I1). Guard proof vs `27c380e`: five apps `ba8e4ac7…25d9`, mocks `71b746eb…0cf6`. **Post-freeze changes 1 (R-I1 scope → rules v1.1) and 2 (head content, heading end tags → spec v0.14)** come from this discovery-app evidence; Phase 5 reports v1.0 and v1.1.

@@ -262,10 +262,21 @@ class _Ctx:
     fetches: set = field(default_factory=set)  # spec v0.13: ids of Lists whose own endpoint this function fetches
     locals: list = field(default_factory=list)
     pending: list = field(default_factory=list)  # abstained functions to write after this one
+    arms: frozenset = frozenset()  # spec v0.16: ifs whose arms this function writes out (inside their Arms_ function)
 
     def child(self, **changes) -> "_Ctx":
         """The same function, with some scope changed: uses, locals and pending stay shared."""
         return _Ctx(**{**self.__dict__, **changes})
+
+
+@dataclass
+class _Arms:
+    """Spec v0.16 section 6: an if whose untranslatable condition would choose between outputs renders nothing; its
+    arms are written into an unused Arms_<id>() function, after the function it stands in."""
+
+    if_id: str
+    generate: object  # ctx -> the JSX the if would have rendered
+    ctx: "_Ctx"
 
 
 class _Space:
@@ -510,14 +521,18 @@ class Generator:
         for index, item in enumerate(items):
             if isinstance(item, MIf) and item.if_id in self.r_i8_exit and not ctx.silent:
                 # R-I8, case 2: everything after the if, to the end of its block, is its implicit else
-                out += self.exit_conditional(item, lambda: self.nodes(items[index + 1:], ctx), ctx)
+                out += self.exit_conditional(item, lambda: self.nodes(items[index + 1:], ctx), ctx, items[index + 1:])
                 break
             out += self.node(item, ctx)
         return self.spaces(out)
 
-    def exit_conditional(self, mif: MIf, rest, ctx: _Ctx) -> list:
+    def exit_conditional(self, mif: MIf, rest, ctx: _Ctx, rest_items: list = ()) -> list:
         """`cond ? <the arm that exits> : <rest>` (spec v0.8 section 6a). Stage 2 made sure the exiting arm is
         the `then` arm; any other arm of the if is part of what follows when the condition is false."""
+        reason = self.chosen_arm(mif, ctx, rest_prints=_prints(rest_items))
+        if reason is not None:  # spec v0.16: neither the arm nor the rest is chosen
+            return self.no_arm(mif, ctx, reason, lambda inner: self.exit_conditional(
+                mif, lambda: self.nodes(list(rest_items), inner), inner, rest_items))
         marks, arm = [], mif.branches[0]
         self.place_markup_flags(mif, ctx, marks)
         self.place_markup_flags(arm, ctx, marks)
@@ -966,10 +981,33 @@ class Generator:
             if not isinstance(occurrence, MAttrPresence):
                 code = codes[0]
                 continue
+            reason = self.presence_choice(occurrence, codes, code, ctx)
+            if reason is not None:  # spec v0.16: a two-valued attribute under an untranslatable condition
+                marks.append(self.flag(ctx, "attribute_omitted", REVIEW, occurrence.if_id,
+                                       f"{name} on <{el.tag}>: no value is chosen (spec v0.16)", reason=reason))
+                return []
             if id(occurrence) not in conditions:
                 conditions[id(occurrence)] = self.presence_conditions(occurrence, ctx, marks)
             code = _presence_code(conditions[id(occurrence)], codes, code)
         return [jsx.Attr(prop, code=code)] if prop is not None else []
+
+    def presence_choice(self, a: MAttrPresence, codes: list, fallback: str, ctx: _Ctx) -> str | None:
+        """Rules v1.1 (spec v0.16): the reason of an untranslatable condition of this attribute if, when the attribute
+        could take two different values (an `else` arm, or a later written value the browser takes otherwise);
+        None for a `then`-only presence (the attribute is absent: a gap) and for translated conditions."""
+        if self.boundary_config.rules_version == "1.0":
+            return None
+        reasons = [self.untranslatable(enclosure, ctx) for enclosure, _ in a.branches]
+        if a.branches[0][0].branch != "then":
+            reasons.insert(0, "condition_unavailable")
+        reason = next((r for r in reasons if r), None)
+        if reason is None:
+            return None
+        has_else = any(enclosure.branch == "else" for enclosure, _ in a.branches)
+        outcomes = {c for c in codes if c is not None}
+        if not has_else or any(c is None for c in codes):
+            outcomes.add(fallback)
+        return reason if len(outcomes - {"undefined"}) >= 2 else None
 
     def presence_conditions(self, a: MAttrPresence, ctx: _Ctx, marks: list) -> tuple:
         """(the condition of each arm, None for an `else`; the condition of a `then` arm that prints nothing)."""
@@ -1215,6 +1253,9 @@ class Generator:
 
     def conditional(self, mif: MIf, ctx: _Ctx, stage2_node: ComponentNode | None) -> list:
         """One Cond per if: then/elseif/else of one if -> a ternary chain; never merged with a sibling if (R-I6)."""
+        reason = self.chosen_arm(mif, ctx)
+        if reason is not None:  # spec v0.16: no arm is chosen
+            return self.no_arm(mif, ctx, reason, lambda inner: self.conditional(mif, inner, stage2_node))
         marks = []
         self.place_markup_flags(mif, ctx, marks)
         contents = []
@@ -1250,6 +1291,62 @@ class Generator:
             self.cond_marks[id(stage2_node)] = (ctx.file, mark, ctx.function, ctx.in_abstained)
         return [jsx.Cond(branches, otherwise, marks=tuple(marks))]
 
+    # ---- spec v0.16 section 6: an untranslatable condition never selects an arm
+
+    def untranslatable(self, enclosure, ctx: _Ctx, guard_var: str | None = None) -> str | None:
+        """The reason an arm's condition is not translated, or None (translated, or an `else`)."""
+        if enclosure.branch == "else":
+            return None
+        translation = translate(enclosure.cond_expr, self.scope(ctx, guard_var), self.config.condition_context_reasons)
+        return None if translation.code is not None else translation.reason
+
+    def arm_prints(self, mif: MIf, branch: MBranch) -> bool:
+        """The arm renders something (R-I8c exit arms and redirect arms render nothing)."""
+        if branch.enclosure.exits and (self.exit_silent or self.redirect_arm(mif, branch)):
+            return False
+        return bool(self.arm_outputs(mif, branch))
+
+    def chosen_arm(self, mif: MIf, ctx: _Ctx, guard_var: str | None = None, rest_prints: bool = False) -> str | None:
+        """Rules v1.1 (spec v0.16): the reason of the first untranslatable condition after which another arm (or,
+        R-I8 case 2, the rest of the block) renders something, i.e. one that would choose between outputs; None when
+        there is none (every condition translated, or a `then`-only conditional: it hides its content, a gap)."""
+        if self.boundary_config.rules_version == "1.0" or mif.if_id in ctx.arms:
+            return None
+        reasons, prints = [], []
+        if mif.branches and mif.branches[0].enclosure.branch != "then":  # silent_then: its condition is unknown
+            reasons.append("condition_unavailable")
+            prints.append(False)
+        for branch in mif.branches:
+            reasons.append(self.untranslatable(branch.enclosure, ctx, guard_var))
+            prints.append(self.arm_prints(mif, branch))
+        reasons.append(None)
+        prints.append(rest_prints)
+        return next((reason for k, reason in enumerate(reasons) if reason and any(prints[k + 1:])), None)
+
+    def no_arm(self, mif: MIf, ctx: _Ctx, reason: str, generate) -> list:
+        """One flagged gap in place of the if; its arms go to an unused Arms_<id>() function (spec v0.16)."""
+        name = f"Arms_{safe_id(mif.if_id)}"
+        todo = self.todo(mif.if_id, reason, ctx,
+                         f"untranslatable condition: no arm is chosen (spec v0.16); the arms are in {name}()")
+        ctx.pending.append(_Arms(mif.if_id, generate, ctx))
+        return [todo]
+
+    def arms_function(self, pending: _Arms) -> None:
+        outer = pending.ctx
+        file, name = outer.file, f"Arms_{safe_id(pending.if_id)}"
+        key = file.mark()
+        inner = outer.child(function=name, function_key=key, in_abstained=True, uses=set(), fetches=set(),
+                            locals=[], pending=[], arms=outer.arms | {pending.if_id})
+        slot = _Function(name, "", [], [], key)
+        file.functions.append(slot)
+        body = pending.generate(inner)
+        fetches = self.fetch_locals(inner)
+        signature = self.signature(inner.uses, inner.row, required=(), component=inner.list_node, outer=inner.outer)
+        slot.header = f"{'async ' if fetches else ''}function {name}({signature}) {{"
+        slot.locals, slot.body = fetches + inner.locals, body
+        for later in inner.pending:
+            self.abstained_function(later, inner)
+
     def silent_then(self, mif: MIf, ctx: _Ctx, marks: list) -> list:
         """The `then` arm of an if whose `then` prints nothing: [(its condition, no content)], else [].
 
@@ -1267,6 +1364,9 @@ class Generator:
         empties = [c for c in lst.children if c.type == "Empty"]
         iter_expr = loop.enclosure.iter_expr
         guard_var = iter_expr if iter_expr and re.fullmatch(r"\$[A-Za-z_]\w*", iter_expr) else None
+        reason = self.chosen_arm(mif, ctx, guard_var)
+        if reason is not None:  # spec v0.16: neither the List nor its Empty is chosen
+            return self.no_arm(mif, ctx, reason, lambda inner: self.guard(mif, inner))
         branches, otherwise = self.silent_then(mif, ctx, marks), None
         for branch in mif.branches:
             self.place_markup_flags(branch, ctx, marks)
@@ -1383,7 +1483,10 @@ class Generator:
         ctx.pending.append((item, ctx.row))  # the row in scope where the region stands (e.g. an R-L3 row)
         return [todo]
 
-    def abstained_function(self, pending: tuple, ctx: _Ctx) -> None:
+    def abstained_function(self, pending, ctx: _Ctx) -> None:
+        if isinstance(pending, _Arms):  # spec v0.16
+            self.arms_function(pending)
+            return
         item, row = pending
         node, file = item.node, ctx.file
         source = node.source_ids[0]
@@ -1935,7 +2038,7 @@ class Generator:
                     out += build(item.body, file, function)
             return out
 
-        roots = [name for name in functions if name == self.root_name or name.startswith("Abstained_")]
+        roots = [name for name in functions if name == self.root_name or name.startswith(("Abstained_", "Arms_"))]
         for root in sorted(roots, key=lambda name: (name != self.root_name, name)):
             top, top_file = functions[root]
             in_abstained = root != self.root_name
@@ -1990,7 +2093,7 @@ class Generator:
             else:
                 continue
             count = sum(1 for t in todos if t.file == path and (t.function == name or t.function.startswith(
-                "Abstained_")))
+                ("Abstained_", "Arms_"))))
             components.append(GeneratedComponent(self.ids[id(node)], node.type, name, path, count))
         return GenerationResult(entrypoint=self.timeline.entrypoint, route=self.route, files=tuple(files),
                                 components=tuple(components), todos=tuple(sorted(todos, key=order)),
@@ -2028,6 +2131,11 @@ def _presence_code(conditions: tuple, codes: list, fallback: str) -> str:
     elif len(arms) == 1 and codes == ["true"] and fallback == "undefined":
         code = arms[0]  # a boolean attribute under one condition
     return code
+
+
+def _prints(items) -> bool:
+    """Markup that renders something: anything but whitespace-only text (spec v0.16, R-I8 case 2's rest)."""
+    return any(not (isinstance(item, MText) and not item.text.strip()) for item in items)
 
 
 def _is_static(node) -> bool:

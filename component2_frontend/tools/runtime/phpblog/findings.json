@@ -1,40 +1,110 @@
 {
-  "note": "Reviewed root causes of the Phase 4e (phpBlog) differences tools/runtime/classify.py cannot tie to a flag at their node. Keyed by page and difference path (compare.py; \"*\" = every difference of the page); `rules` = the rules version of the run. A finding with a class other than UNEXPLAINED is a hand-reviewed link (its evidence names the flag and the node); UNEXPLAINED stays UNEXPLAINED.",
+  "note": "Reviewed root causes of the Phase 4e (phpBlog) differences tools/runtime/classify.py cannot tie to a flag at their node. Keyed by page and difference path (compare.py; \"*\" = every difference of the page); `rules` = the rules version of the run. A finding with a class other than UNEXPLAINED is a hand-reviewed link (its evidence names the flag and the node); UNEXPLAINED stays UNEXPLAINED. `rules` may list several versions: phpBlog's generated pages are the same under v1.0 and v1.1 before change 4 (normalised bodies compared, Phase 4f), and these findings were re-checked on the change-4 run. `data`: the database the finding was reviewed on (one name or a list; \"seed\", the default: install/database.sql; \"fixture\": seed + initdb/03-fixture.sql, Phase 4f; classify.py --data). A difference path depends on the data: with the fixture's featured post the carousel renders, and the Recent Posts row moves from div[0] to div[1]. The install, login.php and blog.php footer findings were re-checked on the fixture run: the same paths, values and root causes.",
   "findings": [
     {
       "page": "install__upgrade-v2.2.php",
       "path": "*",
-      "rules": "1.1",
+      "rules": [
+        "1.0",
+        "1.1"
+      ],
       "class": "env:legacy_runtime_error",
-      "rootCause": "The legacy page stops with a PHP fatal error after its first line: install/upgrade-v2.2.php:46 queries a `settings` table that install/database.sql does not create (PHP 8: uncaught mysqli_sql_exception, tools/runtime/phpblog/build/logs/errors.log). Before that, line 41 tries to rewrite ../config.php on a plain GET (blocked: the file is mounted read-only). The generated page prints every message. Caused by the run (an upgrade script run against a fresh install), not by the tool."
+      "rootCause": "The legacy page stops with a PHP fatal error after its first line: install/upgrade-v2.2.php:46 queries a `settings` table that install/database.sql does not create (PHP 8: uncaught mysqli_sql_exception, tools/runtime/phpblog/build/logs/errors.log). Before that, line 41 tries to rewrite ../config.php on a plain GET (blocked: the file is mounted read-only). The generated page prints every message. Caused by the run (an upgrade script run against a fresh install), not by the tool.",
+      "data": [
+        "seed",
+        "fixture"
+      ]
     },
     {
       "page": "index.php",
       "path": "body>div[1]>div[0]>div[0]>div[0]",
-      "rules": "1.1",
+      "rules": [
+        "1.0",
+        "1.1"
+      ],
       "class": "flag:attribute_omitted",
       "rootCause": "Reviewed link: index.php:85 `<div class=\"row <?php echo $mt3_i; ?>\">`; the class is omitted, flag attribute_omitted (unresolved_read) at f036#00213. The mechanical link fails because the legacy value (\"row\") equals the literal class of other <div>s, which carry no flag."
     },
     {
       "page": "login.php",
       "path": "body>div[1]>div[0]>div[0]>div[0]>div[1]>div[0]>div[0]>form[0]>div[0]",
-      "rules": "1.1",
+      "rules": [
+        "1.0",
+        "1.1"
+      ],
       "class": "flag:attribute_omitted",
-      "rootCause": "Reviewed link: login.php:42 `<div class=\"input-group mb-3 needs-validation <?php if ($error == 1) ...?>\">`; the class is omitted, flag attribute_omitted (condition_not_translatable) at the if f042#00105. The legacy value equals the literal class of the form's other <div>s (login.php 54, 118, 122, 126)."
+      "rootCause": "Reviewed link: login.php:42 `<div class=\"input-group mb-3 needs-validation <?php if ($error == 1) ...?>\">`; the class is omitted, flag attribute_omitted (condition_not_translatable) at the if f042#00105. The legacy value equals the literal class of the form's other <div>s (login.php 54, 118, 122, 126).",
+      "data": [
+        "seed",
+        "fixture"
+      ]
     },
     {
       "page": "blog.php",
       "path": "body>footer[0]>div[0]>div[2]>div[0]>a[0]>strong[0]>span[0]",
-      "rules": "1.1",
+      "rules": [
+        "1.0",
+        "1.1"
+      ],
       "class": "flag:C2Todo",
-      "rootCause": "Reviewed link: core.php:1006 `<span>&nbsp; <?php echo $settings['email']; ?></span>` (footer of the shell); C2Todo unresolved_read at f033#02168. The <span> and its ancestors up to the footer have no attribute the classifier can find them by."
+      "rootCause": "Reviewed link: core.php:1006 `<span>&nbsp; <?php echo $settings['email']; ?></span>` (footer of the shell); C2Todo unresolved_read at f033#02168. The <span> and its ancestors up to the footer have no attribute the classifier can find them by.",
+      "data": [
+        "seed",
+        "fixture"
+      ]
+    },
+    {
+      "page": "index.php",
+      "path": "body>div[1]>div[0]>div[0]>div[1]",
+      "rules": [
+        "1.0",
+        "1.1"
+      ],
+      "data": "fixture",
+      "class": "flag:attribute_omitted",
+      "rootCause": "Reviewed link (fixture): index.php:85 `<div class=\"row <?php echo $mt3_i; ?>\">`; the class is omitted, flag attribute_omitted (unresolved_read) at f036#00213 (the seed finding at div[0], here at div[1]: the carousel renders). The mechanical link fails because the legacy value \"row mt-3\" is printed partly by the echo: no start tag's text holds the word mt-3."
+    },
+    {
+      "page": "index.php",
+      "path": "body>div[1]>div[0]>div[0]>div[1]>div[0]",
+      "rules": [
+        "1.0",
+        "1.1"
+      ],
+      "data": "fixture",
+      "class": "flag:attribute_omitted",
+      "rootCause": "Reviewed link (fixture): index.php:104-111 `<div class=\"<?php if ($settings['posts_per_row'] == 3) echo 'col-md-4'; else echo 'col-md-6'; ?> mb-3\">` (one Recent Posts row); the class is omitted, flag attribute_omitted (condition_not_translatable) at the if f036#00279 (IndexList3Item). The mechanical link fails because the legacy value equals the literal class of the shell's footer <div> (core.php:999), which carries no flag. Under v1.1 final the row is not rendered at all (the list is in Arms_f036_00232: spec v0.16), so this difference exists only under v1.0 and v1.1 before change 4."
+    },
+    {
+      "page": "index.php",
+      "path": "body>div[1]>div[0]>div[0]>div[1]>div[1]",
+      "rules": [
+        "1.0",
+        "1.1"
+      ],
+      "data": "fixture",
+      "class": "flag:attribute_omitted",
+      "rootCause": "Reviewed link (fixture): index.php:104-111 `<div class=\"<?php if ($settings['posts_per_row'] == 3) echo 'col-md-4'; else echo 'col-md-6'; ?> mb-3\">` (one Recent Posts row); the class is omitted, flag attribute_omitted (condition_not_translatable) at the if f036#00279 (IndexList3Item). The mechanical link fails because the legacy value equals the literal class of the shell's footer <div> (core.php:999), which carries no flag. Under v1.1 final the row is not rendered at all (the list is in Arms_f036_00232: spec v0.16), so this difference exists only under v1.0 and v1.1 before change 4."
+    },
+    {
+      "page": "index.php",
+      "path": "body>div[1]>div[0]>div[0]>div[1]>div[2]",
+      "rules": [
+        "1.0",
+        "1.1"
+      ],
+      "data": "fixture",
+      "class": "flag:attribute_omitted",
+      "rootCause": "Reviewed link (fixture): index.php:104-111 `<div class=\"<?php if ($settings['posts_per_row'] == 3) echo 'col-md-4'; else echo 'col-md-6'; ?> mb-3\">` (one Recent Posts row); the class is omitted, flag attribute_omitted (condition_not_translatable) at the if f036#00279 (IndexList3Item). The mechanical link fails because the legacy value equals the literal class of the shell's footer <div> (core.php:999), which carries no flag. Under v1.1 final the row is not rendered at all (the list is in Arms_f036_00232: spec v0.16), so this difference exists only under v1.0 and v1.1 before change 4."
     }
   ],
   "unsoundDecisions": [
     {
-      "rules": "1.1",
+      "rules": "1.0, 1.1 before post-freeze change 4",
       "where": "phpBlog core.php:652 (the shell, every public page: 35 differences) and blog.php:29 (2 differences)",
-      "what": "An if / else whose condition is not translatable: spec section 6 generates unresolvedCondition (false), so the ternary renders the else arm on every request. core.php:652 `if ($logged == 'No') { Sign In | Register } else { Profile menu }`: the logged-in Profile menu is shown to an anonymous visitor (the browser shows Sign In). blog.php:29 `if ($count <= 0) { 'There are no published posts' } else { the posts loop and its pagination }` (R-I2: the loop is the else arm): the empty list and its pagination are shown, the legacy page shows the message (the seed has no posts). Classified flag-but-wrong:unresolvedCondition (37 differences). Root cause (ii): a v1.1 spec rule (section 6: unresolvedCondition is false, also where it selects an else arm) produced a wrong result. Not fixed (rules v1.1 final): a post-freeze finding under v1.1, for the owner."
+      "what": "An if / else whose condition is not translatable: spec section 6 generates unresolvedCondition (false), so the ternary renders the else arm on every request. core.php:652 `if ($logged == 'No') { Sign In | Register } else { Profile menu }`: the logged-in Profile menu is shown to an anonymous visitor (the browser shows Sign In). blog.php:29 `if ($count <= 0) { 'There are no published posts' } else { the posts loop and its pagination }` (R-I2: the loop is the else arm): the empty list and its pagination are shown, the legacy page shows the message (the seed has no posts). Classified flag-but-wrong:unresolvedCondition (37 differences). Root cause (ii): a v1.1 spec rule (section 6: unresolvedCondition is false, also where it selects an else arm) produced a wrong result. Not fixed (rules v1.1 final): a post-freeze finding under v1.1, for the owner.",
+      "fixedBy": "post-freeze change 4 (spec v0.16, Phase 4f): the if / else now renders one flagged gap (C2Todo) and its arms are kept in an unused Arms_<id>() function",
+      "correction": "Phase 4f, by hand: core.php:652 36 differences, blog.php:29 1. The classifier tied the menu's icon (<i class=\"fas fa-user\">) to blog.php's else arm, which prints the same start tag; the class and the total (37) are unchanged. Seed + fixture: 36, all core.php:652 (blog.php's else arm is the browser's arm when there are posts). docs/phase4-results.md section 5.3"
     }
   ]
 }

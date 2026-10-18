@@ -86,8 +86,12 @@ def test_selected_on_an_option_is_not_generated_and_needs_no_condition(tmp_path)
 
 def test_both_arms_of_an_if_give_one_expression_per_attribute(tmp_path):
     php = "<a href=\"/x\" <?php if ($on) { echo 'class=\"on\"'; } else { echo 'class=\"off\" title=\"t\"'; } ?>>x</a>"
-    text = page_text(stages(tmp_path, php))
+    text = page_text(stages(tmp_path, php, rules="v1.0"))
     assert ') ? "on" : "off"}' in text and ') ? undefined : "t"}' in text
+    # rules v1.1 (spec v0.16, change 4): class takes two values under an untranslatable condition: omitted
+    (tmp_path / "v11").mkdir()
+    text = page_text(stages(tmp_path / "v11", php))
+    assert ') ? "on" : "off"}' not in text and ') ? undefined : "t"}' in text
 
 
 def test_a_conditional_attribute_that_stands_earlier_in_the_tag_has_no_effect(tmp_path):
@@ -99,8 +103,9 @@ def test_a_conditional_attribute_that_stands_earlier_in_the_tag_has_no_effect(tm
 
 
 def test_a_conditional_attribute_that_also_stands_later_in_the_tag_falls_back_to_it(tmp_path):
-    """R-I3b (v0.14): the conditional one wins when its condition holds; the later one otherwise."""
-    result = stages(tmp_path, "<li <?php if ($x) { echo 'class=\"b\"'; } ?> class=\"a\" id=\"i\">t</li>")
+    """R-I3b (v0.14): the conditional one wins when its condition holds; the later one otherwise. Rules v1.0: under
+    v1.1 (spec v0.16, change 4) an untranslatable condition chooses no value: tests/test_phase4f.py."""
+    result = stages(tmp_path, "<li <?php if ($x) { echo 'class=\"b\"'; } ?> class=\"a\" id=\"i\">t</li>", rules="v1.0")
     (todo,) = [t for t in result["stage5"]["c2todos"] if t["kind"] == "unresolvedCondition"]
     assert (f'<li className={{unresolvedCondition("{todo["nodeId"]}", "condition_not_translatable") ? "b" : "a"}} '
             'id="i">t</li>') in page_text(result)

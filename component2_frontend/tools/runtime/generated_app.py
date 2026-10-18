@@ -9,7 +9,8 @@ Usage, from component2_frontend/ (after tools/runtime/replay/generate.py <app>):
     venv/Scripts/python.exe tools/runtime/generated_app.py hms [--rules v1.0] [--folder hms-v1.0]
 (`--rules`: the boundary rules version, default the config's (v1.1); it is recorded in lists.json. `--no-data`: no
 substitute contract / map, built as output/test-app/c2-build/<app>-nodata-runtime: the same rules without the data
-wiring, the baseline classify.py --before takes to tell List rows from static elements.)
+wiring, the baseline classify.py --before takes to tell List rows from static elements. `--build <name>`: build
+into output/test-app/c2-build/<name>/ instead, so several builds can be served at once.)
 then start it:
     API_BASE_URL=http://127.0.0.1:18090 node output/test-app/node_modules/next/dist/bin/next start \\
         output/test-app/c2-build/hms-runtime -p 18100
@@ -61,7 +62,8 @@ def main(argv: list[str]) -> int:
     index = run_app(app_timelines(app, rules), pipeline, tsc=True, build=False, rules=rules, **data)
     crashes = [p["key"] for p in index["pages"] if p["crash"]]
     failing = [p["key"] for p in index["pages"] if p["tsc"] not in (0, None)]
-    ok, text = compile_check.next_build(f"{app}-{'nodata-' if not data else ''}runtime", pipeline / app / NEXT_APP)
+    build = argv[argv.index("--build") + 1] if "--build" in argv else f"{app}-{'nodata-' if not data else ''}runtime"
+    ok, text = compile_check.next_build(build, pipeline / app / NEXT_APP)
     found = lists(pipeline / app)
     summary = collections.Counter((f["result"], f["reason"]) for f in found)
     report = {"app": app, "rules": rules, "crashes": crashes, "tscFailing": failing, "nextBuild": ok, "lists": found,

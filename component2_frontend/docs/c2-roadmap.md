@@ -1,4 +1,4 @@
-# Component 2 — Roadmap to 100% (v2.4)
+# Component 2 — Roadmap to 100% (v2.5)
 
 | Item | Value |
 |---|---|
@@ -19,7 +19,7 @@ it has a fallback so C2 can still finish.
 | 2a | Echo-string parts, copy propagation, interpolated-SQL values, R-L3b, module fix | HMS one-echo rows generate as Lists/Items (no `no_rule` abstains for them); every generated file is a module; checker override removed | Phase 1b | ✅ done 13 Oct (HMS `no_rule` 4 → 0, unresolved reads 75 → 27; 779 tests) |
 | 2b | Functions and shell (R-F1, R-F2) | Function output becomes components at the call site; WackoPicko header/footer becomes root layout + shell component; `document_shell` and the `html_functions` route clash disappear for WackoPicko; browser-equivalent markup (spec §5b) leaves only foster-parenting nesting flags | Phase 2a | ✅ done 13 Oct (both apps one Next.js app, 0 tsc errors, `next build` ok; nesting 9 → 5; 826 tests) |
 | 3 | Rule saturation and **freeze** | phpBlog, then attendance, run through the harness; 2 consecutive apps add no new pattern (definition: boundary-rules §8) → rules doc header says **Frozen** | Phases 1–2 | ✅ **Frozen 15 Oct** (boundary-rules v1.0): phpBlog 4 new → 0 / 2; attendance none → 1 / 2; warehouse none → **2 / 2**. Step 5 committed = freeze commit (five-app totals at freeze in `docs/c2-apps-results.md`) |
-| 4 | Runtime rendering check (SO4, measured) | HMS runs in Docker (PHP + MySQL, its own `myhmsdb.sql`); the generated pages run with the same data; rendered DOM compared; every difference is explained by a flag. Unexplained difference = bug | Phase 2 | ✅ HMS closed 16 Oct (v1.0 **0.947** → v1.1 final **0.996**, 0 unexplained, 1 unsound decision found and fixed; `docs/phase4-results.md`). ⏳ 4e: second runtime app (phpBlog) |
+| 4 | Runtime rendering check (SO4, measured) | HMS runs in Docker (PHP + MySQL, its own `myhmsdb.sql`); the generated pages run with the same data; rendered DOM compared; every difference is explained by a flag. Unexplained difference = bug | Phase 2 | ✅ HMS closed 16 Oct (v1.0 **0.947** → v1.1 final **0.996**, 0 unexplained, 1 unsound decision found and fixed; `docs/phase4-results.md`). 4e done: phpBlog 0.520 (7 pages; settings / login conditions untranslatable), 0 unexplained, **1 unsound decision class found** (`else` arm chosen) → post-freeze change 4. ⏳ 4f: implement change 4, posts fixture, re-measure both apps |
 | 5 | Evaluation on the 5 locked apps | Owner's **gold standard committed before** the tool runs; metrics: boundary precision/recall, **unsound decisions (target 0)**, abstain/flag rate, compile rate, render match where runnable | Phase 3 freeze | ⬜ — **owner starts the gold standard now** (docs/gold-standard-guide.md), in parallel with Phase 4 |
 | 6 | Report chapter + appendices | C2 method, results (from `tools/results_table.py`), honest limits, Appendix E decision logs, Appendix F AI-use disclosure | Phases 1–5 | ⬜ |
 | 7 | Real integration | Member 01's timeline and C1's labels/contract replace the harness and substitutes for at least one HMS page; differences vs the harness explained | Member 01, C1 | 🟡 partly: real AST for 1 page arrived 12 Oct (used in 1b). Timeline/labels/contract do not exist yet |
@@ -70,3 +70,4 @@ means the swap later is a loader change only.
 | 16 Oct 2026 | v2.2 — Phase 4b done; post-freeze changes 1–2 (rules v1.1, spec v0.14) from discovery evidence; Phase 5 will report v1.0 and v1.1 |
 | 16 Oct 2026 | v2.3 — Phase 4c done; change 3 (spec v0.15) makes v1.1 final; Phase 5 mapping + scorer prepared |
 | 16 Oct 2026 | v2.4 — Phase 4d done (HMS 0.996); scorer tested; 4e adds phpBlog runtime while the gold standard is written |
+| 16 Oct 2026 | v2.5 — Phase 4e done; post-freeze change 4 (spec v0.16: untranslatable conditions never pick an arm) |

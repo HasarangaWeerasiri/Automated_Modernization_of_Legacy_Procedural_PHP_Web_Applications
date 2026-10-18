@@ -1,8 +1,8 @@
-# Component 2 — Stage 5 Generation Specification (v0.15)
+# Component 2 — Stage 5 Generation Specification (v0.16)
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. v0.5 adds what the Phase 1 whole-app run needed (§5a, §8, §8a). v0.6: browser-equivalent markup (§5b), per-part ids, route groups. v0.7: corrections after Phase 2b (§5 form state, §5b stray end tags and loop rows, §8a routes and calls). v0.8: phpBlog rules (§6a), implied end tags, start-tag fallback. v0.9: step-2 corrections (§6a). v0.10: `header_redirect` flag. v0.11: error-output-only files are not pages. v0.12: AJAX endpoints, whitespace-only includes; frozen together with the rules (v1.0). v0.13 (**post-freeze**, data wiring only, logged): function components may fetch. v0.14 (**post-freeze change 2**, browser equivalence, from HMS runtime evidence): `<head>` content and heading end tags follow the HTML5 parser. v0.15 (**post-freeze change 3**, same evidence class): a `<head>` start tag after body content, and `</form>`. Final before Phase 5. Phase 5 reports before / after. Evaluation apps stay locked until the gold standard is committed |
+| Status | Draft v0.4 — implemented on the rule-discovery mocks (`aead7db` v0.1, `ee21ff8` v0.2, v0.3 uncommitted). v0.4 corrects the abstained-code counting and narrows the last-resort fallback. v0.5 adds what the Phase 1 whole-app run needed (§5a, §8, §8a). v0.6: browser-equivalent markup (§5b), per-part ids, route groups. v0.7: corrections after Phase 2b (§5 form state, §5b stray end tags and loop rows, §8a routes and calls). v0.8: phpBlog rules (§6a), implied end tags, start-tag fallback. v0.9: step-2 corrections (§6a). v0.10: `header_redirect` flag. v0.11: error-output-only files are not pages. v0.12: AJAX endpoints, whitespace-only includes; frozen together with the rules (v1.0). v0.13 (**post-freeze**, data wiring only, logged): function components may fetch. v0.14 (**post-freeze change 2**, browser equivalence, from HMS runtime evidence): `<head>` content and heading end tags follow the HTML5 parser. v0.15 (**post-freeze change 3**, same evidence class): a `<head>` start tag after body content, and `</form>`. v0.16 (**post-freeze change 4**, from phpBlog runtime evidence): an untranslatable condition never selects an arm (§6). Final before Phase 5. Phase 5 reports before / after. Evaluation apps stay locked until the gold standard is committed |
 | Date | 10 October 2026 |
 | Owner | Jayawardhana R D L L (IT23213876) |
 | Input | Stage 2 tree, Stage 3 needs, Stage 4 report, contract, endpoint map, timeline |
@@ -172,6 +172,22 @@ Anything else (`$_SESSION[...]`, function calls, other variables, `mysqli_*`) �
 `unresolvedCondition("<nodeId>", "<reason>")` (returns `false`, defined in `lib/c2-todo.tsx`), status
 `review`, reason `condition_not_translatable` or `needs_auth_context`. No `condExpr` → reason
 `condition_unavailable`.
+
+**An untranslatable condition never selects an arm (v0.16, post-freeze change 4 — corrects a v0.1 design error).**
+`false` hides a `then`-only conditional (a flagged gap — fine), but for `if / else` it **chose the `else` arm on
+every request** — a guess (phpBlog `core.php` 652 showed the logged-in menu to anonymous visitors; `blog.php` 29
+showed an empty list instead of the empty-state message). Rule from v0.16: wherever an untranslatable condition
+would pick between outputs, **neither** is rendered:
+
+| Construct | v0.16 |
+|---|---|
+| `if / else`, `if / elseif / else`, R-I8 case 2 (`cond ? arm : rest`) | The whole conditional renders nothing: `<C2Todo reason="<condition reason>" />`; every arm is generated into an unused `Arms_<nodeId>()` function (like `Abstained_`), so the developer has the code |
+| R-I2 / R-I2b list guard with an Empty arm | Neither the List nor the Empty renders: one C2Todo; both kept in `Arms_<nodeId>()` |
+| R-I3 / R-I3b attribute with two values (`cond ? "a" : "b"`, incl. the "later attribute" case) | Attribute omitted, flag `attribute_omitted:<condition reason>` |
+| `then`-only conditional (`{cond && …}`) | Unchanged (renders nothing) |
+| A **translated** condition | Unchanged |
+
+The developer sees one flagged gap per conditional, never a silently chosen arm. Sound-or-abstain.
 
 **PHP vs JS comparison (corrected in v0.2):**
 

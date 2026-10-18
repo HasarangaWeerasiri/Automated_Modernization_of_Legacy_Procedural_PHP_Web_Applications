@@ -1,0 +1,8 @@
+# Phase 4f: the shipped seed plus the recorded data fixture (initdb/03-fixture.sql). Data only.
+# Use with the base file, on a fresh database:
+#   docker compose -f tools/runtime/phpblog/docker-compose.yml -f tools/runtime/phpblog/docker-compose.fixture.yml down -v
+#   docker compose -f tools/runtime/phpblog/docker-compose.yml -f tools/runtime/phpblog/docker-compose.fixture.yml up -d --build
+services:
+  db:
+    volumes:
+      - ./initdb/03-fixture.sql:/docker-entrypoint-initdb.d/03-fixture.sql:ro
