@@ -11,6 +11,11 @@ Every scenario is captured more than once from the same baseline. A value that
 differs between captures cannot be expected of any system, so it is listed as
 excluded instead of being compared.
 
+A column whose values occur nowhere in the database was computed by the page, as
+"Cancelled by Doctor" is computed from two status flags. A migrated API may well
+return the inputs instead and leave the wording to its frontend, so such a column is
+listed as excluded too: reproduced, it passes; not reproduced, it cannot be judged.
+
     python -m c4.capture [scenario_id ...]
 
 A scenario arrives already resolved against the endpoint map (see scenarios.py), so
@@ -181,6 +186,35 @@ def _volatile_labels(scenario_id: str, observations: list[Observation]) -> list[
     return [label for label in labels if label in volatile]
 
 
+def _computed_labels(
+    observed: Observation, baseline: dbstate.Snapshot, skip: list[str]
+) -> list[str]:
+    """Labels whose shown values occur nowhere in the database: computed by the page."""
+    from c4.compare import normalise  # here, not at the top: compare imports this module's users
+
+    tables = getattr(baseline, "tables", None)
+    if not tables:
+        return []  # without database facts nothing can be called computed
+    stored = {
+        normalise(value)
+        for table in tables.values() for row in table.rows for value in row.values()
+    }
+    for changes in observed.delta.values():
+        for row in (*changes["inserted"], *changes["deleted"]):
+            stored.update(normalise(value) for value in row.values())
+        for item in changes["updated"]:
+            for change in item["changes"].values():
+                stored.update((normalise(change["before"]), normalise(change["after"])))
+
+    labels = observed.records[0].keys() if observed.records else ()
+    computed = []
+    for label in labels:
+        shown = {normalise(record.get(label)) for record in observed.records} - {""}
+        if label not in skip and shown and not shown & stored:
+            computed.append(label)
+    return computed
+
+
 def outcome_of(status_code: int) -> str:
     """The class of result a status code stands for.
 
@@ -208,6 +242,7 @@ def capture(
     observations = [_observe(config, scenario, baselines) for _ in range(CAPTURE_RUNS)]
     volatile = _volatile_labels(scenario["scenario_id"], observations)
     observed = observations[0]
+    computed = _computed_labels(observed, baselines["legacy"], volatile)
     request = scenario["legacy_request"]
     return {
         "endpoint_id": scenario["endpoint_id"],
@@ -236,6 +271,9 @@ def capture(
         "excluded_fields": [
             {"scope": "response", "field": label, "reason": "observed_nondeterministic"}
             for label in volatile
+        ] + [
+            {"scope": "response", "field": label, "reason": "computed_on_page"}
+            for label in computed
         ],
         "capture_runs": CAPTURE_RUNS,
         "captured_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),

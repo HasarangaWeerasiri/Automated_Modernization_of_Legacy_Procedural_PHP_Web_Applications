@@ -1,0 +1,92 @@
+{
+  "endpoint_id": "GET /api/me/appointments",
+  "legacy_url": "/admin-panel.php",
+  "scenario_id": "patient_appointments_typical_01",
+  "scenario_type": "typical",
+  "input": {
+    "method": "GET",
+    "params": {},
+    "body": null
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [
+      {
+        "Doctor Name": "Ganesh",
+        "Consultancy Fees": "550",
+        "Appointment Date": "2020-02-14",
+        "Appointment Time": "10:00:00",
+        "Current Status": "Cancelled by Doctor",
+        "Action": "Cancelled"
+      },
+      {
+        "Doctor Name": "Dinesh",
+        "Consultancy Fees": "700",
+        "Appointment Date": "2020-02-28",
+        "Appointment Time": "10:00:00",
+        "Current Status": "Cancelled by You",
+        "Action": "Cancelled"
+      },
+      {
+        "Doctor Name": "Amit",
+        "Consultancy Fees": "1000",
+        "Appointment Date": "2020-02-19",
+        "Appointment Time": "03:00:00",
+        "Current Status": "Cancelled by You",
+        "Action": "Cancelled"
+      },
+      {
+        "Doctor Name": "Dinesh",
+        "Consultancy Fees": "700",
+        "Appointment Date": "2020-02-28",
+        "Appointment Time": "12:00:00",
+        "Current Status": "Active",
+        "Action": ""
+      },
+      {
+        "Doctor Name": "Ganesh",
+        "Consultancy Fees": "550",
+        "Appointment Date": "2020-02-26",
+        "Appointment Time": "15:00:00",
+        "Current Status": "Cancelled by You",
+        "Action": "Cancelled"
+      },
+      {
+        "Doctor Name": "Ganesh",
+        "Consultancy Fees": "550",
+        "Appointment Date": "0000-00-00",
+        "Appointment Time": "14:00:00",
+        "Current Status": "Cancelled by Doctor",
+        "Action": "Cancelled"
+      },
+      {
+        "Doctor Name": "Dinesh",
+        "Consultancy Fees": "700",
+        "Appointment Date": "2020-03-27",
+        "Appointment Time": "15:00:00",
+        "Current Status": "Active",
+        "Action": ""
+      }
+    ],
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:618f6c3494ef998537f46a38ec04979c93b592cda9a2e7d6eb7cf38989864f90",
+    "delta": {}
+  },
+  "excluded_fields": [
+    {
+      "scope": "response",
+      "field": "Current Status",
+      "reason": "computed_on_page"
+    },
+    {
+      "scope": "response",
+      "field": "Action",
+      "reason": "computed_on_page"
+    }
+  ],
+  "capture_runs": 2,
+  "captured_at": "2026-10-18T02:17:31+00:00"
+}

@@ -155,6 +155,13 @@ def _delta_lines(detail: dict[str, Any]) -> list[str]:
     return lines
 
 
+_EXCLUSION_REASONS = {
+    "computed_on_page": "computed by the legacy page from other data",
+    "observed_nondeterministic": "different in every capture",
+    "declared": "declared as excluded",
+}
+
+
 def _describe(finding: dict[str, Any]) -> str:
     kind = finding["kind"]
     if kind in ("delta_differs", "excluded_field_differs") and "detail" in finding:
@@ -171,7 +178,8 @@ def _describe(finding: dict[str, Any]) -> str:
     if kind == "conflicting_expectations":
         return f"{finding['detail']} (also: {', '.join(finding['with'])})"
     if kind == "excluded_field_differs" and "field" in finding:
-        return f"excluded field '{finding['field']}' differs"
+        why = _EXCLUSION_REASONS.get(finding.get("reason"), "excluded")
+        return f"'{finding['field']}' is not reproduced, and it is {why}, so it cannot be judged"
     if kind == "unreadable":
         return str(finding["detail"])
     if kind == "nothing_to_compare":
@@ -270,7 +278,7 @@ def differential_report(report: dict[str, Any], injection: dict[str, Any]) -> st
     if not inconclusive:
         lines += ["None.", ""]
     for endpoint, scenario in inconclusive:
-        reasons = "; ".join(_describe(abstention) for abstention in scenario["abstentions"])
+        reasons = "; ".join(dict.fromkeys(_describe(abstention) for abstention in scenario["abstentions"]))
         lines.append(f"- **{scenario['scenario_id']}** (`{endpoint}`): {reasons}")
     if inconclusive:
         lines.append("")

@@ -1,6 +1,219 @@
 {
   "benchmark": "hms",
   "endpoints": {
+    "GET /api/me/appointments": {
+      "verdict": "INCONCLUSIVE",
+      "scenarios": [
+        {
+          "scenario_id": "patient_appointments_typical_01",
+          "scenario_type": "typical",
+          "verdict": "INCONCLUSIVE",
+          "request": {
+            "method": "GET",
+            "path": "/api/me/appointments",
+            "params": {},
+            "body": null
+          },
+          "legacy_request": "GET /admin-panel.php",
+          "oracle_record": "oracles/hms/patient_appointments_typical_01.json",
+          "differences": [],
+          "abstentions": [
+            {
+              "where": "response",
+              "kind": "excluded_field_differs",
+              "field": "Current Status",
+              "reason": "computed_on_page",
+              "legacy_value": "Cancelled by Doctor",
+              "migrated_record": {
+                "ID": 1,
+                "doctor": "Ganesh",
+                "docFees": 550,
+                "appdate": "2020-02-14",
+                "apptime": "10:00:00",
+                "userStatus": 1,
+                "doctorStatus": 0
+              }
+            },
+            {
+              "where": "response",
+              "kind": "excluded_field_differs",
+              "field": "Action",
+              "reason": "computed_on_page",
+              "legacy_value": "Cancelled",
+              "migrated_record": {
+                "ID": 1,
+                "doctor": "Ganesh",
+                "docFees": 550,
+                "appdate": "2020-02-14",
+                "apptime": "10:00:00",
+                "userStatus": 1,
+                "doctorStatus": 0
+              }
+            },
+            {
+              "where": "response",
+              "kind": "excluded_field_differs",
+              "field": "Current Status",
+              "reason": "computed_on_page",
+              "legacy_value": "Cancelled by You",
+              "migrated_record": {
+                "ID": 2,
+                "doctor": "Dinesh",
+                "docFees": 700,
+                "appdate": "2020-02-28",
+                "apptime": "10:00:00",
+                "userStatus": 0,
+                "doctorStatus": 1
+              }
+            },
+            {
+              "where": "response",
+              "kind": "excluded_field_differs",
+              "field": "Action",
+              "reason": "computed_on_page",
+              "legacy_value": "Cancelled",
+              "migrated_record": {
+                "ID": 2,
+                "doctor": "Dinesh",
+                "docFees": 700,
+                "appdate": "2020-02-28",
+                "apptime": "10:00:00",
+                "userStatus": 0,
+                "doctorStatus": 1
+              }
+            },
+            {
+              "where": "response",
+              "kind": "excluded_field_differs",
+              "field": "Current Status",
+              "reason": "computed_on_page",
+              "legacy_value": "Cancelled by You",
+              "migrated_record": {
+                "ID": 3,
+                "doctor": "Amit",
+                "docFees": 1000,
+                "appdate": "2020-02-19",
+                "apptime": "03:00:00",
+                "userStatus": 0,
+                "doctorStatus": 1
+              }
+            },
+            {
+              "where": "response",
+              "kind": "excluded_field_differs",
+              "field": "Action",
+              "reason": "computed_on_page",
+              "legacy_value": "Cancelled",
+              "migrated_record": {
+                "ID": 3,
+                "doctor": "Amit",
+                "docFees": 1000,
+                "appdate": "2020-02-19",
+                "apptime": "03:00:00",
+                "userStatus": 0,
+                "doctorStatus": 1
+              }
+            },
+            {
+              "where": "response",
+              "kind": "excluded_field_differs",
+              "field": "Current Status",
+              "reason": "computed_on_page",
+              "legacy_value": "Active",
+              "migrated_record": {
+                "ID": 5,
+                "doctor": "Dinesh",
+                "docFees": 700,
+                "appdate": "2020-02-28",
+                "apptime": "12:00:00",
+                "userStatus": 1,
+                "doctorStatus": 1
+              }
+            },
+            {
+              "where": "response",
+              "kind": "excluded_field_differs",
+              "field": "Current Status",
+              "reason": "computed_on_page",
+              "legacy_value": "Cancelled by You",
+              "migrated_record": {
+                "ID": 6,
+                "doctor": "Ganesh",
+                "docFees": 550,
+                "appdate": "2020-02-26",
+                "apptime": "15:00:00",
+                "userStatus": 0,
+                "doctorStatus": 1
+              }
+            },
+            {
+              "where": "response",
+              "kind": "excluded_field_differs",
+              "field": "Action",
+              "reason": "computed_on_page",
+              "legacy_value": "Cancelled",
+              "migrated_record": {
+                "ID": 6,
+                "doctor": "Ganesh",
+                "docFees": 550,
+                "appdate": "2020-02-26",
+                "apptime": "15:00:00",
+                "userStatus": 0,
+                "doctorStatus": 1
+              }
+            },
+            {
+              "where": "response",
+              "kind": "excluded_field_differs",
+              "field": "Current Status",
+              "reason": "computed_on_page",
+              "legacy_value": "Cancelled by Doctor",
+              "migrated_record": {
+                "ID": 10,
+                "doctor": "Ganesh",
+                "docFees": 550,
+                "appdate": "0000-00-00",
+                "apptime": "14:00:00",
+                "userStatus": 1,
+                "doctorStatus": 0
+              }
+            },
+            {
+              "where": "response",
+              "kind": "excluded_field_differs",
+              "field": "Action",
+              "reason": "computed_on_page",
+              "legacy_value": "Cancelled",
+              "migrated_record": {
+                "ID": 10,
+                "doctor": "Ganesh",
+                "docFees": 550,
+                "appdate": "0000-00-00",
+                "apptime": "14:00:00",
+                "userStatus": 1,
+                "doctorStatus": 0
+              }
+            },
+            {
+              "where": "response",
+              "kind": "excluded_field_differs",
+              "field": "Current Status",
+              "reason": "computed_on_page",
+              "legacy_value": "Active",
+              "migrated_record": {
+                "ID": 11,
+                "doctor": "Dinesh",
+                "docFees": 700,
+                "appdate": "2020-03-27",
+                "apptime": "15:00:00",
+                "userStatus": 1,
+                "doctorStatus": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
     "GET /api/me/prescriptions": {
       "verdict": "PASS",
       "scenarios": [

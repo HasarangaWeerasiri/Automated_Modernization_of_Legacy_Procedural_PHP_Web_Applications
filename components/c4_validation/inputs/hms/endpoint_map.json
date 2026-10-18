@@ -108,6 +108,26 @@
           "parameters": []
         }
       ]
+    },
+    {
+      "endpoint_id": "GET /api/me/appointments",
+      "method": "GET",
+      "path": "/api/me/appointments",
+      "records_at": "appointments",
+      "sources": [
+        {
+          "source_id": "patient_appointments",
+          "login": "patient",
+          "legacy": {
+            "method": "GET",
+            "path": "/admin-panel.php",
+            "records": {
+              "table": 0
+            }
+          },
+          "parameters": []
+        }
+      ]
     }
   ]
 }

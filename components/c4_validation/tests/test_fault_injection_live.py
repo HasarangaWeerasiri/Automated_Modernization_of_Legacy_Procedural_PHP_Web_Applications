@@ -79,9 +79,12 @@ def test_the_correct_stub_is_judged_equivalent(stub, at_baseline, baselines):
     assert all(s["verdict"] != FAIL for s in scenarios)
     # The only abstentions allowed are those the endpoint map forces: two legacy pages
     # that expect different results for the same request.
+    # The other is a column the legacy page computes, which a correct API need not repeat.
     for s in scenarios:
         if s["verdict"] == INCONCLUSIVE:
-            assert {a["kind"] for a in s["abstentions"]} == {"conflicting_expectations"}, s["scenario_id"]
+            for a in s["abstentions"]:
+                allowed = a["kind"] == "conflicting_expectations" or a.get("reason") == "computed_on_page"
+                assert allowed, (s["scenario_id"], a)
 
 
 def test_three_consecutive_runs_give_identical_reports(stub, at_baseline, baselines):
@@ -297,3 +300,24 @@ def test_showing_other_users_data_fails(stub, judge):
 
     assert result.verdict == FAIL
     assert {d["kind"] for d in result.differences} == {"unexpected_record"}
+
+
+# ----------------------------------------------------- columns computed by the page
+
+
+def test_status_wording_built_by_the_page_is_inconclusive_not_failed(stub, judge):
+    result = judge("patient_appointments_typical_01")
+
+    assert result.verdict == INCONCLUSIVE
+    assert {(a["field"], a["reason"]) for a in result.abstentions} == {
+        ("Current Status", "computed_on_page"), ("Action", "computed_on_page"),
+    }
+
+
+def test_a_wrong_date_beside_computed_columns_still_fails(stub, judge):
+    stub("alters_appointment_date")
+
+    result = judge("patient_appointments_typical_01")
+
+    assert result.verdict == FAIL
+    assert all(list(d["values_not_found"]) == ["Appointment Date"] for d in result.differences)

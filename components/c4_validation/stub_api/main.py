@@ -63,6 +63,7 @@ OTHER_FAULTS = (
     "concatenates_input",
     # The prescriptions endpoint ignores whose token it was given.
     "shows_everyones_prescriptions",
+    "alters_appointment_date",
 )
 
 active_fault: str | None = None
@@ -199,3 +200,23 @@ def my_prescriptions(authorization: str | None = Header(None)) -> dict[str, Any]
         else:
             rows = connection.execute(text(query + " WHERE pid = :pid"), {"pid": pid}).mappings().all()
     return {"prescriptions": [dict(row) for row in rows]}
+
+
+@app.get("/api/me/appointments")
+def my_appointments(authorization: str | None = Header(None)) -> dict[str, Any]:
+    """The logged-in patient's appointment history, as the patient dashboard lists it.
+
+    Like a generated backend, it returns the two status flags, not the wording the
+    legacy page builds from them ("Cancelled by Doctor" and so on).
+    """
+    pid = _patient(authorization)
+    query = (
+        "SELECT ID, doctor, docFees, appdate, CAST(apptime AS CHAR) AS apptime, userStatus, doctorStatus "
+        "FROM appointmenttb WHERE pid = :pid"
+    )
+    with engine.connect() as connection:
+        rows = connection.execute(text(query), {"pid": pid}).mappings().all()
+    appointments = [dict(row) for row in rows]
+    if active_fault == "alters_appointment_date":
+        appointments = [{**row, "appdate": "1999-01-01"} for row in appointments]
+    return {"appointments": appointments}

@@ -144,7 +144,7 @@ def _compare_response(record: dict[str, Any], replayed: Replay) -> tuple[list, l
         replayed = Replay(replayed.status_code, replayed.outcome, (), None, replayed.delta)
 
     excluded = {
-        entry["field"] for entry in record["excluded_fields"] if entry["scope"] == "response"
+        entry["field"]: entry["reason"] for entry in record["excluded_fields"] if entry["scope"] == "response"
     }
     legacy_records = legacy["records"]
     migrated_records = list(replayed.records)
@@ -169,6 +169,7 @@ def _compare_response(record: dict[str, Any], replayed: Replay) -> tuple[list, l
                 if label in excluded and normalise(item[label]) and normalise(item[label]) not in spare:
                     abstentions.append({
                         "where": "response", "kind": "excluded_field_differs", "field": label,
+                        "reason": excluded[label],
                         "legacy_value": item[label],
                         "migrated_record": migrated_records[pairs[index]],
                     })

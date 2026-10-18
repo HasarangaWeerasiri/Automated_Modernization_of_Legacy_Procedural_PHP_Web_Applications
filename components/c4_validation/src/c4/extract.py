@@ -33,10 +33,11 @@ _ESCAPES = {"n": "\n", "t": "\t"}
 
 
 def _text(cell: Tag) -> str:
-    # A value is what a reader sees. Code and styling inside a cell are never shown,
-    # and line breaks and runs of whitespace, including non-breaking spaces, are
+    # A value is what a reader sees, as data. Code and styling inside a cell are never
+    # shown, and the label of a button or a list of choices is a control for the user,
+    # not data. Line breaks and runs of whitespace, including non-breaking spaces, are
     # layout and collapse to single spaces.
-    for unseen in cell.find_all(["script", "style"]):
+    for unseen in cell.find_all(["script", "style", "button", "select", "textarea"]):
         unseen.extract()
     for line_break in cell.find_all("br"):
         line_break.replace_with("\n")
