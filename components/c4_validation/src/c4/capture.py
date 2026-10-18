@@ -9,7 +9,11 @@ observed to do. That is what makes the oracle derived.
 
 Every scenario is captured more than once from the same baseline. A value that
 differs between captures cannot be expected of any system, so it is listed as
-excluded instead of being compared.
+excluded instead of being compared: a value the page shows, or a database column
+the scenario writes, such as the current time stored with a new row. The captures
+are sent at least CAPTURE_GAP seconds apart, so a value taken from a clock that
+counts in seconds cannot come out the same twice by chance. A value that changes
+more slowly, such as today's date, is not caught this way.
 
 A column whose values occur nowhere in the database was computed by the page, as
 "Cancelled by Doctor" is computed from two status flags. A migrated API may well
@@ -42,6 +46,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -54,6 +59,9 @@ from c4.config import Config, ConfigError, load_config
 from c4.extract import extract_messages, extract_tables
 
 CAPTURE_RUNS = 2
+# Seconds between the requests of two captures: more than one tick of a clock that
+# counts in seconds, with room for a request that takes longer to arrive than the other.
+CAPTURE_GAP = 2.0
 
 
 class CaptureError(RuntimeError):
@@ -70,10 +78,13 @@ class Observation:
     messages: tuple[str, ...] = ()
     # Whether the page showed the endpoint's records, even an empty list of them.
     shown: bool = True
+    # When the request was sent, on a clock that only moves forward.
+    sent_at: float = 0.0
 
 
 def _observe(
-    config: Config, scenario: dict[str, Any], baselines: dict[str, dbstate.Snapshot]
+    config: Config, scenario: dict[str, Any], baselines: dict[str, dbstate.Snapshot],
+    not_before: float = 0.0,
 ) -> Observation:
     # Both databases are brought to the baseline before every scenario, although
     # only the legacy system is driven here.
@@ -89,6 +100,8 @@ def _observe(
             # Logging in may itself write, a last-login time for instance. The
             # scenario's change is measured from after it.
             before = dbstate.snapshot(config.legacy)
+        time.sleep(max(0.0, not_before - time.monotonic()))
+        sent_at = time.monotonic()
         response = session.request(
             request["method"],
             config.legacy.base_url + request["path"],
@@ -138,6 +151,7 @@ def _observe(
         delta=dbstate.delta(before, after),
         messages=messages,
         shown=shown,
+        sent_at=sent_at,
     )
 
 
@@ -160,18 +174,50 @@ def _log_in(config: Config, session: requests.Session, scenario_id: str, name: s
         )
 
 
-def _volatile_labels(scenario_id: str, observations: list[Observation]) -> list[str]:
-    """Labels whose value changed between captures of the same scenario."""
+def _differing_columns(first: dict[str, Any], other: dict[str, Any]) -> set[str] | None:
+    """The columns, "table.column", whose values differ between two deltas of one shape.
+
+    Two deltas have one shape when they change the same tables, insert, delete and
+    update the same number of rows, and update the same rows and columns. None when
+    they do not: then more than single values differ.
+    """
+    if first.keys() != other.keys():
+        return None
+    columns: set[str] = set()
+    for table, changes in first.items():
+        others = other[table]
+        for kind in ("inserted", "deleted"):
+            if len(changes[kind]) != len(others[kind]):
+                return None
+            for a, b in zip(changes[kind], others[kind]):
+                if a.keys() != b.keys():
+                    return None
+                columns.update(f"{table}.{column}" for column in a if a[column] != b[column])
+        if len(changes["updated"]) != len(others["updated"]):
+            return None
+        for a, b in zip(changes["updated"], others["updated"]):
+            if a["key"] != b["key"] or a["changes"].keys() != b["changes"].keys():
+                return None
+            columns.update(
+                f"{table}.{column}" for column, change in a["changes"].items() if change != b["changes"][column]
+            )
+    return columns
+
+
+def _volatile(scenario_id: str, observations: list[Observation]) -> tuple[list[str], list[str]]:
+    """Labels and database columns whose value changed between captures of the same scenario."""
     first, *others = observations
-    volatile: set[str] = set()
+    labels: set[str] = set()
+    columns: set[str] = set()
     for other in others:
         same_shape = len(other.records) == len(first.records) and all(
             a.keys() == b.keys() for a, b in zip(first.records, other.records)
         )
+        changed = _differing_columns(first.delta, other.delta)
         if (
             other.status_code != first.status_code
             or not same_shape
-            or other.delta != first.delta
+            or changed is None
             or other.messages != first.messages
             or other.shown != first.shown
         ):
@@ -180,10 +226,11 @@ def _volatile_labels(scenario_id: str, observations: list[Observation]) -> list[
                 f"{scenario_id}: the legacy system did not behave the same way in "
                 f"{len(observations)} captures from the same baseline."
             )
+        columns |= changed
         for a, b in zip(first.records, other.records):
-            volatile.update(label for label in a if a[label] != b[label])
-    labels = first.records[0].keys() if first.records else ()
-    return [label for label in labels if label in volatile]
+            labels.update(label for label in a if a[label] != b[label])
+    order = first.records[0].keys() if first.records else ()
+    return [label for label in order if label in labels], sorted(columns)
 
 
 def _computed_labels(
@@ -239,8 +286,11 @@ def capture(
     config: Config, scenario: dict[str, Any], baselines: dict[str, dbstate.Snapshot]
 ) -> dict[str, Any]:
     """Observe one scenario on the legacy system and return its oracle record."""
-    observations = [_observe(config, scenario, baselines) for _ in range(CAPTURE_RUNS)]
-    volatile = _volatile_labels(scenario["scenario_id"], observations)
+    observations: list[Observation] = []
+    for _ in range(CAPTURE_RUNS):
+        not_before = observations[-1].sent_at + CAPTURE_GAP if observations else 0.0
+        observations.append(_observe(config, scenario, baselines, not_before=not_before))
+    volatile, volatile_columns = _volatile(scenario["scenario_id"], observations)
     observed = observations[0]
     computed = _computed_labels(observed, baselines["legacy"], volatile)
     request = scenario["legacy_request"]
@@ -274,6 +324,9 @@ def capture(
         ] + [
             {"scope": "response", "field": label, "reason": "computed_on_page"}
             for label in computed
+        ] + [
+            {"scope": "database", "field": column, "reason": "observed_nondeterministic"}
+            for column in volatile_columns
         ],
         "capture_runs": CAPTURE_RUNS,
         "captured_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),

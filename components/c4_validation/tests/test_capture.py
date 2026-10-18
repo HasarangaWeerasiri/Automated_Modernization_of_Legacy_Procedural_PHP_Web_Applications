@@ -41,7 +41,7 @@ def observed(*records, status=200, delta=None):
 
 def replay_observations(monkeypatch, *observations):
     runs = iter(observations)
-    monkeypatch.setattr(capture_module, "_observe", lambda config, scenario, baselines: next(runs))
+    monkeypatch.setattr(capture_module, "_observe", lambda config, scenario, baselines, not_before=0.0: next(runs))
 
 
 # ------------------------------------------------------------------ oracle record
@@ -146,13 +146,77 @@ def test_a_different_pop_up_message_is_not_a_stable_observation(config, monkeypa
         capture(config, SCENARIO, BASELINES)
 
 
-def test_a_different_database_delta_is_not_a_stable_observation(config, monkeypatch):
-    first = {"contact": {"inserted": [{"name": "Anu"}], "updated": [], "deleted": []}}
-    second = {"contact": {"inserted": [{"name": "Ben"}], "updated": [], "deleted": []}}
-    replay_observations(monkeypatch, observed(delta=first), observed(delta=second))
+def guestbook(*rows, updated=()):
+    return {"guestbook": {"inserted": list(rows), "updated": list(updated), "deleted": []}}
+
+
+def test_a_database_column_that_changes_between_captures_is_excluded_not_expected(config, monkeypatch):
+    # The current time stored with a new row: the rest of the row is still expected.
+    replay_observations(
+        monkeypatch,
+        observed(delta=guestbook({"id": 20, "name": "Anu", "created_on": "2026-10-18 04:42:15"})),
+        observed(delta=guestbook({"id": 20, "name": "Anu", "created_on": "2026-10-18 04:42:17"})),
+    )
+
+    record = capture(config, SCENARIO, BASELINES)
+
+    assert record["excluded_fields"] == [
+        {"scope": "database", "field": "guestbook.created_on", "reason": "observed_nondeterministic"}
+    ]
+    assert record["db_state"]["delta"]["guestbook"]["inserted"][0]["name"] == "Anu"
+
+
+def test_an_updated_column_that_changes_between_captures_is_excluded(config, monkeypatch):
+    def seen(at):
+        return guestbook(updated=[{"key": {"id": 1}, "changes": {"last_login_on": {"before": "2009-02-18", "after": at}}}])
+
+    replay_observations(monkeypatch, observed(delta=seen("04:42:15")), observed(delta=seen("04:42:17")))
+
+    fields = [entry["field"] for entry in capture(config, SCENARIO, BASELINES)["excluded_fields"]]
+
+    assert fields == ["guestbook.last_login_on"]
+
+
+@pytest.mark.parametrize(
+    "second",
+    [
+        guestbook({"id": 20, "name": "Anu"}, {"id": 21, "name": "Anu"}),  # one row more
+        {"contact": {"inserted": [{"id": 20, "name": "Anu"}], "updated": [], "deleted": []}},  # another table
+        guestbook(),  # nothing written
+        guestbook(updated=[{"key": {"id": 1}, "changes": {}}]),  # a row updated as well
+    ],
+)
+def test_a_database_change_of_a_different_shape_is_not_a_stable_observation(config, monkeypatch, second):
+    replay_observations(monkeypatch, observed(delta=guestbook({"id": 20, "name": "Anu"})), observed(delta=second))
 
     with pytest.raises(CaptureError, match="did not behave the same way"):
         capture(config, SCENARIO, BASELINES)
+
+
+def test_the_captures_are_sent_at_least_the_gap_apart(config, monkeypatch):
+    asked = []
+
+    def observe(config, scenario, baselines, not_before=0.0):
+        asked.append(not_before)
+        return Observation(200, (), {}, sent_at=100.0 + len(asked) * 5)
+
+    monkeypatch.setattr(capture_module, "_observe", observe)
+
+    capture(config, SCENARIO, BASELINES)
+
+    assert asked == [0.0, 105.0 + capture_module.CAPTURE_GAP]
+
+
+def test_a_capture_waits_until_it_may_be_sent(config, page, monkeypatch):
+    page(ONE_TABLE)
+    waited = []
+    monkeypatch.setattr(capture_module.time, "monotonic", lambda: 10.0)
+    monkeypatch.setattr(capture_module.time, "sleep", waited.append)
+
+    observation = capture_module._observe(config, SCENARIO, BASELINES, not_before=11.5)
+
+    assert waited == [1.5]
+    assert observation.sent_at == 10.0
 
 
 # ---------------------------------------------------------------- driving a page
@@ -179,6 +243,7 @@ def page(monkeypatch):
         monkeypatch.setattr(capture_module.dbstate, "ensure_baseline", lambda system, baseline: baseline)
         monkeypatch.setattr(capture_module.dbstate, "snapshot", lambda system: BASELINE)
         monkeypatch.setattr(capture_module.dbstate, "delta", lambda before, after: {})
+        monkeypatch.setattr(capture_module.time, "sleep", lambda seconds: None)  # no real wait between captures
         return session
     return serve
 

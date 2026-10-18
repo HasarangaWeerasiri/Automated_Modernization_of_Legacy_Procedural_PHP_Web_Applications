@@ -77,7 +77,7 @@ def config(tmp_path: Path):
 
 def observe(monkeypatch, *rows, delta=None):
     seen = Observation(200, tuple(rows), delta or {})
-    monkeypatch.setattr(capture_module, "_observe", lambda config, scenario, baselines: seen)
+    monkeypatch.setattr(capture_module, "_observe", lambda config, scenario, baselines, not_before=0.0: seen)
 
 
 def excluded(record):
