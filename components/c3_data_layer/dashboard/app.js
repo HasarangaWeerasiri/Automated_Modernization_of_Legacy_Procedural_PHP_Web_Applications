@@ -103,7 +103,7 @@ const Evidence = (() => {
       return h("div", {},
         h("h4", { text: "Live sites not converted automatically (counted)" }),
         review.sites.length ? table(["Query ID", "Ground-truth ID", "PHP site", "Stage", "Reason code"],
-          review.sites.map((s) => [s.query_id, s.gt_id || "—", h("code", { text: s.site }), s.stage, s.reason_code || "—"]))
+          review.sites.map((s) => [s.query_id, s.gt_id || "-", h("code", { text: s.site }), s.stage, s.reason_code || "-"]))
           : h("p", { class: "muted", text: "None." }),
         h("h4", { text: "Ambiguous ground-truth sites (included in both counts)" }),
         review.ambiguous.length ? table(["Ground-truth ID", "PHP site", "Converted"],
@@ -111,7 +111,7 @@ const Evidence = (() => {
           : h("p", { class: "muted", text: "None." }),
         h("h4", { text: "Non-live sites (excluded)" }),
         review.excluded_non_live.length ? table(["Query ID", "PHP site", "Ground-truth label"],
-          review.excluded_non_live.map((e) => [e.query_id, h("code", { text: e.site }), e.gt_label || "—"]))
+          review.excluded_non_live.map((e) => [e.query_id, h("code", { text: e.site }), e.gt_label || "-"]))
           : h("p", { class: "muted", text: "None." }),
         h("p", { class: "muted", text: `${DATA.manual_review.formula} ${DATA.manual_review.limits}` }));
     }
@@ -122,7 +122,7 @@ const Evidence = (() => {
       if (!rows.length) return h("p", { class: "muted", text: "No related sites for this metric at this stage." });
       return h("div", {}, h("h4", { text: "Related sites (from the evaluation file)" }), table(
         ["Ground-truth ID", "Query ID", "PHP site", "Outcome", "C3 status", "Reason code"],
-        rows.map((s) => [s.gt_id, s.query_id || "—", h("code", { text: s.site }), s.outcome, s.c3_status || "—", s.reason_code || "—"]),
+        rows.map((s) => [s.gt_id, s.query_id || "-", h("code", { text: s.site }), s.outcome, s.c3_status || "-", s.reason_code || "-"]),
       ));
     }
     if (m.stage === "current-code" && DATA.records[m.app]) {
@@ -130,7 +130,7 @@ const Evidence = (() => {
       if (!rows.length) return h("p", { class: "muted", text: "No unresolved sites for this application in the current-code run." });
       return h("div", {}, h("h4", { text: "Unresolved sites (current-code run)" }), table(
         ["Query ID", "Ground-truth ID", "PHP site", "Stage", "Reason"],
-        rows.map((r) => [r.query_id, r.gt_id || "—", h("code", { text: `${r.file}:${r.line}` }), r.unresolved_stage,
+        rows.map((r) => [r.query_id, r.gt_id || "-", h("code", { text: `${r.file}:${r.line}` }), r.unresolved_stage,
           r.unresolved_reason ? `${r.unresolved_reason_code}: ${r.unresolved_reason}` : r.unresolved_reason_code]),
       ));
     }
@@ -146,9 +146,9 @@ const Evidence = (() => {
         ["Evaluation stage", stageBadge(m)],
         ["Stage meaning", DATA.stage_definitions[m.stage] || null],
         ["Value", formatValue(m)],
-        ["Numerator / denominator", ratio(m) || "—"],
+        ["Numerator / denominator", ratio(m) || "-"],
         ["Status", statusBadge(m.status)],
-        ["Evidence file", source.file ? h("code", { text: source.file }) : "—"],
+        ["Evidence file", source.file ? h("code", { text: source.file }) : "-"],
         ["Fields", fields],
         ["Derivation", source.derivation || null],
         ["Note", m.note || null],
@@ -159,12 +159,12 @@ const Evidence = (() => {
   // ---------- small builders ----------
   const isNumeric = (c) => typeof c === "number" || (typeof c === "string" && NUMERIC_CELL.test(c.trim()));
   function table(headers, rows, onRow) {
-    const numericColumn = headers.map((_, i) => rows.some((r) => isNumeric(r[i])) && rows.every((r) => isNumeric(r[i]) || r[i] === "—"));
+    const numericColumn = headers.map((_, i) => rows.some((r) => isNumeric(r[i])) && rows.every((r) => isNumeric(r[i]) || r[i] === "-"));
     return h("div", { class: "table-wrap" }, h("table", {},
       h("thead", {}, h("tr", {}, headers.map((x, i) => h("th", { class: numericColumn[i] ? "num" : null, scope: "col", text: x })))),
       h("tbody", {}, rows.map((cells, i) => h("tr", onRow ? { tabindex: "0", onclick: () => onRow(i),
         onkeydown: (e) => { if (e.key === "Enter") onRow(i); } } : {},
-        cells.map((c, j) => h("td", { class: numericColumn[j] || isNumeric(c) ? "num" : null }, c ?? "—"))))),
+        cells.map((c, j) => h("td", { class: numericColumn[j] || isNumeric(c) ? "num" : null }, c ?? "-"))))),
     ));
   }
 
@@ -260,7 +260,7 @@ const Evidence = (() => {
   function showSites(limitation) {
     openDrawer(`${limitation.fr}: ${limitation.title}`, h("p", { text: limitation.text }),
       table(["Join form", "Application", "Query ID", "Ground-truth ID", "PHP site", "Ground-truth label"],
-        limitation.sites.map((s) => [s.join_kind, appLabel(s.app), s.query_id, s.gt_id || "—", h("code", { text: s.site }), s.gt_label || "—"])));
+        limitation.sites.map((s) => [s.join_kind, appLabel(s.app), s.query_id, s.gt_id || "-", h("code", { text: s.site }), s.gt_label || "-"])));
   }
 
   function frCard(item) {
@@ -362,11 +362,11 @@ const Evidence = (() => {
         !q || `${r.file}:${r.line} ${r.query_id} ${r.gt_id || ""}`.toLowerCase().includes(q));
       fill(holder, rows.length ? table(
         ["Query ID", "Ground-truth ID", "PHP file:line", "Operation", "Recovery", "Conversion", "Unresolved reason", "Ground-truth label"],
-        rows.map((r) => [r.query_id, r.gt_id || "—", h("code", { text: `${r.file}:${r.line}` }), r.operation || "—",
+        rows.map((r) => [r.query_id, r.gt_id || "-", h("code", { text: `${r.file}:${r.line}` }), r.operation || "-",
           r.recovery_status + (r.via_wrapper ? " (wrapper call)" : ""),
           r.conversion_status === "CONVERTED" ? `CONVERTED (${r.conversion_rule === "query_specific_template" ? "query-specific template" : "general rule"})` : "not converted",
-          r.unresolved_stage ? `${r.unresolved_stage}: ${r.unresolved_reason_code}${r.unresolved_reason ? ` — ${r.unresolved_reason}` : ""}${r.join_kind ? ` (${r.join_kind})` : ""}` : "—",
-          r.gt_label || "—"])) : h("p", { class: "empty", text: "No sites match this filter." }));
+          r.unresolved_stage ? `${r.unresolved_stage}: ${r.unresolved_reason_code}${r.unresolved_reason ? ` - ${r.unresolved_reason}` : ""}${r.join_kind ? ` (${r.join_kind})` : ""}` : "-",
+          r.gt_label || "-"])) : h("p", { class: "empty", text: "No sites match this filter." }));
     }
     renderSqlTable();
     fill(root,
@@ -476,7 +476,7 @@ const Evidence = (() => {
       card("Column-use accuracy", "Per SQL operation, against the ground truth. Select a cell for its source.",
         table(["Application", "Stage", ...fields], [...columnRows.values()].map((row) => [appLabel(row.app), stageBadge(row.stage),
           ...fields.map((f) => { const m = row.cells[f]; return m ? h("button", { type: "button", class: "button",
-            onclick: () => showMeasurement(m), text: `${formatValue(m)} ${ratio(m)}` }) : "—"; })]))),
+            onclick: () => showMeasurement(m), text: `${formatValue(m)} ${ratio(m)}` }) : "-"; })]))),
       h("div", { class: "grid two" },
         card("Regression tests (non-MySQL)", tests.summary_line, table(["Result", "Count"],
           measurements((m) => m.category === "tests").map((m) => [m.label, h("button", { type: "button", class: "button",
@@ -486,7 +486,7 @@ const Evidence = (() => {
       card("Known limitations (FR2, FR4, FR6)", null, DATA.limitations.map((l) => h("div", { style: "margin-bottom:var(--space-3)" },
         h("strong", { text: `${l.fr}: ${l.title}. ` }), l.text, " ", h("span", { class: "muted" }, "Evidence: ", h("code", { text: l.evidence })))),
       table(["Join form", "Application", "Query ID", "Ground-truth ID", "PHP site", "Ground-truth label"],
-        fr6.sites.map((s) => [s.join_kind, appLabel(s.app), s.query_id, s.gt_id || "—", h("code", { text: s.site }), s.gt_label || "—"]))),
+        fr6.sites.map((s) => [s.join_kind, appLabel(s.app), s.query_id, s.gt_id || "-", h("code", { text: s.site }), s.gt_label || "-"]))),
     );
   }
 
@@ -543,7 +543,7 @@ const Evidence = (() => {
     }
     status.hidden = true;
     const select = document.getElementById("app-select");
-    select.replaceChildren(...Object.values(DATA.apps).map((a) => h("option", { value: a.id, text: `${a.label} — ${a.role}` })));
+    select.replaceChildren(...Object.values(DATA.apps).map((a) => h("option", { value: a.id, text: `${a.label} - ${a.role}` })));
     select.addEventListener("change", (e) => selectApp(e.target.value));
     state.app = Object.keys(DATA.apps)[0];
     document.getElementById("footer").textContent =
@@ -642,7 +642,7 @@ const TryIt = (() => {
     state.run = null;
     state.source = null;
     state.previews = {};
-    for (const id of ["tryit-detected", "tryit-recovered", "tryit-converted", "tryit-unresolved-count"]) $(id).textContent = "—";
+    for (const id of ["tryit-detected", "tryit-recovered", "tryit-converted", "tryit-unresolved-count"]) $(id).textContent = "-";
     $("tryit-breakdown").textContent = "No analysis run yet.";
     $("tryit-source").hidden = true;
     fill($("tryit-unresolved"), h("div", { class: "placeholder", text: "Unresolved SQL sites of your project will be listed here." }));
@@ -673,7 +673,7 @@ const TryIt = (() => {
       h("thead", {}, h("tr", {}, ["Query ID", "PHP file:line", "Stage", "Reason"].map((x) => h("th", { text: x })))),
       h("tbody", {}, sites.map((s) => h("tr", {},
         h("td", { text: s.query_id }), h("td", {}, h("code", { text: `${s.file}:${s.line}` })), h("td", { text: s.stage }),
-        h("td", { text: s.reason ? `${s.reason_code}: ${s.reason}` : (s.reason_code || "—") }))))))
+        h("td", { text: s.reason ? `${s.reason_code}: ${s.reason}` : (s.reason_code || "-") }))))))
       : h("p", { class: "muted", text: "C3 converted every detected SQL site of this upload; nothing was flagged for review." }));
 
     fill($("tryit-code"),

@@ -1,4 +1,4 @@
-# Community Service Desk — Independent Legacy PHP Holdout
+# Community Service Desk - Independent Legacy PHP Holdout
 
 A separate **framework-free procedural PHP/MySQL** application for testing generalization of C3 data-layer migration. This is **NOT** the clinic benchmark and uses new domain tables (`teams`, `agents`, `tickets`).
 

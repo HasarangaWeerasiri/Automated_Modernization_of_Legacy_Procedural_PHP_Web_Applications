@@ -71,7 +71,7 @@
    "title": "ORM Generation",
    "requirement": "The system must generate SQLAlchemy models with appropriate data types, keys, and relationships.",
    "status": "Implemented and measured",
-   "limitation": "Tables without a primary key become Core Table objects, not ORM classes; there is no schema-only (sqlacodegen) baseline comparison.",
+   "limitation": "Tables without a primary key become Core Table objects, not ORM classes. A schema-only sqlacodegen comparison (evidence/baseline) was run on all nine apps and found model parity on tables, columns, primary keys, nullability and types; foreign keys could be compared on twelve relationships in four apps only, because the other five apps declare none.",
    "measurements": ["all|post-adaptation (E2, 2026-10-15)|e2_schema_match"],
    "experiments": ["e2"]
   },
@@ -135,7 +135,7 @@
    "title": "Migration Support",
    "requirement": "Alembic migration information required for the modernized data layer must be generated.",
    "status": "Implemented and measured",
-   "limitation": "Initial-schema revision only, no data migration; the latest MySQL round trip predates the SQLite URL fix in the generated env.py.",
+   "limitation": "Initial-schema revision only, no data migration.",
    "measurements": ["all|post-adaptation (E3, 2026-10-15)|e3_roundtrip_pass"],
    "experiments": ["e3"]
   },
@@ -144,7 +144,7 @@
    "title": "Traceability",
    "requirement": "The original PHP file and source location must be maintained for each recovered database operation. This information can be used for review and debugging purposes.",
    "status": "Implemented and measured",
-   "limitation": "Checked by matching every evaluated site on file and line; whether the frozen HMS handoff labels changed after the label fix was not checked.",
+   "limitation": "Checked by matching every evaluated site on file and line. The frozen HMS signatures.json is identical to the handoff tag (line endings aside), matches its recorded hash, and every php_site label in it is the pipeline's own label; HMS_HANDOFF.md, edited after the tag, cites the Q036 site without its include/ directory and has not been regenerated.",
    "measurements": [
     "hms_kishan0725|post-adaptation (after H1)|recovery_recall",
     "dignity_dev_hms|fresh holdout (first run)|recovery_recall",

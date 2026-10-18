@@ -1,13 +1,13 @@
-# Clinic Inventory Legacy Hard — C3 benchmark
+# Clinic Inventory Legacy Hard - C3 benchmark
 
 **Purpose:** deliberately challenging but runnable **framework-free procedural PHP + MySQL** benchmark for C3 data-layer migration. This is an original synthetic benchmark, **not** an external real-world GitHub application. It is designed to test SQL discovery, SQL reconstruction, ORM schema fidelity, safe parameterization, and appropriate abstention before running Hospital Management.
 
 ## Contents
-- `legacy/*.php` — 22 numbered SQL execution scenarios plus connection and helper files; uses `mysqli` functions and no PHP framework.
-- `database/schema.sql` — MySQL schema with 5 related tables, primary keys, foreign keys, decimal, datetime, nullability, uniqueness.
-- `database/seed.sql` — deterministic sample records for an isolated test database.
-- `ground_truth/site_inventory.csv` — manually authored scenario labels and expected treatment **at the research-scope level**; do not treat as validated predictions of your C3 implementation.
-- `RUN_C3.md` — exact CLI and safe SQL setup instructions.
+- `legacy/*.php` - 22 numbered SQL execution scenarios plus connection and helper files; uses `mysqli` functions and no PHP framework.
+- `database/schema.sql` - MySQL schema with 5 related tables, primary keys, foreign keys, decimal, datetime, nullability, uniqueness.
+- `database/seed.sql` - deterministic sample records for an isolated test database.
+- `ground_truth/site_inventory.csv` - manually authored scenario labels and expected treatment **at the research-scope level**; do not treat as validated predictions of your C3 implementation.
+- `RUN_C3.md` - exact CLI and safe SQL setup instructions.
 
 ## Important caveats
 - The source intentionally includes **injection-prone legacy interpolation**. Only run locally against disposable data, not with production credentials or on a publicly accessible PHP server.

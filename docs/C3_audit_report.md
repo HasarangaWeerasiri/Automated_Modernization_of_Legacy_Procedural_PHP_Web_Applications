@@ -1,4 +1,4 @@
-# C3 Data Layer Migration — Pre-development Audit Report
+# C3 Data Layer Migration - Pre-development Audit Report
 
 **Project:** J26-SE-329 · Component C3 (`components/c3_data_layer`)
 **Audit date:** 2026-10-15 · **Branch audited:** `database-migration` @ `01869d8` (11 commits ahead of `origin/database-migration`)
@@ -275,7 +275,7 @@ Packaging notes:
 | hard_crud evaluation | (not claimed) | `table_accuracy 0.0`, read/filter 50%. **Cause: ground-truth format mismatch.** `hard_crud/queries.json` uses `expected_tables` (list), but `evaluator.py:126` reads `expected_table` | n/a (evaluator/GT defect) |
 | Day 3 behavioural DB | "portable CRUD" | Day 3 diary: *"Isolated in-memory SQLite test database"* and *"authentication using the available local root credentials failed… isolated SQLite validation was used instead."* | Confirmed **SQLite** |
 | MySQL 8 validation (8 Oct) | 18/18 checks | Local, **gitignored** result files: `comparison_report.json` 5/5, `mixed_comparison_report.json` 7/7, `hard_comparison_report.json` 6/6, all `"database": "MySQL 8.0"`. **Not re-run** (no credentials). | Exists locally, not reproducible from the repo |
-| Pipeline runtime | — | 0.38–0.73 s wall-clock per app (simple 0.38, mixed 0.40, hard 0.41, clinic 0.44, helpdesk 0.73) | — |
+| Pipeline runtime | - | 0.38–0.73 s wall-clock per app (simple 0.38, mixed 0.40, hard 0.41, clinic 0.44, helpdesk 0.73) | - |
 
 Per-query Clinic breakdown (fresh run):
 
@@ -323,18 +323,18 @@ Probes were tiny PHP files written to `%TEMP%\c3audit\probes\` and run through `
 | `unresolved_queries.json` | ✅ | ✅ stage 6 | ✅ | `test_unresolved_report` | Real (recovery-unresolved only) |
 | `summary.json` | ✅ | ✅ | ✅ (absolute path, no timings) | `test_integration_contract` | Real |
 | `traceability_report.json` | ⚠️ module only | ❌ not in pipeline | Day-4 `output/mixed_crud/traceability.json` | `test_traceability` | Real module, not wired |
-| Alembic (`alembic.ini`, `env.py`, `versions/`) | ❌ | ❌ | — | — | **Missing** |
-| `migration_notes.md` | ❌ | ❌ | — | — | **Missing** |
-| `security_report.json` | ❌ | ❌ | — | — | **Missing** |
-| `schema_comparison.json` | ❌ | ❌ | — | — | **Missing** |
-| `orm_mapping_test_log.txt` | ❌ | ❌ | — | — | **Missing** |
+| Alembic (`alembic.ini`, `env.py`, `versions/`) | ❌ | ❌ | - | - | **Missing** |
+| `migration_notes.md` | ❌ | ❌ | - | - | **Missing** |
+| `security_report.json` | ❌ | ❌ | - | - | **Missing** |
+| `schema_comparison.json` | ❌ | ❌ | - | - | **Missing** |
+| `orm_mapping_test_log.txt` | ❌ | ❌ | - | - | **Missing** |
 | `php_vs_sqlalchemy_equivalence.json` | ❌ | ❌ | Nearest: gitignored `tests/mysql_validation/*comparison_report.json` (8 Oct) | MySQL tests skip | **Missing** |
-| Test protocol | ❌ | — | — | — | **Missing** |
-| Schema-only baseline comparison | ❌ (`output/hard_crud/baseline_*.json` are an earlier *recovery* baseline, not schema-only) | — | — | — | **Missing** |
-| Benchmark manifest | ❌ | — | — | — | **Missing** |
-| Evidence register | ❌ | — | — | — | **Missing** |
+| Test protocol | ❌ | - | - | - | **Missing** |
+| Schema-only baseline comparison | ❌ (`output/hard_crud/baseline_*.json` are an earlier *recovery* baseline, not schema-only) | - | - | - | **Missing** |
+| Benchmark manifest | ❌ | - | - | - | **Missing** |
+| Evidence register | ❌ | - | - | - | **Missing** |
 | Output-contract doc | ⚠️ `contracts/c3_data_layer_contract.json` + `docs/C3_INTEGRATION_HANDOFF.md` | hand-made | ✅ (says "supports one referenced table per query", now outdated) | `test_integration_contract` | Real but stale |
-| Demo script / UI | ❌ (`tests/backend_verification/app.py` is a FastAPI check over `output/c3_viva_demo`) | — | — | `test_app.py` (5) | **Missing** |
+| Demo script / UI | ❌ (`tests/backend_verification/app.py` is a FastAPI check over `output/c3_viva_demo`) | - | - | `test_app.py` (5) | **Missing** |
 | `evaluation.json` / `evaluation_summary.json` | ✅ simple, mixed | ❌ hand-invoked (no CLI) | ✅ | `test_evaluator`, `test_evaluation_summary` | Real (no GT for Clinic/Helpdesk; hard GT format mismatch) |
 
 ---
@@ -396,7 +396,7 @@ Probes were tiny PHP files written to `%TEMP%\c3audit\probes\` and run through `
 
 Effort estimates assume one developer who knows the codebase. "Start" names the file or function to open first.
 
-### P0 — blocks a defensible PP1 demo
+### P0 - blocks a defensible PP1 demo
 
 | # | Gap | Effort | Start |
 |---|---|---|---|
@@ -407,7 +407,7 @@ Effort estimates assume one developer who knows the codebase. "Start" names the 
 | P0-5 | **Evidence hygiene.** Commit and tag the Helpdesk baseline. Decide on Clinic stale vs regenerated. Refresh hard/mixed. Fix the docs that state 113 / 1/5 / "JOIN unsupported". Stop Clinic tests reading untracked outputs (generate into `tmp_path`). | 2–3 h | section 1.7 commands, `tests/benchmarks/clinic_hard/test_behavioral_equivalence.py:33` |
 | P0-6 | **A working MySQL for any equivalence claim.** No MySQL test can run today. Get the `c3_tester` password for the local MySQL 8 service, or start Docker Desktop. Run the 61 skipped tests and save the log. | 1–2 h (setup) | section 8, E1 |
 
-### P1 — required for "100% within scope"
+### P1 - required for "100% within scope"
 
 | # | Gap | Effort | Start |
 |---|---|---|---|
@@ -425,7 +425,7 @@ Effort estimates assume one developer who knows the codebase. "Start" names the 
 | P1-12 | Evaluator: fix the `expected_tables` vs `expected_table` mismatch; add a CLI; independent GT for Clinic and Helpdesk (student annotates) | 2 h + annotation | `evaluation/evaluator.py:126` |
 | P1-13 | Helpdesk Q002/Q004 class ("single reaching definition inside a guarded block") → general rule, reported post-adaptation | 3–4 h (time-box) | `sql_recovery._detect_branching_assignment` (l.524) |
 
-### P2 — polish and robustness
+### P2 - polish and robustness
 
 | # | Gap | Effort |
 |---|---|---|

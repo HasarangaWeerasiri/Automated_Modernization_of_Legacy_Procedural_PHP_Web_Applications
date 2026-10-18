@@ -23,10 +23,10 @@ Columns are total SQL sites / recovered / converted.
 
 | Application | Pre-adaptation | Current code (post-adaptation) |
 |---|---|---|
-| simple_crud | — | 4 / 4 / 4 |
-| mixed_crud | — | 6 / 5 / 5 (Q006 `buildQuery` unresolved) |
-| hard_crud | — | 5 / 2 / 2 (dynamic ORDER BY, dynamic IN, conditional append unresolved) |
-| Clinic | — | 22 / 17 / 22: **15 by general rules + 7 by guarded templates**. S22 (`mysqli_prepare`) has been converted by the general prepared-statement rule since S14 (2026-10-15). Its MySQL equivalence has not been run yet; the 61 Clinic MySQL tests predate it |
+| simple_crud | - | 4 / 4 / 4 |
+| mixed_crud | - | 6 / 5 / 5 (Q006 `buildQuery` unresolved) |
+| hard_crud | - | 5 / 2 / 2 (dynamic ORDER BY, dynamic IN, conditional append unresolved) |
+| Clinic | - | 22 / 17 / 22: **15 by general rules + 7 by guarded templates**. S22 (`mysqli_prepare`) has been converted by the general prepared-statement rule since S14 (2026-10-15). Its MySQL equivalence has not been run yet; the 61 Clinic MySQL tests predate it |
 | Helpdesk | **9 / 7 / 6** (frozen baseline) | 9 / 9 / 8 (Q007 LEFT JOIN + GROUP BY not converted) |
 | HMS | 44 / 19 / 19, crashed at stage 3/6 | 44 / 40 / 40 |
 | NEWS-BUZZ | 32 / 4 / 4, crashed at stage 3/6 | 32 / 30 / 29 |
@@ -49,7 +49,7 @@ See `evidence/soundness/`.
 |---|---|---|---|
 | simple/mixed/hard CRUD (legacy PHP vs generated SQLAlchemy, recorded stages) | 2026-10-08, code before the audit | 18/18 checks (5 + 7 + 6) | `evidence/mysql_2026-10-08/` |
 | Clinic fixtures (61 equivalence tests incl. write/rollback and injection) | 2026-10-15, `71cfe98`, MySQL 8.0.39 | 61 passed | `evidence/mysql_2026-10-15/clinic_mysql_equivalence_log.txt` |
-| Helpdesk and the 3 unseen apps | — | **not yet run** | planned as E1 (`docs/E1_equivalence_plan.md`) |
+| Helpdesk and the 3 unseen apps | - | **not yet run** | planned as E1 (`docs/E1_equivalence_plan.md`) |
 
 ## 5. Unresolved query handling
 

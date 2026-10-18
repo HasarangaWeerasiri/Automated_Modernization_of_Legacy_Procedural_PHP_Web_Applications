@@ -175,7 +175,7 @@ def test_stage_labels_are_preserved(data):
               if relative in summarize.STAGE_KEYS}
     for m in data["measurements"]:
         if m["stage"] in {"pre-adaptation", "post-adaptation", "post-fix", "fresh-holdout"} and m["category"] not in {"e1", "e2", "e3"}:
-            base = m["stage_label"].replace(" — recovery only", "")
+            base = m["stage_label"].replace(" - recovery only", "")
             assert labels[(m["app"], base)] == m["stage"], m["id"]
     assert set(data["stage_definitions"]) == {"pre-adaptation", "post-adaptation", "post-fix", "fresh-holdout", "current-code"}
 
@@ -307,7 +307,7 @@ def test_try_it_panel_starts_empty_and_disabled():
     panel = re.search(r'<section id="panel-tryit".*?</section>', html, re.S).group(0)
     assert re.search(r'<button[^>]*id="run-migration"[^>]*\bdisabled\b[^>]*>Local migration connection pending</button>', panel)
     assert not NUMBER.findall(re.sub(r"<[^>]+>", " ", panel))
-    assert panel.count('class="kpi-value">—<') == 4
+    assert panel.count('class="kpi-value">-<') == 4
     assert "Counts from this upload, no ground truth, not an accuracy figure" in panel
 
 

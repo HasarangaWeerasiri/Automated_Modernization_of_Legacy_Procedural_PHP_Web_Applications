@@ -1,4 +1,4 @@
-# C3 Data Layer — PP1 Development Plan v2 (audit-based)
+# C3 Data Layer - PP1 Development Plan v2 (audit-based)
 
 **Project:** J26-SE-329 · Component C3 (`components/c3_data_layer`) · **PP1:** 20 Oct 2026 · **Work days:** 15–19 Oct (freeze code the evening of 19 Oct)
 **Supersedes** `docs/C3_100_Percent_Execution_Plan.md` (v1). v1 was written without seeing the code; this version is built from `docs/C3_audit_report.md` (audit of `database-migration` @ `01869d8`). If the two disagree, **this file and the audit win.**
@@ -42,7 +42,7 @@
 
 | # | Decision | Default in this plan |
 |---|---|---|
-| 1 | Clinic presentation (**CONFIRM**) | Do **not** delete the guarded templates. Report Clinic as: "21 converted of 22 sites — 14 by general rules, 7 by guarded query-specific templates; S22 now detected". Never present "21/21" as an algorithmic result. Generalise only what is cheap (schema-derived allowlists, task S6). |
+| 1 | Clinic presentation (**CONFIRM**) | Do **not** delete the guarded templates. Report Clinic as: "21 converted of 22 sites - 14 by general rules, 7 by guarded query-specific templates; S22 now detected". Never present "21/21" as an algorithmic result. Generalise only what is cheap (schema-derived allowlists, task S6). |
 | 2 | Stale Clinic output | Kept as dated snapshot `output/clinic_inventory_legacy_hard_snapshot_2026-10-12`; regenerate the live folder after the P0 fixes. |
 | 3 | MySQL evidence JSONs | Committed as copies under `evidence/mysql_2026-10-08/`. |
 | 4 | Branch | New branches (`c3-pp1-baseline`, then `pp1-c3-complete`); do not touch `origin/database-migration` or `main`. |
@@ -63,11 +63,11 @@ Audit estimates: P0 ≈ 15–20 h, P1 ≈ 35–45 h. Five full days will not fit
 
 ## 4. Work order
 
-### Phase A — before changing any code (≈2 h, Thursday morning)
-**A1. Pre-adaptation runs on unseen third-party apps (E5).** Pick 2–3 apps (section 5, E5), clone at a pinned commit, run `c3 run` once on each **before any fix**, save outputs and logs to `evidence/preadaptation/<app>/`. A crash (e.g. ENUM) is a valid pre-adaptation result — record it. Add `benchmarks/benchmark_manifest.json` (name, URL, pinned commit, licence, LOC, DB API style, role: dev / holdout / unseen). Clinic and Helpdesk are **original synthetic fixtures** — record that explicitly.
+### Phase A - before changing any code (≈2 h, Thursday morning)
+**A1. Pre-adaptation runs on unseen third-party apps (E5).** Pick 2–3 apps (section 5, E5), clone at a pinned commit, run `c3 run` once on each **before any fix**, save outputs and logs to `evidence/preadaptation/<app>/`. A crash (e.g. ENUM) is a valid pre-adaptation result - record it. Add `benchmarks/benchmark_manifest.json` (name, URL, pinned commit, licence, LOC, DB API style, role: dev / holdout / unseen). Clinic and Helpdesk are **original synthetic fixtures** - record that explicitly.
 **A2. Get MySQL working (E0).** Decision 5. Run the 61 skipped tests (`tests/benchmarks/clinic_hard`) after regenerating Clinic into `tmp`, save the raw log to `evidence/clinic_mysql_equivalence_log.txt`.
 
-### Phase B — P0 soundness and crash fixes (Thursday–Friday)
+### Phase B - P0 soundness and crash fixes (Thursday–Friday)
 | ID | Task | Where | Acceptance |
 |---|---|---|---|
 | **S1** (P0-2) | Abstain when any assignment in the SQL chain sits inside a loop (`foreach/for/while/do`) or `switch`. Reason code e.g. `LOOP_OR_SWITCH_CONTROL_FLOW`. | `mapping/sql_recovery.py` (`_find_relevant_assignments`, `_select_assignment_chain`, l.303–415); extractor statement context if needed | Negative tests for foreach-append, while-DELETE, switch; all → UNRESOLVED with file/line/reason. Clinic/Helpdesk/fixture results unchanged except intended. |
@@ -76,7 +76,7 @@ Audit estimates: P0 ≈ 15–20 h, P1 ≈ 35–45 h. Five full days will not fit
 | **S4** (P0-5) | Evidence hygiene: regenerate `output/hard_crud`, `output/mixed_crud`, `output/clinic_inventory_legacy_hard`; fix `docs/C3_EVALUATION_RESULTS.md` (113 tests, hard 1/5), `docs/C3_INTEGRATION_HANDOFF.md` ("JOIN unsupported"), `contracts/c3_data_layer_contract.json` ("one table per query"); make Clinic tests generate into `tmp_path` instead of reading untracked output. | listed files; `tests/benchmarks/clinic_hard/test_behavioral_equivalence.py:33` | Clean-clone test run works; docs match code. |
 | **S5** (P1-4) | FR8 consistency: add conversion-unresolved items to `unresolved_queries.json` (file, line, reason, action); remove converted items from it; make `summary.json` unambiguous (recovered / converted / converted-by-template / unresolved / conversion-unresolved / total); fix Q015 `safe_for_conversion` contradiction. | `analysis/unresolved_report.py`, `pipeline.py:79–92` | Every non-converted query appears exactly once with an action; counts reconcile. |
 
-### Phase C — P1 required features (Friday–Sunday)
+### Phase C - P1 required features (Friday–Sunday)
 | ID | Task | Where | Acceptance |
 |---|---|---|---|
 | **S6** (FR7) | `security_report.json`: classify every placeholder as value vs structural position; replace hard-coded allowlists with allowlists **derived from `schema.json`**; general detection of superglobal data (`$_GET/$_POST/$_REQUEST/$_COOKIE`) reaching SQL, with a count of legacy injection sites and which are remediated; injection-safety coverage metric. | new `analysis/security_report.py`; `conversion/order_by_binding.py`, `table_binding.py` | Report produced by the pipeline for every benchmark; no hard-coded Clinic identifiers left in allowlists. |
@@ -88,11 +88,11 @@ Audit estimates: P0 ≈ 15–20 h, P1 ≈ 35–45 h. Five full days will not fit
 | **S12** (FR10) | Wire `traceability_report.json` into the pipeline; record function line for cross-file Q015. | `pipeline.py`, `analysis/traceability.py` | Produced for every run; tests green. |
 | **S13** | Helpdesk Q002/Q004 class: the SQL string is not branch-dependent; the **call site** sits inside `if (POST)`/`else`. General rule: single reaching definition inside a guarded block is recoverable. **Time-box 3–4 h.** Report as post-adaptation beside the frozen 6/9. | `sql_recovery._detect_branching_assignment` (l.524) | Independent fixture (`k_insert_ifbody`-style) passes; Helpdesk post-adaptation saved separately; Clinic/fixtures unchanged. |
 | **S14** (P1-9) | Prepared statements (`?` and `:name`) → conversion by mapping positional to named binds. | `query_converter._has_unsafe_placeholder_position` | Probe with `->prepare/execute` converts; negative cases still abstain. |
-| **S15** (P1-12) | Evaluator: fix `expected_tables` vs `expected_table` mismatch (`evaluation/evaluator.py:126`); add `c3 evaluate` CLI; independent ground truth for Clinic and Helpdesk (**the student annotates by hand** from an independent grep of the raw PHP — Claude must not copy expected values from tool output). | `evaluation/` | `hard_crud` evaluation no longer shows 0% table accuracy because of format; GT files committed. |
+| **S15** (P1-12) | Evaluator: fix `expected_tables` vs `expected_table` mismatch (`evaluation/evaluator.py:126`); add `c3 evaluate` CLI; independent ground truth for Clinic and Helpdesk (**the student annotates by hand** from an independent grep of the raw PHP - Claude must not copy expected values from tool output). | `evaluation/` | `hard_crud` evaluation no longer shows 0% table accuracy because of format; GT files committed. |
 
-### Phase D — experiments (see section 5) — run alongside Phase C as each prerequisite lands.
+### Phase D - experiments (see section 5) - run alongside Phase C as each prerequisite lands.
 
-### Phase E — evidence, demo, docs (Sunday–Monday)
+### Phase E - evidence, demo, docs (Sunday–Monday)
 - **E-docs:** `evidence/evidence_register.md` (claim → file → command → date → result), `docs/test_protocol.md`, `docs/limitations_and_threats.md`, updated output-contract doc, `README_C3.md`, `docs/pp1_slides_c3.md` (text for slides 17–20), `benchmarks/benchmark_manifest.json`.
 - **Schema-only baseline (proposal §3.3):** `c3 baseline` using `sqlacodegen` (installed 4.0.4) or schema-only mode of the model builder. Compare on the same apps: models, data-access functions provided (baseline 0), column-use info (baseline none), queries left for manual work, flagged-with-reason. Output `evidence/baseline_comparison.json` + `.md`. (The existing `hard_crud/baseline_*.json` are a *recovery* baseline, not this.)
 - **Demo:** `scripts/demo.ps1` (mandatory): show scattered/concatenated SQL in a PHP file → `c3 run` on an unseen app → `models.py`, a `data_access.py` function with traceability, `column_usage.json`, `unresolved_queries.json` with file/line/reason → MySQL equivalence on a few queries (PASS, plus one INCONCLUSIVE) → hostile-input test → `alembic upgrade head` / `downgrade base`. Prepare a pre-recorded fallback. A FastAPI/HTML UI only if everything else is done.
@@ -130,9 +130,9 @@ Audit estimates: P0 ≈ 15–20 h, P1 ≈ 35–45 h. Five full days will not fit
 
 ## 7. How to report results honestly (use on slides)
 
-- **Say:** "Pipeline runs end to end on N applications (2 original synthetic benchmarks, M unseen third-party). Helpdesk holdout: 6/9 pre-adaptation, X/9 post-adaptation. Clinic: 21 converted of 22 sites — 14 by general rules, 7 by guarded query-specific templates." "Unresolved queries are flagged with file, line and reason; unsound conversions found during self-audit (loops, switch) were fixed." "Behavioural equivalence verified on MySQL 8: P PASS / F FAIL / I INCONCLUSIVE."
+- **Say:** "Pipeline runs end to end on N applications (2 original synthetic benchmarks, M unseen third-party). Helpdesk holdout: 6/9 pre-adaptation, X/9 post-adaptation. Clinic: 21 converted of 22 sites - 14 by general rules, 7 by guarded query-specific templates." "Unresolved queries are flagged with file, line and reason; unsound conversions found during self-audit (loops, switch) were fixed." "Behavioural equivalence verified on MySQL 8: P PASS / F FAIL / I INCONCLUSIVE."
 - **Do not say:** "21/21 general accuracy", "100% accuracy", "ORM queries" (it is parameterized SQLAlchemy `text()`), "works on arbitrary PHP apps", "575 passing". Say "642 passed (581 without MySQL + 61 MySQL), 0 failed, as of 2026-10-15", and never present the Clinic MySQL run as equivalence for other apps.
-- **Strength to present:** the self-audit itself — the soundness bugs found and fixed, the frozen baselines and the pre-/post-adaptation protocol are evidence of research rigour.
+- **Strength to present:** the self-audit itself - the soundness bugs found and fixed, the frozen baselines and the pre-/post-adaptation protocol are evidence of research rigour.
 
 ---
 
@@ -182,8 +182,8 @@ Branch: `database-migration` (user override: no `pp1-c3-complete`). Starting poi
 | HMS item 5 E1 on MySQL | **run 1 done: 27 PASS / 5 FAIL / 12 INCONCLUSIVE; triaged** (0 generated functions wrong); harness fixed `6b54bf0`; re-run pending | `evidence/mysql_runs/2026-10-15_181758/e1/`, `evidence/hms/E1_triage/triage.md`, register 71–73 | Predicted after re-run: 27 / 0 / 17. FR6 = PASS for the 27 E1-PASS sites. |
 | HMS H4 handoff | **done** | `output/hms_kishan0725/HMS_HANDOFF.md`, register 67 | 44 functions documented; signatures frozen (`signatures.json` + test); runs with C3 blocked (44/44 called). |
 | HMS FR matrix | **done** | `evidence/hms/FR_matrix_HMS.md`, register 69 | 9 PASS, FR6 not tested on MySQL (E1 pending), 0 FAIL. |
-| Baseline comparison | not started | — | |
-| Demo | not started | — | |
+| Baseline comparison | not started | - | |
+| Demo | not started | - | |
 | Docs + evidence register | started | `evidence/evidence_register.md` | Register created with the pre-dev test run. |
 
 ---

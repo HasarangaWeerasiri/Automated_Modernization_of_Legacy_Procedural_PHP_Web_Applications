@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": {
   "by": "scripts/summarize_evidence.py --dashboard-json",
-  "date": "2026-10-18T22:49:51+05:30",
-  "git_head": "1d93e93c89106611b81712a998f13bb7443cccb6",
+  "date": "2026-10-19T00:10:20+05:30",
+  "git_head": "bae8e6b27fb826a9f58d74dcd7407d8a5b33faef",
   "pipeline_unchanged_since_head": true,
   "current_code_run": "fresh C3 run of all 9 apps into a temp folder outside the repo (written <temp>)"
  },
@@ -117,10 +117,10 @@
  },
  "measurements": [
   {
-   "id": "hms_kishan0725|pre-adaptation — recovery only|sql_detection",
+   "id": "hms_kishan0725|pre-adaptation - recovery only|sql_detection",
    "app": "hms_kishan0725",
    "stage": "pre-adaptation",
-   "stage_label": "pre-adaptation — recovery only",
+   "stage_label": "pre-adaptation - recovery only",
    "category": "detection",
    "metric": "sql_detection",
    "label": "SQL sites detected (of ground-truth live sites)",
@@ -139,10 +139,10 @@
    }
   },
   {
-   "id": "hms_kishan0725|pre-adaptation — recovery only|recovery_precision",
+   "id": "hms_kishan0725|pre-adaptation - recovery only|recovery_precision",
    "app": "hms_kishan0725",
    "stage": "pre-adaptation",
-   "stage_label": "pre-adaptation — recovery only",
+   "stage_label": "pre-adaptation - recovery only",
    "category": "recovery",
    "metric": "recovery_precision",
    "label": "Recovery precision",
@@ -161,10 +161,10 @@
    }
   },
   {
-   "id": "hms_kishan0725|pre-adaptation — recovery only|recovery_recall",
+   "id": "hms_kishan0725|pre-adaptation - recovery only|recovery_recall",
    "app": "hms_kishan0725",
    "stage": "pre-adaptation",
-   "stage_label": "pre-adaptation — recovery only",
+   "stage_label": "pre-adaptation - recovery only",
    "category": "recovery",
    "metric": "recovery_recall",
    "label": "Recovery recall",
@@ -183,10 +183,10 @@
    }
   },
   {
-   "id": "hms_kishan0725|pre-adaptation — recovery only|correct_abstention",
+   "id": "hms_kishan0725|pre-adaptation - recovery only|correct_abstention",
    "app": "hms_kishan0725",
    "stage": "pre-adaptation",
-   "stage_label": "pre-adaptation — recovery only",
+   "stage_label": "pre-adaptation - recovery only",
    "category": "abstention",
    "metric": "correct_abstention",
    "label": "Correct abstentions (detected, unresolved, non-recoverable)",
@@ -202,10 +202,10 @@
    "note": "Not applicable: the ground truth has no non-recoverable live sites."
   },
   {
-   "id": "hms_kishan0725|pre-adaptation — recovery only|ambiguous_excluded",
+   "id": "hms_kishan0725|pre-adaptation - recovery only|ambiguous_excluded",
    "app": "hms_kishan0725",
    "stage": "pre-adaptation",
-   "stage_label": "pre-adaptation — recovery only",
+   "stage_label": "pre-adaptation - recovery only",
    "category": "recovery",
    "metric": "ambiguous_excluded",
    "label": "Ambiguous sites excluded from precision/recall",
@@ -1520,10 +1520,10 @@
    }
   },
   {
-   "id": "news_buzz|pre-adaptation — recovery only|sql_detection",
+   "id": "news_buzz|pre-adaptation - recovery only|sql_detection",
    "app": "news_buzz",
    "stage": "pre-adaptation",
-   "stage_label": "pre-adaptation — recovery only",
+   "stage_label": "pre-adaptation - recovery only",
    "category": "detection",
    "metric": "sql_detection",
    "label": "SQL sites detected (of ground-truth live sites)",
@@ -1542,10 +1542,10 @@
    }
   },
   {
-   "id": "news_buzz|pre-adaptation — recovery only|recovery_precision",
+   "id": "news_buzz|pre-adaptation - recovery only|recovery_precision",
    "app": "news_buzz",
    "stage": "pre-adaptation",
-   "stage_label": "pre-adaptation — recovery only",
+   "stage_label": "pre-adaptation - recovery only",
    "category": "recovery",
    "metric": "recovery_precision",
    "label": "Recovery precision",
@@ -1564,10 +1564,10 @@
    }
   },
   {
-   "id": "news_buzz|pre-adaptation — recovery only|recovery_recall",
+   "id": "news_buzz|pre-adaptation - recovery only|recovery_recall",
    "app": "news_buzz",
    "stage": "pre-adaptation",
-   "stage_label": "pre-adaptation — recovery only",
+   "stage_label": "pre-adaptation - recovery only",
    "category": "recovery",
    "metric": "recovery_recall",
    "label": "Recovery recall",
@@ -1586,10 +1586,10 @@
    }
   },
   {
-   "id": "news_buzz|pre-adaptation — recovery only|correct_abstention",
+   "id": "news_buzz|pre-adaptation - recovery only|correct_abstention",
    "app": "news_buzz",
    "stage": "pre-adaptation",
-   "stage_label": "pre-adaptation — recovery only",
+   "stage_label": "pre-adaptation - recovery only",
    "category": "abstention",
    "metric": "correct_abstention",
    "label": "Correct abstentions (detected, unresolved, non-recoverable)",
@@ -1604,10 +1604,10 @@
    }
   },
   {
-   "id": "news_buzz|pre-adaptation — recovery only|ambiguous_excluded",
+   "id": "news_buzz|pre-adaptation - recovery only|ambiguous_excluded",
    "app": "news_buzz",
    "stage": "pre-adaptation",
-   "stage_label": "pre-adaptation — recovery only",
+   "stage_label": "pre-adaptation - recovery only",
    "category": "recovery",
    "metric": "ambiguous_excluded",
    "label": "Ambiguous sites excluded from precision/recall",
@@ -2052,10 +2052,10 @@
    }
   },
   {
-   "id": "fee_rainbow|pre-adaptation — recovery only|sql_detection",
+   "id": "fee_rainbow|pre-adaptation - recovery only|sql_detection",
    "app": "fee_rainbow",
    "stage": "pre-adaptation",
-   "stage_label": "pre-adaptation — recovery only",
+   "stage_label": "pre-adaptation - recovery only",
    "category": "detection",
    "metric": "sql_detection",
    "label": "SQL sites detected (of ground-truth live sites)",
@@ -2074,10 +2074,10 @@
    }
   },
   {
-   "id": "fee_rainbow|pre-adaptation — recovery only|recovery_precision",
+   "id": "fee_rainbow|pre-adaptation - recovery only|recovery_precision",
    "app": "fee_rainbow",
    "stage": "pre-adaptation",
-   "stage_label": "pre-adaptation — recovery only",
+   "stage_label": "pre-adaptation - recovery only",
    "category": "recovery",
    "metric": "recovery_precision",
    "label": "Recovery precision",
@@ -2096,10 +2096,10 @@
    }
   },
   {
-   "id": "fee_rainbow|pre-adaptation — recovery only|recovery_recall",
+   "id": "fee_rainbow|pre-adaptation - recovery only|recovery_recall",
    "app": "fee_rainbow",
    "stage": "pre-adaptation",
-   "stage_label": "pre-adaptation — recovery only",
+   "stage_label": "pre-adaptation - recovery only",
    "category": "recovery",
    "metric": "recovery_recall",
    "label": "Recovery recall",
@@ -2118,10 +2118,10 @@
    }
   },
   {
-   "id": "fee_rainbow|pre-adaptation — recovery only|correct_abstention",
+   "id": "fee_rainbow|pre-adaptation - recovery only|correct_abstention",
    "app": "fee_rainbow",
    "stage": "pre-adaptation",
-   "stage_label": "pre-adaptation — recovery only",
+   "stage_label": "pre-adaptation - recovery only",
    "category": "abstention",
    "metric": "correct_abstention",
    "label": "Correct abstentions (detected, unresolved, non-recoverable)",
@@ -2137,10 +2137,10 @@
    "note": "10 non-recoverable site(s) were not detected at all; the evaluator scores them TN, but they are not counted as abstentions"
   },
   {
-   "id": "fee_rainbow|pre-adaptation — recovery only|ambiguous_excluded",
+   "id": "fee_rainbow|pre-adaptation - recovery only|ambiguous_excluded",
    "app": "fee_rainbow",
    "stage": "pre-adaptation",
-   "stage_label": "pre-adaptation — recovery only",
+   "stage_label": "pre-adaptation - recovery only",
    "category": "recovery",
    "metric": "ambiguous_excluded",
    "label": "Ambiguous sites excluded from precision/recall",
@@ -5058,7 +5058,7 @@
   }
  ],
  "stage_sites": {
-  "hms_kishan0725|pre-adaptation — recovery only": [
+  "hms_kishan0725|pre-adaptation - recovery only": [
    {
     "gt_id": "G003",
     "query_id": "Q003",
@@ -5447,7 +5447,7 @@
    }
   ],
   "helpdesk_legacy_holdout|post-adaptation": [],
-  "news_buzz|pre-adaptation — recovery only": [
+  "news_buzz|pre-adaptation - recovery only": [
    {
     "gt_id": "G001",
     "query_id": "Q001",
@@ -5709,7 +5709,7 @@
     "reason_code": "BRANCHING"
    }
   ],
-  "fee_rainbow|pre-adaptation — recovery only": [
+  "fee_rainbow|pre-adaptation - recovery only": [
    {
     "gt_id": "G007",
     "query_id": "Q007",
@@ -10961,7 +10961,7 @@
     "title": "ORM Generation",
     "requirement": "The system must generate SQLAlchemy models with appropriate data types, keys, and relationships.",
     "status": "Implemented and measured",
-    "limitation": "Tables without a primary key become Core Table objects, not ORM classes; there is no schema-only (sqlacodegen) baseline comparison.",
+    "limitation": "Tables without a primary key become Core Table objects, not ORM classes. A schema-only sqlacodegen comparison (evidence/baseline) was run on all nine apps and found model parity on tables, columns, primary keys, nullability and types; foreign keys could be compared on twelve relationships in four apps only, because the other five apps declare none.",
     "measurements": [
      "all|post-adaptation (E2, 2026-10-15)|e2_schema_match"
     ],
@@ -11033,7 +11033,7 @@
     "title": "Migration Support",
     "requirement": "Alembic migration information required for the modernized data layer must be generated.",
     "status": "Implemented and measured",
-    "limitation": "Initial-schema revision only, no data migration; the latest MySQL round trip predates the SQLite URL fix in the generated env.py.",
+    "limitation": "Initial-schema revision only, no data migration.",
     "measurements": [
      "all|post-adaptation (E3, 2026-10-15)|e3_roundtrip_pass"
     ],
@@ -11046,7 +11046,7 @@
     "title": "Traceability",
     "requirement": "The original PHP file and source location must be maintained for each recovered database operation. This information can be used for review and debugging purposes.",
     "status": "Implemented and measured",
-    "limitation": "Checked by matching every evaluated site on file and line; whether the frozen HMS handoff labels changed after the label fix was not checked.",
+    "limitation": "Checked by matching every evaluated site on file and line. The frozen HMS signatures.json is identical to the handoff tag (line endings aside), matches its recorded hash, and every php_site label in it is the pipeline's own label; HMS_HANDOFF.md, edited after the tag, cites the Q036 site without its include/ directory and has not been regenerated.",
     "measurements": [
      "hms_kishan0725|post-adaptation (after H1)|recovery_recall",
      "dignity_dev_hms|fresh holdout (first run)|recovery_recall",

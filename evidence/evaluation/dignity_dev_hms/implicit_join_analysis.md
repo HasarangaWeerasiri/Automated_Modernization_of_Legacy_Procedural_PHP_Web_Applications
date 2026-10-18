@@ -44,12 +44,12 @@ Every recovered statement of the current outputs of all 9 apps was scanned for a
 
 | App | Implicit (comma) joins | Handling |
 |---|---|---|
-| HMS (kishan0725) | 0 | — (its one multi-table query, `admin-panel.php:86`, is an explicit `INNER JOIN ... ON`; converted) |
-| Clinic | 0 | — |
-| Helpdesk | 0 | — |
-| NEWS-BUZZ | 0 | — |
-| Fee-Rainbow | 0 | — |
-| simple_crud, mixed_crud, hard_crud | 0 | — |
+| HMS (kishan0725) | 0 | - (its one multi-table query, `admin-panel.php:86`, is an explicit `INNER JOIN ... ON`; converted) |
+| Clinic | 0 | - |
+| Helpdesk | 0 | - |
+| NEWS-BUZZ | 0 | - |
+| Fee-Rainbow | 0 | - |
+| simple_crud, mixed_crud, hard_crud | 0 | - |
 | Dignity-Dev | **3** (G007, G008, G009) | recovered; conversion UNRESOLVED (`CONVERSION_UNSUPPORTED`) with an unresolved stub |
 
 Limits of the scan:

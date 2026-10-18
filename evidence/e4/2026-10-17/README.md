@@ -1,4 +1,4 @@
-# E4 injection negatives — 2026-10-17 (current code)
+# E4 injection negatives - 2026-10-17 (current code)
 
 **Purpose.** Re-run E4 on the current implementation, so that it covers the functions added since the 2026-10-15 run (`evidence/e4/2026-10-15/`, kept unchanged). The new functions come from wrapper support (Fee-Rainbow), the escape fix (NEWS-BUZZ), H1 (HMS) and prepared statements (Clinic Q022).
 

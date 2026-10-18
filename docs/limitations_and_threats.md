@@ -1,4 +1,4 @@
-# C3 — Limitations and Threats to Validity
+# C3 - Limitations and Threats to Validity
 
 This is a living document. Each limitation names the evidence it is based on.
 

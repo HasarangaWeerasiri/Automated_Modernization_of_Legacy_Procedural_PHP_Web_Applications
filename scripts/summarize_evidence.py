@@ -133,7 +133,7 @@ def historical_rows(sources, missing_converted):
         used.append(relative)
         recovery = data["recovery"]
         recovery_only = "recovery" in str(data.get("scope", "")).lower()
-        stage_label = stage + (" — recovery only" if recovery_only else "")
+        stage_label = stage + (" - recovery only" if recovery_only else "")
         path = f"evidence/evaluation/{relative}"
 
         detected_tn = sum(1 for d in data["details"] if d.get("outcome") == "TN" and d.get("c3_status") != "NOT_DETECTED")
@@ -459,7 +459,7 @@ def _historical(measurements, stage_sites):
         app = relative.split("/")[0]
         stage = STAGE_KEYS[relative]
         recovery_only = "recovery" in str(data.get("scope", "")).lower()
-        label = stage_label + (" — recovery only" if recovery_only else "")
+        label = stage_label + (" - recovery only" if recovery_only else "")
         path = f"evidence/evaluation/{relative}"
         r, detection = data["recovery"], data["detection"]
         detected_tn = sum(1 for d in data["details"] if d.get("outcome") == "TN" and d.get("c3_status") != "NOT_DETECTED")

@@ -16,7 +16,7 @@ LEGACY = HERE / "legacy"
 OUT = HERE / "evaluation_output"
 OUT.mkdir(exist_ok=True)
 print("=" * 70)
-print("C3 INDEPENDENT HOLDOUT — COMMUNITY SERVICE DESK")
+print("C3 INDEPENDENT HOLDOUT - COMMUNITY SERVICE DESK")
 print("=" * 70)
 recovered = recover_queries_from_ast(analyze_php_ast(LEGACY))
 converted = convert_queries(recovered)

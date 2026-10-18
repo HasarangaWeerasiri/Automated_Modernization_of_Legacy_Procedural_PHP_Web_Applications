@@ -1,4 +1,4 @@
-# C3 execution time — 2026-10-18
+# C3 execution time - 2026-10-18
 
 **What this is:** end-to-end CLI analysis time on this machine, includes Python start-up; no database.
 
