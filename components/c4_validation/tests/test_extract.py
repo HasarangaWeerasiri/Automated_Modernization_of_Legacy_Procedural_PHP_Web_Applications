@@ -178,3 +178,59 @@ def test_a_message_built_at_run_time_is_not_read():
 def test_a_page_without_pop_ups_has_no_messages():
     assert extract_messages("<table><tr><td>Ram</td></tr></table>") == []
     assert extract_messages("") == []
+
+
+# ------------------------------------------------------ tables that line up a form
+
+LOGIN_FORM = """
+    <table style="width:320px"><form action="/login.php" method="POST">
+      <tr><td>Username :</td><td> <input type="text" name="username" /></td></tr>
+      <tr><td>Password :</td><td> <input type="password" name="password" /></td></tr>
+      <tr><td><input type="submit" value="login" /></td><td><a href="/register.php">Register</a></td></tr>
+    </form></table>"""
+
+
+def test_a_table_that_lines_up_a_form_is_marked_and_gives_no_records():
+    (table,) = extract_tables(LOGIN_FORM)
+
+    assert table.form_layout and table.records == ()
+
+
+def test_an_input_without_a_type_and_a_text_area_are_typing_fields():
+    html = "<table><tr><td>Name</td><td><input name='n'></td></tr><tr><td>Note</td><td><textarea></textarea></td></tr></table>"
+
+    assert extract_tables(html)[0].form_layout
+
+
+def test_choices_checkboxes_buttons_and_hidden_fields_do_not_make_a_form_layout():
+    html = """<table><tr><td>Ram</td><td><select><option>A</option></select></td></tr>
+              <tr><td>Alia</td><td><input type="checkbox"><input type="radio"><input type="hidden" value="2"></td></tr>
+              <tr><td>Anu</td><td><input type="submit" value="Go"><button>Cancel</button></td></tr></table>"""
+
+    (table,) = extract_tables(html)
+
+    assert not table.form_layout
+    assert [record["column 1"] for record in table.records] == ["Ram", "Alia", "Anu"]
+
+
+def test_a_table_with_a_header_row_is_data_even_with_a_text_box_in_every_row():
+    html = "<table><tr><th>Doctor</th><th>Note</th></tr><tr><td>Dinesh</td><td><input type='text'></td></tr></table>"
+
+    (table,) = extract_tables(html)
+
+    assert not table.form_layout and table.records == ({"Doctor": "Dinesh", "Note": ""},)
+
+
+def test_one_typing_row_among_rows_of_data_does_not_make_a_form_layout():
+    html = """<table><tr><td>Ram</td><td>550</td></tr><tr><td>Alia</td><td>700</td></tr>
+              <tr><td>Anu</td><td>300</td></tr><tr><td>Search</td><td><input type="search"></td></tr></table>"""
+
+    assert not extract_tables(html)[0].form_layout
+
+
+def test_a_field_in_a_nested_table_belongs_to_the_nested_table():
+    html = f"<table><tr><td>Ram</td></tr><tr><td>Alia</td></tr><tr><td>{LOGIN_FORM}</td></tr></table>"
+
+    outer, inner = extract_tables(html)
+
+    assert not outer.form_layout and inner.form_layout

@@ -8,6 +8,15 @@ This version reads data held in HTML tables, and the messages a page shows in a
 pop-up. Other structures are added when the engine is generalised. A page it cannot
 read yields no tables, which a caller must treat as "could not extract", never as
 "the page shows no data".
+
+Pages also use tables only to line up a form, a label in one cell and a field in the
+next. Such a table is marked `form_layout` and gives no records. It is a table
+without a header row where at least half of the rows hold a field for typing (a
+text, password, file or similar input, or a text area). Choice lists, checkboxes,
+radio buttons, buttons and hidden fields do not count: a table of data often has one
+of them per row. A header row, all of its cells headers, makes a table one of data.
+A table of data with no header row and a typing field in most rows is misread as a
+form layout; the caller then finds no data to read and abstains.
 """
 
 from __future__ import annotations
@@ -23,6 +32,15 @@ from bs4.element import Tag
 class ExtractedTable:
     labels: tuple[str, ...]
     records: tuple[dict[str, str], ...]
+    # The table only lines up a form; it holds no records.
+    form_layout: bool = False
+
+
+# Input types a user types a value into. An input without a type is a text field.
+_TYPING_INPUTS = frozenset({
+    "", "text", "password", "email", "number", "tel", "url", "search",
+    "date", "datetime-local", "month", "week", "time", "file",
+})
 
 
 # alert('...') or alert("...") with a literal text, as legacy pages write it to tell
@@ -53,6 +71,19 @@ def _own_cells(row: Tag) -> list[Tag]:
     return [cell for cell in row.find_all(["th", "td"]) if cell.find_parent("tr") is row]
 
 
+def _is_header(row: Tag) -> bool:
+    return row.find_parent("thead") is not None or all(cell.name == "th" for cell in _own_cells(row))
+
+
+def _has_typing_field(row: Tag, table: Tag) -> bool:
+    for field in row.find_all(["input", "textarea"]):
+        if field.find_parent("table") is not table:
+            continue  # it belongs to a table nested in this row
+        if field.name == "textarea" or field.get("type", "").strip().lower() in _TYPING_INPUTS:
+            return True
+    return False
+
+
 def _labels(header: list[str], width: int) -> tuple[str, ...]:
     """One distinct label per column, from the header where it gives one."""
     labels: list[str] = []
@@ -80,12 +111,15 @@ def extract_tables(html: str | bytes) -> list[ExtractedTable]:
     for table in soup.find_all("table"):
         header: list[str] = []
         rows: list[list[str]] = []
-        for row in _own_rows(table):
+        filled = [row for row in _own_rows(table) if _own_cells(row)]
+        # Read before the cells' text is taken, which removes the fields.
+        typing = sum(_has_typing_field(row, table) for row in filled)
+        if not any(map(_is_header, filled)) and typing and typing * 2 >= len(filled):
+            tables.append(ExtractedTable(labels=(), records=(), form_layout=True))
+            continue
+        for row in filled:
             cells = _own_cells(row)
-            if not cells:
-                continue
-            is_header = row.find_parent("thead") is not None or all(cell.name == "th" for cell in cells)
-            if is_header and not header and not rows:
+            if _is_header(row) and not header and not rows:
                 header = [_text(cell) for cell in cells]
             else:
                 rows.append([_text(cell) for cell in cells])

@@ -38,7 +38,8 @@ procedural PHP answers 200 to almost everything, success or failure.
 
 A page expected to show records that shows a message instead, such as "No entries
 found", showed no data. A page that shows neither a table nor a message is refused:
-the engine cannot tell "no data" from data it is unable to read.
+the engine cannot tell "no data" from data it is unable to read. A table that only
+lines up a form (see extract.py) is not a table of data here.
 """
 
 from __future__ import annotations
@@ -116,12 +117,15 @@ def _observe(
     after = dbstate.snapshot(config.legacy)
 
     tables = extract_tables(response.content)
+    # A table that only lines up a form keeps its place, so table numbers do not move,
+    # but it is never the table of data.
+    data = [table for table in tables if not table.form_layout]
     messages = tuple(extract_messages(response.content))
     chosen = scenario.get("legacy_table", "only")
     shown = chosen != "none"
     if chosen == "none":
         records: tuple[dict[str, str], ...] = ()
-    elif not tables:
+    elif not data:
         if not messages:
             raise CaptureError(
                 f"{scenario['scenario_id']}: the page shows neither a table nor a message, "
@@ -129,14 +133,19 @@ def _observe(
             )
         records, shown = (), False  # a message in place of the records: no data shown
     elif chosen == "only":
-        if len(tables) != 1:
+        if len(data) != 1:
             # Sound-or-abstain: with no table, or several and no pointer to the
             # right one, any choice made here would be a guess.
             raise CaptureError(
-                f"{scenario['scenario_id']}: the page shows {len(tables)} tables and the "
+                f"{scenario['scenario_id']}: the page shows {len(data)} tables and the "
                 "scenario does not say which one holds this endpoint's data."
             )
-        records = tables[0].records
+        records = data[0].records
+    elif chosen in range(len(tables)) and tables[chosen].form_layout:
+        raise CaptureError(
+            f"{scenario['scenario_id']}: the scenario points at table {chosen!r}, "
+            "which only lines up a form and holds no data."
+        )
     elif chosen in range(len(tables)):
         records = tables[chosen].records
     else:

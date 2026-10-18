@@ -397,3 +397,36 @@ def test_capturing_different_behaviour_replaces_the_stored_record(config):
     write_record(config, changed)
 
     assert json.loads(path.read_text(encoding="utf-8")) == changed
+
+
+# ------------------------------------------------------ tables that line up a form
+
+FORM_TABLE = "<table><tr><td>Username</td><td><input type='text' name='u'></td></tr></table>"
+
+
+def test_a_page_whose_only_table_lines_up_a_form_is_refused(config, page):
+    page(FORM_TABLE)
+
+    with pytest.raises(CaptureError, match="neither a table nor a message"):
+        capture(config, SCENARIO, BASELINES)
+
+
+def test_a_form_table_next_to_the_table_of_data_is_not_counted(config, page):
+    page(FORM_TABLE + ONE_TABLE)
+
+    assert capture(config, SCENARIO, BASELINES)["legacy_response"]["records"] == [{"Name": "Ram"}]
+
+
+def test_a_form_table_keeps_its_place_so_table_numbers_do_not_move(config, page):
+    page(FORM_TABLE + TWO_TABLES)
+
+    record = capture(config, {**SCENARIO, "legacy_table": 2}, BASELINES)
+
+    assert record["legacy_response"]["records"] == [{"Doctor": "Ganesh"}]
+
+
+def test_pointing_at_a_table_that_lines_up_a_form_is_refused(config, page):
+    page(FORM_TABLE + ONE_TABLE)
+
+    with pytest.raises(CaptureError, match="only lines up a form"):
+        capture(config, {**SCENARIO, "legacy_table": 0}, BASELINES)
