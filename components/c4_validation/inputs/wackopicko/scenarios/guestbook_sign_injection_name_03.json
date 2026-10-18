@@ -1,0 +1,12 @@
+{
+  "scenario_id": "guestbook_sign_injection_name_03",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "name",
+  "endpoint_id": "POST /api/guestbook",
+  "source_id": "guestbook_sign",
+  "values": {
+    "name": "' OR 1=1 -- ",
+    "comment": "Partner even floor should"
+  }
+}

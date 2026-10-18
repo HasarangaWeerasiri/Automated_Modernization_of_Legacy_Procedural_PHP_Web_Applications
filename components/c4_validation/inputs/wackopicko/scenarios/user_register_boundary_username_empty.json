@@ -1,0 +1,15 @@
+{
+  "scenario_id": "user_register_boundary_username_empty",
+  "scenario_type": "boundary",
+  "case": "empty",
+  "parameter": "username",
+  "endpoint_id": "POST /api/users",
+  "source_id": "user_register",
+  "values": {
+    "username": "",
+    "firstname": "David Horton",
+    "lastname": "Christian Wilkinson",
+    "password": "indeed",
+    "againpass": "game"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "scenario_id": "picture_search_typical_03",
+  "scenario_type": "typical",
+  "case": "typical",
+  "parameter": null,
+  "endpoint_id": "GET /api/pictures/search",
+  "source_id": "picture_search",
+  "values": {
+    "query": "flowers"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "scenario_id": "picture_search_injection_query_02",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "query",
+  "endpoint_id": "GET /api/pictures/search",
+  "source_id": "picture_search",
+  "values": {
+    "query": "' OR '1'='1"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "scenario_id": "user_register_typical_02",
+  "scenario_type": "typical",
+  "case": "typical",
+  "parameter": null,
+  "endpoint_id": "POST /api/users",
+  "source_id": "user_register",
+  "values": {
+    "username": "Dr. Anne Boyd",
+    "firstname": "Maureen Lewis",
+    "lastname": "Jacob Ramos",
+    "password": "improve",
+    "againpass": "call"
+  }
+}

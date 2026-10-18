@@ -1,0 +1,12 @@
+{
+  "scenario_id": "guestbook_sign_boundary_comment_empty",
+  "scenario_type": "boundary",
+  "case": "empty",
+  "parameter": "comment",
+  "endpoint_id": "POST /api/guestbook",
+  "source_id": "guestbook_sign",
+  "values": {
+    "name": "Erica Nichols",
+    "comment": ""
+  }
+}

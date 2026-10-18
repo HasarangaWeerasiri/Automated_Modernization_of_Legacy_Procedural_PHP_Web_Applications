@@ -1,0 +1,175 @@
+{
+  "format": "c4-stand-in/1",
+  "endpoints": [
+    {
+      "endpoint_id": "GET /api/guestbook",
+      "method": "GET",
+      "path": "/api/guestbook",
+      "records_at": "entries",
+      "sources": [
+        {
+          "source_id": "guestbook_list",
+          "legacy": {
+            "method": "GET",
+            "path": "/guestbook.php",
+            "records": "only"
+          },
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "endpoint_id": "POST /api/guestbook",
+      "method": "POST",
+      "path": "/api/guestbook",
+      "records_at": null,
+      "sources": [
+        {
+          "source_id": "guestbook_sign",
+          "legacy": {
+            "method": "POST",
+            "path": "/guestbook.php",
+            "records": "none"
+          },
+          "parameters": [
+            {
+              "name": "name",
+              "in": "body",
+              "legacy_name": "name",
+              "legacy_in": "body",
+              "column": "guestbook.name"
+            },
+            {
+              "name": "comment",
+              "in": "body",
+              "legacy_name": "comment",
+              "legacy_in": "body",
+              "column": "guestbook.comment"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint_id": "GET /api/pictures/recent",
+      "method": "GET",
+      "path": "/api/pictures/recent",
+      "records_at": "pictures",
+      "sources": [
+        {
+          "source_id": "recent_pictures",
+          "legacy": {
+            "method": "GET",
+            "path": "/pictures/recent.php",
+            "records": "only"
+          },
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "endpoint_id": "GET /api/pictures/search",
+      "method": "GET",
+      "path": "/api/pictures/search",
+      "records_at": "pictures",
+      "sources": [
+        {
+          "source_id": "picture_search",
+          "legacy": {
+            "method": "GET",
+            "path": "/pictures/search.php",
+            "records": "only"
+          },
+          "parameters": [
+            {
+              "name": "query",
+              "in": "query",
+              "legacy_name": "query",
+              "legacy_in": "query",
+              "column": "pictures.tag"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint_id": "GET /api/users/{userid}",
+      "method": "GET",
+      "path": "/api/users/{userid}",
+      "records_at": "pictures",
+      "sources": [
+        {
+          "source_id": "user_pictures",
+          "login": "user",
+          "legacy": {
+            "method": "GET",
+            "path": "/users/view.php",
+            "records": "only"
+          },
+          "parameters": [
+            {
+              "name": "userid",
+              "in": "path",
+              "legacy_name": "userid",
+              "legacy_in": "query",
+              "column": "users.id"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint_id": "POST /api/users",
+      "method": "POST",
+      "path": "/api/users",
+      "records_at": null,
+      "sources": [
+        {
+          "source_id": "user_register",
+          "legacy": {
+            "method": "POST",
+            "path": "/users/register.php",
+            "records": "none"
+          },
+          "parameters": [
+            {
+              "name": "username",
+              "in": "body",
+              "legacy_name": "username",
+              "legacy_in": "body",
+              "column": "users.login"
+            },
+            {
+              "name": "firstname",
+              "in": "body",
+              "legacy_name": "firstname",
+              "legacy_in": "body",
+              "column": "users.firstname"
+            },
+            {
+              "name": "lastname",
+              "in": "body",
+              "legacy_name": "lastname",
+              "legacy_in": "body",
+              "column": "users.lastname"
+            },
+            {
+              "name": "password",
+              "in": "body",
+              "legacy_name": "password",
+              "legacy_in": "body",
+              "column": null
+            },
+            {
+              "name": "againpass",
+              "in": "body",
+              "legacy_name": "againpass",
+              "legacy_in": "body",
+              "column": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

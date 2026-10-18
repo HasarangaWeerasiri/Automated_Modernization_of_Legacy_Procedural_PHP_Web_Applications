@@ -1,0 +1,12 @@
+{
+  "scenario_id": "guestbook_sign_boundary_name_empty",
+  "scenario_type": "boundary",
+  "case": "empty",
+  "parameter": "name",
+  "endpoint_id": "POST /api/guestbook",
+  "source_id": "guestbook_sign",
+  "values": {
+    "name": "",
+    "comment": "Partner even floor should"
+  }
+}

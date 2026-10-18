@@ -1,0 +1,11 @@
+{
+  "scenario_id": "user_pictures_boundary_userid_largest",
+  "scenario_type": "boundary",
+  "case": "largest",
+  "parameter": "userid",
+  "endpoint_id": "GET /api/users/{userid}",
+  "source_id": "user_pictures",
+  "values": {
+    "userid": 2147483647
+  }
+}

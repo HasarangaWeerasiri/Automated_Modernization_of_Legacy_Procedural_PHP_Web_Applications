@@ -1,0 +1,15 @@
+{
+  "scenario_id": "user_register_boundary_firstname_too_long",
+  "scenario_type": "boundary",
+  "case": "too_long",
+  "parameter": "firstname",
+  "endpoint_id": "POST /api/users",
+  "source_id": "user_register",
+  "values": {
+    "username": "Crystal Newton",
+    "firstname": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "lastname": "Christian Wilkinson",
+    "password": "indeed",
+    "againpass": "game"
+  }
+}

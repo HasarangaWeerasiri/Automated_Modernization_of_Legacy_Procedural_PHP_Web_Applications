@@ -1,0 +1,12 @@
+{
+  "scenario_id": "guestbook_sign_boundary_name_too_long",
+  "scenario_type": "boundary",
+  "case": "too_long",
+  "parameter": "name",
+  "endpoint_id": "POST /api/guestbook",
+  "source_id": "guestbook_sign",
+  "values": {
+    "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "comment": "Partner even floor should"
+  }
+}

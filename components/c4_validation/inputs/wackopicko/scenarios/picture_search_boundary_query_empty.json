@@ -1,0 +1,11 @@
+{
+  "scenario_id": "picture_search_boundary_query_empty",
+  "scenario_type": "boundary",
+  "case": "empty",
+  "parameter": "query",
+  "endpoint_id": "GET /api/pictures/search",
+  "source_id": "picture_search",
+  "values": {
+    "query": ""
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "scenario_id": "guestbook_sign_injection_comment_01",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "comment",
+  "endpoint_id": "POST /api/guestbook",
+  "source_id": "guestbook_sign",
+  "values": {
+    "name": "Erica Nichols",
+    "comment": "'"
+  }
+}

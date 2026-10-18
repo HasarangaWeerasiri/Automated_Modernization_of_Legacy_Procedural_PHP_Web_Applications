@@ -1,0 +1,19 @@
+{
+  "format": "c4-stand-in/1",
+  "logins": {
+    "user": {
+      "legacy": {
+        "method": "POST",
+        "path": "/users/login.php",
+        "body": { "username": "bryce", "password": "bryce" },
+        "expect_redirect": "/users/home.php"
+      },
+      "migrated": {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "body": { "username": "bryce", "password": "bryce" },
+        "token_at": "access_token"
+      }
+    }
+  }
+}

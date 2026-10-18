@@ -1,0 +1,9 @@
+{
+  "scenario_id": "recent_pictures_typical_01",
+  "scenario_type": "typical",
+  "case": "typical",
+  "parameter": null,
+  "endpoint_id": "GET /api/pictures/recent",
+  "source_id": "recent_pictures",
+  "values": {}
+}

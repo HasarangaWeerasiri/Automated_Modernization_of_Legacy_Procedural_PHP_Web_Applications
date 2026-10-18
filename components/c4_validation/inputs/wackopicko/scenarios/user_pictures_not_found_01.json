@@ -1,0 +1,11 @@
+{
+  "scenario_id": "user_pictures_not_found_01",
+  "scenario_type": "typical",
+  "case": "not_found",
+  "parameter": "userid",
+  "endpoint_id": "GET /api/users/{userid}",
+  "source_id": "user_pictures",
+  "values": {
+    "userid": 1011
+  }
+}

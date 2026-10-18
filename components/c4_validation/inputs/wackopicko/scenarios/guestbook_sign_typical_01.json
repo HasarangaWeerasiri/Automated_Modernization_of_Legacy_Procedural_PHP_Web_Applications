@@ -1,0 +1,12 @@
+{
+  "scenario_id": "guestbook_sign_typical_01",
+  "scenario_type": "typical",
+  "case": "typical",
+  "parameter": null,
+  "endpoint_id": "POST /api/guestbook",
+  "source_id": "guestbook_sign",
+  "values": {
+    "name": "Erica Nichols",
+    "comment": "Partner even floor should"
+  }
+}

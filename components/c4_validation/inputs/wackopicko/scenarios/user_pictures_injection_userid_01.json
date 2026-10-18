@@ -1,0 +1,11 @@
+{
+  "scenario_id": "user_pictures_injection_userid_01",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "userid",
+  "endpoint_id": "GET /api/users/{userid}",
+  "source_id": "user_pictures",
+  "values": {
+    "userid": "'"
+  }
+}

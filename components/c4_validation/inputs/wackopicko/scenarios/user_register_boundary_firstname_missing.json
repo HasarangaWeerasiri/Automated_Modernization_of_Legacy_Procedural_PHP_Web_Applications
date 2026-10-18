@@ -1,0 +1,14 @@
+{
+  "scenario_id": "user_register_boundary_firstname_missing",
+  "scenario_type": "boundary",
+  "case": "missing",
+  "parameter": "firstname",
+  "endpoint_id": "POST /api/users",
+  "source_id": "user_register",
+  "values": {
+    "username": "Crystal Newton",
+    "lastname": "Christian Wilkinson",
+    "password": "indeed",
+    "againpass": "game"
+  }
+}

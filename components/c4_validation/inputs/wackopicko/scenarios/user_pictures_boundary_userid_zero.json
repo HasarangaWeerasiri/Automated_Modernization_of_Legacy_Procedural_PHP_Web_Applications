@@ -1,0 +1,11 @@
+{
+  "scenario_id": "user_pictures_boundary_userid_zero",
+  "scenario_type": "boundary",
+  "case": "zero",
+  "parameter": "userid",
+  "endpoint_id": "GET /api/users/{userid}",
+  "source_id": "user_pictures",
+  "values": {
+    "userid": 0
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "scenario_id": "user_register_injection_username_02",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "username",
+  "endpoint_id": "POST /api/users",
+  "source_id": "user_register",
+  "values": {
+    "username": "' OR '1'='1",
+    "firstname": "David Horton",
+    "lastname": "Christian Wilkinson",
+    "password": "indeed",
+    "againpass": "game"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "scenario_id": "guestbook_list_typical_01",
+  "scenario_type": "typical",
+  "case": "typical",
+  "parameter": null,
+  "endpoint_id": "GET /api/guestbook",
+  "source_id": "guestbook_list",
+  "values": {}
+}
