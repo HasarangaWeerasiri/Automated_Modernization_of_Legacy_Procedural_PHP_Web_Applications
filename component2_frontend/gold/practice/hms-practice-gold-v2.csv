@@ -1,0 +1,265 @@
+app,file,line,construct,decision,container,item_root,binding,notes
+hms,admin-panel1.php,1,unit,page,,,,
+hms,admin-panel1.php,5,include,not_ui,,,,newfunc.php prints nothing at top level (only header() redirects); its functions are not called here
+hms,admin-panel1.php,7,if,request_handler,,,,POST add-doctor handler
+hms,admin-panel1.php,16,if,not_ui,,,,only <script>alert()</script>
+hms,admin-panel1.php,23,if,request_handler,,,,POST delete-doctor handler
+hms,admin-panel1.php,28,if,not_ui,,,,only JS alerts (if/else)
+hms,admin-panel1.php,279,loop,list,table@263,tr,,rows printed by one echo string
+hms,admin-panel1.php,287,read,,,,doctb.username,via $var = $row[...] copy
+hms,admin-panel1.php,288,read,,,,doctb.spec,via $var = $row[...] copy
+hms,admin-panel1.php,289,read,,,,doctb.email,via $var = $row[...] copy
+hms,admin-panel1.php,290,read,,,,doctb.password,via $var = $row[...] copy
+hms,admin-panel1.php,291,read,,,,doctb.docFees,via $var = $row[...] copy
+hms,admin-panel1.php,330,loop,list,table@312,tr,,rows printed by one echo string
+hms,admin-panel1.php,340,read,,,,patreg.pid,via $var = $row[...] copy
+hms,admin-panel1.php,341,read,,,,patreg.fname,via $var = $row[...] copy
+hms,admin-panel1.php,342,read,,,,patreg.lname,via $var = $row[...] copy
+hms,admin-panel1.php,343,read,,,,patreg.gender,via $var = $row[...] copy
+hms,admin-panel1.php,344,read,,,,patreg.email,via $var = $row[...] copy
+hms,admin-panel1.php,345,read,,,,patreg.contact,via $var = $row[...] copy
+hms,admin-panel1.php,346,read,,,,patreg.password,via $var = $row[...] copy
+hms,admin-panel1.php,386,loop,list,table@365,tr,,rows printed by one echo string
+hms,admin-panel1.php,400,read,,,,prestb.doctor,via $var = $row[...] copy
+hms,admin-panel1.php,401,read,,,,prestb.pid,via $var = $row[...] copy
+hms,admin-panel1.php,402,read,,,,prestb.ID,via $var = $row[...] copy
+hms,admin-panel1.php,403,read,,,,prestb.fname,via $var = $row[...] copy
+hms,admin-panel1.php,404,read,,,,prestb.lname,via $var = $row[...] copy
+hms,admin-panel1.php,405,read,,,,prestb.appdate,via $var = $row[...] copy
+hms,admin-panel1.php,406,read,,,,prestb.apptime,via $var = $row[...] copy
+hms,admin-panel1.php,407,read,,,,prestb.disease,via $var = $row[...] copy
+hms,admin-panel1.php,408,read,,,,prestb.allergy,via $var = $row[...] copy
+hms,admin-panel1.php,409,read,,,,prestb.prescription,via $var = $row[...] copy
+hms,admin-panel1.php,459,loop,list,table@434,tr,,
+hms,admin-panel1.php,462,read,,,,appointmenttb.ID,
+hms,admin-panel1.php,463,read,,,,appointmenttb.pid,
+hms,admin-panel1.php,464,read,,,,appointmenttb.fname,
+hms,admin-panel1.php,465,read,,,,appointmenttb.lname,
+hms,admin-panel1.php,466,read,,,,appointmenttb.gender,
+hms,admin-panel1.php,467,read,,,,appointmenttb.email,
+hms,admin-panel1.php,468,read,,,,appointmenttb.contact,
+hms,admin-panel1.php,469,read,,,,appointmenttb.doctor,
+hms,admin-panel1.php,470,read,,,,appointmenttb.docFees,
+hms,admin-panel1.php,471,read,,,,appointmenttb.appdate,
+hms,admin-panel1.php,472,read,,,,appointmenttb.apptime,
+hms,admin-panel1.php,569,loop,list,table@552,tr,,
+hms,admin-panel1.php,577,read,,,,contact.name,
+hms,admin-panel1.php,578,read,,,,contact.email,
+hms,admin-panel1.php,579,read,,,,contact.contact,
+hms,admin-panel1.php,580,read,,,,contact.message,
+hms,admin-panel1.php,474,if,inline,,,,status text 'Active' (3 sibling ifs 474/478/483)
+hms,admin-panel1.php,478,if,inline,,,,'Cancelled by Patient'
+hms,admin-panel1.php,483,if,inline,,,,'Cancelled by Doctor'
+hms,search.php,1,unit,page,,,,POST results page; a plain GET shows nothing
+hms,search.php,4,if,request_handler,,,,wraps the whole page output; content only after POST search_submit
+hms,search.php,35,loop,list,table@22,tr,,row printed by one concatenated echo
+hms,search.php,43,read,,,,appointmenttb.fname,SQL has interpolated WHERE values only
+hms,search.php,44,read,,,,appointmenttb.lname,SQL has interpolated WHERE values only
+hms,search.php,45,read,,,,appointmenttb.email,SQL has interpolated WHERE values only
+hms,search.php,46,read,,,,appointmenttb.contact,SQL has interpolated WHERE values only
+hms,search.php,47,read,,,,appointmenttb.appdate,SQL has interpolated WHERE values only
+hms,search.php,48,read,,,,appointmenttb.apptime,SQL has interpolated WHERE values only
+hms,newfunc.php,1,unit,not_ui,,,,function library; top level prints nothing
+hms,newfunc.php,18,if,not_ui,,,,"POST update handler, header() redirect, no output"
+hms,newfunc.php,24,if,not_ui,,,,header() redirect only
+hms,admin-panel.php,331,function,component,,,,display_specs(): <option>s for a caller's <select>; v2: call line (defined at newfunc.php 42)
+hms,newfunc.php,46,loop,inline_map,caller,option,,container is the caller's <select> (admin-panel.php 331)
+hms,newfunc.php,49,read,,,,doctb.spec,"select distinct(spec): column named spec, as the app reads it"
+hms,admin-panel.php,359,function,component,,,,display_docs(): <option>s for a caller's <select>; v2: call line (defined at newfunc.php 53)
+hms,newfunc.php,58,loop,inline_map,caller,option,,container is the caller's <select> (admin-panel.php 359)
+hms,newfunc.php,63,read,,,,doctb.username,also in value attribute on the same line
+hms,newfunc.php,63,read,,,,doctb.docFees,data-value attribute
+hms,newfunc.php,63,read,,,,doctb.spec,data-spec attribute
+hms,newfunc.php,80,if,not_ui,,,,"POST insert handler, header() redirect"
+hms,newfunc.php,85,if,not_ui,,,,header() redirect only
+hms,prescribe.php,1,unit,page,,,,
+hms,prescribe.php,3,include,not_ui,,,,func1.php: top level prints only a JS alert inside a POST login handler
+hms,prescribe.php,11,if,not_ui,,,,"reads GET params into variables, no output"
+hms,prescribe.php,22,if,request_handler,,,,POST prescribe handler
+hms,prescribe.php,34,if,not_ui,,,,only JS alerts (if/else)
+hms,prescribe.php,115,read,,,,session,$doctor = $_SESSION['dname'] (line 10)
+hms,prescribe.php,138,read,,,,request,$fname: '' or $_GET / $_POST value (hidden input value attribute)
+hms,prescribe.php,139,read,,,,request,$lname: '' or $_GET / $_POST value (hidden input value attribute)
+hms,prescribe.php,140,read,,,,request,$appdate: '' or $_GET / $_POST value (hidden input value attribute)
+hms,prescribe.php,141,read,,,,request,$apptime: '' or $_GET / $_POST value (hidden input value attribute)
+hms,prescribe.php,142,read,,,,request,$pid: '' or $_GET / $_POST value (hidden input value attribute)
+hms,prescribe.php,143,read,,,,request,$ID: '' or $_GET / $_POST value (hidden input value attribute)
+hms,index1.php,1,unit,page,,,,static login page
+hms,index1.php,2,include,not_ui,,,,"ROOT header.php: <html><head><link favicon></head></html> only; head content, nothing visible"
+hms,contact.php,1,unit,not_ui,,,,POST endpoint for contact.html; prints only a JS alert + JS redirect
+hms,contact.php,3,if,request_handler,,,,POST btnSubmit handler
+hms,contact.php,13,if,not_ui,,,,only <script> (alert + location.href)
+hms,admin-panel.php,1,unit,page,,,,patient dashboard
+hms,admin-panel.php,3,include,not_ui,,,,func.php: top level prints only a JS alert inside a POST login handler; nothing on a plain GET
+hms,admin-panel.php,4,include,not_ui,,,,newfunc.php prints nothing at top level; its functions display_specs / display_docs are called at 331 / 359 (rows in newfunc.php)
+hms,admin-panel.php,18,if,request_handler,,,,POST app-submit (book appointment); prints only JS alerts
+hms,admin-panel.php,40,if,not_ui,,,,only JS alerts (if/else)
+hms,admin-panel.php,41,if,not_ui,,,,only JS alerts (if/else)
+hms,admin-panel.php,44,if,not_ui,,,,only JS alerts (if/else)
+hms,admin-panel.php,47,if,not_ui,,,,only JS alerts (if/else)
+hms,admin-panel.php,69,if,request_handler,,,,GET cancel handler; prints only a JS alert
+hms,admin-panel.php,72,if,not_ui,,,,only a JS alert
+hms,admin-panel.php,82,function,not_ui,,,,generate_bill(): builds an HTML string for the TCPDF bill; never printed into the page
+hms,admin-panel.php,87,loop,not_ui,,,,builds the PDF string ($output .=); no page output
+hms,admin-panel.php,108,if,request_handler,,,,GET generate_bill: replaces the response with a PDF (TCPDF Output); C1 route handler
+hms,admin-panel.php,142,function,not_ui,,,,get_specs(): returns JSON; never called
+hms,admin-panel.php,225,read,,,,session,$username = $_SESSION['username'] (line 9)
+hms,admin-panel.php,315,loop,not_ui,,,,PHP runs but its output is inside an HTML comment (lines 310-321); nothing visible
+hms,admin-panel.php,474,loop,list,table@454,tr,,appointment history
+hms,admin-panel.php,482,read,,,,appointmenttb.doctor,
+hms,admin-panel.php,483,read,,,,appointmenttb.docFees,
+hms,admin-panel.php,484,read,,,,appointmenttb.appdate,
+hms,admin-panel.php,485,read,,,,appointmenttb.apptime,
+hms,admin-panel.php,488,if,inline,,,,status text 'Active' (3 sibling ifs 488/492/497)
+hms,admin-panel.php,492,if,inline,,,,'Cancelled by You'
+hms,admin-panel.php,497,if,inline,,,,'Cancelled by Doctor'
+hms,admin-panel.php,504,if,inline,,,,Cancel button link vs text 'Cancelled' (if/else)
+hms,admin-panel.php,508,read,,,,appointmenttb.ID,href attribute
+hms,admin-panel.php,551,if,not_ui,,,,prints only mysqli_error (error output)
+hms,admin-panel.php,556,loop,list,table@528,tr,,prescriptions
+hms,admin-panel.php,559,read,,,,prestb.doctor,
+hms,admin-panel.php,560,read,,,,prestb.ID,
+hms,admin-panel.php,561,read,,,,prestb.appdate,
+hms,admin-panel.php,562,read,,,,prestb.apptime,
+hms,admin-panel.php,563,read,,,,prestb.disease,
+hms,admin-panel.php,564,read,,,,prestb.allergy,
+hms,admin-panel.php,565,read,,,,prestb.prescription,
+hms,admin-panel.php,573,read,,,,prestb.ID,href attribute
+hms,admin-panel.php,574,read,,,,prestb.ID,hidden input value attribute
+hms,doctor-panel.php,1,unit,page,,,,doctor dashboard
+hms,doctor-panel.php,3,include,not_ui,,,,func1.php: top level prints only a JS alert inside a POST login handler
+hms,doctor-panel.php,6,if,request_handler,,,,GET cancel handler; prints only a JS alert
+hms,doctor-panel.php,9,if,not_ui,,,,only a JS alert
+hms,doctor-panel.php,104,read,,,,session,$_SESSION['dname'] echoed directly
+hms,doctor-panel.php,187,loop,list,table@162,tr,,appointments for this doctor
+hms,doctor-panel.php,190,read,,,,appointmenttb.pid,
+hms,doctor-panel.php,191,read,,,,appointmenttb.ID,
+hms,doctor-panel.php,192,read,,,,appointmenttb.fname,
+hms,doctor-panel.php,193,read,,,,appointmenttb.lname,
+hms,doctor-panel.php,194,read,,,,appointmenttb.gender,
+hms,doctor-panel.php,195,read,,,,appointmenttb.email,
+hms,doctor-panel.php,196,read,,,,appointmenttb.contact,
+hms,doctor-panel.php,197,read,,,,appointmenttb.appdate,
+hms,doctor-panel.php,198,read,,,,appointmenttb.apptime,
+hms,doctor-panel.php,200,if,inline,,,,status text 'Active' (3 sibling ifs 200/204/209)
+hms,doctor-panel.php,204,if,inline,,,,'Cancelled by Patient'
+hms,doctor-panel.php,209,if,inline,,,,'Cancelled by You'
+hms,doctor-panel.php,216,if,inline,,,,Cancel button link vs text 'Cancelled' (if/else)
+hms,doctor-panel.php,220,read,,,,appointmenttb.ID,href attribute
+hms,doctor-panel.php,232,if,inline,,,,Prescribe button link vs text '-' (if/else)
+hms,doctor-panel.php,235,read,,,,appointmenttb.pid,href attribute (6 reads on this line)
+hms,doctor-panel.php,235,read,,,,appointmenttb.ID,href attribute
+hms,doctor-panel.php,235,read,,,,appointmenttb.fname,href attribute
+hms,doctor-panel.php,235,read,,,,appointmenttb.lname,href attribute
+hms,doctor-panel.php,235,read,,,,appointmenttb.appdate,href attribute
+hms,doctor-panel.php,235,read,,,,appointmenttb.apptime,href attribute
+hms,doctor-panel.php,281,if,not_ui,,,,prints only mysqli_error (error output)
+hms,doctor-panel.php,286,loop,list,table@256,tr,,prescriptions by this doctor
+hms,doctor-panel.php,289,read,,,,prestb.pid,
+hms,doctor-panel.php,290,read,,,,prestb.fname,
+hms,doctor-panel.php,291,read,,,,prestb.lname,
+hms,doctor-panel.php,292,read,,,,prestb.ID,
+hms,doctor-panel.php,294,read,,,,prestb.appdate,
+hms,doctor-panel.php,295,read,,,,prestb.apptime,
+hms,doctor-panel.php,296,read,,,,prestb.disease,
+hms,doctor-panel.php,297,read,,,,prestb.allergy,
+hms,doctor-panel.php,298,read,,,,prestb.prescription,
+hms,doctor-panel.php,333,loop,list,table@312,tr,,all appointments
+hms,doctor-panel.php,341,read,,,,appointmenttb.fname,
+hms,doctor-panel.php,342,read,,,,appointmenttb.lname,
+hms,doctor-panel.php,343,read,,,,appointmenttb.email,
+hms,doctor-panel.php,344,read,,,,appointmenttb.contact,
+hms,doctor-panel.php,345,read,,,,appointmenttb.doctor,
+hms,doctor-panel.php,346,read,,,,appointmenttb.docFees,
+hms,doctor-panel.php,347,read,,,,appointmenttb.appdate,
+hms,doctor-panel.php,348,read,,,,appointmenttb.apptime,
+hms,appsearch.php,1,unit,page,,,,POST results page; a plain GET shows nothing
+hms,appsearch.php,12,include,not_ui,,,,newfunc.php prints nothing at top level
+hms,appsearch.php,13,if,request_handler,,,,wraps the whole page output; content only after POST app_search_submit
+hms,appsearch.php,19,if,own_component,,,,then: JS alert only (no record); else: the result card with one row (large block). No loop: one record only
+hms,appsearch.php,66,read,,,,appointmenttb.fname,via $var = $row[...] copy; SQL has an interpolated WHERE value only; v2: print line (copy at 44)
+hms,appsearch.php,67,read,,,,appointmenttb.lname,via $var = $row[...] copy; v2: print line (copy at 45)
+hms,appsearch.php,68,read,,,,appointmenttb.email,via $var = $row[...] copy; v2: print line (copy at 46)
+hms,appsearch.php,69,read,,,,appointmenttb.contact,via $var = $row[...] copy; v2: print line (copy at 47)
+hms,appsearch.php,70,read,,,,appointmenttb.doctor,via $var = $row[...] copy; v2: print line (copy at 48)
+hms,appsearch.php,71,read,,,,appointmenttb.docFees,via $var = $row[...] copy; v2: print line (copy at 49)
+hms,appsearch.php,72,read,,,,appointmenttb.appdate,via $var = $row[...] copy; v2: print line (copy at 50)
+hms,appsearch.php,73,read,,,,appointmenttb.apptime,via $var = $row[...] copy; v2: print line (copy at 51)
+hms,appsearch.php,52,if,inline,,,,sets $appstatus (printed at 74) to 'Active'; 3 sibling ifs 52/56/61; markup-free text choice
+hms,appsearch.php,56,if,inline,,,,'Cancelled by You'
+hms,appsearch.php,61,if,inline,,,,'Cancelled by Doctor'
+hms,doctorsearch.php,1,unit,page,,,,POST results page; a plain GET shows nothing
+hms,doctorsearch.php,11,include,not_ui,,,,newfunc.php prints nothing at top level
+hms,doctorsearch.php,12,if,request_handler,,,,wraps the whole page output; content only after POST doctor_search_submit
+hms,doctorsearch.php,18,if,own_component,,,,then: JS alert only; else: result card with one row. The while loop at 37 is commented out
+hms,doctorsearch.php,43,read,,,,doctb.username,via $var = $row[...] copy; v2: print line (copy at 38)
+hms,doctorsearch.php,44,read,,,,doctb.password,via $var = $row[...] copy; v2: print line (copy at 39)
+hms,doctorsearch.php,45,read,,,,doctb.email,via $var = $row[...] copy; v2: print line (copy at 40)
+hms,doctorsearch.php,46,read,,,,doctb.docFees,via $var = $row[...] copy; v2: print line (copy at 41)
+hms,messearch.php,1,unit,page,,,,POST results page; a plain GET shows nothing
+hms,messearch.php,10,include,not_ui,,,,newfunc.php prints nothing at top level
+hms,messearch.php,11,if,request_handler,,,,wraps the whole page output; content only after POST mes_search_submit
+hms,messearch.php,17,if,own_component,,,,then: JS alert only; else: result card with one row
+hms,messearch.php,42,read,,,,contact.name,via $var = $row[...] copy; v2: print line (copy at 37)
+hms,messearch.php,43,read,,,,contact.email,via $var = $row[...] copy; v2: print line (copy at 38)
+hms,messearch.php,44,read,,,,contact.contact,via $var = $row[...] copy; v2: print line (copy at 39)
+hms,messearch.php,45,read,,,,contact.message,via $var = $row[...] copy; v2: print line (copy at 40)
+hms,patientsearch.php,1,unit,page,,,,POST results page; a plain GET shows nothing
+hms,patientsearch.php,10,include,not_ui,,,,newfunc.php prints nothing at top level
+hms,patientsearch.php,11,if,request_handler,,,,wraps the whole page output; content only after POST patient_search_submit
+hms,patientsearch.php,17,if,own_component,,,,then: JS alert only; else: result card with one row
+hms,patientsearch.php,44,read,,,,patreg.fname,via $var = $row[...] copy; v2: print line (copy at 38)
+hms,patientsearch.php,45,read,,,,patreg.lname,via $var = $row[...] copy; v2: print line (copy at 39)
+hms,patientsearch.php,46,read,,,,patreg.email,via $var = $row[...] copy; v2: print line (copy at 40)
+hms,patientsearch.php,47,read,,,,patreg.contact,via $var = $row[...] copy; v2: print line (copy at 41)
+hms,patientsearch.php,48,read,,,,patreg.password,via $var = $row[...] copy; v2: print line (copy at 42)
+hms,func.php,1,unit,not_ui,,,,POST endpoint for the patient login (index1.php form); prints only a JS alert + JS redirect
+hms,func.php,4,if,request_handler,,,,POST patsub login; prints a JS alert on failure
+hms,func.php,9,if,not_ui,,,,header() redirect or JS alert only
+hms,func.php,11,loop,not_ui,,,,copies the row into $_SESSION; no output
+hms,func.php,29,if,not_ui,,,,"POST update handler, header() redirect, no output"
+hms,func.php,35,if,not_ui,,,,header() redirect only
+hms,func.php,55,if,not_ui,,,,"POST insert handler, header() redirect, no output"
+hms,func.php,63,if,not_ui,,,,header() redirect only
+hms,func.php,66,function,not_ui,,,,display_admin_panel(): never called (dead code); the display_docs() call inside it is literal text in a single-quoted string
+hms,func1.php,1,unit,not_ui,,,,POST endpoint for the doctor login (index.php form); prints only a JS alert + JS redirect
+hms,func1.php,4,if,request_handler,,,,POST docsub1 login; prints a JS alert on failure
+hms,func1.php,9,if,not_ui,,,,header() redirect or JS alert only
+hms,func1.php,11,loop,not_ui,,,,copies the row into $_SESSION; no output
+hms,func1.php,39,function,not_ui,,,,display_docs(): never called by doctor-panel.php or prescribe.php (dead code)
+hms,func1.php,44,loop,not_ui,,,,inside a function that is never called
+hms,func1.php,48,read,,,,unknown,$row['name']: doctb has no name column in myhmsdb.sql; v2: print line (copy at 46)
+hms,func1.php,62,function,not_ui,,,,display_admin_panel(): never called (dead code)
+hms,func2.php,1,unit,not_ui,,,,POST endpoint for patient registration (index.php form); prints nothing (header redirects only)
+hms,func2.php,4,if,not_ui,,,,"POST patsub1 handler, header() redirects, no output"
+hms,func2.php,12,if,not_ui,,,,no output
+hms,func2.php,15,if,not_ui,,,,header() redirect only
+hms,func2.php,27,if,not_ui,,,,no output
+hms,func2.php,36,if,not_ui,,,,"POST update handler, header() redirect, no output"
+hms,func2.php,42,if,not_ui,,,,header() redirect only
+hms,func2.php,62,if,not_ui,,,,"POST insert handler, header() redirect, no output"
+hms,func2.php,67,if,not_ui,,,,header() redirect only
+hms,func2.php,70,function,not_ui,,,,display_admin_panel(): never called (dead code)
+hms,func3.php,1,unit,not_ui,,,,POST endpoint for the admin login (index.php form); prints only a JS alert + JS redirect
+hms,func3.php,4,if,request_handler,,,,POST adsub login; prints a JS alert on failure
+hms,func3.php,9,if,not_ui,,,,header() redirect or JS alert only
+hms,func3.php,19,if,not_ui,,,,"POST update handler, header() redirect, no output"
+hms,func3.php,25,if,not_ui,,,,header() redirect only
+hms,func3.php,32,function,not_ui,,,,display_docs(): never called (dead code)
+hms,func3.php,37,loop,not_ui,,,,inside a function that is never called
+hms,func3.php,41,read,,,,unknown,$row['name']: doctb has no name column in myhmsdb.sql; v2: print line (copy at 39)
+hms,func3.php,45,if,not_ui,,,,"POST insert handler, header() redirect, no output"
+hms,func3.php,50,if,not_ui,,,,header() redirect only
+hms,index.php,1,unit,page,,,,static home page with 3 login/register forms; no PHP
+hms,error.php,1,unit,page,,,,static error page; no PHP
+hms,error1.php,1,unit,page,,,,static error page; no PHP
+hms,error2.php,1,unit,page,,,,static error page; no PHP
+hms,logout.php,1,unit,page,,,,session_destroy() then a static page; no conditions
+hms,logout1.php,1,unit,page,,,,session_destroy() then a static page; no conditions
+hms,header.php,1,unit,not_ui,,,,"included by index1.php only: <html><head><link favicon></head></html>; head content, nothing visible"
+hms,include/checklogin.php,1,unit,not_ui,,,,unused leftover (never included); redirect logic only
+hms,include/config.php,1,unit,not_ui,,,,unused leftover; prints only a DB connect error
+hms,include/header.php,1,unit,unsure,,,,unsure: unused leftover template part (never included; queries a users table not in myhmsdb.sql)
+hms,include/footer.php,1,unit,unsure,,,,unsure: unused leftover template part (never included)
+hms,include/setting.php,1,unit,unsure,,,,unsure: unused leftover template part (never included)
+hms,include/sidebar.php,1,unit,unsure,,,,unsure: unused leftover template part (never included)
