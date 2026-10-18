@@ -1,13 +1,20 @@
-"""Write docs/c2-results.md: Component 2's results on the ten mocks, for the report.
+"""Write Component 2's results tables as Markdown, for the report, from the result files only (nothing is
+recomputed; the same commit and result files always give byte-identical Markdown):
 
-Reads only what the pipeline already wrote: output/stage{1..5}_<mock>.json and the compile check's
-output/tsc_<mock>.json. Nothing is recomputed. The header names the git commit (and its date) the
-outputs were produced from, so the same commit and outputs always give byte-identical Markdown.
+  (default)  docs/c2-results.md: the ten mocks, from output/stage{1..5}_<mock>.json and output/tsc_<mock>.json.
+  phase4     the Phase 4 runtime tables (docs/phase4-results.md §3 / §5): for each app and database, the rules
+             versions side by side, from the runs' output/runtime/<folder>/classified.json (PHASE4 names them).
+  phase5     the Phase 5 metric tables (docs/eval-mapping.md §3): v1.0 and v1.1 side by side for each scored
+             report (output/eval/<key>.json, written by tools/eval/score.py), plus the rows to review by hand.
 
-Usage, from component2_frontend/ (after `--stage 5` on every mock and tools/compile_check.py):
-    venv/Scripts/python.exe tools/results_table.py
+Usage, from component2_frontend/:
+    venv/Scripts/python.exe tools/results_table.py [<markdown>]          # after `--stage 5` on every mock
+    venv/Scripts/python.exe tools/results_table.py phase4 [--out <markdown>]
+    venv/Scripts/python.exe tools/results_table.py phase5 [<report.json> ...] [--out <markdown>]
+(phase4 / phase5 print to the console unless --out is given.)
 """
 
+import collections
 import json
 import subprocess
 import sys
@@ -184,7 +191,156 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------- Phase 4: the runtime check
+
+RUNTIME = OUTPUT / "runtime"
+VERSIONS4 = ("v1.0", "v1.1-pre-4", "v1.1-change-4", "v1.1-final")
+PHPBLOG_4F_PAGES = ("index.php", "blog.php", "gallery.php", "contact.php", "login.php", "error404.php",
+                    "install__upgrade-v2.2.php")
+# (title, the run folder of each rules version, the pages counted (None: all compared pages)). The folders are the
+# runs reported in docs/phase4-results.md; each was classified against its own no-data build.
+PHASE4 = (
+    ("HMS", ("hms-v1.0", "hms-v1.1-final", "hms-v1.1-c4", "hms-final"), None),
+    ("phpBlog, shipped seed", ("phpblog-v1.0", "phpblog", "phpblog-c4", "phpblog-final-seed"), None),
+    ("phpBlog, seed + fixture, the 7 pages of Phase 4f",
+     ("phpblog-v1.0-fx2", "phpblog-pre4-fx2", "phpblog-c4-fx2", "phpblog-final-fx"), PHPBLOG_4F_PAGES),
+    ("phpBlog, seed + fixture, 13 pages",
+     ("phpblog-v1.0-fx2", "phpblog-pre4-fx2", "phpblog-c4-fx2", "phpblog-final-fx"), None),
+)
+
+
+def phase4_column(folder: str, pages: tuple | None, runtime: Path = RUNTIME) -> dict:
+    path = runtime / folder / "classified.json"
+    if not path.exists():
+        raise FileNotFoundError(f"{path} is missing: capture, compare and classify that run first "
+                                "(tools/runtime/README or the app's README)")
+    report = json.loads(path.read_text(encoding="utf-8"))
+    rows = [p for p in report["pages"] if pages is None or p["page"] in pages]
+    total = collections.Counter()
+    classes = collections.Counter()
+    for p in rows:
+        for key in ("legacyElements", "matched", "listMatched", "listElements", "staticMatched", "staticElements",
+                    "unexplained", "flagButWrong"):
+            total[key] += p[key]
+        classes.update(d["class"] for d in p["differences"])
+    return {"pages": len(rows), "rules": report.get("rules"), "data": report.get("data", "seed"),
+            "total": total, "classes": classes, "differences": sum(classes.values())}
+
+
+def phase4_table(title: str, folders: tuple, pages: tuple | None, runtime: Path = RUNTIME) -> list[str]:
+    columns = [phase4_column(f, pages, runtime) for f in folders]
+    head = " | ".join(f"{v} (`{f}`)" for v, f in zip(VERSIONS4, folders))
+    lines = [f"### {title}", "", f"| | {head} |", "|---|" + "---|" * len(columns)]
+
+    def line(label, values):
+        lines.append(f"| {label} | " + " | ".join(str(v) for v in values) + " |")
+
+    line("Pages compared", [c["pages"] for c in columns])
+    line("Legacy elements", [c["total"]["legacyElements"] for c in columns])
+    line("Matched", [c["total"]["matched"] for c in columns])
+    line("**Render match**", [f"{c['total']['matched'] / c['total']['legacyElements']:.3f}"
+                              if c["total"]["legacyElements"] else "–" for c in columns])
+    line("List elements matched", [f"{c['total']['listMatched']} / {c['total']['listElements']}" for c in columns])
+    line("Static elements matched", [f"{c['total']['staticMatched']} / {c['total']['staticElements']}"
+                                     for c in columns])
+    line("Differences", [c["differences"] for c in columns])
+    line("**UNEXPLAINED**", [c["total"]["unexplained"] for c in columns])
+    line("**flag-but-wrong**", [c["total"]["flagButWrong"] for c in columns])
+    for name in sorted(set().union(*(c["classes"] for c in columns))):
+        line(f"`{name}`", [c["classes"].get(name, 0) for c in columns])
+    return lines + [""]
+
+
+def render_phase4(runtime: Path = RUNTIME, markdown: Path | None = None) -> str:
+    lines = ["# Component 2 — Phase 4 runtime tables", "",
+             f"Generated by `tools/results_table.py phase4` from `output/runtime/<run>/classified.json` "
+             f"({source(markdown or DEFAULT_MARKDOWN)}). Unsound decisions are not in these files: they are the "
+             "hand-reviewed findings of docs/phase4-results.md.", ""]
+    for title, folders, pages in PHASE4:
+        lines += phase4_table(title, folders, pages, runtime)
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------- Phase 5: the evaluation metrics
+
+PHASE5_ROWS = (("Scored gold rows", "scoredRows"), ("Boundary rows", "boundaryRows"), ("Read rows", "readRows"),
+               ("Boundary precision", "boundaryPrecision"), ("Boundary recall", "boundaryRecall"),
+               ("**Unsound decisions (strict)**", "unsoundStrict"),
+               ("Unsound decisions (flag-adjusted)", "unsoundFlagAdjusted"), ("Abstain rate", "abstainRate"),
+               ("Binding accuracy", "bindingAccuracy"), ("Wrong bindings", "wrongBindings"),
+               ("Compile rate", "compileRate"), ("Flag rate per page", "flagRatePerPage"))
+RESULTS = ("correct", "abstain", "wrong", "miss", "unmapped")
+
+
+def fmt(value) -> str:
+    return "–" if value is None else (f"{value:.3f}" if isinstance(value, float) else str(value))
+
+
+def phase5_table(report: dict) -> list[str]:
+    name = report.get("key", report["app"])
+    versions = report["versions"]
+    lines = [f"### {name} (app `{report['app']}`)", "", "| Metric | v1.0 | v1.1-final |", "|---|---|---|"]
+    for label, key in PHASE5_ROWS:
+        lines.append(f"| {label} | " + " | ".join(fmt(versions[v]["metrics"][key]) for v in ("1.0", "1.1")) + " |")
+    for result in RESULTS:
+        lines.append(f"| rows `{result}` | " + " | ".join(
+            str(versions[v]["metrics"]["results"].get(result, 0)) for v in ("1.0", "1.1")) + " |")
+    for status in ("unsure", "not_in_mapping"):
+        lines.append(f"| rows `{status}` (not scored) | " + " | ".join(
+            str(sum(r["status"] == status for r in versions[v]["rows"])) for v in ("1.0", "1.1")) + " |")
+    if report.get("agreement"):
+        a = report["agreement"]
+        lines += ["", f"Agreement on `if` decisions with the second key: {a['pairs']} pairs, "
+                      f"{fmt(a['agreement'])} agreement, Cohen's κ {fmt(a['kappa'])}."]
+    review = [(v, r) for v in ("1.0", "1.1") for r in versions[v]["rows"]
+              if r["status"] == "not_in_mapping" or (r["status"] == "scored"
+                                                     and r["score"]["result"] in ("wrong", "unmapped"))]
+    lines += ["", "Rows to review by hand (wrong, unmapped, not_in_mapping):", "",
+              "| Version | Gold row | Construct | Gold | Result | Tool |", "|---|---|---|---|---|---|"]
+    for v, r in review:
+        result = r["status"] if r["status"] != "scored" else r["score"]["result"] + (
+            " †" if r["score"].get("specificReview") else "")
+        tool = r["score"]["tool"] if r["status"] == "scored" else "–"
+        lines.append(f"| v{v} | `{r['file']}:{r['line']}` | {r['construct']} | {r['decision'] or r['binding']} | "
+                     f"{result} | {tool} |")
+    if not review:
+        lines.append("| – | none | | | | |")
+    return lines + ["", "† a wrong decision whose node carries a specific review (flag-adjusted: not counted).", ""]
+
+
+def render_phase5(reports: list[Path], markdown: Path | None = None) -> str:
+    lines = ["# Component 2 — Phase 5 evaluation tables", "",
+             f"Generated by `tools/results_table.py phase5` from {', '.join(f'`{p.as_posix()}`' for p in reports)} "
+             f"({source(markdown or DEFAULT_MARKDOWN)}); scored by `tools/eval/score.py` (docs/eval-mapping.md "
+             "v1.1). v1.0 = the frozen rules (`27c380e`), v1.1-final = changes 1–5 (`535e2e6`).", ""]
+    for path in reports:
+        lines += phase5_table(json.loads(path.read_text(encoding="utf-8")))
+    return "\n".join(lines)
+
+
+def write(text: str, markdown: Path | None) -> None:
+    if markdown is None:
+        sys.stdout.write(text + "\n")
+        return
+    markdown.parent.mkdir(parents=True, exist_ok=True)
+    with markdown.open("w", encoding="utf-8", newline="\n") as f:
+        f.write(text + "\n")
+    print(f"wrote {markdown}")
+
+
 def main(argv: list[str]) -> int:
+    if argv and argv[0] in ("phase4", "phase5"):
+        out = Path(argv[argv.index("--out") + 1]) if "--out" in argv else None
+        named = [a for i, a in enumerate(argv[1:], start=1) if a != "--out" and argv[i - 1] != "--out"]
+        if argv[0] == "phase4":
+            write(render_phase4(RUNTIME, out), out)
+        else:
+            reports = [Path(a) for a in named] or sorted((OUTPUT / "eval").glob("*.json"))
+            if not reports:
+                print("no Phase 5 report: run tools/eval/score.py first", file=sys.stderr)
+                return 2
+            write(render_phase5(reports, out), out)
+        return 0
     markdown = Path(argv[0]) if argv else DEFAULT_MARKDOWN
     text = render(OUTPUT, markdown)
     markdown.parent.mkdir(parents=True, exist_ok=True)

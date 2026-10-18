@@ -5,19 +5,31 @@ tools/eval/run_eval.py (`output/eval/runs/<app>/v1.0/` and `v1.1/`, each the Sta
 the app, plus `run.json`). Writes `output/eval/<app>.json` (every gold row with its result, both versions) and
 `docs/eval-results.md` (every scored app, per app and in total, v1.0 and v1.1 side by side).
 
-Mapping section 4.1 is enforced first: the scorer refuses to run if the app's gold files (`gold/<app>.csv`, and
-`gold/<app>.second.csv` / `gold/sample.txt` when present) have uncommitted changes, are not committed, or were last
-committed after the first tool output (`firstRun` in run.json). `gold/corrections.md` is not checked: it is meant to
-be written after the run (guide section 1.4).
+Mapping section 4.1 is enforced first: the scorer refuses to run if the gold directory has any uncommitted change
+(a new, changed or deleted file anywhere under it; Phase 5R fix: before, only the app's own files were checked), if
+the app's gold files (`gold/<key>.csv`, and `gold/<key>.second.csv` / `gold/sample.txt` when present) are not
+committed, or if they were last committed after the first tool output (`firstRun` in run.json). `gold/corrections.md`
+is not checked: it is meant to be written after the run (guide section 1.4).
+
+`--key <name>` (Phase 5R) scores the gold file `<gold-dir>/<name>.csv` against the runs of `<app>` (default: the
+app's name), e.g. a practice key `gold/practice/hms-practice-gold.csv`; the report is written as `<out>/<name>.json`.
 
 Results per gold row: `correct`, `abstain` (a miss, not wrong), `wrong`, `miss` (no tool construct at that file and
 line), `unmapped` (a tool result the mapping table does not name for that decision: counted like a miss and listed
 row by row for manual review, mapping v1.1 section 3). Gold rows with `unsure` in their notes, and gold decisions the
 mapping table does not name (e.g. loop `cannot_migrate`, unit `layout_part`), are not scored: they are listed.
 
+Phase 5R fixes (the scorer was stricter than the mapping's own words; scores reported before and after, mapping
+section 5): where the mapping's "wrong" column says the output is rendered — `unit not_ui` ("a page that renders
+content"), `if request_handler` ("handler output rendered unconditionally", also an R-I1 on an `if not_ui`) and
+`loop not_ui` ("a List or inline map that renders output") — a generated page that renders nothing and a List in a
+function that nothing calls are results the table does not name: `unmapped`, listed. An `if not_ui` whose only effect
+is a `header_redirect` flag has no Stage 2 node: "no node", correct. (`if not_ui` against a conditional whose content
+is hidden stays `wrong`: "a rendered conditional" may mean the conditional itself; an open question for the owner.)
+
 Usage, from component2_frontend/:
-    venv/Scripts/python.exe tools/eval/score.py <app> [--gold-dir gold] [--runs output/eval/runs] [--out output/eval]
-        [--doc docs/eval-results.md]
+    venv/Scripts/python.exe tools/eval/score.py <app> [--key <name>] [--gold-dir gold] [--runs output/eval/runs]
+        [--out output/eval] [--doc docs/eval-results.md]
 """
 
 import csv
@@ -58,22 +70,31 @@ def git(repo: Path, *args: str) -> str:
     return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, check=True).stdout
 
 
-def gold_files(gold_dir: Path, app: str) -> list[Path]:
-    return [p for p in (gold_dir / f"{app}.csv", gold_dir / f"{app}.second.csv", gold_dir / "sample.txt")
-            if p.exists() or p.name == f"{app}.csv"]
+AFTER_THE_RUN = ("corrections.md",)  # written after the run (gold-standard guide section 1.4): not checked
 
 
-def gold_commit_time(gold_dir: Path, app: str) -> int:
-    """The latest commit time (epoch) of the app's gold files. Refuses when one is missing, not committed, or
-    changed since its commit."""
-    files = gold_files(gold_dir, app)
+def gold_files(gold_dir: Path, key: str) -> list[Path]:
+    return [p for p in (gold_dir / f"{key}.csv", gold_dir / f"{key}.second.csv", gold_dir / "sample.txt")
+            if p.exists() or p.name == f"{key}.csv"]
+
+
+def gold_commit_time(gold_dir: Path, key: str) -> int:
+    """The latest commit time (epoch) of the gold files of `key`. Refuses when one is missing or not committed, or
+    when anything under the gold directory has an uncommitted change (mapping section 4.1: "`gold/` has
+    uncommitted changes")."""
+    files = gold_files(gold_dir, key)
     if not files[0].exists():
         raise Refused(f"{files[0]} does not exist")
     repo = Path(git(gold_dir, "rev-parse", "--show-toplevel").strip())
-    names = [p.resolve().relative_to(repo.resolve()).as_posix() for p in files]
-    dirty = git(repo, "status", "--porcelain", "--", *names).strip()
+    # the whole `gold/` folder, also when the key is in a subfolder of it (gold/practice/, Phase 5R)
+    checked = next((p for p in (gold_dir.resolve(), *gold_dir.resolve().parents) if p.name == "gold"),
+                   gold_dir.resolve())
+    folder = checked.relative_to(repo.resolve()).as_posix()
+    dirty = [line for line in git(repo, "status", "--porcelain", "--untracked-files=all", "--", folder).splitlines()
+             if line.strip() and Path(line[3:].strip('"')).name not in AFTER_THE_RUN]
     if dirty:
-        raise Refused(f"gold files have uncommitted changes: {dirty}")
+        raise Refused(f"{folder}/ has uncommitted changes: {'; '.join(dirty)}")
+    names = [p.resolve().relative_to(repo.resolve()).as_posix() for p in files]
     times = []
     for name in names:
         stamp = git(repo, "log", "-1", "--format=%ct", "--", name).strip()
@@ -83,12 +104,12 @@ def gold_commit_time(gold_dir: Path, app: str) -> int:
     return max(times)
 
 
-def check_order(gold_dir: Path, runs: Path, app: str) -> dict:
+def check_order(gold_dir: Path, runs: Path, app: str, key: str | None = None) -> dict:
     run_file = runs / app / "run.json"
     if not run_file.exists():
         raise Refused(f"no tool output for {app} ({run_file})")
     run = json.loads(run_file.read_text(encoding="utf-8"))
-    committed = gold_commit_time(gold_dir, app)
+    committed = gold_commit_time(gold_dir, key or app)
     if committed > run["firstRun"]:
         raise Refused(f"gold for {app} was committed at {committed}, after the first tool output ({run['firstRun']})")
     return {"goldCommitted": committed, "firstRun": run["firstRun"]}
@@ -218,6 +239,34 @@ class ToolRun:
         """The reason of the abstained region the construct's output stands in, when it has no node of its own."""
         return next((self.abstained[o] for o in self.inside.get(construct, []) if o in self.abstained), None)
 
+    def renders(self, key: str) -> bool:
+        """Whether the unit's generated page renders anything: its Page's JSX, without the `no_endpoint` C2Todo
+        (every page of a run without a contract has it), C2Todos (render nothing) and `{unresolvedCondition(...) &&
+        (...)}` blocks (hidden), still holds an element or text (Phase 5R)."""
+        pages = sorted((self.folder / key / "generated" / "app").rglob("page.tsx"))
+        if not pages:
+            return False
+        lines = pages[0].read_text(encoding="utf-8").split("\n")
+        start = next((i for i, line in enumerate(lines) if line.startswith("export default ")), None)
+        if start is None:
+            return False
+        body, skip = [], None
+        for line in lines[start + 1:]:
+            if line == "}":
+                break
+            stripped = line.strip()
+            if skip is not None:  # inside a hidden block: until its closing `)}` at the same indent
+                if stripped == ")}" and len(line) - len(line.lstrip()) == skip:
+                    skip = None
+                continue
+            if stripped.startswith("{unresolvedCondition(") and stripped.endswith("&& ("):
+                skip = len(line) - len(line.lstrip())
+                continue
+            body.append(stripped)
+        rest = [b for b in body if b and not b.startswith("<C2Todo ")
+                and b not in ("return (", ");", "<>", "</>")]
+        return bool(rest)
+
     def unresolved(self, if_id: str) -> str | None:
         """The reason of an `unresolvedCondition` on this if (its content never renders), or None."""
         found = [f["reason"] for f in self.flags.get(if_id, []) if f["kind"] == "unresolvedCondition"]
@@ -252,6 +301,8 @@ def loop_result(run: ToolRun, row: dict, loop: str) -> tuple[str, str]:
     lists = [(key, n) for key, n, _ in found if n["type"] == "List"]
     statics = [n for _, n, _ in found if n["type"] == "Static" and set(n["rules"]) & {"R-L5", "R-I7"}]
     decision = row["decision"]
+    if lists and decision == "not_ui" and all(run.units[k]["role"] == "not_called" for k, _ in lists):
+        return "unmapped", "List in a function that nothing calls (renders no output; Phase 5R)"
     if lists:
         key, node = lists[0]
         inline = bool({"R-L3", "R-L3b"} & set(node["rules"]))
@@ -300,6 +351,8 @@ def if_kind(run: ToolRun, if_id: str) -> tuple[str, dict | None]:
 def if_result(run: ToolRun, row: dict, if_id: str) -> tuple[str, str]:
     kind, node = if_kind(run, if_id)
     hidden = run.unresolved(if_id)
+    keys = [k for k, _, _ in run.nodes.get(if_id, [])]
+    rendered_page = kind == "R-I1" and any(run.renders(k) for k in keys)  # R-I1: the page renders its body
     omitted = any((f.get("flag") or "") == "attribute_omitted" for f in run.flags.get(if_id, []))
     described = kind + (f", unresolvedCondition({hidden})" if hidden else "")
     conditional = kind in CONDITIONAL_RULES
@@ -345,10 +398,14 @@ def if_result(run: ToolRun, row: dict, if_id: str) -> tuple[str, str]:
     if decision == "request_handler":
         if hidden == "needs_request_context" or kind == "R-I7":
             return "correct", described
+        if kind == "R-I1" and not rendered_page:  # the handler's output renders nothing (e.g. only inline JS)
+            return "unmapped", described + ", the page renders nothing"
         return ("wrong" if kind == "R-I1" else "unmapped"), described
     if decision == "not_ui":
-        if kind in ("R-I7", "none"):
+        if kind in ("R-I7", "none", "header_redirect"):  # header_redirect: no Stage 2 node, only an info flag
             return "correct", described
+        if kind == "R-I1" and not rendered_page:
+            return "unmapped", described + ", the page renders nothing"
         return ("wrong" if conditional or kind == "R-I1" else "unmapped"), described
     return "unmapped", described
 
@@ -393,6 +450,8 @@ def unit_result(run: ToolRun, row: dict) -> tuple[str, str]:
                and e["role"] in ("page", "not_called")]
     generated = [e for e in entries if not e.get("notGenerated")]
     if generated:
+        if row["decision"] == "not_ui" and not any(run.renders(e["key"]) for e in generated):
+            return "unmapped", "generated page that renders nothing"
         return ("correct" if row["decision"] == "page" else "wrong"), "generated page"
     described = f"not generated ({entries[0]['notGenerated'].get('reason')})" if entries else "no unit"
     return ("correct" if row["decision"] == "not_ui" else "wrong"), described
@@ -524,8 +583,8 @@ def kappa(pairs: list) -> dict:
             "kappa": round((agree - chance) / (1 - chance), 4) if chance < 1 else None}
 
 
-def agreement(gold_dir: Path, app: str, rows: list) -> dict | None:
-    second = gold_dir / f"{app}.second.csv"
+def agreement(gold_dir: Path, key: str, rows: list) -> dict | None:
+    second = gold_dir / f"{key}.second.csv"
     if not second.exists():
         return None
     theirs = {(r["file"], r["line"]): r["decision"] for r in load_gold(second) if r["construct"] == "if"}
@@ -537,11 +596,14 @@ def agreement(gold_dir: Path, app: str, rows: list) -> dict | None:
 # ---------------------------------------------------------------- one app, both versions
 
 
-def score_app(app: str, gold_dir: Path, runs: Path) -> dict:
-    order = check_order(gold_dir, runs, app)
-    gold = load_gold(gold_dir / f"{app}.csv")
+def score_app(app: str, gold_dir: Path, runs: Path, key: str | None = None) -> dict:
+    key = key or app
+    order = check_order(gold_dir, runs, app, key)
+    gold = load_gold(gold_dir / f"{key}.csv")
     report = {"app": app, "mapping": "docs/eval-mapping.md v1.1", "order": order, "versions": {},
-              "agreement": agreement(gold_dir, app, gold)}
+              "agreement": agreement(gold_dir, key, gold)}
+    if key != app:
+        report["key"] = key
     for version in VERSIONS:
         run = ToolRun(runs / app / f"v{version}" / app)
         used, rows = set(), []
@@ -600,8 +662,9 @@ def write_doc(out: Path, doc: Path) -> None:
     reports = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(out.glob("*.json"))]
     lines = ["# Component 2 — Phase 5 Evaluation Results", "",
              "Generated by `tools/eval/score.py` from `output/eval/<app>.json` (mapping: `docs/eval-mapping.md` v1.1). "
-             "Every metric for **v1.0** (frozen rules) and **v1.1** (post-freeze changes 1–3), side by side.", ""]
-    columns = [(r["app"], r["versions"]) for r in reports]
+             "Every metric for **v1.0** (frozen rules, `27c380e`) and **v1.1** (v1.1-final: post-freeze changes 1–5, "
+             "`535e2e6`), side by side.", ""]
+    columns = [(r.get("key", r["app"]), r["versions"]) for r in reports]
     header = "| Metric | " + " | ".join(f"{app} v1.0 | {app} v1.1" for app, _ in columns) + " | total v1.0 | total v1.1 |"
     lines += [header, "|" + "---|" * (2 * len(columns) + 3)]
     both = {v: totals(reports, v) for v in VERSIONS}
@@ -609,7 +672,7 @@ def write_doc(out: Path, doc: Path) -> None:
         cells = [fmt(versions[v]["metrics"][key]) for _, versions in columns for v in VERSIONS]
         lines.append(f"| {label} | " + " | ".join(cells + [fmt(both[v][key]) for v in VERSIONS]) + " |")
     for report in reports:
-        lines += ["", f"## {report['app']}", ""]
+        lines += ["", f"## {report.get('key', report['app'])}", ""]
         if report.get("agreement"):
             a = report["agreement"]
             lines.append(f"Agreement on `if` decisions with the second annotator: {a['pairs']} pairs, "
@@ -638,20 +701,21 @@ def main(argv: list[str]) -> int:
         return 2
     option = lambda name, default: Path(argv[argv.index(name) + 1]) if name in argv else default  # noqa: E731
     app = argv[0]
+    key = argv[argv.index("--key") + 1] if "--key" in argv else app
     gold_dir, runs = option("--gold-dir", ROOT / "gold"), option("--runs", ROOT / "output" / "eval" / "runs")
     out, doc = option("--out", ROOT / "output" / "eval"), option("--doc", ROOT / "docs" / "eval-results.md")
     try:
-        report = score_app(app, gold_dir, runs)
+        report = score_app(app, gold_dir, runs, key)
     except Refused as refusal:
         print(f"refused (docs/eval-mapping.md section 4.1): {refusal}", file=sys.stderr)
         return 3
     out.mkdir(parents=True, exist_ok=True)
-    (out / f"{app}.json").write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n", encoding="utf-8",
+    (out / f"{key}.json").write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n", encoding="utf-8",
                                      newline="\n")
     write_doc(out, doc)
     for version in VERSIONS:
         m = report["versions"][version]["metrics"]
-        print(f"{app} v{version}: precision {fmt(m['boundaryPrecision'])}, recall {fmt(m['boundaryRecall'])}, "
+        print(f"{key} v{version}: precision {fmt(m['boundaryPrecision'])}, recall {fmt(m['boundaryRecall'])}, "
               f"unsound {m['unsoundStrict']} (flag-adjusted {m['unsoundFlagAdjusted']}), abstain "
               f"{fmt(m['abstainRate'])}, bindings {fmt(m['bindingAccuracy'])}, results {m['results']}")
     return 0
