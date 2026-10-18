@@ -1,5 +1,5 @@
 {
-  "note": "Reviewed root causes of the Phase 4e (phpBlog) differences tools/runtime/classify.py cannot tie to a flag at their node. Keyed by page and difference path (compare.py; \"*\" = every difference of the page); `rules` = the rules version of the run. A finding with a class other than UNEXPLAINED is a hand-reviewed link (its evidence names the flag and the node); UNEXPLAINED stays UNEXPLAINED. `rules` may list several versions: phpBlog's generated pages are the same under v1.0 and v1.1 before change 4 (normalised bodies compared, Phase 4f), and these findings were re-checked on the change-4 run. `data`: the database the finding was reviewed on (one name or a list; \"seed\", the default: install/database.sql; \"fixture\": seed + initdb/03-fixture.sql, Phase 4f; classify.py --data). A difference path depends on the data: with the fixture's featured post the carousel renders, and the Recent Posts row moves from div[0] to div[1]. The install, login.php and blog.php footer findings were re-checked on the fixture run: the same paths, values and root causes.",
+  "note": "Reviewed root causes of the Phase 4e (phpBlog) differences tools/runtime/classify.py cannot tie to a flag at their node. Keyed by page and difference path (compare.py; \"*\" = every difference of the page); `rules` = the rules version of the run. A finding with a class other than UNEXPLAINED is a hand-reviewed link (its evidence names the flag and the node); UNEXPLAINED stays UNEXPLAINED. `rules` may list several versions: phpBlog's generated pages are the same under v1.0 and v1.1 before change 4 (normalised bodies compared, Phase 4f), and these findings were re-checked on the change-4 run. `data`: the database the finding was reviewed on (one name or a list; \"seed\", the default: install/database.sql; \"fixture\": seed + initdb/03-fixture.sql, Phase 4f; classify.py --data). A difference path depends on the data: with the fixture's featured post the carousel renders, and the Recent Posts row moves from div[0] to div[1]. The install, login.php and blog.php footer findings were re-checked on the fixture run: the same paths, values and root causes. Phase 4g: page keys `<unit>@<query>` are the parameterised GETs of gets.json (capture.py --gets).",
   "findings": [
     {
       "page": "install__upgrade-v2.2.php",
@@ -96,6 +96,39 @@
       "data": "fixture",
       "class": "flag:attribute_omitted",
       "rootCause": "Reviewed link (fixture): index.php:104-111 `<div class=\"<?php if ($settings['posts_per_row'] == 3) echo 'col-md-4'; else echo 'col-md-6'; ?> mb-3\">` (one Recent Posts row); the class is omitted, flag attribute_omitted (condition_not_translatable) at the if f036#00279 (IndexList3Item). The mechanical link fails because the legacy value equals the literal class of the shell's footer <div> (core.php:999), which carries no flag. Under v1.1 final the row is not rendered at all (the list is in Arms_f036_00232: spec v0.16), so this difference exists only under v1.0 and v1.1 before change 4."
+    },
+    {
+      "page": "post.php@name=welcome-to-the-blog",
+      "path": "body>footer[0]>div[0]>div[2]>div[0]>a[0]>strong[0]>span[0]",
+      "rules": [
+        "1.0",
+        "1.1"
+      ],
+      "data": "fixture",
+      "class": "flag:C2Todo",
+      "rootCause": "Reviewed link (Phase 4g, a parameterised GET): the same as blog.php's footer finding: core.php:1006 `<span>&nbsp; <?php echo $settings['email']; ?></span>` (footer of the shell); C2Todo unresolved_read at f033#02168. The <span> and its ancestors up to the footer have no attribute the classifier can find them by."
+    },
+    {
+      "page": "post.php@name=writing-a-first-page",
+      "path": "body>footer[0]>div[0]>div[2]>div[0]>a[0]>strong[0]>span[0]",
+      "rules": [
+        "1.0",
+        "1.1"
+      ],
+      "data": "fixture",
+      "class": "flag:C2Todo",
+      "rootCause": "Reviewed link (Phase 4g, a parameterised GET): the same as blog.php's footer finding: core.php:1006 `<span>&nbsp; <?php echo $settings['email']; ?></span>` (footer of the shell); C2Todo unresolved_read at f033#02168. The <span> and its ancestors up to the footer have no attribute the classifier can find them by."
+    },
+    {
+      "page": "post.php@name=lists-and-tables",
+      "path": "body>footer[0]>div[0]>div[2]>div[0]>a[0]>strong[0]>span[0]",
+      "rules": [
+        "1.0",
+        "1.1"
+      ],
+      "data": "fixture",
+      "class": "flag:C2Todo",
+      "rootCause": "Reviewed link (Phase 4g, a parameterised GET): the same as blog.php's footer finding: core.php:1006 `<span>&nbsp; <?php echo $settings['email']; ?></span>` (footer of the shell); C2Todo unresolved_read at f033#02168. The <span> and its ancestors up to the footer have no attribute the classifier can find them by."
     }
   ],
   "unsoundDecisions": [

@@ -32,10 +32,12 @@ def main(argv: list[str]) -> int:
         return 2
     app, page = argv
     out = OUTPUT / app
-    route = page.removesuffix(".php")
+    unit, _, query = page.partition("@")  # Phase 4g: a parameterised GET is captured as <unit>@<query>
+    route = unit.removesuffix(".php") + (f"?{query}" if query else "")
+    legacy_url = unit + (f"?{query}" if query else "")
     sheet = out / f"{page}.side-by-side.html"
     third = THIRD.format(page=page) if (out / "generated-with-legacy-css" / f"{page}.png").exists() else ""
-    sheet.write_text(PAGE.format(page=page, legacy=f"/{page}", generated=f"/{route}", third=third), encoding="utf-8")
+    sheet.write_text(PAGE.format(page=page, legacy=f"/{legacy_url}", generated=f"/{route}", third=third), encoding="utf-8")
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch()
         view = browser.new_page(viewport={"width": 2000 if third else 1344, "height": 800})

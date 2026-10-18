@@ -83,6 +83,14 @@ Phase 4f runs (folders under `output/runtime/`; each copies its build's `pipelin
 `phpblog-v1.0`, `phpblog` (v1.1 before change 4), `phpblog-c4` (v1.1 final) on the shipped seed, and
 `phpblog-v1.0-fx`, `phpblog-pre4-fx`, `phpblog-c4-fx` on seed + fixture, each with its own no-data build as `--before`.
 
+Phase 4g: v1.1 final (change 5) is `generated_app.py phpblog --folder phpblog-final --build phpblog-final-runtime`
+(and `phpblog-final-nodata`). Runs on seed + fixture add the parameterised GETs of `gets.json`
+(`capture.py ... --gets tools/runtime/phpblog/gets.json`): `post`, `category` and `page` with the fixture's own slugs,
+captured as `<unit>@<query>`. **Recreate the database before each run** (`down -v`, `up -d`): `post.php` 24 counts
+views on every GET and the sidebar orders popular posts by views, so the legacy pages change from run to run. Folders:
+`phpblog-v1.0-fx2`, `phpblog-pre4-fx2`, `phpblog-c4-fx2`, `phpblog-final-fx` (seed + fixture, 13 pages) and
+`phpblog-final-seed` (shipped seed).
+
 Not generated, so not compared: `rss.php`, `sitemap.php` (`non_html_response`), `core.php`, `install/core.php`
 (`error_output_only`). A page that **redirects** an anonymous GET (a `<meta http-equiv="refresh">`, which a browser
 follows with JavaScript off) is recorded with its target and left out of the element comparison (`compare.json`

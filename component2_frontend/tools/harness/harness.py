@@ -62,6 +62,9 @@ QUERY_FUNCTIONS = {"mysqli_query": 1, "mysql_query": 0}  # name -> index of the 
 FETCH_ROW = ("mysqli_fetch_array", "mysqli_fetch_assoc", "mysqli_fetch_row", "mysql_fetch_array",
              "mysql_fetch_assoc", "mysql_fetch_row")
 FETCH_ALL = ("mysqli_fetch_all",)
+ROW_COUNT = ("mysqli_num_rows", "mysql_num_rows")
+DATA_SEEK = ("mysqli_data_seek", "mysql_data_seek")
+FUNCTION_NODES = ("Stmt_Function", "Stmt_ClassMethod", "Expr_Closure", "Expr_ArrowFunction")
 SUPERGLOBALS = {"$_SESSION": "session", "$_GET": "request", "$_POST": "request", "$_REQUEST": "request",
                 "$_COOKIE": "request", "$_SERVER": "server"}
 ESCAPE_WRAPPERS = ("h", "htmlspecialchars", "htmlentities")
@@ -139,6 +142,20 @@ TOP_LEVEL_IFS_NOTE = ("Harness extension (boundary rules v1.1, R-I1 scope; writt
                       "v0.10); a bare `exit` does not count (it shows a blank page). `afterLeaves` says the same of the "
                       "statements after the if in the same list. Arms without an `else` have no else entry. Calls of "
                       "functions that exit are not followed.")
+ROW_COUNTS_NOTE = ("Harness extension (generation-spec v0.17, post-freeze change 5; written only for rules v1.1): "
+                   "`rowCounts` lists every if / elseif condition of this scope that uses a row count: "
+                   "`mysqli_num_rows($r)` itself (form \"direct\") or a variable assigned from it (form "
+                   "\"variable\"): {ifNodeId, condNodeId, branch, form, count (the variable, or the call as "
+                   "written), result ($r), countNodeId (the mysqli_num_rows call), reaches (variable form: the "
+                   "definition of the variable that certainly reaches the condition is that assignment, by the Phase "
+                   "2a copy propagation: the same block or one enclosing it, nothing in between that could change it; "
+                   "direct form: true), definitions (how many definitions the variable has in the scope; direct "
+                   "form: 1), loops}. `loops`: every `while ($x = mysqli_fetch_*($r))` of the scope after "
+                   "the count: {nodeId, between, breaks}. `between` lists what may change the rows the loop sees "
+                   "between the count and the loop (byte order, this scope only): a fetch, fetch_all or data_seek "
+                   "on $r, a method call on $r, an assignment to $r or to the count variable, an include / extract "
+                   "/ eval: [{nodeId, line, what}]. `breaks` lists every break / continue in the loop's body (not "
+                   "in a nested function): [{nodeId, line}]. Facts only; Stage 5 decides (spec section 6).")
 BUILTIN_METHODS_NOTE = ("boundary-rules v0.15 section 4: a method of PHP's own mysqli / mysqli_result / mysqli_stmt "
                         "classes is not a call site when its receiver is certainly of that class: a variable whose "
                         "only definitions in the app are `new mysqli(...)` / `mysqli_connect(...)`, or one whose "
@@ -263,6 +280,7 @@ class _Scope:
     exit_arms: list = field(default_factory=list)  # lines of exit statements whose arm prints (R-I8c)
     redirects: list = field(default_factory=list)  # header("Location: ...") with a literal target (spec v0.10)
     top_ifs: list = field(default_factory=list)  # rules v1.1: the ifs of the scope's own statement list (R-I1)
+    row_counts: list = field(default_factory=list)  # rules v1.1: conditions that use a row count (spec v0.17)
     prints_by_function: bool = False  # printf / print_r ... outside every arm that exits
     notes: list = field(default_factory=list)
 
@@ -326,8 +344,11 @@ class FileHarness:
         self._class: str | None = None  # the class whose methods are being walked
         self._loops: dict[str, tuple] = {}  # loop id -> (enclosure, node, scope, chain around it)
         self._printing_exits: set[str] = set()  # ids of exit("msg") statements that are sequence entries
+        self._count_ifs: list = []  # rules v1.1: (if node, scope, chain) of every if, for `rowCounts`
         self.nodes = node_views(ast)
         self._walk_list(self.nodes[ast.root_id].get("stmts"), self.top, (), [])
+        for if_node, scope, chain in self._count_ifs:
+            self._row_counts(if_node, scope, chain)
 
     # ---- source text
 
@@ -599,6 +620,8 @@ class FileHarness:
 
     def _if(self, node: _N, scope: _Scope, chain: tuple, enclosures: list) -> None:
         if_id, cond = node.id, node.get("cond")
+        if self.write_top_ifs:
+            self._count_ifs.append((node, scope, chain))
         self._walk(cond, scope, chain, enclosures)
         arms = [("then", cond, node.get("stmts"))]
         for elseif in node.get("elseifs") or []:
@@ -685,6 +708,94 @@ class FileHarness:
             param["readOnly"] = bool(param["name"]) and len(scope.defs.get(param["name"], [])) == 1 \
                 and not scope.breakers and not scope.arguments.get(param["name"])
         self.functions.setdefault(name, scope)
+
+    # ---- row counts (spec v0.17, rules v1.1)
+
+    def _scope_nodes(self, scope: _Scope) -> list:
+        """Every node of the scope's own code, in byte order (nested functions and closures left out)."""
+        root = self.nodes[scope.node_id] if scope.node_id is not None else self.nodes[self.ast.root_id]
+        out, todo = [], list(root.kids)
+        while todo:
+            node = todo.pop()
+            if node.kind in FUNCTION_NODES:
+                continue
+            out.append(node)
+            todo += node.kids
+        return sorted(out, key=lambda n: (n.start, n.id))
+
+    @staticmethod
+    def _count_call(node) -> str | None:
+        """$r for `mysqli_num_rows($r)` (one plain variable argument), else None."""
+        args = _args(node) if _callee(node) in ROW_COUNT else []
+        return _variable(args[0]) if len(args) == 1 else None
+
+    def _row_counts(self, node: _N, scope: _Scope, chain: tuple) -> None:
+        arms = [("then", node.get("cond"))] + [("elseif", e.get("cond")) for e in node.get("elseifs") or []]
+        for branch, cond in arms:
+            found, todo = [], [cond]
+            while todo:
+                current = todo.pop()
+                result = self._count_call(current)
+                if result:
+                    found.append({"form": "direct", "count": self.node_text(current), "result": result,
+                                  "countNodeId": current.id, "reaches": True, "definitions": 1, "_from": current.end,
+                                  "_vars": (result,)})
+                    continue
+                name = _variable(current)
+                if name:
+                    defs = scope.defs.get(name, [])
+                    counted = [d for d in defs if d.kind == "assign" and self._count_call(d.node)]
+                    if counted:
+                        reaching = self._reaching(scope, name, cond.start, chain)
+                        first = reaching if reaching in counted else counted[0]
+                        found.append({"form": "variable", "count": name, "result": self._count_call(first.node),
+                                      "countNodeId": first.node.id,
+                                      "reaches": reaching is first, "definitions": len(defs),
+                                      "_from": first.node.end, "_vars": (self._count_call(first.node), name)})
+                todo += [k for k in current.kids if k.kind not in FUNCTION_NODES]
+            unique = {(r["countNodeId"], r["count"]): r for r in found}  # a variable used twice: one record
+            for _, record in sorted(unique.items()):
+                loops = [self._count_loop(scope, record, loop_node)
+                         for loop_id, (_, loop_node, loop_scope, _) in sorted(self._loops.items())
+                         if loop_scope is scope and loop_node.start > record["_from"]
+                         and _is(loop_node, "Stmt_While") and _is(loop_node.get("cond"), "Expr_Assign")
+                         and _callee(loop_node.get("cond").get("expr")) in FETCH_ROW
+                         and [_variable(a) for a in _args(loop_node.get("cond").get("expr"))[:1]] == [record["result"]]]
+                scope.row_counts.append({"ifNodeId": node.id, "condNodeId": cond.id, "branch": branch,
+                                         **{k: v for k, v in record.items() if not k.startswith("_")},
+                                         "loops": loops})
+
+    def _count_loop(self, scope: _Scope, record: dict, loop: _N) -> dict:
+        start, end = record["_from"], loop.start
+        result, variables = record["result"], record["_vars"]
+        between = []
+        for node in self._scope_nodes(scope):
+            if not start <= node.start < end:
+                continue
+            what = None
+            if _callee(node) in FETCH_ROW + FETCH_ALL + DATA_SEEK and \
+                    [_variable(a) for a in _args(node)[:1]] == [result]:
+                what = _callee(node)
+            elif _is(node, "Expr_MethodCall", "Expr_NullsafeMethodCall") and _variable(node.get("var")) == result:
+                what = "method call"
+            elif _is(node, "Expr_Include", "Expr_Eval") or _callee(node) == "extract":
+                what = node.kind if not _callee(node) else "extract"
+            elif node.kind in ("Expr_Assign", "Expr_AssignRef") or node.kind.startswith("Expr_AssignOp_"):
+                target = _variable(node.get("var"))
+                if target in variables and node.get("expr") is not None and node.get("expr").id != record[
+                        "countNodeId"]:
+                    what = f"assignment to {target}"
+            if what:
+                between.append({"nodeId": node.id, "line": node.line, "what": what})
+        breaks, todo = [], list(loop.get("stmts") or [])
+        while todo:
+            node = todo.pop()
+            if not isinstance(node, _N) or node.kind in FUNCTION_NODES:
+                continue
+            if _is(node, "Stmt_Break", "Stmt_Continue"):
+                breaks.append({"nodeId": node.id, "line": node.line})
+            todo += node.kids
+        return {"nodeId": loop.id, "between": between, "breaks": sorted(breaks, key=lambda b: b["nodeId"])}
 
     # ---- reaching definitions
 
@@ -1109,6 +1220,7 @@ class FileHarness:
             **({"responseContentType": scope.content_type} if scope.content_type else {}),
             "sequence": [entry for _, entry in sequence],
             **({"topLevelIfs": scope.top_ifs} if scope.top_ifs else {}),
+            **({"rowCounts": scope.row_counts} if scope.row_counts else {}),
             **({"redirects": [redirect | {"enclosedBy": [
                 self.loop_enclosure(e) if e["role"] == "iteration" else e for e in redirect["enclosedBy"]]}
                 for redirect in scope.redirects]} if scope.redirects else {}),
@@ -1128,6 +1240,7 @@ class FileHarness:
                 "redirectsExtension": REDIRECTS_NOTE, "builtinMethods": BUILTIN_METHODS_NOTE,
                 "selectStarConvention": SELECT_STAR_NOTE,
                 **({"topLevelIfsExtension": TOP_LEVEL_IFS_NOTE} if scope.top_ifs else {}),
+                **({"rowCountsExtension": ROW_COUNTS_NOTE} if scope.row_counts else {}),
                 "partsExtension": PARTS_NOTE, "copyPropagationExtension": COPY_NOTE,
                 "sqlValuesExtension": SQL_VALUES_NOTE,
                 "queriesExtension": QUERIES_NOTE, "harnessNotesExtension": NOTES_NOTE,

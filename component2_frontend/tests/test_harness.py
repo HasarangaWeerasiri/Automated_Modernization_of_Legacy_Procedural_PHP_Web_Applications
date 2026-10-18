@@ -761,8 +761,10 @@ def test_whole_app_totals(apps_output):
     # 194 -> 164, S5 review 383 -> 338, info 322 -> 404; WackoPicko 170 -> 169, 301 -> 283, 126 -> 153; phpBlog
     # 591 -> 495, 1046 -> 898, 464 -> 751; attendance 85 -> 84, 167 -> 164, 287 -> 292; warehouse 270 -> 259,
     # 270 -> 247, 378 -> 451
+    # Phase 4g (spec v0.17, change 5): one row_count_guard flag (info) at each list guard with a row count: phpBlog 12
+    # (info 751 -> 763), attendance 1 (292 -> 293); no endpoint map here, so none translates ((d))
     expected = {"hms": (269, 68, 5, 169, 164, 338, 404), "wackopicko": (384, 62, 13, 307, 169, 283, 153),
-                "phpblog": (801, 186, 15, 832, 495, 898, 751), "attendance": (176, 34, 11, 95, 84, 164, 292),
+                "phpblog": (801, 186, 15, 832, 495, 898, 763), "attendance": (176, 34, 11, 95, 84, 164, 293),
                 "warehouse": (418, 64, 62, 243, 259, 247, 451)}
     # Step 5 (rules v1.0, freeze): warehouse only. Include paths from constants resolve (load.php 6/6), the
     # whitespace-only load.php is no cross_file_output (40 -> 3), ajax.php is an ajax_endpoint (not generated).

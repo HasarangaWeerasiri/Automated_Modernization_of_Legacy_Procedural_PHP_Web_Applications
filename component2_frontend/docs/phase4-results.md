@@ -2,9 +2,9 @@
 
 | Item | Value |
 |---|---|
-| Date | 16 October 2026 (HMS: Phase 4a–4d; phpBlog: Phase 4e); 18 October 2026 (Phase 4f: change 4, phpBlog fixture, re-measure) |
+| Date | 16 October 2026 (HMS: Phase 4a–4d; phpBlog: Phase 4e); 18 October 2026 (Phase 4f: change 4, phpBlog fixture; Phase 4g: change 5, parameterised phpBlog pages, re-measure — **rules v1.1 closed**) |
 | Apps | HMS (`kishan0725/Hospital-Management-System` @ `777fda4`) and phpBlog (`codeplay-code/phpBlog-blogScript` @ `4ffe3c9`), both **rule-discovery** apps. No evaluation app was used |
-| Rules | boundary rules v1.0 (frozen, commit `27c380e`); v1.1-pre-4 (post-freeze changes 1–3); **v1.1 final** (changes 1–4, `docs/post-freeze-log.md`). Both apps are reported under all three |
+| Rules | boundary rules v1.0 (frozen, commit `27c380e`); v1.1-pre-4 (post-freeze changes 1–3); v1.1-change-4 (changes 1–4); **v1.1 final** (changes 1–5, `docs/post-freeze-log.md`; closed). Both apps are reported under all four |
 | Tools | `tools/runtime/` (capture, compare, classify, CSS simulation); `tools/runtime/hms/`, `tools/runtime/phpblog/` (legacy sides); `tools/runtime/replay/` (data fixture) |
 
 The question Phase 4 answers: **when the legacy page and the generated Next.js page run on the same data, does the
@@ -58,30 +58,30 @@ node?** An unexplained difference would be an unsound result hidden from the dev
 
 ## 3. HMS results
 
-| | v1.0 (frozen) | v1.1 after changes 1–2 | v1.1-pre-4 (changes 1–3) | **v1.1 final** (changes 1–4) |
-|---|---|---|---|---|
-| Legacy elements | 1386 | 1386 | 1386 | 1386 |
-| Matched | 1312 | 1374 | 1380 | **1380** |
-| **Render match** | 0.947 | 0.991 | 0.996 | **0.996** |
-| List elements matched | 497 / 501 | 497 / 501 | 497 / 501 | 497 / 501 |
-| Static elements matched | 815 / 885 | 877 / 885 | 883 / 885 | 883 / 885 |
-| Differences | 69 | 61 | 54 | 54 |
-| **UNEXPLAINED** | **2** | 0 | 0 | **0** |
-| **flag-but-wrong** | **17** | 9 | 0 | **0** |
-| `framework:react_hoist` | 0 | 0 | 2 | 2 |
-| `flag:inline_js_dropped` | 20 | 22 | 22 | 22 |
-| `flag:document_shell` | 10 | 10 | 10 | 10 |
-| `flag:attribute_dropped` | 6 | 6 | 6 | 6 |
-| `flag:attribute_omitted` | 6 | 6 | 6 | 6 |
-| `flag:C2Todo` | 5 | 4 | 4 | 4 |
-| `flag:option_selected_not_converted` | 3 | 3 | 3 | 3 |
-| `flag:unresolvedCondition` | 0 | 1 | 1 | 1 |
-| `flag-but-wrong:document_shell` | 11 | 7 | 0 | 0 |
-| `flag-but-wrong:implicit_close` | 6 | 2 | 0 | 0 |
-| Unsound decisions | 1 (R-I1, `search.php`) | 0 | 0 | 0 |
+| | v1.0 (frozen) | v1.1 after changes 1–2 | v1.1-pre-4 (changes 1–3) | v1.1-change-4 (changes 1–4) | **v1.1 final** (changes 1–5) |
+|---|---|---|---|---|---|
+| Legacy elements | 1386 | 1386 | 1386 | 1386 | 1386 |
+| Matched | 1312 | 1374 | 1380 | 1380 | **1380** |
+| **Render match** | 0.947 | 0.991 | 0.996 | 0.996 | **0.996** |
+| List elements matched | 497 / 501 | 497 / 501 | 497 / 501 | 497 / 501 | 497 / 501 |
+| Static elements matched | 815 / 885 | 877 / 885 | 883 / 885 | 883 / 885 | 883 / 885 |
+| Differences | 69 | 61 | 54 | 54 | 54 |
+| **UNEXPLAINED** | **2** | 0 | 0 | 0 | **0** |
+| **flag-but-wrong** | **17** | 9 | 0 | 0 | **0** |
+| `framework:react_hoist` | 0 | 0 | 2 | 2 | 2 |
+| `flag:inline_js_dropped` | 20 | 22 | 22 | 22 | 22 |
+| `flag:document_shell` | 10 | 10 | 10 | 10 | 10 |
+| `flag:attribute_dropped` | 6 | 6 | 6 | 6 | 6 |
+| `flag:attribute_omitted` | 6 | 6 | 6 | 6 | 6 |
+| `flag:C2Todo` | 5 | 4 | 4 | 4 | 4 |
+| `flag:option_selected_not_converted` | 3 | 3 | 3 | 3 | 3 |
+| `flag:unresolvedCondition` | 0 | 1 | 1 | 1 | 1 |
+| `flag-but-wrong:document_shell` | 11 | 7 | 0 | 0 | 0 |
+| `flag-but-wrong:implicit_close` | 6 | 2 | 0 | 0 | 0 |
+| Unsound decisions | 1 (R-I1, `search.php`) | 0 | 0 | 0 | 0 |
 
-Runs: `output/runtime/hms-v1.0`, `hms-v1.1`, `hms-v1.1-final` (= v1.1-pre-4), `hms-v1.1-c4` (= v1.1 final), each with
-its no-data build as the baseline.
+Runs: `output/runtime/hms-v1.0`, `hms-v1.1`, `hms-v1.1-final` (= v1.1-pre-4), `hms-v1.1-c4` (= v1.1-change-4),
+`hms-final` (= v1.1 final, Phase 4g), each with its no-data build as the baseline.
 
 Per page (matched / render match / differences), where anything differs between the versions:
 
@@ -94,7 +94,7 @@ Per page (matched / render match / differences), where anything differs between 
 | `index1.php` | 53 / 0.883 / 8 | 53 / 0.883 / 8 | 58 / 0.967 / 3 |
 | `search.php` | 0 / – / 2 (UNEXPLAINED) | 0 / – / 0 | 0 / – / 0 |
 
-v1.1 final is identical to v1.1-pre-4 on every page (§3.3). All other pages are identical across the runs: 10 at 1.000, `include/config.php` (an error text only, no
+v1.1-change-4 and v1.1 final are identical to v1.1-pre-4 on every page (§3.3, §3.4). All other pages are identical across the runs: 10 at 1.000, `include/config.php` (an error text only, no
 element), and 9 that print nothing on GET on either side. The 52 flagged differences of the final run are deliberate,
 visible gaps: inline JS (`onclick`, out of scope), the document shell (`<body style>`, which belongs in
 `app/layout.tsx`), attributes React's types do not accept, form values whose expression is not generated, and Lists with
@@ -134,6 +134,12 @@ GET). So **no `if / else` whose `else` arm matched the legacy page became a gap*
 classes are unchanged (0.996, 54, 0 UNEXPLAINED, 0 flag-but-wrong). With data for those Lists, or after a POST, the
 gaps would show; that is not measured here (GET only, replay for literal SELECTs only).
 
+### 3.4 Change 5 on HMS: no list guard counts rows
+
+HMS uses `mysqli_num_rows` 6 times (4 of them in an `if` condition the harness records): all are login checks
+(`if (mysqli_num_rows($result) == 1)` then a redirect), none guards a List. Change 5 has nothing to translate in HMS;
+its v1.1 final run is identical to v1.1-change-4 (0.996, 54 differences, 0 UNEXPLAINED, 0 flag-but-wrong).
+
 ## 4. Styling (simulation)
 
 HMS has no shared header / footer pair, so each page keeps its own `<head>` and the generated pages carry no root
@@ -145,9 +151,11 @@ different is the icon font (a relative stylesheet URL the generated server does 
 (`<body style>`, a `document_shell` gap). Screenshots: `output/runtime/hms-v1.1-final/admin-panel1.php.side-by-side.png`,
 `output/runtime/phpblog/index.php.side-by-side.png`; with the phpBlog fixture (§5.3):
 `output/runtime/phpblog-pre4-fx/index.php.side-by-side.png` (v1.1-pre-4) and
-`output/runtime/phpblog-c4-fx/index.php.side-by-side.png` (v1.1 final).
+`output/runtime/phpblog-c4-fx/index.php.side-by-side.png` (v1.1-change-4); v1.1 final (§5.6):
+`output/runtime/phpblog-final-fx/index.php.side-by-side.png` and
+`output/runtime/phpblog-final-fx/post.php@name=welcome-to-the-blog.side-by-side.png`.
 
-## 5. phpBlog (Phase 4e; re-measured in Phase 4f)
+## 5. phpBlog (Phase 4e; re-measured in Phases 4f and 4g)
 
 phpBlog ran **unmodified** (PHP 8.2, MariaDB 10.6; `tools/runtime/phpblog/README.md`) on two databases:
 
@@ -161,56 +169,87 @@ phpBlog ran **unmodified** (PHP 8.2, MariaDB 10.6; `tools/runtime/phpblog/README
 |---|---|
 | Page units | 43 (plus `rss.php`, `sitemap.php`: `non_html_response`; `core.php`, `install/core.php`: `error_output_only` — not generated, not compared) |
 | Not compared: the legacy page redirects an anonymous GET | 36 (both databases): the 25 admin pages (→ `../login`), `category`, `post`, `search` (no parameter → `blog`), `my-comments`, `profile` (→ `login`), `page`, `unsubscribe` (→ the site), the three install pages (→ `../`), `logout`. The generated side renders 35 of them (R-I8 redirect guard: the redirect is Component 1's, flagged `redirect_guard`); `logout` also refreshes |
-| Compared | 7: `index`, `blog`, `gallery`, `contact`, `login`, `error404`, `install/upgrade-v2.2` |
+| Compared | 7: `index`, `blog`, `gallery`, `contact`, `login`, `error404`, `install/upgrade-v2.2`; with the fixture (Phase 4g) also 6 parameterised GETs: `post?name=` × 3, `category?name=` × 2, `page?name=terms` (§5.8) — 13 |
 
 ### 5.1 Shipped seed
 
-| | v1.0 (frozen) | v1.1-pre-4 (changes 1–3) | **v1.1 final** (changes 1–4) |
-|---|---|---|---|
-| Legacy elements | 771 | 771 | 771 |
-| Matched | 401 | 401 | **383** |
-| **Render match** | 0.520 | 0.520 | **0.497** |
-| List elements matched | 2 / 316 | 2 / 316 | 2 / 316 |
-| Static elements matched | 399 / 455 | 399 / 455 | 381 / 455 |
-| Differences | 166 | 166 | 135 |
-| **UNEXPLAINED** | **0** | **0** | **0** |
-| **flag-but-wrong** (target 0) | **37** | **37** | **0** |
-| `flag:C2Todo` | 70 | 70 | 70 |
-| `flag:attribute_omitted` | 41 | 41 | 41 |
-| `flag:unresolvedCondition` | 12 | 12 | 18 |
-| `env:legacy_runtime_error` | 6 | 6 | 6 |
-| Unsound decisions | 2 sites (§5.3) | 2 sites (§5.3) | **0** |
+| | v1.0 (frozen) | v1.1-pre-4 (changes 1–3) | v1.1-change-4 (changes 1–4) | **v1.1 final** (changes 1–5) |
+|---|---|---|---|---|
+| Legacy elements | 771 | 771 | 771 | 771 |
+| Matched | 401 | 401 | 383 | **385** |
+| **Render match** | 0.520 | 0.520 | 0.497 | **0.499** |
+| List elements matched | 2 / 316 | 2 / 316 | 2 / 316 | 4 / 317 |
+| Static elements matched | 399 / 455 | 399 / 455 | 381 / 455 | 381 / 454 |
+| Differences | 166 | 166 | 135 | 133 |
+| **UNEXPLAINED** | **0** | **0** | **0** | **0** |
+| **flag-but-wrong** (target 0) | **37** | **37** | **0** | **0** |
+| `flag:C2Todo` | 70 | 70 | 70 | 69 |
+| `flag:attribute_omitted` | 41 | 41 | 41 | 41 |
+| `flag:unresolvedCondition` | 12 | 12 | 18 | 17 |
+| `env:legacy_runtime_error` | 6 | 6 | 6 | 6 |
+| Unsound decisions | 2 sites (§5.3) | 2 sites (§5.3) | **0** | **0** |
 
 v1.0 and v1.1-pre-4 generate the same phpBlog pages (changes 1–3 have no phpBlog instance; the normalised bodies are
 identical), so their columns are equal. Per page (legacy elements / matched / render match / differences), v1.1-pre-4
-→ v1.1 final: `index` 123 / 57 / 0.463 / 26 → 54 / 0.439 / 21 · `blog` 122 / 56 / 0.459 / 26 → 53 / 0.434 / 20 ·
+→ v1.1-change-4: `index` 123 / 57 / 0.463 / 26 → 54 / 0.439 / 21 · `blog` 122 / 56 / 0.459 / 26 → 53 / 0.434 / 20 ·
 `gallery` 101 / 66 / 0.654 / 25 → 63 / 0.624 / 20 · `contact` 144 / 71 / 0.493 / 33 → 68 / 0.472 / 28 · `login`
 158 / 93 / 0.589 / 26 → 90 / 0.570 / 21 · `error404` 122 / 57 / 0.467 / 24 → 54 / 0.443 / 19 · `install/upgrade-v2.2`
-1 / 1 / 1.000 / 6 (unchanged). Runs: `output/runtime/phpblog-v1.0`, `phpblog` (v1.1-pre-4), `phpblog-c4`.
+1 / 1 / 1.000 / 6 (unchanged). v1.1 final: `index` 55 matched (the Recent Posts guard renders its Empty, "There are no
+published posts", as the legacy page does), `gallery` 64 (the same for its albums); the other pages as v1.1-change-4.
+Runs: `output/runtime/phpblog-v1.0`, `phpblog` (v1.1-pre-4), `phpblog-c4`, `phpblog-final-seed`.
 
 ### 5.2 Seed + fixture
 
-| | v1.0 (frozen) | v1.1-pre-4 (changes 1–3) | **v1.1 final** (changes 1–4) |
-|---|---|---|---|
-| Legacy elements | 1337 | 1337 | 1337 |
-| Matched | 456 | 456 | **383** |
-| **Render match** | 0.341 | 0.341 | **0.286** |
-| List elements matched | 56 / 752 | 56 / 752 | 2 / 752 |
-| Static elements matched | 400 / 585 | 400 / 585 | 381 / 585 |
-| Differences | 195 | 195 | 147 |
-| **UNEXPLAINED** | **0** | **0** | **0** |
-| **flag-but-wrong** (target 0) | **36** | **36** | **0** |
-| `flag:C2Todo` | 90 | 90 | 78 |
-| `flag:attribute_omitted` | 47 | 47 | 41 |
-| `flag:unresolvedCondition` | 16 | 16 | 22 |
-| `env:legacy_runtime_error` | 6 | 6 | 6 |
-| Unsound decisions | 1 site (§5.3) | 1 site (§5.3) | **0** |
+Each column of Phase 4g was captured on a **freshly created** database: `post.php` counts views on every GET (line 24,
+`UPDATE posts SET views = views + 1`) and the legacy sidebar orders popular posts by views, so the legacy pages would
+otherwise differ between runs. On the 7 pages of Phase 4f the v1.0, v1.1-pre-4 and v1.1-change-4 columns reproduce
+Phase 4f exactly.
 
-Per page, v1.1-pre-4 → v1.1 final: `index` 285 / 111 / 0.390 / 48 → 54 / 0.190 / 25 · `blog` 289 / 57 / 0.197 / 29 →
-53 / 0.183 / 24 · `gallery` 110 / 66 / 0.600 / 26 → 63 / 0.573 / 21 · `contact` 220 / 71 / 0.323 / 34 → 68 / 0.309 / 29
-· `login` 234 / 93 / 0.397 / 27 → 90 / 0.385 / 22 · `error404` 198 / 57 / 0.288 / 25 → 54 / 0.273 / 20 ·
-`install/upgrade-v2.2` 1 / 1 / 1.000 / 6. Runs: `output/runtime/phpblog-v1.0-fx`, `phpblog-pre4-fx`, `phpblog-c4-fx`
-(classified with `--data fixture`).
+The 7 pages compared in Phase 4f:
+
+| | v1.0 (frozen) | v1.1-pre-4 (changes 1–3) | v1.1-change-4 (changes 1–4) | **v1.1 final** (changes 1–5) |
+|---|---|---|---|---|
+| Legacy elements | 1337 | 1337 | 1337 | 1337 |
+| Matched | 456 | 456 | 383 | **454** |
+| **Render match** | 0.341 | 0.341 | 0.286 | **0.340** |
+| List elements matched | 56 / 752 | 56 / 752 | 2 / 752 | 73 / 774 |
+| Static elements matched | 400 / 585 | 400 / 585 | 381 / 585 | 381 / 563 |
+| Differences | 195 | 195 | 147 | 167 |
+| **UNEXPLAINED** | **0** | **0** | **0** | **0** |
+| **flag-but-wrong** (target 0) | **36** | **36** | **0** | **0** |
+| `flag:C2Todo` | 90 | 90 | 78 | 93 |
+| `flag:attribute_omitted` | 47 | 47 | 41 | 48 |
+| `flag:unresolvedCondition` | 16 | 16 | 22 | 20 |
+| `env:legacy_runtime_error` | 6 | 6 | 6 | 6 |
+| Unsound decisions | 1 site (§5.3) | 1 site (§5.3) | **0** | **0** |
+
+All 13 pages (Phase 4g: plus the 6 parameterised GETs, §5.8):
+
+| | v1.0 (frozen) | v1.1-pre-4 (changes 1–3) | v1.1-change-4 (changes 1–4) | **v1.1 final** (changes 1–5) |
+|---|---|---|---|---|
+| Legacy elements | 2758 | 2758 | 2758 | 2758 |
+| Matched | 871 | 871 | 778 | **849** |
+| **Render match** | 0.316 | 0.316 | 0.282 | **0.308** |
+| List elements matched | 56 / 1536 | 56 / 1536 | 2 / 1536 | 73 / 1558 |
+| Static elements matched | 815 / 1222 | 815 / 1222 | 776 / 1222 | 776 / 1200 |
+| Differences | 390 | 390 | 309 | 329 |
+| **UNEXPLAINED** | **0** | **0** | **0** | **0** |
+| **flag-but-wrong** (target 0) | **75** | **75** | **0** | **0** |
+| `flag:C2Todo` | 190 | 190 | 178 | 193 |
+| `flag:attribute_omitted` | 86 | 86 | 80 | 87 |
+| `flag:unresolvedCondition` | 33 | 33 | 45 | 43 |
+| `env:legacy_runtime_error` | 6 | 6 | 6 | 6 |
+| Unsound decisions | 2 sites (§5.3, §5.8) | 2 sites | **0** | **0** |
+
+Per page, v1.1 final (legacy / matched / render match / differences): `index` 285 / 124 / 0.435 / 46 · `blog` 289 / 53 /
+0.183 / 24 · `gallery` 110 / 64 / 0.582 / 20 · `contact` 220 / 68 / 0.309 / 29 · `login` 234 / 90 / 0.385 / 22 ·
+`error404` 198 / 54 / 0.273 / 20 · `install/upgrade-v2.2` 1 / 1 / 1.000 / 6 · `post?name=` 252 / 79 / 0.313 / 31,
+252 / 79 / 0.313 / 31, 241 / 79 / 0.328 / 31 · `category?name=site-news` 226 / 53 / 0.235 / 23 · `tutorials` 253 / 53 /
+0.209 / 24 · `page?name=terms` 197 / 52 / 0.264 / 22. Runs: `output/runtime/phpblog-v1.0-fx2`, `phpblog-pre4-fx2`,
+`phpblog-c4-fx2`, `phpblog-final-fx` (Phase 4f's 7-page runs: `phpblog-v1.0-fx`, `phpblog-pre4-fx`, `phpblog-c4-fx`),
+classified with `--data fixture`. In v1.1 final the List and static denominators move by 22 elements against the other
+columns: the List-row baseline is each rules version's own no-data build, and in v1.1 final the Recent Posts List is
+rendered, so its rows are told apart from static elements.
 
 The fixture adds 566 legacy elements (the posts in the lists, the featured-post carousel, the sidebar's category,
 popular-post and comment lists) and the generated side gains almost none of them: the sidebar and the carousel are
@@ -220,7 +259,8 @@ shifts the Recent Posts row from `div[0]` to `div[1]`, so the seed's reviewed li
 echo $mt3_i; ?>"`, now valued `row mt-3`) no longer applies by path, and under v1.0 / v1.1-pre-4 the three post cards'
 `class` (an `if` on `posts_per_row`, flag `attribute_omitted` at f036#00279) equals the literal class of a `<div>` in the
 shell's footer. The three seed findings for `login`, `blog`'s footer and `install/upgrade-v2.2` were re-checked on the
-fixture run (same paths, values and root causes) and apply to both databases.
+fixture run (same paths, values and root causes) and apply to both databases. Phase 4g added 3 reviewed links, one per
+`post?name=` page: the same footer `<span>` as `blog`'s (`core.php` 1006, C2Todo f033#02168).
 
 **Why the render match is low.** phpBlog drives its layout from `$settings[...]` (read from `config_settings.php`) and
 its login state: every condition on them is untranslatable, so the content they guard is hidden (flagged
@@ -240,10 +280,10 @@ Before change 4, spec §6 generated an untranslatable condition as `unresolvedCo
 `{cond && …}` that hides the content: a flagged abstain. For an **`if / else`** it selected the **`else` arm on every
 request**: a guess.
 
-| Where | Legacy (anonymous GET) | v1.0 / v1.1-pre-4 | v1.1 final | flag-but-wrong (seed / fixture) |
+| Where | Legacy (anonymous GET) | v1.0 / v1.1-pre-4 | v1.1-change-4 and final | flag-but-wrong (seed / fixture, 7 pages) |
 |---|---|---|---|---|
 | `core.php` 652, the shared shell (every public page): `if ($logged == 'No') { Sign In \| Register } else { Profile menu }` | Sign In \| Register | the logged-in Profile menu | nothing: `C2Todo` f033#01506; both arms in `Arms_f033_01506()` | 36 / 36 → 0 |
-| `blog.php` 29: `if ($count <= 0) { 'There are no published posts' } else { the posts loop, pagination }` | seed: the message; fixture: the posts | an empty list and its pagination | nothing: `C2Todo`; both arms in `Arms_<id>()` | 1 / 0 → 0 |
+| `blog.php` 29: `if ($count <= 0) { 'There are no published posts' } else { the posts loop, pagination }` | seed: the message; fixture: the posts | an empty list and its pagination | nothing: `C2Todo`; both arms in `Arms_<id>()` (change 5 does not apply: the List's query has `LIMIT $rows, …`, not replayed, so (d) fails) | 1 / 0 → 0 |
 
 **Correction to the Phase 4e count.** Phase 4e reported 35 differences at `core.php` 652 and 2 at `blog.php` 29. By
 hand, one of the two is the menu's icon (`<i class="fas fa-user">`): the classifier ties a generated element to the
@@ -260,7 +300,7 @@ right **by accident**, not by translation.
 Change 4 renders **nothing** where it cannot know the arm, including where the defaulted arm happened to be right.
 Render match goes down:
 
-| Database | v1.1-pre-4 → v1.1 final | Lost matched elements |
+| Database | v1.1-pre-4 → v1.1-change-4 | Lost matched elements |
 |---|---|---|
 | Seed | 0.520 → **0.497** | 18: on each of the 6 public pages, the 3 elements (`<li><a><i>`) the Profile menu paired with structurally (tags equal, attributes different) |
 | Seed + fixture | 0.341 → **0.286** | 73: the 54 elements of `index.php`'s Recent Posts rows (R-I2b: `if ($count <= 0) { message } else { the loop }`, `$count` = `mysqli_num_rows(...)`, untranslatable: before change 4 the else arm rendered the replayed rows and, with posts in the database, the browser took it too); the menu's 3 per page (18); `blog.php`'s pagination `<center>` (1) |
@@ -270,7 +310,8 @@ happened to select (with an empty `posts` table the same arm rendered an empty l
 published posts" message). The
 generated code now says so (one `C2Todo` at the guard; the List and its Empty in `Arms_f036_00232()`). Seen in the
 side-by-side screenshots: `output/runtime/phpblog-pre4-fx/index.php.side-by-side.png` (the Profile menu and the Recent
-Posts cards) and `output/runtime/phpblog-c4-fx/index.php.side-by-side.png` (neither).
+Posts cards) and `output/runtime/phpblog-c4-fx/index.php.side-by-side.png` (neither). Change 5 (§5.6) wins these rows
+back by translating the guard, not by choosing an arm.
 
 ### 5.5 Phase 4e comparison fixes: what each moved out of UNEXPLAINED
 
@@ -294,20 +335,102 @@ app (HMS is classified by the same code). The last 9 were not reached by tuning 
 recorded with their evidence. Phase 4f added no classifier rule: only the `data` scope of reviewed findings and 4
 reviewed links for the fixture (§5.2).
 
+### 5.6 Change 5: the List's own row count (spec v0.17)
+
+Every list guard (R-I2 / R-I2b) whose condition uses a row count, as the `row_count_guard` flag of the runtime
+pipeline (replay map) reports it; in the five-app run (no endpoint map) every one fails (d), by construction:
+
+| Guard | Condition | v1.1 final | Why |
+|---|---|---|---|
+| phpBlog `index.php` 14 (R-I2b, carousel) | `$count > 0` | **translated**: `apiC2ReplayF03600024.rows.length > 0` | (a)–(d) hold; `$count` is reassigned at line 89, but its definition reaching line 14 is line 13 |
+| phpBlog `index.php` 90 (Recent Posts) | `$count <= 0` | **translated**: `items.length <= 0` | (a)–(d) hold |
+| phpBlog `gallery.php` 33 | `$count <= 0` | **translated**: `items.length <= 0` | (a)–(d) hold |
+| phpBlog `gallery.php` 101 (then-only, generated in the page) | `$countimg > 0` | **translated**: `apiC2ReplayF03500216.rows.length > 0` | (a)–(d) hold |
+| phpBlog `core.php` 819 (sidebar, popular posts) | `$count <= 0` | **translated**: `items.length <= 0` | (a)–(d) hold |
+| phpBlog `core.php` 861 (sidebar, recent comments) | `$cmnts == "0"` | not translated (no arm: change 4) | (a)–(d) hold, but the count is compared with a quoted string: number vs string is not on the §6 whitelist |
+| phpBlog `admin/dashboard.php` 177 | `$cmnts == "0"` | not translated (no arm) | as above |
+| phpBlog `blog.php` 29 | `$count <= 0` | not translated (no arm) | (d): the query has `LIMIT $rows, …` (request input): no replay endpoint |
+| phpBlog `category.php` 47 | `$count <= 0` | not translated (no arm) | (d): the query interpolates `$category_id` |
+| phpBlog `post.php` 76 (comments) | `$count <= 0` | not translated (no arm) | (d): the query interpolates `$row[id]` |
+| phpBlog `search.php` 47 | `$count <= 0` | not translated (no arm) | (d): the query interpolates `$word` (request input) |
+| phpBlog `my-comments.php` 29 | `$count <= 0` | not translated (no arm) | (d): the query interpolates `$user_id` (the logged-in user) |
+| attendance `reset.php` 70 | `$row == 0` | not translated (no arm) | (b): `$query` is reassigned at line 79, between the count and the loop; and (d) |
+
+phpBlog's other 39 row counts in conditions are not list guards (counts printed, existence checks before a redirect);
+HMS (4, login checks) and attendance's other 3 are not list guards; WackoPicko and warehouse have none.
+The generated Recent Posts guard under v1.1 final (`components/IndexList3.tsx`):
+
+```tsx
+export function IndexList3({ items }: { items: ApiC2ReplayF03600219Response["rows"][number][] }) {
+  return (
+    <div>
+      <h5>
+        <i className="fa fa-list" />
+        {" Recent Posts"}
+      </h5>
+      {items.length <= 0 ? (
+        <IndexList3Empty />
+      ) : (
+        <>
+          {items.map((row, i) => (
+            <IndexList3Item key={i} row={row} />
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
+```
+
+Effect on the render match (v1.1-change-4 → v1.1 final): seed 383 → 385 (the Empty messages of `index` and `gallery`),
+fixture 383 → 454 on the 7 pages and 778 → 849 on all 13 (`index` 54 → 124: the 3 Recent Posts rows and the carousel's
+rows; `gallery` 63 → 64). flag-but-wrong stays 0: a translated guard renders the arm the data selects.
+
+### 5.7 Where the List elements go (seed + fixture, v1.1 final, 13 pages)
+
+`classify.py` counts as List elements the legacy elements matched to a row the data wiring added, plus the elements of
+missing differences it ties to a List's `collection` gap. The 1558 of the v1.1 final run, reviewed by hand by region:
+
+| Where | Elements | What it is |
+|---|---|---|
+| Matched rows | 73 | rendered from the replay data |
+| Shell menu (`core.php` `menu` query, every page) | 336 | a **data-wiring gap**: the shell's query has no replay endpoint (`no_endpoint`) |
+| Inside rendered `index` rows: `<svg>` placeholders, `<button class="active">` | 17 | **data flow**: markup kept in a PHP variable (`$image`, `$active1`) is an unresolved read |
+| One `gallery` album pane (`gallery.php` 65) | 4 | a List row the generated List does not render |
+| **Not List elements** — tied to the menu's gap by source order (`via <body> 1 of 1`): the whole sidebar (`div.col-md-4`, 11 × 102) | 1122 | hidden behind `$settings['sidebar_position']` (`unresolvedCondition`); a flagged gap, but at another node |
+| **Not List elements**, same attribution: the post / page body `<p>` (HTML stored in the database, printed through `html_entity_decode`) and 2 contact-form `<br>` | 6 | markup from data; form markup |
+
+So the true List elements are 430: 73 matched, 336 + 4 data-wiring gaps, 17 data flow inside rendered rows. **None is a
+boundary error.** The 1128 others show a limit of the classifier's by-order attribution (the class is a flag, the node
+is not the one that hides them); like the 36 / 1 correction of §5.3 it is recorded, not tuned.
+
+### 5.8 Parameterised GETs (Phase 4g)
+
+With the fixture, `post`, `category` and `page` render when given their real parameter. `tools/runtime/phpblog/gets.json`
+lists 6 GETs with the fixture's own slugs; `capture.py --gets` captures each as one more page `<unit>@<query>` and keeps
+the bare URLs (they still redirect, 36 as before). The generated pages do not read the query string (request input is
+not generated), so their side is the bare page with its gaps flagged. Under v1.0 / v1.1-pre-4 the new pages show the
+`core.php` 652 menu (72 differences on all 13 pages, 3 of them attributed by the classifier to a page's own `else` arm
+that prints the same icon, as in §5.3) and one more `else`-arm site: `post.php` 142 `if ($cancomment == 'Yes') { the
+comment form } else { … }` (3 differences). Change 4 fixed both before they were seen.
+
 ## 6. Two-app summary (v1.1 final)
 
-| | HMS | phpBlog (seed) | phpBlog (seed + fixture) |
-|---|---|---|---|
-| Pages compared (of page units) | 26 of 26 | 7 of 43 (36 redirect an anonymous GET) | 7 of 43 |
-| Legacy elements | 1386 | 771 | 1337 |
-| **Render match** | **0.996** | **0.497** | **0.286** |
-| Differences | 54 | 135 | 147 |
-| `flag:` (explained, visible gaps) | 52 | 129 | 141 |
-| `framework:react_hoist` | 2 | 0 | 0 |
-| `env:` | 0 | 6 | 6 |
-| **flag-but-wrong** | **0** | **0** | **0** |
-| **UNEXPLAINED** | **0** | **0** | **0** |
-| Unsound decisions found | 1 under v1.0 (R-I1 on `search.php`), fixed by change 1 | 2 sites under v1.0 / v1.1-pre-4 (spec §6 `else` arm: `core.php` 652, `blog.php` 29), fixed by change 4 | 1 site (`core.php` 652), fixed by change 4 |
+| | HMS | phpBlog (seed) | phpBlog (seed + fixture, 7 pages) | phpBlog (seed + fixture, 13 pages) |
+|---|---|---|---|---|
+| Pages compared (of page units) | 26 of 26 | 7 of 43 (36 redirect an anonymous GET) | 7 of 43 | 13 (7 + 6 parameterised GETs) |
+| Legacy elements | 1386 | 771 | 1337 | 2758 |
+| **Render match** | **0.996** | **0.499** | **0.340** | **0.308** |
+| Differences | 54 | 133 | 167 | 329 |
+| `flag:` (explained, visible gaps) | 52 | 127 | 161 | 323 |
+| `framework:react_hoist` | 2 | 0 | 0 | 0 |
+| `env:` | 0 | 6 | 6 | 6 |
+| **flag-but-wrong** | **0** | **0** | **0** | **0** |
+| **UNEXPLAINED** | **0** | **0** | **0** | **0** |
+| Unsound decisions found | 1 under v1.0 (R-I1 on `search.php`), fixed by change 1 | 2 sites under v1.0 / v1.1-pre-4 (spec §6 `else` arm: `core.php` 652, `blog.php` 29), fixed by change 4 | 1 site (`core.php` 652), fixed by change 4 | 2 sites (`core.php` 652, `post.php` 142), fixed by change 4 |
+
+**Rules v1.1 are closed** after change 5 (spec v0.17): Phase 5 runs v1.0 (freeze `27c380e`) and v1.1 final (changes
+1–5, the owner's Phase 4g commit). A later finding is reported as a v1.1 limitation, not fixed.
 
 ## 7. Limits
 
@@ -316,8 +439,11 @@ reviewed links for the fixture (§5.2).
 - **GET only, no session.** Nobody logs in and nothing is posted: get_only pages are compared on their anonymous view,
   and phpBlog's 36 redirecting pages not at all. Behaviour after a POST or with a session is not measured (Component 4).
 - **Seeds.** phpBlog's shipped seed has no posts (its lists compare only their empty states); the recorded fixture
-  (Phase 4f) adds a few rows. Its post, category and static pages still redirect an anonymous GET without a `name`
-  parameter, so they are not compared.
+  (Phase 4f) adds a few rows. Its post, category and static pages redirect an anonymous GET without a `name` parameter;
+  with the fixture they are compared through 6 parameterised GETs (Phase 4g), not on the shipped seed.
+- **v1.1 limitations recorded, not fixed** (rules closed): a row count compared with a quoted string (`$cmnts == "0"`,
+  phpBlog `core.php` 861, `admin/dashboard.php` 177) is not translated; the classifier ties some missing subtrees to a
+  gap by source order, at a node that is not the one hiding them (§5.3, §5.7) — the class is right, the node is not.
 - **Replay data only for literal SELECTs** of pages and function components (HMS 7 of 16 Lists, phpBlog 29 of 43); a
   shared shell's queries (phpBlog's menu) are not served.
 - **Element trees, not pixels.** CSS is compared only in the simulation screenshots; the render match counts elements,

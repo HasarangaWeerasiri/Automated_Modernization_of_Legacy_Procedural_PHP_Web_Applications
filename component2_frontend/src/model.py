@@ -156,6 +156,33 @@ class TopLevelIf:
 
 
 @dataclass(frozen=True)
+class RowCountLoop:
+    """A `while ($x = mysqli_fetch_*($r))` after a row count of $r (harness extension `rowCounts`)."""
+
+    node_id: str
+    between: tuple[tuple[str, int, str], ...]  # (node id, line, what) that may change the rows between count and loop
+    breaks: tuple[tuple[str, int], ...]  # (node id, line) of every break / continue in the loop's body
+
+
+@dataclass(frozen=True)
+class RowCount:
+    """A row count used in an if / elseif condition (harness extension `rowCounts`, rules v1.1, generation-spec
+    v0.17): `mysqli_num_rows($r)` itself (form "direct") or a variable assigned from it (form "variable"). Facts
+    only; Stage 5 decides whether the condition translates."""
+
+    if_node_id: str
+    cond_node_id: str
+    branch: str  # then | elseif
+    form: str  # direct | variable
+    count: str  # the variable ("$count"), or the call as written
+    result: str  # $r
+    count_node_id: str  # the mysqli_num_rows call
+    reaches: bool  # variable form: this assignment is the definition certainly reaching the condition (Phase 2a)
+    definitions: int  # variable form: the variable's definitions in the scope; direct form: 1
+    loops: tuple[RowCountLoop, ...]
+
+
+@dataclass(frozen=True)
 class CallEntry:
     """A call site in the timeline (Member 01 Q4, proposed): the callee's output is not inlined."""
 
@@ -270,6 +297,7 @@ class Timeline:
     # Optional (harness extension, spec v0.10): every header("Location: ...") call with a literal target
     redirects: tuple["Redirect", ...] = ()
     top_level_ifs: tuple["TopLevelIf", ...] = ()  # harness extension, boundary rules v1.1 (R-I1)
+    row_counts: tuple["RowCount", ...] = ()  # harness extension, rules v1.1 (generation-spec v0.17)
 
 
 # ----------------------------------------------------------------------------- Stage 1 result

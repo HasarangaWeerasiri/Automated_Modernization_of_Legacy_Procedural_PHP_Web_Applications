@@ -2,8 +2,10 @@
 
 A condition is translated only if every part of it is on the spec's whitelist:
 the Item's row fields that are in the item type, comparison operators, logical
-operators, number and string literals, isset() of a row field, and an R-I2
-list guard's own variable. Anything else (a superglobal, a function call,
+operators, number and string literals, isset() of a row field, an R-I2
+list guard's own variable, and (spec v0.17) a row count of a guarded List's own
+query compared with 0 or 1 or used bare, when the caller has checked (a)-(d)
+and put it in the scope. Anything else (a superglobal, a function call,
 another variable, a field the contract does not have) makes the whole
 condition untranslatable; the caller then emits unresolvedCondition().
 
@@ -67,6 +69,10 @@ class Scope:
     items_code: str = "items"
     # Typed props of the function component being written (R-F1 / R-F2): (name without "$", "string" | "number").
     props: tuple[tuple[str, str], ...] = ()
+    # Spec v0.17: row counts that stand for a guarded List's items, each (form, name, items code): form "variable"
+    # (name = the count variable, "$count") or "direct" (name = the result, "$r" of `mysqli_num_rows($r)`). The
+    # caller (Stage 5) puts a count here only when conditions (a)-(d) of the whitelist row hold.
+    row_counts: tuple[tuple[str, str, str], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -84,6 +90,8 @@ class _Node:
     ts: int  # TypeScript precedence of `code`
     type: str  # number | string | boolean | unknown
     nullable: bool = False
+    count: bool = False  # spec v0.17: a List's row count (`items.length`); only compared with 0 / 1 or used bare
+    literal: str | None = None  # an integer literal as written
 
 
 def _tokens(text: str) -> list[tuple[str, str]]:
@@ -156,11 +164,11 @@ class _Parser:
         if (kind, value) == ("op", "("):
             inner = self.binary(0)
             self.take(")")
-            return _Node(f"({inner.code})", _TS_PRIMARY, inner.type, inner.nullable)
+            return _Node(f"({inner.code})", _TS_PRIMARY, inner.type, inner.nullable, inner.count, inner.literal)
         if kind == "int":
             if len(value) > 1 and value.startswith("0"):
                 raise NotTranslatable()  # PHP reads a leading 0 as octal
-            return _Node(value, _TS_PRIMARY, "number")
+            return _Node(value, _TS_PRIMARY, "number", literal=value)
         if kind == "float":
             return _Node(value, _TS_PRIMARY, "number")
         if kind == "sq":
@@ -169,6 +177,14 @@ class _Parser:
             if "$" in value or "\\" in value:
                 raise NotTranslatable()  # interpolation or escapes: not a plain literal
             return _Node(_js_string(value[1:-1]), _TS_PRIMARY, "string")
+        if kind == "word" and value.lower() in ("mysqli_num_rows", "mysql_num_rows"):  # spec v0.17, direct form
+            self.take("(")
+            _, result = self.take()
+            self.take(")")
+            items = dict((name, code) for form, name, code in self.scope.row_counts if form == "direct").get(result)
+            if items is None:
+                raise NotTranslatable()
+            return _Node(f"{items}.length", _TS_PRIMARY, "number", count=True)
         if kind == "word" and value.lower() == "isset":
             self.take("(")
             field = self.row_field()
@@ -206,6 +222,10 @@ class _Parser:
         kind, name = self.peek()
         if name == self.scope.row_var and self.peek(1) == ("op", "["):
             return self.row_field()
+        counts = dict((name, code) for form, name, code in self.scope.row_counts if form == "variable")
+        if name in counts and self.peek(1) != ("op", "["):  # spec v0.17, variable form
+            self.take()
+            return _Node(f"{counts[name]}.length", _TS_PRIMARY, "number", count=True)
         if name == self.scope.guard_var and self.peek(1) != ("op", "["):
             self.take()
             return _Node(f"{self.scope.items_code}.length > 0", _TS["<"], "boolean")
@@ -219,6 +239,8 @@ class _Parser:
         """`node` used as a truth value: allowed for booleans and numbers only."""
         if node.type not in ("boolean", "number"):
             raise NotTranslatable()
+        if node.count:  # spec v0.17: a row count used bare is `items.length > 0`
+            return _Node(f"{node.code} > 0", _TS[">"], "boolean")
         return node
 
     def combine(self, op: str, left: _Node, right: _Node) -> _Node:
@@ -229,6 +251,10 @@ class _Parser:
             # The right operand is parenthesised unless it binds tighter: this keeps PHP's grouping exactly.
             code = f"{self.wrap(left, power)} {ts_op} {self.wrap(right, power + 1)}"
             return _Node(code, power, "boolean")
+        if left.count or right.count:  # spec v0.17: a row count only with the literal 0 or 1
+            other = right if left.count else left
+            if other.count or other.literal not in ("0", "1"):
+                raise NotTranslatable()
         if left.type != right.type or left.type == "unknown":
             raise NotTranslatable("loose_compare_semantics" if {left.type, right.type} == {"string", "number"}
                                   else "condition_not_translatable")

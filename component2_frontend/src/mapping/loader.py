@@ -29,6 +29,8 @@ from src.model import (
     ReadSource,
     Redirect,
     ResponseShape,
+    RowCount,
+    RowCountLoop,
     SchemaType,
     Timeline,
     TopLevelIf,
@@ -342,6 +344,24 @@ def load_timeline_json(path: Path) -> dict:
         if "loc" in top:
             _check_loc(top["loc"], where)
 
+    for count in timeline.get("rowCounts", []):  # harness extension (rules v1.1, generation-spec v0.17)
+        where = f"{path}: rowCounts {count.get('condNodeId', '<no id>')}"
+        keys = {"ifNodeId", "condNodeId", "branch", "form", "count", "result", "countNodeId", "reaches", "definitions",
+                "loops"}
+        if set(count) != keys or count["branch"] not in ("then", "elseif") \
+                or count["form"] not in ("direct", "variable") or not isinstance(count["reaches"], bool) \
+                or not isinstance(count["definitions"], int) \
+                or not all(isinstance(count[k], str) for k in ("count", "result")) or not isinstance(count["loops"], list):
+            raise ValueError(f"{where}: keys {sorted(count)}; expected {sorted(keys)}")
+        for key in ("ifNodeId", "condNodeId", "countNodeId"):
+            _check_node_id(count[key], where)
+        for loop in count["loops"]:
+            if set(loop) != {"nodeId", "between", "breaks"} \
+                    or any(set(b) != {"nodeId", "line", "what"} for b in loop["between"]) \
+                    or any(set(b) != {"nodeId", "line"} for b in loop["breaks"]):
+                raise ValueError(f"{where}: loop {loop!r}; expected nodeId / between / breaks")
+            _check_node_id(loop["nodeId"], where)
+
     return timeline
 
 
@@ -437,10 +457,18 @@ def load_timeline(path: Path) -> Timeline:
     top_level_ifs = tuple(TopLevelIf(node_id=t["nodeId"], after_leaves=t["afterLeaves"], loc=_loc(t.get("loc")),
                                      arms=tuple((a["branch"], a["condNodeId"], a["leaves"]) for a in t["arms"]))
                           for t in doc.get("topLevelIfs", ()))
+    row_counts = tuple(RowCount(
+        if_node_id=c["ifNodeId"], cond_node_id=c["condNodeId"], branch=c["branch"], form=c["form"], count=c["count"],
+        result=c["result"], count_node_id=c["countNodeId"], reaches=c["reaches"], definitions=c["definitions"],
+        loops=tuple(RowCountLoop(node_id=x["nodeId"],
+                                 between=tuple((b["nodeId"], b["line"], b["what"]) for b in x["between"]),
+                                 breaks=tuple((b["nodeId"], b["line"]) for b in x["breaks"])) for x in c["loops"]))
+        for c in doc.get("rowCounts", ()))
     return Timeline(entrypoint=doc["entrypoint"], schema_version=doc["schemaVersion"], sequence=sequence,
                     queries=queries, provenance=doc.get("_provenance", {}), calls=calls, function=function,
                     order=tuple(e["id"] for e in doc["sequence"]),
-                    content_type=doc.get("responseContentType"), redirects=redirects, top_level_ifs=top_level_ifs)
+                    content_type=doc.get("responseContentType"), redirects=redirects, top_level_ifs=top_level_ifs,
+                    row_counts=row_counts)
 
 
 def load_labels(path: Path) -> dict[str, Label]:

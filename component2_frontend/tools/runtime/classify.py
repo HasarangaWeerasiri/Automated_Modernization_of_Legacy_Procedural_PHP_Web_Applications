@@ -560,9 +560,9 @@ def main(argv: list[str]) -> int:
         legacy_html = (out / "legacy" / f"{page['page']}.html").read_text(encoding="utf-8")
         generated_html = (out / "generated" / f"{page['page']}.html").read_text(encoding="utf-8")
         legacy_tree, generated_tree = compare.body(legacy_html), compare.body(generated_html, generated=True)
-        unit = units[page["page"]]
+        unit = units[page.get("unit", page["page"])]  # Phase 4g: a parameterised GET of a page unit
         # a page inside a shell (R-F2): the shell's header and footer printed part of it (Phase 4e, phpBlog)
-        entry = next(e for e in index["pages"] if e["key"] == page["page"])
+        entry = next(e for e in index["pages"] if e["key"] == unit.key)
         shell = [units[e["key"]] for e in index["pages"] if e["role"] == "shell" and e.get("group")
                  and e["group"] == entry.get("group") and e["key"] in units]
         called = [by_function[c] for u in [unit] + shell for _, c in u.calls if c in by_function]
@@ -572,13 +572,16 @@ def main(argv: list[str]) -> int:
                                     compare.head(generated_html), dict(matches))
         # list rows: legacy elements matched to a row the wiring added, and missing legacy elements whose gap is a
         # List's collection (no data for it)
-        rows = row_paths((before / "generated" / f"{page['page']}.html").read_text(encoding="utf-8"), generated_html) \
-            if out != before and (before / "generated" / f"{page['page']}.html").exists() else set()
+        # (the generated pages do not read the query string: a parameterised GET's baseline is its unit's page)
+        baseline = next((before / "generated" / f"{key}.html" for key in (page["page"], unit.key)
+                         if (before / "generated" / f"{key}.html").exists()), None)
+        rows = row_paths(baseline.read_text(encoding="utf-8"), generated_html) \
+            if out != before and baseline is not None else set()
         list_matched = sum(1 for _, g in matches[1:] if g in rows)
         list_missing = sum(d.get("elements", 0) for d in differences
                            if d["kind"] == "missing" and d.get("flag", {}).get("detail") == "collection")
         by_class = collections.Counter(d["class"] for d in differences)
-        row = {"page": page["page"], "getOnly": page["getOnly"], "legacyElements": page["legacyElements"],
+        row = {"page": page["page"], **({"unit": page["unit"]} if "unit" in page else {}), "getOnly": page["getOnly"], "legacyElements": page["legacyElements"],
                "generatedElements": page["generatedElements"], "matched": page["matched"],
                "renderMatch": round(page["matched"] / page["legacyElements"], 4) if page["legacyElements"] else None,
                "listElements": list_matched + list_missing, "listMatched": list_matched,

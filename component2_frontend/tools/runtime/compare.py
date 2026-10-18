@@ -221,11 +221,13 @@ def main(argv: list[str]) -> int:
             continue
         moved = {k: v for k, v in row.items() if k.endswith(("FinalUrl", "Refresh"))}
         if moved:  # one side sent the browser elsewhere: not the same page any more (capture.py)
-            redirected.append({"page": row["page"], "getOnly": row["getOnly"], **moved})
+            redirected.append({"page": row["page"], **({"unit": row["unit"]} if "unit" in row else {}),
+                               "getOnly": row["getOnly"], **moved})
             continue
         legacy = (out / "legacy" / f"{row['page']}.html").read_text(encoding="utf-8")
         generated = (out / "generated" / f"{row['page']}.html").read_text(encoding="utf-8")
-        pages.append({"page": row["page"], "getOnly": row["getOnly"], **compare(legacy, generated)})
+        pages.append({"page": row["page"], **({"unit": row["unit"]} if "unit" in row else {}),
+                      "getOnly": row["getOnly"], **compare(legacy, generated)})
     totals = {key: sum(p[key] for p in pages) for key in ("legacyElements", "generatedElements", "matched")}
     totals["differences"] = sum(len(p["differences"]) for p in pages)
     report = {"app": argv[0], "normalisation": {

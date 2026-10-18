@@ -1,0 +1,11 @@
+{
+  "note": "Phase 4g: parameterised GETs captured in addition to every page unit's bare URL (capture.py --gets), for runs on seed + fixture (initdb/03-fixture.sql). Values are the fixture's own slugs (posts 1-3, categories 1 'site-news' from install/database.sql and 2 'tutorials', page 2 'terms'); the parameter name is the one each page reads ($_GET['name']: post.php 11, category.php 9, page.php 9). The generated pages do not read the query string (request input is not generated), so their side is the bare page's output. The bare URLs stay in the list (they redirect, as before).",
+  "gets": [
+    {"unit": "post.php", "query": "name=welcome-to-the-blog"},
+    {"unit": "post.php", "query": "name=writing-a-first-page"},
+    {"unit": "post.php", "query": "name=lists-and-tables"},
+    {"unit": "category.php", "query": "name=site-news"},
+    {"unit": "category.php", "query": "name=tutorials"},
+    {"unit": "page.php", "query": "name=terms"}
+  ]
+}

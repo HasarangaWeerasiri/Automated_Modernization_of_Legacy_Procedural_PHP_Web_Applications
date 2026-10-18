@@ -357,6 +357,16 @@ class Generator:
         # outside R-I8's scope (v0.14): its redirect arms are not treated as guards in the abstained code
         self.r_i8_out = {n.source_ids[0] for n in nodes if n.reason == "exit_arm_not_covered"}
         self.r_i2b = {n.source_ids[0]: n for n in nodes if n.rule == "R-I2b" and n.type == "InlineConditional"}
+        # spec v0.17 (rules v1.1): the row counts in each if's conditions (harness extension rowCounts), and, per
+        # list guard, the ones that stand for a List's items (decided once: count_scope)
+        self.row_counts = {}
+        for count in self.timeline.row_counts if self.boundary_config.rules_version != "1.0" else ():
+            self.row_counts.setdefault(count.if_node_id, []).append(count)
+        self.count_scopes: dict[str, tuple] = {}
+        self.r_i2_lists: dict[str, list] = {}  # R-I2: guard if -> the List(s) it guards (Stage 2's second source id)
+        for n in nodes:
+            if n.type == "List" and "R-I2" in n.rules and len(n.source_ids) > 1:
+                self.r_i2_lists.setdefault(n.source_ids[1], []).append(n)
         # R-I8c: in a called function or an included file an arm that exits is not generated (flagged at its
         # include and call sites)
         self.r_i8c = {n.source_ids[0] for n in nodes if n.rule == "R-I8c"}
@@ -1205,10 +1215,11 @@ class Generator:
 
     # ---- conditions
 
-    def scope(self, ctx: _Ctx, guard_var: str | None = None) -> Scope:
+    def scope(self, ctx: _Ctx, guard_var: str | None = None, if_id: str | None = None) -> Scope:
         row = ctx.row
         return Scope(row_var=row.php_var if row else None, row_fields=row.fields if row else None,
-                     guard_var=guard_var, props=tuple(self.props.items()))
+                     guard_var=guard_var, props=tuple(self.props.items()),
+                     row_counts=self.count_scopes.get(if_id, ()) if if_id else ())
 
     def note_condition_uses(self, code: str, ctx: _Ctx) -> None:
         if re.search(r"\brow\b", code):
@@ -1217,7 +1228,7 @@ class Generator:
             ctx.uses.add("items")
 
     def condition(self, mif: MIf, branch: MBranch, ctx: _Ctx, marks: list, guard_var: str | None = None) -> str:
-        translation = translate(branch.enclosure.cond_expr, self.scope(ctx, guard_var),
+        translation = translate(branch.enclosure.cond_expr, self.scope(ctx, guard_var, mif.if_id),
                                 self.config.condition_context_reasons)
         node_id = mif.if_id if branch.enclosure.branch == "then" else branch.enclosure.cond_node_id
         if translation.code is not None:
@@ -1253,6 +1264,12 @@ class Generator:
 
     def conditional(self, mif: MIf, ctx: _Ctx, stage2_node: ComponentNode | None) -> list:
         """One Cond per if: then/elseif/else of one if -> a ternary chain; never merged with a sibling if (R-I6)."""
+        # spec v0.17: a row count of the own query of a List this if guards, generated here (R-I2b; or R-I2 when the
+        # List is called inside the guard's arm, e.g. phpBlog blog.php 29)
+        guarded = [c for c in self.r_i2b[mif.if_id].children if c.type == "List"] if mif.if_id in self.r_i2b else []
+        guarded += self.r_i2_lists.get(mif.if_id, [])
+        if guarded:
+            self.count_scope(mif, ctx, [(c, self.list_items(c)) for c in guarded])
         reason = self.chosen_arm(mif, ctx)
         if reason is not None:  # spec v0.16: no arm is chosen
             return self.no_arm(mif, ctx, reason, lambda inner: self.conditional(mif, inner, stage2_node))
@@ -1293,11 +1310,13 @@ class Generator:
 
     # ---- spec v0.16 section 6: an untranslatable condition never selects an arm
 
-    def untranslatable(self, enclosure, ctx: _Ctx, guard_var: str | None = None) -> str | None:
+    def untranslatable(self, enclosure, ctx: _Ctx, guard_var: str | None = None,
+                       if_id: str | None = None) -> str | None:
         """The reason an arm's condition is not translated, or None (translated, or an `else`)."""
         if enclosure.branch == "else":
             return None
-        translation = translate(enclosure.cond_expr, self.scope(ctx, guard_var), self.config.condition_context_reasons)
+        translation = translate(enclosure.cond_expr, self.scope(ctx, guard_var, if_id),
+                                self.config.condition_context_reasons)
         return None if translation.code is not None else translation.reason
 
     def arm_prints(self, mif: MIf, branch: MBranch) -> bool:
@@ -1317,7 +1336,7 @@ class Generator:
             reasons.append("condition_unavailable")
             prints.append(False)
         for branch in mif.branches:
-            reasons.append(self.untranslatable(branch.enclosure, ctx, guard_var))
+            reasons.append(self.untranslatable(branch.enclosure, ctx, guard_var, mif.if_id))
             prints.append(self.arm_prints(mif, branch))
         reasons.append(None)
         prints.append(rest_prints)
@@ -1347,6 +1366,60 @@ class Generator:
         for later in inner.pending:
             self.abstained_function(later, inner)
 
+    # ---- spec v0.17: a row count of the List's own query
+
+    def list_items(self, lst: ComponentNode) -> str | None:
+        """The code of a List's items where it is called, when they are bound to a data source (a mapped
+        endpoint); None when the List is given `[]`."""
+        key = self.ids[id(lst)]
+        query, collection = self.query_data.get(key), self.collections.get(key)
+        if query is not None:
+            return prop_access(query.local, query.array)
+        if collection is not None and collection.result == "mapped" and self.schema is not None:
+            return prop_access("data", collection.schema_property)
+        return None
+
+    def count_scope(self, mif: MIf, ctx: _Ctx, lists: list, guard_var: str | None = None) -> tuple:
+        """The row counts in this list guard's conditions that translate as `<items>.length` (spec v0.17): (a) the
+        guarded List iterates the counted result itself, (b) nothing between the count and the loop fetches,
+        seeks or reassigns, (c) no break / continue in the loop, (d) the List's items are bound to a data source;
+        a variable's value at the condition must certainly be that count (its reaching definition, Phase 2a copy
+        propagation). `lists`: [(List, its items code or None)].
+        Decided once per if; one info flag per count says what its condition became, or which conditions fail."""
+        if mif.if_id in self.count_scopes:
+            return self.count_scopes[mif.if_id]
+        usable, notes = [], []
+        for count in self.row_counts.get(mif.if_id, ()):
+            loops = {loop.node_id: loop for loop in count.loops}
+            failed = [] if count.reaches else [f"{count.count}: the count assignment does not certainly reach the "
+                                               "condition"]
+            found = next(((lst, items) for lst, items in lists if lst.source_ids[0] in loops), None)
+            if found is None:
+                failed.append(f"(a) no guarded List iterates {count.result}")
+            else:
+                lst, items = found
+                loop = loops[lst.source_ids[0]]
+                failed += [f"(b) {what} at line {line}" for _, line, what in loop.between]
+                failed += [f"(c) break / continue at line {line}" for _, line in loop.breaks]
+                if items is None:
+                    failed.append("(d) the List's items have no data source")
+            name = count.count if count.form == "variable" else count.result
+            if not failed:
+                usable.append((count.form, name, found[1]))
+            notes.append((count, failed))
+        self.count_scopes[mif.if_id] = tuple(usable)
+        conds = {b.enclosure.cond_node_id: b.enclosure.cond_expr for b in mif.branches if b.enclosure.branch != "else"}
+        for count, failed in notes:
+            if failed:
+                detail = "not translated: " + "; ".join(failed)
+            else:  # (a)-(d) hold: the rest of the condition must be on the whitelist too
+                translation = translate(conds.get(count.cond_node_id), self.scope(ctx, guard_var, mif.if_id),
+                                        self.config.condition_context_reasons)
+                detail = (f"translated: {translation.code} (spec v0.17)" if translation.code is not None else
+                          f"(a)-(d) hold; not translated: the condition is not on the whitelist ({translation.reason})")
+            self.flag(ctx, "row_count_guard", INFO, count.cond_node_id, f"{count.count}: {detail}")
+        return self.count_scopes[mif.if_id]
+
     def silent_then(self, mif: MIf, ctx: _Ctx, marks: list) -> list:
         """The `then` arm of an if whose `then` prints nothing: [(its condition, no content)], else [].
 
@@ -1364,6 +1437,7 @@ class Generator:
         empties = [c for c in lst.children if c.type == "Empty"]
         iter_expr = loop.enclosure.iter_expr
         guard_var = iter_expr if iter_expr and re.fullmatch(r"\$[A-Za-z_]\w*", iter_expr) else None
+        self.count_scope(mif, ctx, [(lst, "items" if self.list_items(lst) is not None else None)], guard_var)
         reason = self.chosen_arm(mif, ctx, guard_var)
         if reason is not None:  # spec v0.16: neither the List nor its Empty is chosen
             return self.no_arm(mif, ctx, reason, lambda inner: self.guard(mif, inner))

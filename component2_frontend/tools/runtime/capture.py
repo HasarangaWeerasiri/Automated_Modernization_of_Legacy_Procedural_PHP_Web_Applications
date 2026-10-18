@@ -14,9 +14,13 @@ Nothing is posted and nobody logs in: a page whose output depends on a request o
 $_POST / $_GET / $_REQUEST / $_SESSION / $_COOKIE in an output or a condition) is captured as an anonymous GET and
 marked `get_only`.
 
+Phase 4g: `--gets <file>` adds parameterised GETs ({"gets": [{unit, query}]}, e.g. tools/runtime/phpblog/gets.json):
+each is captured as one more page `<unit>@<query>` (`unit` names its page unit), legacy `/<file>?<query>`, generated
+`/<route>?<query>`. The bare URL of every page unit is still captured.
+
 Usage, from component2_frontend/ (both servers running, see tools/runtime/hms/README.md):
     venv/Scripts/python.exe tools/runtime/capture.py hms [--legacy http://127.0.0.1:18080]
-        [--generated http://127.0.0.1:18100] [--folder hms-v1.1]
+        [--generated http://127.0.0.1:18100] [--folder hms-v1.1] [--gets tools/runtime/phpblog/gets.json]
 (`--folder`: the run's folder under output/runtime/, default the app's name; generated_app.py takes the same.)
 """
 
@@ -74,6 +78,25 @@ def pages(app: str, run: str | None = None) -> list[dict]:
     return found
 
 
+def with_gets(found: list[dict], gets_file: Path | None) -> list[dict]:
+    """The page units plus one row per parameterised GET of `gets_file` (Phase 4g), after its unit's own row."""
+    if gets_file is None:
+        return found
+    gets = json.loads(Path(gets_file).read_text(encoding="utf-8"))["gets"]
+    out = []
+    for row in found:
+        out.append(row)
+        for get in gets:
+            if get["unit"] == row["page"]:
+                out.append(row | {"page": f"{row['page']}@{get['query']}", "unit": row["page"],
+                                  "legacyPath": f"{row['legacyPath']}?{get['query']}",
+                                  "generatedPath": f"{row['generatedPath']}?{get['query']}"})
+    missing = {g["unit"] for g in gets} - {r["page"] for r in found}
+    if missing:
+        raise SystemExit(f"--gets names units that are not generated pages: {sorted(missing)}")
+    return out
+
+
 def meta_refresh(url: str) -> str | None:
     """The target of a `<meta http-equiv="refresh">` in the page as served (a browser follows it, JavaScript or not),
     or None."""
@@ -96,6 +119,7 @@ def main(argv: list[str]) -> int:
     legacy = argv[argv.index("--legacy") + 1] if "--legacy" in argv else "http://127.0.0.1:18080"
     generated = argv[argv.index("--generated") + 1] if "--generated" in argv else "http://127.0.0.1:18100"
     run = argv[argv.index("--folder") + 1] if "--folder" in argv else app
+    gets_file = argv[argv.index("--gets") + 1] if "--gets" in argv else None
     out = OUTPUT / run
     for side in ("legacy", "generated"):
         (out / side).mkdir(parents=True, exist_ok=True)
@@ -103,7 +127,7 @@ def main(argv: list[str]) -> int:
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch()  # the Chromium build Playwright 1.62.0 pins (tools/runtime/requirements.txt)
         context = browser.new_context(java_script_enabled=False, viewport=VIEWPORT)
-        for page_info in pages(app, run):
+        for page_info in with_gets(pages(app, run), gets_file):
             urls = {"legacy": legacy + page_info["legacyPath"], "generated": generated + page_info["generatedPath"]}
             codes = {side: status(url) for side, url in urls.items()}
             row = {**page_info, "legacyStatus": codes["legacy"], "generatedStatus": codes["generated"]}
