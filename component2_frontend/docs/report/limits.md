@@ -89,6 +89,8 @@ legacy page's own stylesheets and script files as they were, for a demonstration
 
 | Limitation | Recorded in |
 |---|---|
-| Inline scripts (`<script>…</script>`, `onclick=`) are neither loaded nor converted | `docs/assets-layer.md` §6 |
+| Inline scripts (`<script>…</script>`, `onclick=`) are never converted; the `--inline-js` option runs them verbatim, but skips (and lists) code under an `if` / `else` / `switch`, code or handlers built by PHP, `document.write`, and ambiguous handlers | `docs/assets-layer.md` §6, §7 |
+| PHP-valued handlers (`onclick="del(<?= $id ?>)"`) would need Stage 5 to translate the attribute (a pipeline change; future work after Phase 5) | `docs/assets-layer.md` §7 |
+| DOM-based XSS patterns in static legacy JS are listed (`dom_sink`), not fixed | `docs/assets-layer.md` §7 |
 | Stylesheet / script tags built by PHP and includes by an expression are skipped; the scan is file-level (a tag under a condition is collected whatever the condition) | `docs/assets-layer.md` §2, §6 |
 | Scripts from the legacy `<head>` load at the end of `<body>`; legacy scripts change DOM that React rendered (safe for Server Components without client state, not in general) | `docs/assets-layer.md` §6 |

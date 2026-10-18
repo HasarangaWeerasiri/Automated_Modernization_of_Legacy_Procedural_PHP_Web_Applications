@@ -19,7 +19,7 @@ Per generated page, in source order:
   A stylesheet a shell's layout already has is not added twice.
 
 Into the build project (output/test-app/c2-build/<name>/) it writes:
-- `public/`: the legacy app's static files (css, js, images, fonts) under their path from the document root, so the
+- `public/`: the legacy app's static files (css, js, images, fonts, static .html pages) under their path from the document root, so the
   legacy relative URLs resolve as they did on the PHP server;
 - `src/c2-legacy-assets.tsx` (the per-page lists and two server components), `src/proxy.ts` (tells them which page
   is requested), and in each group's `layout.tsx` the stylesheets at the end of `<head>` and the scripts at the
@@ -28,7 +28,8 @@ Into the build project (output/test-app/c2-build/<name>/) it writes:
 Page files and every Stage 1-5 output stay as they are. Never part of an evaluation run (eval-mapping section 4).
 
 Usage, from component2_frontend/:
-    venv/Scripts/python.exe tools/assets/legacy_assets.py <index.json> [--out assets.json] [--build <name> [--no-build]]
+    venv/Scripts/python.exe tools/assets/legacy_assets.py <index.json> [--inline-js] [--out assets.json] [--build <name> [--no-build]]
+(`--inline-js`: also the inline scripts and event handlers, run verbatim; tools/assets/inline_js.py.)
 """
 
 import base64
@@ -45,7 +46,8 @@ TOK_PHP = ROOT / "tools" / "tok.php"
 TEST_APP = ROOT / "output" / "test-app"
 BUILD_DIR = TEST_APP / "c2-build"
 STATIC = {".css", ".js", ".map", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".webp", ".bmp",
-          ".woff", ".woff2", ".ttf", ".eot", ".otf"}
+          ".woff", ".woff2", ".ttf", ".eot", ".otf",
+          ".html", ".htm"}  # a static page is served as it is, as the PHP server served it (HMS services.html)
 LITERAL = {"T_INLINE_HTML", "T_CONSTANT_ENCAPSED_STRING", "T_ENCAPSED_AND_WHITESPACE", "T_START_HEREDOC"}
 INCLUDE = {"T_INCLUDE", "T_INCLUDE_ONCE", "T_REQUIRE", "T_REQUIRE_ONCE"}
 OPEN = {"{", "T_CURLY_OPEN", "T_DOLLAR_OPEN_CURLY_BRACES"}
@@ -222,8 +224,9 @@ def _layout_hrefs(build: Path | None, group: str) -> set[str]:
                           .read_text(encoding="utf-8")))
 
 
-def asset_table(index: dict, php: str, build: Path | None = None) -> dict:
-    """Per generated page: its stylesheets, its script files and what was skipped."""
+def asset_table(index: dict, php: str, build: Path | None = None, inline: bool = False) -> dict:
+    """Per generated page: its stylesheets, its script files and what was skipped (`inline`: also its inline
+    scripts and event handlers, tools/assets/inline_js.py)."""
     pages = [p for p in index["pages"] if p["role"] == "page" and not p.get("crash") and not p.get("notGenerated")]
     if not pages:
         return {"app": index["app"], "docroot": index.get("docroot") or "", "pages": []}
@@ -258,8 +261,15 @@ def asset_table(index: dict, php: str, build: Path | None = None) -> dict:
                     styles.append(item)
             elif item["attrs"] not in [s["attrs"] for s in scripts]:
                 scripts.append(item)
-        rows.append({"path": page["path"], "route": page["route"], "group": group,
-                     "styles": styles, "scripts": scripts, "skipped": skipped})
+        row = {"path": page["path"], "route": page["route"], "group": group,
+               "styles": styles, "scripts": scripts, "skipped": skipped}
+        if inline:
+            import inline_js  # (it imports from this module)
+
+            seen = {path for path, _ in scopes}
+            row["inline"] = inline_js.collect([p for path, function in scopes
+                                               for p in inline_js.pieces(scanner, path, function, seen)])
+        rows.append(row)
     root = app_root.relative_to(ROOT) if app_root.is_relative_to(ROOT) else app_root
     return {"app": index["app"], "docroot": index.get("docroot") or "", "appRoot": root.as_posix(), "pages": rows}
 
@@ -281,15 +291,21 @@ def data_module(table: dict) -> str:
     for row in table["pages"]:
         pages[row["path"]] = {"styles": [_react(s["attrs"]) for s in row["styles"]],
                               "scripts": [_react(s["attrs"]) for s in row["scripts"]]}
-        legacy = _url(row["path"], table["docroot"])
+        if "inline" in row:  # the loader runs every script, in order, after hydration
+            pages[row["path"]] |= {"scripts": [], "steps": [{k: s[k] for k in ("src", "code") if k in s}
+                                                            for s in row["inline"]["steps"]],
+                                   "handlers": [{k: h[k] for k in ("selector", "names", "event", "code")}
+                                                for h in row["inline"]["handlers"]]}
+        legacy =_url(row["path"], table["docroot"])
         folder = (legacy[: -len("index.php")].rstrip("/") or "/",) if legacy.endswith("/index.php") else ()
         for url in (row["route"], legacy) + folder:
             urls.setdefault(url, row["path"])
     return ("// Assets layer for " + table["app"] + " (tools/assets/legacy_assets.py): the legacy page's own\n"
             "// stylesheets and script files. A deployment aid, not part of the pipeline and not measured.\n"
             "export type Attributes = Record<string, string | boolean>;\n"
-            "export type Assets = { styles: Attributes[]; scripts: Attributes[] };\n\n"
-            "export const PAGES: Record<string, Assets> = " + json.dumps(pages, indent=2, sort_keys=True) + ";\n\n"
+            + (INLINE_TYPES if any("inline" in row for row in table["pages"]) else
+               "export type Assets = { styles: Attributes[]; scripts: Attributes[] };\n\n")
+            + "export const PAGES: Record<string, Assets> = " + json.dumps(pages, indent=2, sort_keys=True) + ";\n\n"
             "export const PAGE_OF_URL: Record<string, string> = " + json.dumps(urls, indent=2, sort_keys=True)
             + ";\n\n"
             "export function pageOf(pathname: string): string {\n"
@@ -319,6 +335,19 @@ export async function LegacyScripts() {
     : null;
 }
 """
+
+INLINE_TYPES = ('import type { Handler, Step } from "./c2-legacy-script-loader";\n'
+                "export type Assets = { styles: Attributes[]; scripts: Attributes[]; steps?: Step[]; "
+                "handlers?: Handler[] };\n\n")
+
+COMPONENTS_INLINE = COMPONENTS.replace(
+    'import { PAGES } from "./c2-legacy-assets-data";\n',
+    'import { PAGES } from "./c2-legacy-assets-data";\nimport { LegacyScriptLoader } from "./c2-legacy-script-loader";\n',
+).replace(
+    "export async function LegacyScripts() {\n  const page = await current();\n",
+    "export async function LegacyScripts() {\n  const page = await current();\n"
+    "  if (page?.steps) return <LegacyScriptLoader steps={page.steps} handlers={page.handlers ?? []} />;\n",
+)
 
 PROXY = """// Assets layer (tools/assets/legacy_assets.py): tells the layouts which legacy page is requested.
 import { NextResponse, type NextRequest } from "next/server";
@@ -372,7 +401,12 @@ def write(target: Path, table: dict) -> int:
     for layout in sorted((target / "src" / "app").glob("*/layout.tsx")):
         layout.write_bytes(edit_layout(layout.read_text(encoding="utf-8")).encode("utf-8"))
     (target / "src" / "c2-legacy-assets-data.ts").write_bytes(data_module(table).encode("utf-8"))
-    (target / "src" / "c2-legacy-assets.tsx").write_bytes(COMPONENTS.encode("utf-8"))
+    inline = any("inline" in row for row in table["pages"])
+    (target / "src" / "c2-legacy-assets.tsx").write_bytes((COMPONENTS_INLINE if inline else COMPONENTS).encode("utf-8"))
+    if inline:
+        import inline_js
+
+        (target / "src" / "c2-legacy-script-loader.tsx").write_bytes(inline_js.LOADER.encode("utf-8"))
     (target / "src" / "proxy.ts").write_bytes(PROXY.encode("utf-8"))
     (target / "assets.json").write_bytes((json.dumps(table, indent=2) + "\n").encode("utf-8"))
     return copy_static(ROOT / table["appRoot"], table["docroot"], target / "public") if table.get("appRoot") else 0
@@ -385,13 +419,13 @@ def _php() -> str:
     return php
 
 
-def apply(name: str, index_path: Path, build: bool = True) -> tuple[dict, int, bool, str]:
+def apply(name: str, index_path: Path, build: bool = True, inline: bool = False) -> tuple[dict, int, bool, str]:
     """Write the assets layer into output/test-app/c2-build/<name>/ and (by default) rebuild it."""
     sys.path.insert(0, str(ROOT / "tools" / "routing"))
     import routes  # the same in-place `next build`
 
     target = BUILD_DIR / name
-    table = asset_table(json.loads(index_path.read_text(encoding="utf-8")), _php(), target)
+    table = asset_table(json.loads(index_path.read_text(encoding="utf-8")), _php(), target, inline)
     copied = write(target, table)
     ok, text = routes.rebuild(target) if build else (True, "")
     return table, copied, ok, text
@@ -400,7 +434,12 @@ def apply(name: str, index_path: Path, build: bool = True) -> tuple[dict, int, b
 def summary(table: dict) -> str:
     rows = table["pages"]
     return (f"{table['app']}: {len(rows)} pages, {sum(len(r['styles']) for r in rows)} stylesheets, "
-            f"{sum(len(r['scripts']) for r in rows)} script files, {sum(len(r['skipped']) for r in rows)} skipped")
+            f"{sum(len(r['scripts']) for r in rows)} script files, {sum(len(r['skipped']) for r in rows)} skipped"
+            + ("" if not any("inline" in r for r in rows) else
+               f"; inline JS: {sum(sum('code' in s for s in r['inline']['steps']) for r in rows)} script blocks, "
+               f"{sum(len(r['inline']['handlers']) for r in rows)} handlers, "
+               f"{sum(len(r['inline']['skipped']) for r in rows)} skipped, "
+               f"{sum(len(r['inline']['notes']) for r in rows)} notes"))
 
 
 def main(argv: list[str]) -> int:
@@ -413,9 +452,10 @@ def main(argv: list[str]) -> int:
     try:
         if "--build" in argv:
             table, copied, ok, text = apply(argv[argv.index("--build") + 1], index_path,
-                                            build="--no-build" not in argv)
+                                            build="--no-build" not in argv, inline="--inline-js" in argv)
         else:
-            table = asset_table(json.loads(index_path.read_text(encoding="utf-8")), _php())
+            table = asset_table(json.loads(index_path.read_text(encoding="utf-8")), _php(),
+                                inline="--inline-js" in argv)
             copied, ok, text = 0, True, ""
     except (FileNotFoundError, ValueError) as error:
         print(error, file=sys.stderr)

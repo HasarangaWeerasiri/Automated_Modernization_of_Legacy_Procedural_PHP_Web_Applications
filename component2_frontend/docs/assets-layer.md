@@ -34,8 +34,9 @@ The browser loads **the legacy files, as they were**: no JavaScript is converted
 | Left out | HTML comments (incl. `<!--[if IE]>`); `rel="icon"` and other links; inline `<script>` blocks (still `inline_js_dropped`); a stylesheet the shell's layout already has |
 | Skipped and listed, never guessed | a tag built by a PHP expression (`'…bootswatch.com/5/' . $theme . '/…'`, `<?= ?>` in an attribute): `tag_built_by_php`; an include whose path is an expression: `include_not_literal` |
 
-Into the build project (`output/test-app/c2-build/<name>/`) it writes `public/` (the static files under their path from
-the document root, so relative URLs resolve as on the PHP server), `src/c2-legacy-assets-data.ts` (the lists per page),
+Into the build project (`output/test-app/c2-build/<name>/`) it writes `public/` (the static files — CSS, JS, images, fonts and
+static `.html` pages, served as they are, as the PHP server served them; e.g. HMS's `services.html` / `contact.html`,
+the ABOUT US / CONTACT links — under their path from the document root, so relative URLs resolve as on the PHP server), `src/c2-legacy-assets-data.ts` (the lists per page),
 `src/c2-legacy-assets.tsx` (two server components), `src/proxy.ts` (tells them which page is requested: route, legacy
 URL or folder), `assets.json`, and in each group's `layout.tsx` the stylesheets at the end of `<head>` and the scripts
 after `{children}`. Page files and every Stage 1–5 output are untouched.
@@ -74,7 +75,8 @@ byte-identical to the freeze 27c380e; no change under `src/`, `config/`, `tools/
 
 | Build | Check | Result |
 |---|---|---|
-| HMS (`hms-assets-runtime` = the Phase 4 build `hms-final-runtime` + routing + assets; 907 static files) | `/index.php` on load | only the Patient form shown, styled as the legacy page |
+| HMS (`hms-assets-runtime` = the Phase 4 build `hms-final-runtime` + routing + assets; 907 static files, before `.html` was added) | `/index.php` on load | only the Patient form shown, styled as the legacy page |
+| HMS `hms-inline-runtime` (936 static files: + 29 `.html`, 19 Oct 2026) | click ABOUT US / CONTACT on `/index.php` | `/services.html` ("Services") / `/contact.html` ("Contact Us"), served as they are |
 | | click Doctor / Receptionist / Patient | only that tab's form shown each time |
 | | `/admin-panel1.php`, click "Doctor List" | the doctor table (replay data) replaces the dashboard |
 | | `window.jQuery`, page errors | `function`, none |
@@ -85,8 +87,8 @@ The Phase 4 builds were copied, not changed (their results stay as recorded).
 
 ## 6. What it does not do (limits)
 
-- **Inline scripts** (`<script>…</script>`, `onclick=`) are not loaded or converted; what depends on them stays
-  inert (HMS's `alert()` messages after a POST, validation `onkeyup`).
+- **Inline scripts** (`<script>…</script>`, `onclick=`) are not loaded or converted by this layer; what depends on
+  them stays inert. The `--inline-js` option (§7) runs them verbatim.
 - **Tags built by PHP** and **includes by an expression** are skipped and listed (§2); conditional tags are
   collected whatever the condition (the scan is file-level, not flow-aware).
 - **Order:** scripts the legacy page had in `<head>` now load at the end of `<body>` (in their order); a script that
@@ -97,3 +99,41 @@ The Phase 4 builds were copied, not changed (their results stay as recorded).
 - The layouts read the request headers, so every page is rendered per request (dynamic).
 - Forms, sessions and redirects remain Component 1's; AJAX endpoints are not generated (`non_html_response`).
 - Nothing about the look of a page is measured or reported as a result.
+
+## 7. The `--inline-js` option (owner decision, 18 Oct 2026)
+
+`legacy_assets.py <index.json> --inline-js --build <name>` (or `generated_app.py <app> --assets --inline-js`) adds the
+legacy page's **inline scripts and event-handler attributes, run verbatim** by the browser
+(`tools/assets/inline_js.py`; tests `tests/test_inline_js.py`). Nothing is converted or rewritten: the rule "detect and
+flag it, never convert it" and the flag `inline_js_dropped` stand; this, like the rest of the layer, is outside the
+pipeline and not measured.
+
+| What | Rule |
+|---|---|
+| Steps | in source order: `<script src>` files (as above) and inline `<script>` blocks complete in one literal (`type` empty or JavaScript) |
+| Handlers | every `on*="…"` of a complete start tag, with a selector of all its static attributes (not `style`); set only on elements whose attribute names are exactly the legacy tag's (a sidebar link sharing the card's `href` but with more attributes is not touched) |
+| When | after hydration: first the handler attributes, then the steps one after the other (a file waits for its `load`; inline code runs on insertion), so legacy code never changes the DOM before React hydrates it. Scripts are then no longer server-rendered |
+| Skipped and listed, never guessed | `conditional` (under `if` / `else` / `switch`, incl. `if: … endif;` — e.g. an `alert()` echoed after a POST; a loop is fine), `script_built_by_php` / `handler_built_by_php` (`<?= ?>`, concatenation), `document_write` (it writes where the script stood; run later it would replace the page), `ambiguous` (same attributes, different or no code), `no_selector` (a tag with no static attribute) |
+| Listed but run | `dom_sink` (`innerHTML`, `outerHTML`, `insertAdjacentHTML`, `eval`, `new Function`: the legacy code's own risk, kept as it was), `load_event` (a `load` / `DOMContentLoaded` listener added after the event passed is called once; `window.onload` set by the legacy code is called once) |
+
+Discovery apps: HMS 7 script blocks, 19 handlers, 33 skipped (incl. the 6 POST `alert()`s of `admin-panel.php`
+49–74), 2 notes (`dom_sink`: `index.php` / `admin-panel1.php` set `innerHTML` to the constants `'Matched'` /
+`'Not Matching'`); phpBlog 37 blocks, 1 handler, 1 skipped; attendance, warehouse, WackoPicko: none.
+
+Demonstrations (18 Oct 2026, headless Chromium):
+
+| Build | Check | Result |
+|---|---|---|
+| HMS `hms-inline-runtime` (= `hms-routes-runtime` + assets + inline JS) | `/admin-panel.php` on load | no dialog (the POST alerts are skipped), dashboard shown |
+| | the dashboard cards "Book Appointment", "View Appointment History", "View Prescription List" (`onclick="clickDiv(…)"`) | each opens its tab |
+| | the sidebar link `#list-home-list` | no `onclick` set on it; it still opens its tab (Bootstrap) |
+| | `/index.php`: password / confirm (`onkeyup="check();"`) | "Not Matching", then "Matched" |
+| | failed requests | 3, all the legacy app's own: `style.css` and `font-awesome-4.7.0/` are not in the HMS repository; the `i.ibb.co` logo is gone |
+| phpBlog `phpblog-inline-runtime` | `/index.php`, `/blog.php`, `/gallery.php` | jQuery loaded, no page errors |
+| | `/contact.php`, `/login.php` | "Missing required parameters: sitekey" (reCAPTCHA) — the **legacy** pages (Docker, port 18081) give the same error: the seed has no site key |
+
+Limits of the option: PHP-valued handlers (`onclick="del(<?= $id ?>)"`) need Stage 5 to translate the attribute,
+a pipeline change (future work, after Phase 5), and often a POST that is Component 1's; a DOM-based XSS in static
+legacy code is listed (`dom_sink`), not fixed (fixing it means rewriting the code); markup printed by functions other
+than the shell is not scanned; the scan follows `if` / loop structure but not the values (a handler in a loop is set
+on every matching row).

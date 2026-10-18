@@ -13,7 +13,8 @@ wiring, the baseline classify.py --before takes to tell List rows from static el
 into output/test-app/c2-build/<name>/ instead, so several builds can be served at once. `--routes`: add the
 opt-in routing layer, tools/routing/routes.py, to the build so legacy .php links navigate. `--assets`: add the
 opt-in assets layer, tools/assets/legacy_assets.py: the legacy page's own stylesheets and script files, and its
-static files. Both are deployment aids, never used for a measured run.)
+static files; with `--inline-js`, also its inline scripts and event handlers, run verbatim
+(tools/assets/inline_js.py). All are deployment aids, never used for a measured run.)
 then start it:
     API_BASE_URL=http://127.0.0.1:18090 node output/test-app/node_modules/next/dist/bin/next start \\
         output/test-app/c2-build/hms-runtime -p 18100
@@ -72,11 +73,13 @@ def main(argv: list[str]) -> int:
     build = argv[argv.index("--build") + 1] if "--build" in argv else f"{app}-{'nodata-' if not data else ''}runtime"
     ok, text = compile_check.next_build(build, pipeline / app / NEXT_APP)
     if ok and "--routes" in argv:  # (built once, after the last layer)
-        table, ok, text = routes.apply(build, pipeline / app / "index.json", build="--assets" not in argv)
+        table, ok, text = routes.apply(build, pipeline / app / "index.json",
+                                       build="--assets" not in argv and "--inline-js" not in argv)
         print(f"  routing layer: {len(table['rewrites'])} rewrites, {len(table['redirects'])} redirects, "
               f"{len(table['noPage'])} files with no page")
-    if ok and "--assets" in argv:
-        table, copied, ok, text = legacy_assets.apply(build, pipeline / app / "index.json")
+    if ok and "--assets" in argv:  # (`--inline-js` with it: also the inline scripts and handlers, run verbatim)
+        table, copied, ok, text = legacy_assets.apply(build, pipeline / app / "index.json",
+                                                      inline="--inline-js" in argv)
         print(f"  assets layer: {legacy_assets.summary(table)}; {copied} static files")
     found = lists(pipeline / app)
     summary = collections.Counter((f["result"], f["reason"]) for f in found)

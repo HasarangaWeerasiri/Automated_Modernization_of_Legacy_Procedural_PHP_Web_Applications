@@ -25,3 +25,7 @@ the evaluation (Phase 5) has run, the evaluation is re-run and reported both bef
 ## Not a change: the assets layer (18 Oct 2026)
 
 `tools/assets/legacy_assets.py` (opt-in, owner decision, `docs/assets-layer.md`) loads a generated page's legacy stylesheets and script files, as they were, and serves the legacy static files, written into a build project after Stage 5. No script is converted: the rule "detect and flag it, never convert it" and the flags `document_shell` / `inline_js_dropped` stand. It changes no rule, no spec and no decision of the pipeline, reads only `index.json` and the legacy source, and is outside the pipeline: `--rules v1.0` stays byte-identical to the freeze. **Not a post-freeze change, not measured**: a deployment aid, off in every measured run.
+
+## Not a change: the inline JS option of the assets layer (18 Oct 2026)
+
+`legacy_assets.py --inline-js` (`tools/assets/inline_js.py`, owner decision, `docs/assets-layer.md` §7) runs a generated page's legacy inline scripts and event-handler attributes **verbatim** in the browser, after hydration; code under a condition, built by PHP, calling `document.write`, or ambiguous is skipped and listed. Nothing is converted: the rule "detect and flag it, never convert it" and the flag `inline_js_dropped` stand. Outside the pipeline, `--rules v1.0` byte-identical to the freeze: **not a post-freeze change, not measured**.
