@@ -10,9 +10,14 @@ the source is mounted read-only into the container.
 | App | Folder | Repository | Commit | Commit date | Licence | Role |
 |---|---|---|---|---|---|---|
 | HMS | `benchmarks/hms/app` | `kishan0725/Hospital-Management-System` | `777fda46b77a820977a5ba616283dbfbc40bf7e1` | 2024-10-07 | None declared | Development |
+| WackoPicko | `benchmarks/wackopicko/app` | `adamdoupe/WackoPicko` | `cabc1b3a06beda7df98e839fa2d84db9a4bdfee7` | 2021-11-17 | MIT | Development |
 
 **Role.** A *development* app is one the engine is built against. Evaluation results that
 support a generality claim must come from apps the engine was not developed against.
+
+**WackoPicko.** The same commit C2 pins. The application is under `website/`; the seed dump
+`current.sql` is at the repository root. It was written for PHP 5 and its `mysql_*` functions,
+so its descriptor selects PHP 5.6.
 
 **HMS licence.** The repository has no licence file and GitHub reports no licence
 (checked 2026-10-09). Only its bundled third-party libraries carry licences. Redistribution
@@ -23,6 +28,7 @@ of its source or seed data is therefore not granted.
 | App | Dump | SHA-256 |
 |---|---|---|
 | HMS | `benchmarks/hms/app/myhmsdb.sql` | `5ccd3134675c99fb95267898f4b18117c9a77443a53e124f4f00377e42778450` |
+| WackoPicko | `benchmarks/wackopicko/app/current.sql` | `b55e037d2c6caaab49a20a9cada13069f51fd7c9db935156737f763221c62cdc` |
 
 ## Restoring a clone
 

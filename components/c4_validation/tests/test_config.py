@@ -101,3 +101,12 @@ def test_incomplete_descriptor_names_the_missing_setting(root):
 
     with pytest.raises(ConfigError, match="C4_LEGACY_SEED, C4_LEGACY_DB_NAME"):
         load_config("broken", environ={}, root=root)
+
+
+def test_the_legacy_runtime_is_php_7_with_mysqli_unless_the_benchmark_says_otherwise(root):
+    assert load_config("demo", environ={}, root=root).compose_env["C4_LEGACY_PHP"] == "7.4"
+
+    (root / "benchmarks" / "old.env").write_text(DESCRIPTOR + "C4_LEGACY_PHP=5.6\nC4_LEGACY_PHP_EXTENSIONS=mysql mysqli\n")
+    env = load_config("old", environ={}, root=root).compose_env
+
+    assert (env["C4_LEGACY_PHP"], env["C4_LEGACY_PHP_EXTENSIONS"]) == ("5.6", "mysql mysqli")

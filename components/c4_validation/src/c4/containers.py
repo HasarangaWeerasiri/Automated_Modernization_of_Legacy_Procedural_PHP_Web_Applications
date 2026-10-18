@@ -4,6 +4,13 @@ docker-compose.yml declares the topology. This module brings it up with the valu
 from config, confirms that both systems are reachable before anything is validated
 (FR1), and confirms that neither of them can reach the outside network (NFR6).
 
+Before starting, it prepares the seed dumps. A dump may set up a database user for
+the application (CREATE USER, GRANT and the like). That is server set-up, not data:
+it fails when run a second time, so a reset could not reload it, and newer MySQL
+versions reject the older forms outright. So the account statements are split from
+the data. The legacy database runs them once, when it is created; every load and
+reset uses the data alone. Neither the application nor its data is changed.
+
 Compose is invoked through its CLI because the Docker SDK has no Compose API. The
 SDK is used for everything that inspects a running container.
 
@@ -14,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 import time
@@ -64,8 +72,50 @@ def _compose(config: Config, *args: str) -> None:
         raise ComposeError(f"`{' '.join(command)}` failed:\n{result.stderr.strip()}")
 
 
+_ACCOUNT_STATEMENT = re.compile(
+    r"\s*(CREATE\s+USER|ALTER\s+USER|DROP\s+USER|RENAME\s+USER|GRANT|REVOKE|SET\s+PASSWORD|FLUSH\s+PRIVILEGES)\b",
+    re.IGNORECASE,
+)
+
+
+def split_seed(dump: bytes) -> tuple[bytes, bytes]:
+    """Split a seed dump into its data and its account statements, both byte for byte.
+
+    A statement is an account statement when it begins with one of the keywords
+    above; it runs to the line that ends with a semicolon.
+    """
+    text = dump.decode("latin-1")  # any byte maps to one character and back unchanged
+    data: list[str] = []
+    accounts: list[str] = []
+    in_account = False
+    for line in text.splitlines(keepends=True):
+        if not in_account and _ACCOUNT_STATEMENT.match(line):
+            in_account = True
+        (accounts if in_account else data).append(line)
+        if in_account and line.rstrip().endswith(";"):
+            in_account = False
+    return "".join(data).encode("latin-1"), "".join(accounts).encode("latin-1")
+
+
+def prepare_seed(config: Config) -> None:
+    """Write the data-only copies of the seed dumps and the legacy account statements."""
+    values = config.compose_env
+    legacy_data, accounts = split_seed(config.legacy.seed_file.read_bytes())
+    migrated_data, _ = split_seed(config.migrated.seed_file.read_bytes())
+    for key, content in (
+        ("C4_LEGACY_DATA", legacy_data),
+        ("C4_LEGACY_ACCOUNTS", accounts),
+        ("C4_MIGRATED_DATA", migrated_data),
+    ):
+        target = (config.root / values[key]).resolve()
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if not target.is_file() or target.read_bytes() != content:
+            target.write_bytes(content)
+
+
 def up(config: Config, *, build: bool = True) -> dict[str, bool]:
     """Start both systems and return once every container is ready."""
+    prepare_seed(config)
     _compose(config, "up", "-d", *(["--build"] if build else []))
     return wait_until_ready(config)
 

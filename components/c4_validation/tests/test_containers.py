@@ -63,3 +63,62 @@ def test_probe_covers_the_web_and_database_container_of_both_systems(config, mon
     monkeypatch.setattr(containers, "_web_ready", lambda client, name, url: url.endswith(("/", "/openapi.json")))
 
     assert containers.probe(config) == _readiness()
+
+
+# ------------------------------------------------------------- seed preparation
+
+from c4.containers import prepare_seed, split_seed  # noqa: E402
+
+DUMP = (
+    b"-- MySQL dump\r\n"
+    b"CREATE DATABASE IF NOT EXISTS `app`;\r\n"
+    b"CREATE USER 'app'@'%' IDENTIFIED BY 'secret';\r\n"
+    b"GRANT SELECT, INSERT\r\n"
+    b"  ON `app`.* TO 'app'@'%';\r\n"
+    b"USE `app`;\r\n"
+    b"CREATE TABLE `notes` (`body` text);\r\n"
+    b"INSERT INTO `notes` VALUES ('GRANT is a word in this note'),('Ren\xe9e');\r\n"
+    b"FLUSH PRIVILEGES;\r\n"
+)
+
+
+def test_account_statements_are_split_from_the_data():
+    data, accounts = split_seed(DUMP)
+
+    assert accounts == (
+        b"CREATE USER 'app'@'%' IDENTIFIED BY 'secret';\r\n"
+        b"GRANT SELECT, INSERT\r\n"
+        b"  ON `app`.* TO 'app'@'%';\r\n"
+        b"FLUSH PRIVILEGES;\r\n"
+    )
+    assert b"CREATE TABLE `notes`" in data and b"USE `app`;" in data
+
+
+def test_the_data_keeps_every_byte_and_line_ending_it_had():
+    data, accounts = split_seed(DUMP)
+
+    assert len(data) + len(accounts) == len(DUMP)
+    assert b"('GRANT is a word in this note'),('Ren\xe9e');\r\n" in data
+
+
+def test_a_dump_without_account_statements_is_kept_exactly():
+    plain = b"CREATE TABLE t (a int);\nINSERT INTO t VALUES (1);\n"
+
+    assert split_seed(plain) == (plain, b"")
+
+
+def test_prepared_copies_are_written_where_compose_reads_them(tmp_path):
+    (tmp_path / "benchmarks").mkdir()
+    (tmp_path / "dump.sql").write_bytes(DUMP)
+    (tmp_path / "benchmarks" / "demo.env").write_text(
+        "C4_LEGACY_DOCROOT=./app\nC4_LEGACY_SEED=./dump.sql\nC4_LEGACY_DB_NAME=app\n"
+    )
+    config = load_config("demo", environ={}, root=tmp_path)
+
+    prepare_seed(config)
+
+    folder = tmp_path / "benchmarks" / "demo" / "prepared"
+    assert (folder / "legacy_accounts.sql").read_bytes().startswith(b"CREATE USER")
+    assert b"CREATE USER" not in (folder / "legacy_data.sql").read_bytes()
+    assert (folder / "migrated_data.sql").read_bytes() == (folder / "legacy_data.sql").read_bytes()
+    assert config.compose_env["C4_LEGACY_DATA"] == "./benchmarks/demo/prepared/legacy_data.sql"

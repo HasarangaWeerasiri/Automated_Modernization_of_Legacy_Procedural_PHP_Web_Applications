@@ -36,6 +36,9 @@ DEFAULTS = {
     # endpoint added to the application under validation.
     "C4_MIGRATED_READY_PATH": "/openapi.json",
     "C4_READY_TIMEOUT": "120",
+    # The runtime the legacy application was written for; see docker/legacy/Dockerfile.
+    "C4_LEGACY_PHP": "7.4",
+    "C4_LEGACY_PHP_EXTENSIONS": "mysqli",
     "C4_REQUEST_TIMEOUT": "30",
     "C4_OUTPUT_DIR": ".",
 }
@@ -156,6 +159,12 @@ def load_config(
     # says otherwise (FR2).
     values.setdefault("C4_MIGRATED_DB_NAME", values["C4_LEGACY_DB_NAME"])
     values.setdefault("C4_MIGRATED_SEED", values["C4_LEGACY_SEED"])
+    # Where the prepared, data-only copies of the seed dumps are written. The folder
+    # sits with the benchmark's own files and is not kept in git.
+    prepared = f"./benchmarks/{benchmark}/prepared"
+    values.setdefault("C4_LEGACY_DATA", f"{prepared}/legacy_data.sql")
+    values.setdefault("C4_LEGACY_ACCOUNTS", f"{prepared}/legacy_accounts.sql")
+    values.setdefault("C4_MIGRATED_DATA", f"{prepared}/migrated_data.sql")
 
     def path(key: str) -> Path:
         return (root / values[key]).resolve()

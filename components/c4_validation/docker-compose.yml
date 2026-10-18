@@ -11,6 +11,10 @@
 # .env                  machine-local settings
 # benchmarks/<app>.env  which benchmark application to run
 #
+# The databases load a prepared, data-only copy of the benchmark's seed dump, which
+# the engine writes before starting the containers (see containers.prepare_seed).
+# Run the engine once before running Compose by hand.
+#
 # The defaults written here must match DEFAULTS in src/c4/config.py.
 #
 # Network isolation (NFR6): the two systems and their databases are attached only
@@ -31,7 +35,10 @@ services:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: ${C4_LEGACY_DB_NAME:?set in benchmarks/<app>.env}
     volumes:
-      - ${C4_LEGACY_SEED:?set in benchmarks/<app>.env}:/docker-entrypoint-initdb.d/seed.sql:ro
+      # The dump's account statements run once, so the application can log in to
+      # its database as written; every load and reset uses the data-only copy.
+      - ${C4_LEGACY_ACCOUNTS:?run python -m c4.containers up}:/docker-entrypoint-initdb.d/00-accounts.sql:ro
+      - ${C4_LEGACY_DATA:?run python -m c4.containers up}:/docker-entrypoint-initdb.d/seed.sql:ro
       - legacy-db-socket:/var/run/mysqld
     healthcheck:
       # TCP, not the socket: the image's temporary init server is socket-only, so
@@ -42,7 +49,12 @@ services:
       retries: 40
 
   legacy-web:
-    build: ./docker/legacy
+    build:
+      context: ./docker/legacy
+      args:
+        PHP_VERSION: ${C4_LEGACY_PHP:-7.4}
+        PHP_EXTENSIONS: ${C4_LEGACY_PHP_EXTENSIONS:-mysqli}
+    image: c4-legacy-web:php${C4_LEGACY_PHP:-7.4}
     container_name: c4-legacy-web
     networks: [private]
     volumes:
@@ -62,7 +74,7 @@ services:
       MYSQL_DATABASE: ${C4_MIGRATED_DB_NAME:-${C4_LEGACY_DB_NAME}}
     volumes:
       # The same dump as the legacy side unless a benchmark says otherwise (FR2).
-      - ${C4_MIGRATED_SEED:-${C4_LEGACY_SEED}}:/docker-entrypoint-initdb.d/seed.sql:ro
+      - ${C4_MIGRATED_DATA:?run python -m c4.containers up}:/docker-entrypoint-initdb.d/seed.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
       interval: 3s

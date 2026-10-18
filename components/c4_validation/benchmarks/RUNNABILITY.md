@@ -57,3 +57,41 @@ The clone was confirmed unmodified.
 - **Strict SQL mode.** MySQL 5.7 runs with `STRICT_TRANS_TABLES`; the dump was produced on
   MariaDB 10.1. Writes that omit a `NOT NULL` column may behave differently from the
   authors' machine. Whatever this environment does is the behaviour the oracle records.
+
+## Result: WackoPicko — PASS (2026-10-18)
+
+Commit `cabc1b3a06beda7df98e839fa2d84db9a4bdfee7`. Environment: Docker 29.1.5 on Windows 11,
+`php:5.6-apache` (PHP 5.6.40, extensions `mysql` and `mysqli`) and `mysql:5.7` (5.7.44); migrated
+side `mysql:8.0`.
+
+| ID | Result | Evidence |
+|---|---|---|
+| R1 | Pass | Pinned in `PINS.md`. MIT licence. |
+| R2 | Pass | 49 PHP files, no framework, 84 calls to the `mysql_*` functions with SQL built by string interpolation. Session-based login. 13 tables. The SQL sits in a few shared include files rather than in each page. |
+| R3 | Pass | `current.sql` loaded with no error once its account statements were separated (see below). 13 tables; `pictures` 9, `users` 10, `comments` 4, `guestbook` 1, and so on. Both databases hold identical data, and repeated resets restore an identical state on both sides. |
+| R4 | Pass | `/`, `users/login.php`, `users/register.php`, `guestbook.php`, `pictures/recent.php`, `calendar.php`, `admin/index.php?page=login`, `users/sample.php?userid=1` all returned 200. No fatal or parse error logged. `admin/index.php` without its `page` parameter answers 500 by design. |
+| R5 | Pass | Login as seed user `bryce` through `users/login.php` returned 303 to `users/home.php`, which shows the user's name. |
+| R6 | Pass | A POST to `guestbook.php` inserted one row into `guestbook`, read back by query. |
+| R7 | Pass | No `XMLHttpRequest`, `$.ajax` or `fetch` in the application's own pages or scripts. |
+
+The clone was confirmed unmodified after the test.
+
+## Observations from WackoPicko that shape the engine
+
+- **The PHP version is a property of the benchmark.** The `mysql_*` functions were removed in
+  PHP 7.0, so the application runs only on PHP 5. The legacy image takes its PHP version and
+  extensions from the benchmark descriptor; this is configuration, not repair.
+- **The seed dump sets up a database user.** Its first statements are `CREATE USER` and two
+  `GRANT`s. MySQL 8 rejects that `GRANT` form, so the migrated database could not load the dump,
+  and the statements fail when a reset reloads them. The engine therefore splits account
+  statements from data: the legacy database runs them once, when it is created; every load and
+  reset uses the data alone. HMS's dump has no such statements and is loaded byte for byte as
+  before.
+- **Logging in writes to the database.** It sets the user's `last_login_on` to the current time.
+  The login therefore happens before the "before" snapshot of a scenario.
+- **Writes store the current time.** The guestbook stores `created_on = NOW()`, so a database
+  delta differs between two captures of the same scenario. Capture currently refuses such a
+  scenario.
+- **Most data is outside tables.** The guestbook, the recent pictures and a user's page show
+  their data without any HTML table. The only tables found lay out the login and registration
+  forms.
