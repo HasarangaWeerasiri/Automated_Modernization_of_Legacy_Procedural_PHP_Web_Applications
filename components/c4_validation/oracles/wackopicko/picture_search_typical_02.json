@@ -1,0 +1,42 @@
+{
+  "endpoint_id": "GET /api/pictures/search",
+  "legacy_url": "/pictures/search.php",
+  "scenario_id": "picture_search_typical_02",
+  "scenario_type": "typical",
+  "input": {
+    "method": "GET",
+    "params": {
+      "query": "house"
+    },
+    "body": null
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [
+      {
+        "link": "11",
+        "image": "128",
+        "image (2)": "house/My_House"
+      },
+      {
+        "link": "13",
+        "image": "128",
+        "image (2)": "house/our_house"
+      },
+      {
+        "link": "14",
+        "image": "128",
+        "image (2)": "house/hodjjgld"
+      }
+    ],
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:84030343b423f1f75e042c44d7f0496b4705714a849a778b2eee6d8475e92d5c",
+    "delta": {}
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-18T15:29:48+00:00"
+}

@@ -430,3 +430,41 @@ def test_pointing_at_a_table_that_lines_up_a_form_is_refused(config, page):
 
     with pytest.raises(CaptureError, match="only lines up a form"):
         capture(config, {**SCENARIO, "legacy_table": 0}, BASELINES)
+
+
+# ------------------------------------------------------ records outside tables
+
+from c4.dbstate import Snapshot, TableState  # noqa: E402
+
+ENTRIES = Snapshot(tables={"guestbook": TableState(
+    columns=("id", "name", "comment"), primary_key=(), definition=(), auto_increment=None,
+    rows=({"id": 1, "name": "adam", "comment": "Hi, I love your site!"},),
+)})
+ENTRY_PAGE = "<div class='column'><p class='comment'>Hi, I love your site!</p><p> - by adam </p></div>"
+
+
+def test_records_outside_tables_are_read_from_the_rows_the_page_shows(config, page, monkeypatch):
+    page(ENTRY_PAGE)
+    monkeypatch.setattr(capture_module.dbstate, "snapshot", lambda system: ENTRIES)
+
+    record = capture(config, SCENARIO, {"legacy": ENTRIES, "migrated": ENTRIES})
+
+    assert record["legacy_response"]["records"] == [{"p.comment": "Hi, I love your site!", "p": "adam"}]
+    assert record["legacy_response"]["outcome"] == "success"
+    assert record["excluded_fields"] == []
+
+
+def test_records_outside_tables_in_two_places_are_refused(config, page, monkeypatch):
+    page(ENTRY_PAGE + "<ul><li><b>Hi, I love your site!</b> <i>adam</i></li></ul>")
+    monkeypatch.setattr(capture_module.dbstate, "snapshot", lambda system: ENTRIES)
+
+    with pytest.raises(CaptureError, match="records in 2 places"):
+        capture(config, SCENARIO, {"legacy": ENTRIES, "migrated": ENTRIES})
+
+
+def test_a_pointer_to_a_table_is_never_answered_from_outside_tables(config, page, monkeypatch):
+    page(ENTRY_PAGE)
+    monkeypatch.setattr(capture_module.dbstate, "snapshot", lambda system: ENTRIES)
+
+    with pytest.raises(CaptureError, match="neither a table nor a message"):
+        capture(config, {**SCENARIO, "legacy_table": 0}, {"legacy": ENTRIES, "migrated": ENTRIES})

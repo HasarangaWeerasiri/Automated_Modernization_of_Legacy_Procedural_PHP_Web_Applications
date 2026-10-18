@@ -1,0 +1,70 @@
+{
+  "endpoint_id": "GET /api/pictures/recent",
+  "legacy_url": "/pictures/recent.php",
+  "scenario_id": "recent_pictures_typical_01",
+  "scenario_type": "typical",
+  "input": {
+    "method": "GET",
+    "params": {},
+    "body": null
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [
+      {
+        "link": "15",
+        "image": "128",
+        "image (2)": "flowers/flweofoee"
+      },
+      {
+        "link": "14",
+        "image": "128",
+        "image (2)": "house/hodjjgld"
+      },
+      {
+        "link": "13",
+        "image": "128",
+        "image (2)": "house/our_house"
+      },
+      {
+        "link": "12",
+        "image": "128",
+        "image (2)": "waterfall/Waterfall"
+      },
+      {
+        "link": "11",
+        "image": "128",
+        "image (2)": "house/My_House"
+      },
+      {
+        "link": "10",
+        "image": "128",
+        "image (2)": "flowers/flowers"
+      },
+      {
+        "link": "9",
+        "image": "128",
+        "image (2)": "toga/togasfs"
+      },
+      {
+        "link": "8",
+        "image": "128",
+        "image (2)": "toga/togas"
+      },
+      {
+        "link": "7",
+        "image": "128",
+        "image (2)": "doggie/Dog.jpg"
+      }
+    ],
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:84030343b423f1f75e042c44d7f0496b4705714a849a778b2eee6d8475e92d5c",
+    "delta": {}
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-18T15:29:53+00:00"
+}

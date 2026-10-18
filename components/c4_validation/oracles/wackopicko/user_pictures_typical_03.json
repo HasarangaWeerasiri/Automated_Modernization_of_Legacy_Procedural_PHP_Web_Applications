@@ -1,0 +1,37 @@
+{
+  "endpoint_id": "GET /api/users/{userid}",
+  "legacy_url": "/users/view.php",
+  "scenario_id": "user_pictures_typical_03",
+  "scenario_type": "typical",
+  "input": {
+    "method": "GET",
+    "params": {
+      "userid": 11
+    },
+    "body": null
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [
+      {
+        "link": "14",
+        "image": "128",
+        "image (2)": "house/hodjjgld"
+      },
+      {
+        "link": "15",
+        "image": "128",
+        "image (2)": "flowers/flweofoee"
+      }
+    ],
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:84030343b423f1f75e042c44d7f0496b4705714a849a778b2eee6d8475e92d5c",
+    "delta": {}
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-18T15:30:06+00:00"
+}

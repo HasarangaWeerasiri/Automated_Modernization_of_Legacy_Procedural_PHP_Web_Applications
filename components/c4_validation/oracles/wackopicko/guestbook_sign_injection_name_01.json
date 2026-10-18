@@ -1,0 +1,46 @@
+{
+  "endpoint_id": "POST /api/guestbook",
+  "legacy_url": "/guestbook.php",
+  "scenario_id": "guestbook_sign_injection_name_01",
+  "scenario_type": "injection",
+  "input": {
+    "method": "POST",
+    "params": {},
+    "body": {
+      "name": "'",
+      "comment": "Partner even floor should"
+    }
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [],
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:84030343b423f1f75e042c44d7f0496b4705714a849a778b2eee6d8475e92d5c",
+    "delta": {
+      "guestbook": {
+        "inserted": [
+          {
+            "id": 20,
+            "name": "'",
+            "comment": "Partner even floor should",
+            "created_on": "2026-10-18 15:31:59"
+          }
+        ],
+        "updated": [],
+        "deleted": []
+      }
+    }
+  },
+  "excluded_fields": [
+    {
+      "scope": "database",
+      "field": "guestbook.created_on",
+      "reason": "observed_nondeterministic"
+    }
+  ],
+  "capture_runs": 2,
+  "captured_at": "2026-10-18T15:32:01+00:00"
+}

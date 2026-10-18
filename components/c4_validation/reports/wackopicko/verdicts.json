@@ -1,0 +1,976 @@
+{
+  "benchmark": "wackopicko",
+  "endpoints": {
+    "GET /api/guestbook": {
+      "verdict": "PASS",
+      "scenarios": [
+        {
+          "scenario_id": "guestbook_list_typical_01",
+          "scenario_type": "typical",
+          "verdict": "PASS",
+          "request": {
+            "method": "GET",
+            "path": "/api/guestbook",
+            "params": {},
+            "body": null
+          },
+          "legacy_request": "GET /guestbook.php",
+          "oracle_record": "oracles/wackopicko/guestbook_list_typical_01.json",
+          "differences": [],
+          "abstentions": []
+        }
+      ]
+    },
+    "GET /api/pictures/recent": {
+      "verdict": "PASS",
+      "scenarios": [
+        {
+          "scenario_id": "recent_pictures_typical_01",
+          "scenario_type": "typical",
+          "verdict": "PASS",
+          "request": {
+            "method": "GET",
+            "path": "/api/pictures/recent",
+            "params": {},
+            "body": null
+          },
+          "legacy_request": "GET /pictures/recent.php",
+          "oracle_record": "oracles/wackopicko/recent_pictures_typical_01.json",
+          "differences": [],
+          "abstentions": []
+        }
+      ]
+    },
+    "GET /api/pictures/search": {
+      "verdict": "PASS",
+      "scenarios": [
+        {
+          "scenario_id": "picture_search_typical_01",
+          "scenario_type": "typical",
+          "verdict": "PASS",
+          "request": {
+            "method": "GET",
+            "path": "/api/pictures/search",
+            "params": {
+              "query": "doggie"
+            },
+            "body": null
+          },
+          "legacy_request": "GET /pictures/search.php",
+          "oracle_record": "oracles/wackopicko/picture_search_typical_01.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "picture_search_typical_02",
+          "scenario_type": "typical",
+          "verdict": "PASS",
+          "request": {
+            "method": "GET",
+            "path": "/api/pictures/search",
+            "params": {
+              "query": "house"
+            },
+            "body": null
+          },
+          "legacy_request": "GET /pictures/search.php",
+          "oracle_record": "oracles/wackopicko/picture_search_typical_02.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "picture_search_typical_03",
+          "scenario_type": "typical",
+          "verdict": "PASS",
+          "request": {
+            "method": "GET",
+            "path": "/api/pictures/search",
+            "params": {
+              "query": "flowers"
+            },
+            "body": null
+          },
+          "legacy_request": "GET /pictures/search.php",
+          "oracle_record": "oracles/wackopicko/picture_search_typical_03.json",
+          "differences": [],
+          "abstentions": []
+        }
+      ]
+    },
+    "GET /api/users/{userid}": {
+      "verdict": "PASS",
+      "scenarios": [
+        {
+          "scenario_id": "user_pictures_typical_01",
+          "scenario_type": "typical",
+          "verdict": "PASS",
+          "request": {
+            "method": "GET",
+            "path": "/api/users/1",
+            "params": {},
+            "body": null
+          },
+          "legacy_request": "GET /users/view.php",
+          "oracle_record": "oracles/wackopicko/user_pictures_typical_01.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "user_pictures_typical_03",
+          "scenario_type": "typical",
+          "verdict": "PASS",
+          "request": {
+            "method": "GET",
+            "path": "/api/users/11",
+            "params": {},
+            "body": null
+          },
+          "legacy_request": "GET /users/view.php",
+          "oracle_record": "oracles/wackopicko/user_pictures_typical_03.json",
+          "differences": [],
+          "abstentions": []
+        }
+      ]
+    },
+    "POST /api/guestbook": {
+      "verdict": "INCONCLUSIVE",
+      "scenarios": [
+        {
+          "scenario_id": "guestbook_sign_boundary_comment_empty",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/guestbook",
+            "params": {},
+            "body": {
+              "name": "Erica Nichols",
+              "comment": ""
+            }
+          },
+          "legacy_request": "POST /guestbook.php",
+          "oracle_record": "oracles/wackopicko/guestbook_sign_boundary_comment_empty.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "guestbook_sign_boundary_comment_longest",
+          "scenario_type": "boundary",
+          "verdict": "INCONCLUSIVE",
+          "request": {
+            "method": "POST",
+            "path": "/api/guestbook",
+            "params": {},
+            "body": {
+              "name": "Erica Nichols",
+              "comment": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            }
+          },
+          "legacy_request": "POST /guestbook.php",
+          "oracle_record": "oracles/wackopicko/guestbook_sign_boundary_comment_longest.json",
+          "differences": [],
+          "abstentions": [
+            {
+              "where": "database",
+              "kind": "excluded_field_differs",
+              "detail": {
+                "values_changed": {
+                  "root['guestbook']['inserted'][0]['created_on']": {
+                    "new_value": "2026-10-18 15:37:29",
+                    "old_value": "2026-10-18 15:31:34"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "scenario_id": "guestbook_sign_boundary_comment_missing",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/guestbook",
+            "params": {},
+            "body": {
+              "name": "Erica Nichols"
+            }
+          },
+          "legacy_request": "POST /guestbook.php",
+          "oracle_record": "oracles/wackopicko/guestbook_sign_boundary_comment_missing.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "guestbook_sign_boundary_comment_too_long",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/guestbook",
+            "params": {},
+            "body": {
+              "name": "Erica Nichols",
+              "comment": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            }
+          },
+          "legacy_request": "POST /guestbook.php",
+          "oracle_record": "oracles/wackopicko/guestbook_sign_boundary_comment_too_long.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "guestbook_sign_boundary_name_empty",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/guestbook",
+            "params": {},
+            "body": {
+              "name": "",
+              "comment": "Partner even floor should"
+            }
+          },
+          "legacy_request": "POST /guestbook.php",
+          "oracle_record": "oracles/wackopicko/guestbook_sign_boundary_name_empty.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "guestbook_sign_boundary_name_longest",
+          "scenario_type": "boundary",
+          "verdict": "INCONCLUSIVE",
+          "request": {
+            "method": "POST",
+            "path": "/api/guestbook",
+            "params": {},
+            "body": {
+              "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "comment": "Partner even floor should"
+            }
+          },
+          "legacy_request": "POST /guestbook.php",
+          "oracle_record": "oracles/wackopicko/guestbook_sign_boundary_name_longest.json",
+          "differences": [],
+          "abstentions": [
+            {
+              "where": "database",
+              "kind": "excluded_field_differs",
+              "detail": {
+                "values_changed": {
+                  "root['guestbook']['inserted'][0]['created_on']": {
+                    "new_value": "2026-10-18 15:37:31",
+                    "old_value": "2026-10-18 15:31:44"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "scenario_id": "guestbook_sign_boundary_name_missing",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/guestbook",
+            "params": {},
+            "body": {
+              "comment": "Partner even floor should"
+            }
+          },
+          "legacy_request": "POST /guestbook.php",
+          "oracle_record": "oracles/wackopicko/guestbook_sign_boundary_name_missing.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "guestbook_sign_boundary_name_too_long",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/guestbook",
+            "params": {},
+            "body": {
+              "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "comment": "Partner even floor should"
+            }
+          },
+          "legacy_request": "POST /guestbook.php",
+          "oracle_record": "oracles/wackopicko/guestbook_sign_boundary_name_too_long.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "guestbook_sign_typical_01",
+          "scenario_type": "typical",
+          "verdict": "INCONCLUSIVE",
+          "request": {
+            "method": "POST",
+            "path": "/api/guestbook",
+            "params": {},
+            "body": {
+              "name": "Erica Nichols",
+              "comment": "Partner even floor should"
+            }
+          },
+          "legacy_request": "POST /guestbook.php",
+          "oracle_record": "oracles/wackopicko/guestbook_sign_typical_01.json",
+          "differences": [],
+          "abstentions": [
+            {
+              "where": "database",
+              "kind": "excluded_field_differs",
+              "detail": {
+                "values_changed": {
+                  "root['guestbook']['inserted'][0]['created_on']": {
+                    "new_value": "2026-10-18 15:37:33",
+                    "old_value": "2026-10-18 15:32:07"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "scenario_id": "guestbook_sign_typical_02",
+          "scenario_type": "typical",
+          "verdict": "INCONCLUSIVE",
+          "request": {
+            "method": "POST",
+            "path": "/api/guestbook",
+            "params": {},
+            "body": {
+              "name": "Jonathan Henry",
+              "comment": "Inside group according door arm high"
+            }
+          },
+          "legacy_request": "POST /guestbook.php",
+          "oracle_record": "oracles/wackopicko/guestbook_sign_typical_02.json",
+          "differences": [],
+          "abstentions": [
+            {
+              "where": "database",
+              "kind": "excluded_field_differs",
+              "detail": {
+                "values_changed": {
+                  "root['guestbook']['inserted'][0]['created_on']": {
+                    "new_value": "2026-10-18 15:37:34",
+                    "old_value": "2026-10-18 15:32:10"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "scenario_id": "guestbook_sign_typical_03",
+          "scenario_type": "typical",
+          "verdict": "INCONCLUSIVE",
+          "request": {
+            "method": "POST",
+            "path": "/api/guestbook",
+            "params": {},
+            "body": {
+              "name": "Cynthia Martin",
+              "comment": "Letter list human"
+            }
+          },
+          "legacy_request": "POST /guestbook.php",
+          "oracle_record": "oracles/wackopicko/guestbook_sign_typical_03.json",
+          "differences": [],
+          "abstentions": [
+            {
+              "where": "database",
+              "kind": "excluded_field_differs",
+              "detail": {
+                "values_changed": {
+                  "root['guestbook']['inserted'][0]['created_on']": {
+                    "new_value": "2026-10-18 15:37:35",
+                    "old_value": "2026-10-18 15:32:13"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "POST /api/users": {
+      "verdict": "INCONCLUSIVE",
+      "scenarios": [
+        {
+          "scenario_id": "user_register_boundary_againpass_empty",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "Crystal Newton",
+              "firstname": "David Horton",
+              "lastname": "Christian Wilkinson",
+              "password": "indeed",
+              "againpass": ""
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_againpass_empty.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "user_register_boundary_againpass_missing",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "Crystal Newton",
+              "firstname": "David Horton",
+              "lastname": "Christian Wilkinson",
+              "password": "indeed"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_againpass_missing.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "user_register_boundary_firstname_empty",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "Crystal Newton",
+              "firstname": "",
+              "lastname": "Christian Wilkinson",
+              "password": "indeed",
+              "againpass": "indeed"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_firstname_empty.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "user_register_boundary_firstname_longest",
+          "scenario_type": "boundary",
+          "verdict": "INCONCLUSIVE",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "Crystal Newton",
+              "firstname": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "lastname": "Christian Wilkinson",
+              "password": "indeed",
+              "againpass": "indeed"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_firstname_longest.json",
+          "differences": [],
+          "abstentions": [
+            {
+              "where": "database",
+              "kind": "excluded_field_differs",
+              "detail": {
+                "values_changed": {
+                  "root['users']['inserted'][0]['password']": {
+                    "new_value": "e0067b56b886814367152a789b7a727ef60e8b73",
+                    "old_value": "56652d0e1b5632a836aab078e5cbbd57d6b97292"
+                  },
+                  "root['users']['inserted'][0]['salt']": {
+                    "new_value": "NTc0",
+                    "old_value": "NDk="
+                  },
+                  "root['users']['inserted'][0]['created_on']": {
+                    "new_value": "2026-10-18 15:37:41",
+                    "old_value": "2026-10-18 15:32:48"
+                  },
+                  "root['users']['inserted'][0]['last_login_on']": {
+                    "new_value": "2026-10-18 15:37:41",
+                    "old_value": "2026-10-18 15:32:48"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "scenario_id": "user_register_boundary_firstname_missing",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "Crystal Newton",
+              "lastname": "Christian Wilkinson",
+              "password": "indeed",
+              "againpass": "indeed"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_firstname_missing.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "user_register_boundary_firstname_too_long",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "Crystal Newton",
+              "firstname": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "lastname": "Christian Wilkinson",
+              "password": "indeed",
+              "againpass": "indeed"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_firstname_too_long.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "user_register_boundary_lastname_empty",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "Crystal Newton",
+              "firstname": "David Horton",
+              "lastname": "",
+              "password": "indeed",
+              "againpass": "indeed"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_lastname_empty.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "user_register_boundary_lastname_longest",
+          "scenario_type": "boundary",
+          "verdict": "INCONCLUSIVE",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "Crystal Newton",
+              "firstname": "David Horton",
+              "lastname": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "password": "indeed",
+              "againpass": "indeed"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_lastname_longest.json",
+          "differences": [],
+          "abstentions": [
+            {
+              "where": "database",
+              "kind": "excluded_field_differs",
+              "detail": {
+                "values_changed": {
+                  "root['users']['inserted'][0]['password']": {
+                    "new_value": "01808530f2060bb27210002a8cfabc1b06b0f025",
+                    "old_value": "564d10197152f21b935439cf7dca758848412bc8"
+                  },
+                  "root['users']['inserted'][0]['salt']": {
+                    "new_value": "ODgz",
+                    "old_value": "NzY0"
+                  },
+                  "root['users']['inserted'][0]['created_on']": {
+                    "new_value": "2026-10-18 15:37:43",
+                    "old_value": "2026-10-18 15:32:58"
+                  },
+                  "root['users']['inserted'][0]['last_login_on']": {
+                    "new_value": "2026-10-18 15:37:43",
+                    "old_value": "2026-10-18 15:32:58"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "scenario_id": "user_register_boundary_lastname_missing",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "Crystal Newton",
+              "firstname": "David Horton",
+              "password": "indeed",
+              "againpass": "indeed"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_lastname_missing.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "user_register_boundary_lastname_too_long",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "Crystal Newton",
+              "firstname": "David Horton",
+              "lastname": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "password": "indeed",
+              "againpass": "indeed"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_lastname_too_long.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "user_register_boundary_password_empty",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "Crystal Newton",
+              "firstname": "David Horton",
+              "lastname": "Christian Wilkinson",
+              "password": "",
+              "againpass": ""
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_password_empty.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "user_register_boundary_password_missing",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "Crystal Newton",
+              "firstname": "David Horton",
+              "lastname": "Christian Wilkinson"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_password_missing.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "user_register_boundary_username_empty",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "",
+              "firstname": "David Horton",
+              "lastname": "Christian Wilkinson",
+              "password": "indeed",
+              "againpass": "indeed"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_username_empty.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "user_register_boundary_username_longest",
+          "scenario_type": "boundary",
+          "verdict": "INCONCLUSIVE",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "firstname": "David Horton",
+              "lastname": "Christian Wilkinson",
+              "password": "indeed",
+              "againpass": "indeed"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_username_longest.json",
+          "differences": [],
+          "abstentions": [
+            {
+              "where": "database",
+              "kind": "excluded_field_differs",
+              "detail": {
+                "values_changed": {
+                  "root['users']['inserted'][0]['password']": {
+                    "new_value": "9565a694beb068aafcbc869269b3dde5473df4cf",
+                    "old_value": "8a813d3a07b1470baff1093a68960b0bac3f3903"
+                  },
+                  "root['users']['inserted'][0]['salt']": {
+                    "new_value": "MzU2",
+                    "old_value": "ODYy"
+                  },
+                  "root['users']['inserted'][0]['created_on']": {
+                    "new_value": "2026-10-18 15:37:46",
+                    "old_value": "2026-10-18 15:33:12"
+                  },
+                  "root['users']['inserted'][0]['last_login_on']": {
+                    "new_value": "2026-10-18 15:37:46",
+                    "old_value": "2026-10-18 15:33:12"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "scenario_id": "user_register_boundary_username_missing",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "firstname": "David Horton",
+              "lastname": "Christian Wilkinson",
+              "password": "indeed",
+              "againpass": "indeed"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_username_missing.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "user_register_boundary_username_too_long",
+          "scenario_type": "boundary",
+          "verdict": "PASS",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "firstname": "David Horton",
+              "lastname": "Christian Wilkinson",
+              "password": "indeed",
+              "againpass": "indeed"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_boundary_username_too_long.json",
+          "differences": [],
+          "abstentions": []
+        },
+        {
+          "scenario_id": "user_register_typical_01",
+          "scenario_type": "typical",
+          "verdict": "INCONCLUSIVE",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "Crystal Newton",
+              "firstname": "David Horton",
+              "lastname": "Christian Wilkinson",
+              "password": "indeed",
+              "againpass": "indeed"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_typical_01.json",
+          "differences": [],
+          "abstentions": [
+            {
+              "where": "database",
+              "kind": "excluded_field_differs",
+              "detail": {
+                "values_changed": {
+                  "root['users']['inserted'][0]['password']": {
+                    "new_value": "b742afd25c7948514d281dc07dc4b32067dbab97",
+                    "old_value": "b8b20f1824c6ed81d727f0a20625fed5336c7295"
+                  },
+                  "root['users']['inserted'][0]['salt']": {
+                    "new_value": "NDk1",
+                    "old_value": "NTg4"
+                  },
+                  "root['users']['inserted'][0]['created_on']": {
+                    "new_value": "2026-10-18 15:37:48",
+                    "old_value": "2026-10-18 15:33:52"
+                  },
+                  "root['users']['inserted'][0]['last_login_on']": {
+                    "new_value": "2026-10-18 15:37:48",
+                    "old_value": "2026-10-18 15:33:52"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "scenario_id": "user_register_typical_02",
+          "scenario_type": "typical",
+          "verdict": "INCONCLUSIVE",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "Dr. Anne Boyd",
+              "firstname": "Maureen Lewis",
+              "lastname": "Jacob Ramos",
+              "password": "improve",
+              "againpass": "improve"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_typical_02.json",
+          "differences": [],
+          "abstentions": [
+            {
+              "where": "database",
+              "kind": "excluded_field_differs",
+              "detail": {
+                "values_changed": {
+                  "root['users']['inserted'][0]['password']": {
+                    "new_value": "f4bbb4d96a6fd58e187c74a9f12098c868c5249e",
+                    "old_value": "86a39d7acbfc0636dd057fd204569c8d4d596dff"
+                  },
+                  "root['users']['inserted'][0]['salt']": {
+                    "new_value": "NzAz",
+                    "old_value": "MTE0"
+                  },
+                  "root['users']['inserted'][0]['created_on']": {
+                    "new_value": "2026-10-18 15:37:49",
+                    "old_value": "2026-10-18 15:33:55"
+                  },
+                  "root['users']['inserted'][0]['last_login_on']": {
+                    "new_value": "2026-10-18 15:37:49",
+                    "old_value": "2026-10-18 15:33:55"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "scenario_id": "user_register_typical_03",
+          "scenario_type": "typical",
+          "verdict": "INCONCLUSIVE",
+          "request": {
+            "method": "POST",
+            "path": "/api/users",
+            "params": {},
+            "body": {
+              "username": "Erica Mitchell",
+              "firstname": "Justin Smith",
+              "lastname": "Craig Gutierrez",
+              "password": "free",
+              "againpass": "free"
+            }
+          },
+          "legacy_request": "POST /users/register.php",
+          "oracle_record": "oracles/wackopicko/user_register_typical_03.json",
+          "differences": [],
+          "abstentions": [
+            {
+              "where": "database",
+              "kind": "excluded_field_differs",
+              "detail": {
+                "values_changed": {
+                  "root['users']['inserted'][0]['password']": {
+                    "new_value": "2e36d34a6b0357406806745df393aa3ac8beb2f0",
+                    "old_value": "af0685d923dc40a8b699ed183ffb7151e82a1d85"
+                  },
+                  "root['users']['inserted'][0]['salt']": {
+                    "new_value": "Mjg=",
+                    "old_value": "NTg4"
+                  },
+                  "root['users']['inserted'][0]['created_on']": {
+                    "new_value": "2026-10-18 15:37:50",
+                    "old_value": "2026-10-18 15:33:57"
+                  },
+                  "root['users']['inserted'][0]['last_login_on']": {
+                    "new_value": "2026-10-18 15:37:50",
+                    "old_value": "2026-10-18 15:33:57"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "injection_probes_not_judged_here": [
+    "guestbook_sign_injection_comment_01",
+    "guestbook_sign_injection_comment_02",
+    "guestbook_sign_injection_comment_03",
+    "guestbook_sign_injection_name_01",
+    "guestbook_sign_injection_name_02",
+    "guestbook_sign_injection_name_03",
+    "picture_search_injection_query_01",
+    "picture_search_injection_query_02",
+    "picture_search_injection_query_03",
+    "user_pictures_injection_userid_01",
+    "user_pictures_injection_userid_02",
+    "user_pictures_injection_userid_03",
+    "user_register_injection_firstname_01",
+    "user_register_injection_firstname_02",
+    "user_register_injection_firstname_03",
+    "user_register_injection_lastname_01",
+    "user_register_injection_lastname_02",
+    "user_register_injection_lastname_03",
+    "user_register_injection_password_01",
+    "user_register_injection_password_02",
+    "user_register_injection_password_03",
+    "user_register_injection_username_01",
+    "user_register_injection_username_02",
+    "user_register_injection_username_03"
+  ]
+}

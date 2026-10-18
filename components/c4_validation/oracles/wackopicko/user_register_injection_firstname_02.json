@@ -1,0 +1,69 @@
+{
+  "endpoint_id": "POST /api/users",
+  "legacy_url": "/users/register.php",
+  "scenario_id": "user_register_injection_firstname_02",
+  "scenario_type": "injection",
+  "input": {
+    "method": "POST",
+    "params": {},
+    "body": {
+      "username": "Crystal Newton",
+      "firstname": "' OR '1'='1",
+      "lastname": "Christian Wilkinson",
+      "password": "indeed",
+      "againpass": "indeed"
+    }
+  },
+  "legacy_response": {
+    "status_code": 303,
+    "outcome": "success",
+    "records": [],
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:84030343b423f1f75e042c44d7f0496b4705714a849a778b2eee6d8475e92d5c",
+    "delta": {
+      "users": {
+        "inserted": [
+          {
+            "id": 12,
+            "login": "Crystal Newton",
+            "firstname": "' OR '1'='1",
+            "lastname": "Christian Wilkinson",
+            "password": "95b22463ee79410501ceb49d93ed5c22a7d2e328",
+            "salt": "NzU3",
+            "tradebux": 100,
+            "created_on": "2026-10-18 15:33:22",
+            "last_login_on": "2026-10-18 15:33:22"
+          }
+        ],
+        "updated": [],
+        "deleted": []
+      }
+    }
+  },
+  "excluded_fields": [
+    {
+      "scope": "database",
+      "field": "users.created_on",
+      "reason": "observed_nondeterministic"
+    },
+    {
+      "scope": "database",
+      "field": "users.last_login_on",
+      "reason": "observed_nondeterministic"
+    },
+    {
+      "scope": "database",
+      "field": "users.password",
+      "reason": "observed_nondeterministic"
+    },
+    {
+      "scope": "database",
+      "field": "users.salt",
+      "reason": "observed_nondeterministic"
+    }
+  ],
+  "capture_runs": 2,
+  "captured_at": "2026-10-18T15:33:25+00:00"
+}

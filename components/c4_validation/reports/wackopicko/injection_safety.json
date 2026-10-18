@@ -1,0 +1,318 @@
+{
+  "benchmark": "wackopicko",
+  "summary": {
+    "not judged": 3,
+    "safe, as before": 15
+  },
+  "probes": [
+    {
+      "scenario_id": "guestbook_sign_injection_comment_01",
+      "endpoint_id": "POST /api/guestbook",
+      "parameter": "comment",
+      "probe": "'",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "success",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/wackopicko/guestbook_sign_injection_comment_01.json"
+    },
+    {
+      "scenario_id": "guestbook_sign_injection_comment_02",
+      "endpoint_id": "POST /api/guestbook",
+      "parameter": "comment",
+      "probe": "' OR '1'='1",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "success",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/wackopicko/guestbook_sign_injection_comment_02.json"
+    },
+    {
+      "scenario_id": "guestbook_sign_injection_comment_03",
+      "endpoint_id": "POST /api/guestbook",
+      "parameter": "comment",
+      "probe": "' OR 1=1 -- ",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "success",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/wackopicko/guestbook_sign_injection_comment_03.json"
+    },
+    {
+      "scenario_id": "guestbook_sign_injection_name_01",
+      "endpoint_id": "POST /api/guestbook",
+      "parameter": "name",
+      "probe": "'",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "success",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/wackopicko/guestbook_sign_injection_name_01.json"
+    },
+    {
+      "scenario_id": "guestbook_sign_injection_name_02",
+      "endpoint_id": "POST /api/guestbook",
+      "parameter": "name",
+      "probe": "' OR '1'='1",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "success",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/wackopicko/guestbook_sign_injection_name_02.json"
+    },
+    {
+      "scenario_id": "guestbook_sign_injection_name_03",
+      "endpoint_id": "POST /api/guestbook",
+      "parameter": "name",
+      "probe": "' OR 1=1 -- ",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "success",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/wackopicko/guestbook_sign_injection_name_03.json"
+    },
+    {
+      "scenario_id": "user_register_injection_firstname_01",
+      "endpoint_id": "POST /api/users",
+      "parameter": "firstname",
+      "probe": "'",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "success",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/wackopicko/user_register_injection_firstname_01.json"
+    },
+    {
+      "scenario_id": "user_register_injection_firstname_02",
+      "endpoint_id": "POST /api/users",
+      "parameter": "firstname",
+      "probe": "' OR '1'='1",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "success",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/wackopicko/user_register_injection_firstname_02.json"
+    },
+    {
+      "scenario_id": "user_register_injection_firstname_03",
+      "endpoint_id": "POST /api/users",
+      "parameter": "firstname",
+      "probe": "' OR 1=1 -- ",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "success",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/wackopicko/user_register_injection_firstname_03.json"
+    },
+    {
+      "scenario_id": "user_register_injection_lastname_01",
+      "endpoint_id": "POST /api/users",
+      "parameter": "lastname",
+      "probe": "'",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "success",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/wackopicko/user_register_injection_lastname_01.json"
+    },
+    {
+      "scenario_id": "user_register_injection_lastname_02",
+      "endpoint_id": "POST /api/users",
+      "parameter": "lastname",
+      "probe": "' OR '1'='1",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "success",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/wackopicko/user_register_injection_lastname_02.json"
+    },
+    {
+      "scenario_id": "user_register_injection_lastname_03",
+      "endpoint_id": "POST /api/users",
+      "parameter": "lastname",
+      "probe": "' OR 1=1 -- ",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "success",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/wackopicko/user_register_injection_lastname_03.json"
+    },
+    {
+      "scenario_id": "user_register_injection_password_01",
+      "endpoint_id": "POST /api/users",
+      "parameter": "password",
+      "probe": "'",
+      "label": "not judged",
+      "reason": "the map does not say where 'password' is stored, so a row written without the probe text is no evidence either way",
+      "base": "user_register_typical_01",
+      "legacy": {
+        "outcome": "success"
+      },
+      "oracle_record": "oracles/wackopicko/user_register_injection_password_01.json"
+    },
+    {
+      "scenario_id": "user_register_injection_password_02",
+      "endpoint_id": "POST /api/users",
+      "parameter": "password",
+      "probe": "' OR '1'='1",
+      "label": "not judged",
+      "reason": "the map does not say where 'password' is stored, so a row written without the probe text is no evidence either way",
+      "base": "user_register_typical_01",
+      "legacy": {
+        "outcome": "success"
+      },
+      "oracle_record": "oracles/wackopicko/user_register_injection_password_02.json"
+    },
+    {
+      "scenario_id": "user_register_injection_password_03",
+      "endpoint_id": "POST /api/users",
+      "parameter": "password",
+      "probe": "' OR 1=1 -- ",
+      "label": "not judged",
+      "reason": "the map does not say where 'password' is stored, so a row written without the probe text is no evidence either way",
+      "base": "user_register_typical_01",
+      "legacy": {
+        "outcome": "success"
+      },
+      "oracle_record": "oracles/wackopicko/user_register_injection_password_03.json"
+    },
+    {
+      "scenario_id": "user_register_injection_username_01",
+      "endpoint_id": "POST /api/users",
+      "parameter": "username",
+      "probe": "'",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "success",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/wackopicko/user_register_injection_username_01.json"
+    },
+    {
+      "scenario_id": "user_register_injection_username_02",
+      "endpoint_id": "POST /api/users",
+      "parameter": "username",
+      "probe": "' OR '1'='1",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "success",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/wackopicko/user_register_injection_username_02.json"
+    },
+    {
+      "scenario_id": "user_register_injection_username_03",
+      "endpoint_id": "POST /api/users",
+      "parameter": "username",
+      "probe": "' OR 1=1 -- ",
+      "label": "safe, as before",
+      "legacy": {
+        "behaviour": "no sign of injection",
+        "outcome": "success",
+        "effects": []
+      },
+      "migrated": {
+        "behaviour": "safe",
+        "status_code": 201,
+        "effects": []
+      },
+      "oracle_record": "oracles/wackopicko/user_register_injection_username_03.json"
+    }
+  ]
+}

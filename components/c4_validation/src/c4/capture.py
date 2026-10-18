@@ -39,7 +39,10 @@ procedural PHP answers 200 to almost everything, success or failure.
 A page expected to show records that shows a message instead, such as "No entries
 found", showed no data. A page that shows neither a table nor a message is refused:
 the engine cannot tell "no data" from data it is unable to read. A table that only
-lines up a form (see extract.py) is not a table of data here.
+lines up a form (see extract.py) is not a table of data here. A page with no table of
+data may show its records outside tables, as rows of the database it can be seen to
+show (see extract.extract_records); records found in more than one place are refused, as
+several tables are.
 """
 
 from __future__ import annotations
@@ -57,7 +60,7 @@ import requests
 
 from c4 import containers, dbstate, scenarios
 from c4.config import Config, ConfigError, load_config
-from c4.extract import extract_messages, extract_tables
+from c4.extract import extract_messages, extract_records, extract_tables
 
 CAPTURE_RUNS = 2
 # Seconds between the requests of two captures: more than one tick of a clock that
@@ -123,8 +126,17 @@ def _observe(
     messages = tuple(extract_messages(response.content))
     chosen = scenario.get("legacy_table", "only")
     shown = chosen != "none"
+    after_rows = {name: table.rows for name, table in getattr(after, "tables", {}).items()}
+    places = extract_records(response.content, after_rows) if chosen == "only" and not data else []
     if chosen == "none":
         records: tuple[dict[str, str], ...] = ()
+    elif places:
+        if len(places) > 1:
+            raise CaptureError(
+                f"{scenario['scenario_id']}: the page shows records in {len(places)} places and the "
+                "scenario does not say which one holds this endpoint's data."
+            )
+        records = places[0].records
     elif not data:
         if not messages:
             raise CaptureError(

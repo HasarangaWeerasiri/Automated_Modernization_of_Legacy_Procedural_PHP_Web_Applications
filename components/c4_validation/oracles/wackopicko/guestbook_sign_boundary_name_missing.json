@@ -1,0 +1,26 @@
+{
+  "endpoint_id": "POST /api/guestbook",
+  "legacy_url": "/guestbook.php",
+  "scenario_id": "guestbook_sign_boundary_name_missing",
+  "scenario_type": "boundary",
+  "input": {
+    "method": "POST",
+    "params": {},
+    "body": {
+      "comment": "Partner even floor should"
+    }
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "no_effect",
+    "records": [],
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:84030343b423f1f75e042c44d7f0496b4705714a849a778b2eee6d8475e92d5c",
+    "delta": {}
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-18T15:25:01+00:00"
+}

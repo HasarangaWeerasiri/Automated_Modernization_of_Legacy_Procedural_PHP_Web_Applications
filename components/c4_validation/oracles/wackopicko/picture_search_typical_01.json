@@ -1,0 +1,33 @@
+{
+  "endpoint_id": "GET /api/pictures/search",
+  "legacy_url": "/pictures/search.php",
+  "scenario_id": "picture_search_typical_01",
+  "scenario_type": "typical",
+  "input": {
+    "method": "GET",
+    "params": {
+      "query": "doggie"
+    },
+    "body": null
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [
+      {
+        "h2": "doggie",
+        "link": "7",
+        "image": "128",
+        "image (2)": "doggie/Dog.jpg"
+      }
+    ],
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:84030343b423f1f75e042c44d7f0496b4705714a849a778b2eee6d8475e92d5c",
+    "delta": {}
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-18T15:25:33+00:00"
+}

@@ -1,0 +1,445 @@
+{
+  "tables": {
+    "admin": [
+      {
+        "id": 1,
+        "login": "admin",
+        "password": "d033e22ae348aeb5660fc2140aec35850c4da997"
+      },
+      {
+        "id": 2,
+        "login": "adamd",
+        "password": "c533607326f2b815a7c23701be52989dac8bdbb1"
+      },
+      {
+        "id": 3,
+        "login": "admin",
+        "password": "d033e22ae348aeb5660fc2140aec35850c4da997"
+      },
+      {
+        "id": 4,
+        "login": "adam",
+        "password": "0ace61762d02afdf98f793d98c37edf696b675b2"
+      },
+      {
+        "id": 5,
+        "login": "bob",
+        "password": "42a9037223cdbfe0c49ef0032f0a1f3392af3fe3"
+      }
+    ],
+    "admin_session": [
+      {
+        "id": 2,
+        "admin_id": 1,
+        "created_on": "2009-01-21 17:41:59"
+      }
+    ],
+    "cart": [],
+    "cart_coupons": [
+      {
+        "cart_id": 0,
+        "coupon_id": 0
+      },
+      {
+        "cart_id": 2,
+        "coupon_id": 1
+      },
+      {
+        "cart_id": 2,
+        "coupon_id": 1
+      },
+      {
+        "cart_id": 2,
+        "coupon_id": 1
+      },
+      {
+        "cart_id": 3,
+        "coupon_id": 1
+      }
+    ],
+    "cart_items": [],
+    "comments": [
+      {
+        "id": 1,
+        "text": "blah.\t      ",
+        "user_id": 2,
+        "picture_id": 3,
+        "created_on": "2009-01-12 19:05:45"
+      },
+      {
+        "id": 2,
+        "text": "That\\'s an awesome butt...",
+        "user_id": 2,
+        "picture_id": 2,
+        "created_on": "2009-01-12 19:26:21"
+      },
+      {
+        "id": 3,
+        "text": "\t      testing",
+        "user_id": 2,
+        "picture_id": 5,
+        "created_on": "2009-01-21 15:32:44"
+      },
+      {
+        "id": 4,
+        "text": "This is my house, what do you guys think?",
+        "user_id": 2,
+        "picture_id": 11,
+        "created_on": "2009-02-18 14:55:39"
+      }
+    ],
+    "comments_preview": [
+      {
+        "id": 1,
+        "text": "blah.\t      ",
+        "user_id": 2,
+        "picture_id": 3,
+        "created_on": "2009-01-12 19:01:49"
+      },
+      {
+        "id": 2,
+        "text": "blah.\t      ",
+        "user_id": 2,
+        "picture_id": 3,
+        "created_on": "2009-01-12 19:02:12"
+      },
+      {
+        "id": 3,
+        "text": "blah.\t      ",
+        "user_id": 2,
+        "picture_id": 3,
+        "created_on": "2009-01-12 19:02:52"
+      },
+      {
+        "id": 4,
+        "text": "blah.\t      ",
+        "user_id": 2,
+        "picture_id": 3,
+        "created_on": "2009-01-12 19:05:45"
+      },
+      {
+        "id": 5,
+        "text": "You suck. Should I use this?\t      ",
+        "user_id": 2,
+        "picture_id": 3,
+        "created_on": "2009-01-12 19:06:43"
+      },
+      {
+        "id": 6,
+        "text": "That\\'s an awesome butt...",
+        "user_id": 2,
+        "picture_id": 2,
+        "created_on": "2009-01-12 19:21:40"
+      },
+      {
+        "id": 7,
+        "text": "That\\'s an awesome butt...",
+        "user_id": 2,
+        "picture_id": 2,
+        "created_on": "2009-01-12 19:25:52"
+      },
+      {
+        "id": 8,
+        "text": "That\\'s an awesome butt...",
+        "user_id": 2,
+        "picture_id": 2,
+        "created_on": "2009-01-12 19:26:21"
+      },
+      {
+        "id": 9,
+        "text": "\t      test",
+        "user_id": 2,
+        "picture_id": 5,
+        "created_on": "2009-01-21 15:06:05"
+      },
+      {
+        "id": 11,
+        "text": "\t      testing",
+        "user_id": 2,
+        "picture_id": 5,
+        "created_on": "2009-01-21 15:32:44"
+      },
+      {
+        "id": 12,
+        "text": "This is my house, what do you guys think?",
+        "user_id": 2,
+        "picture_id": 11,
+        "created_on": "2009-02-18 14:55:39"
+      }
+    ],
+    "conflict_pictures": [],
+    "coupons": [
+      {
+        "id": 1,
+        "code": "SUPERYOU21",
+        "discount": 90
+      },
+      {
+        "id": 2,
+        "code": "SUPERYOU21",
+        "discount": 90
+      }
+    ],
+    "guestbook": [
+      {
+        "id": 1,
+        "name": "adam",
+        "comment": "Hi, I love your site!",
+        "created_on": "2008-12-02 19:32:53"
+      }
+    ],
+    "own": [
+      {
+        "id": 1,
+        "user_id": 2,
+        "picture_id": 3
+      },
+      {
+        "id": 2,
+        "user_id": 2,
+        "picture_id": 2
+      },
+      {
+        "id": 3,
+        "user_id": 11,
+        "picture_id": 10
+      }
+    ],
+    "pictures": [
+      {
+        "id": 7,
+        "title": "My Dog",
+        "width": 128,
+        "height": 128,
+        "tag": "doggie",
+        "filename": "doggie/Dog.jpg",
+        "price": 15,
+        "high_quality": "OTA5MjA1NA==",
+        "created_on": "2009-02-18 14:50:30",
+        "user_id": 1
+      },
+      {
+        "id": 8,
+        "title": "Me and the Girls",
+        "width": 128,
+        "height": 128,
+        "tag": "toga",
+        "filename": "toga/togas",
+        "price": 10,
+        "high_quality": "MTc3Mjgx",
+        "created_on": "2009-02-18 14:53:48",
+        "user_id": 9
+      },
+      {
+        "id": 9,
+        "title": "The Boys - In costume",
+        "width": 128,
+        "height": 128,
+        "tag": "toga",
+        "filename": "toga/togasfs",
+        "price": 20,
+        "high_quality": "MTk1NDMxOQ==",
+        "created_on": "2009-02-18 14:54:13",
+        "user_id": 9
+      },
+      {
+        "id": 10,
+        "title": "Awesome Flower Pic",
+        "width": 128,
+        "height": 128,
+        "tag": "flowers",
+        "filename": "flowers/flowers",
+        "price": 26,
+        "high_quality": "NjE4NDgwOQ==",
+        "created_on": "2009-02-18 14:54:56",
+        "user_id": 2
+      },
+      {
+        "id": 11,
+        "title": "My House!",
+        "width": 128,
+        "height": 128,
+        "tag": "house",
+        "filename": "house/My_House",
+        "price": 16,
+        "high_quality": "ODExNzIzOQ==",
+        "created_on": "2009-02-18 14:55:20",
+        "user_id": 2
+      },
+      {
+        "id": 12,
+        "title": "Beautiful Waterfall",
+        "width": 128,
+        "height": 128,
+        "tag": "waterfall",
+        "filename": "waterfall/Waterfall",
+        "price": 10,
+        "high_quality": "ODQ4OTkx",
+        "created_on": "2009-02-18 14:56:47",
+        "user_id": 10
+      },
+      {
+        "id": 13,
+        "title": "Our House",
+        "width": 128,
+        "height": 128,
+        "tag": "house",
+        "filename": "house/our_house",
+        "price": 30,
+        "high_quality": "OTE4MzM1Mw==",
+        "created_on": "2009-02-18 14:57:18",
+        "user_id": 10
+      },
+      {
+        "id": 14,
+        "title": "The house I share",
+        "width": 128,
+        "height": 128,
+        "tag": "house",
+        "filename": "house/hodjjgld",
+        "price": 20,
+        "high_quality": "MzM4OTU3MA==",
+        "created_on": "2009-02-18 14:57:58",
+        "user_id": 11
+      },
+      {
+        "id": 15,
+        "title": "This grows outside my house",
+        "width": 128,
+        "height": 128,
+        "tag": "flowers",
+        "filename": "flowers/flweofoee",
+        "price": 40,
+        "high_quality": "ODcxNDAyNA==",
+        "created_on": "2009-02-18 14:58:33",
+        "user_id": 11
+      }
+    ],
+    "users": [
+      {
+        "id": 1,
+        "login": "Sample User",
+        "firstname": "Sample",
+        "lastname": "User",
+        "password": "3e912f8fc814831804d735dc2fcbc3cfa75c28e3",
+        "salt": "NjM2",
+        "tradebux": 130,
+        "created_on": "2009-01-05 14:29:00",
+        "last_login_on": "2009-02-18 14:50:00"
+      },
+      {
+        "id": 2,
+        "login": "bob",
+        "firstname": "I Am Bob",
+        "lastname": "Gilbert",
+        "password": "abd09072e674720d87ddd27122f67eedbc4b0d08",
+        "salt": "Mjkx",
+        "tradebux": 96,
+        "created_on": "2009-01-05 14:51:05",
+        "last_login_on": "2009-02-18 14:54:26"
+      },
+      {
+        "id": 4,
+        "login": "scanner1",
+        "firstname": "Scanner",
+        "lastname": "1",
+        "password": "af256af3d4fda990dbe546daa04e5c75eae356ea",
+        "salt": "ODUy",
+        "tradebux": 100,
+        "created_on": "2009-02-18 14:46:21",
+        "last_login_on": "2009-02-18 14:46:21"
+      },
+      {
+        "id": 5,
+        "login": "scanner2",
+        "firstname": "Scanner",
+        "lastname": "2",
+        "password": "f9335d39b2b78018c2b8affa7fc7b0917a3300a7",
+        "salt": "MzI5",
+        "tradebux": 100,
+        "created_on": "2009-02-18 14:46:34",
+        "last_login_on": "2009-02-18 14:46:34"
+      },
+      {
+        "id": 6,
+        "login": "scanner3",
+        "firstname": "Scanner",
+        "lastname": "3",
+        "password": "43754746b4043c852864bb321e4f2648d1421c18",
+        "salt": "Nzk3",
+        "tradebux": 100,
+        "created_on": "2009-02-18 14:46:51",
+        "last_login_on": "2009-02-18 14:46:51"
+      },
+      {
+        "id": 7,
+        "login": "scanner4",
+        "firstname": "Number",
+        "lastname": "4",
+        "password": "e514a672396679528c766a92a857eac4b22bc667",
+        "salt": "NjEx",
+        "tradebux": 100,
+        "created_on": "2009-02-18 14:47:04",
+        "last_login_on": "2009-02-18 14:47:04"
+      },
+      {
+        "id": 8,
+        "login": "scanner5",
+        "firstname": "Number",
+        "lastname": "5",
+        "password": "f38ae9b0b6b1ad2a2a2721841c0cc89b31e044cb",
+        "salt": "NTQw",
+        "tradebux": 100,
+        "created_on": "2009-02-18 14:47:18",
+        "last_login_on": "2009-02-18 14:47:18"
+      },
+      {
+        "id": 9,
+        "login": "wanda",
+        "firstname": "Wanda",
+        "lastname": "Granat",
+        "password": "4e4465300b14b314384a6375a837f0532822d3c8",
+        "salt": "Nzcz",
+        "tradebux": 100,
+        "created_on": "2009-02-18 14:53:23",
+        "last_login_on": "2009-02-18 14:53:23"
+      },
+      {
+        "id": 10,
+        "login": "calvinwatters",
+        "firstname": "Calvin",
+        "lastname": "Watters",
+        "password": "81418ed6e9bd15076d2f43e17b9f5a27c7e55ef7",
+        "salt": "Nzc5",
+        "tradebux": 100,
+        "created_on": "2009-02-18 14:56:11",
+        "last_login_on": "2009-02-18 14:56:11"
+      },
+      {
+        "id": 11,
+        "login": "bryce",
+        "firstname": "Bryce",
+        "lastname": "Boe",
+        "password": "478fb0b83851b3d16ffc5a2554a4d616f1235156",
+        "salt": "NjY3",
+        "tradebux": 74,
+        "created_on": "2009-02-18 14:57:36",
+        "last_login_on": "2009-02-18 14:57:36"
+      }
+    ]
+  },
+  "auto_increment": {
+    "admin": 6,
+    "admin_session": 3,
+    "cart": 4,
+    "cart_items": 4,
+    "comments": 5,
+    "comments_preview": 13,
+    "conflict_pictures": 3,
+    "coupons": 3,
+    "guestbook": 20,
+    "own": 4,
+    "pictures": 16,
+    "users": 12
+  }
+}

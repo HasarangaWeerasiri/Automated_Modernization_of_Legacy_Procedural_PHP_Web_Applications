@@ -1,0 +1,30 @@
+{
+  "endpoint_id": "POST /api/users",
+  "legacy_url": "/users/register.php",
+  "scenario_id": "user_register_boundary_firstname_too_long",
+  "scenario_type": "boundary",
+  "input": {
+    "method": "POST",
+    "params": {},
+    "body": {
+      "username": "Crystal Newton",
+      "firstname": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "lastname": "Christian Wilkinson",
+      "password": "indeed",
+      "againpass": "indeed"
+    }
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "no_effect",
+    "records": [],
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:84030343b423f1f75e042c44d7f0496b4705714a849a778b2eee6d8475e92d5c",
+    "delta": {}
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-18T15:26:06+00:00"
+}

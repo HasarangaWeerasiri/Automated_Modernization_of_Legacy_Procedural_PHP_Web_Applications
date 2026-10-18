@@ -1,0 +1,32 @@
+{
+  "endpoint_id": "GET /api/users/{userid}",
+  "legacy_url": "/users/view.php",
+  "scenario_id": "user_pictures_typical_01",
+  "scenario_type": "typical",
+  "input": {
+    "method": "GET",
+    "params": {
+      "userid": 1
+    },
+    "body": null
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [
+      {
+        "link": "7",
+        "image": "128",
+        "image (2)": "doggie/Dog.jpg"
+      }
+    ],
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:84030343b423f1f75e042c44d7f0496b4705714a849a778b2eee6d8475e92d5c",
+    "delta": {}
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-18T15:30:02+00:00"
+}
