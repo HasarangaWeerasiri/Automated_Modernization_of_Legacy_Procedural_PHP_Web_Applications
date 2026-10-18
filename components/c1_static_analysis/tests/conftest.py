@@ -49,6 +49,42 @@ def run_extract(tmp_path: Path):
     return _run
 
 
+AST_CACHE = Path(__file__).parent / "fixtures" / "ast_cache"
+
+
+def php_ast(src: str, file_id: str = "f000", path: str = "t.php") -> dict:
+    """AST document for a PHP snippet, for stage tests (CFG, DFG, ...).
+
+    The extractor's output is cached in tests/fixtures/ast_cache/<sha256>.json (commit
+    these files), so the later-stage tests also run on machines without PHP. Delete the
+    cache folder to regenerate it after a parser upgrade.
+    """
+    import hashlib
+
+    key = hashlib.sha256(f"{file_id}\0{src}".encode("utf-8")).hexdigest()[:24]
+    cached = AST_CACHE / f"{key}.json"
+    if cached.exists():
+        doc = json.loads(cached.read_text(encoding="utf-8"))
+    else:
+        if _REASON is not None:
+            pytest.skip(f"no cached AST and {_REASON}")
+        from c1.extract import run_extractor
+
+        tmp = AST_CACHE / f"{key}.php"
+        AST_CACHE.mkdir(parents=True, exist_ok=True)
+        tmp.write_bytes(src.encode("utf-8"))
+        try:
+            result = run_extractor("php", tmp, file_id)
+        finally:
+            tmp.unlink()
+        doc = {"fileId": file_id, "rootId": result["rootId"], "parseErrors": result["parseErrors"],
+               "nodes": result["nodes"]}
+        cached.write_text(json.dumps(doc, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+    doc = dict(doc)
+    doc["path"] = path
+    return doc
+
+
 def load_ast(out: Path, rel_path: str) -> dict:
     manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
     entry = next(f for f in manifest["files"] if f["path"] == rel_path)
