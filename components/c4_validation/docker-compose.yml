@@ -24,10 +24,16 @@
 
 name: c4
 
+# Every container says which benchmark it runs, so the engine can tell whether the
+# running environment is the one it was asked for (python -m c4 run).
+x-benchmark-label: &benchmark
+  c4.benchmark: ${C4_BENCHMARK:-unknown}
+
 services:
   legacy-db:
     image: mysql:5.7
     container_name: c4-legacy-db
+    labels: *benchmark
     networks: [private]
     environment:
       # Benchmarks connect as root with an empty password. The database is
@@ -56,6 +62,7 @@ services:
         PHP_EXTENSIONS: ${C4_LEGACY_PHP_EXTENSIONS:-mysqli}
     image: c4-legacy-web:php${C4_LEGACY_PHP:-7.4}
     container_name: c4-legacy-web
+    labels: *benchmark
     networks: [private]
     volumes:
       # Read-only: a benchmark is never modified, not even by itself.
@@ -68,6 +75,7 @@ services:
   migrated-db:
     image: mysql:8.0
     container_name: c4-migrated-db
+    labels: *benchmark
     networks: [private]
     environment:
       MYSQL_ROOT_PASSWORD: ${C4_MIGRATED_DB_PASSWORD:-c4migrated}
@@ -84,6 +92,7 @@ services:
   migrated-api:
     build: ./docker/migrated
     container_name: c4-migrated-api
+    labels: *benchmark
     networks: [private]
     environment:
       DATABASE_URL: mysql+pymysql://root:${C4_MIGRATED_DB_PASSWORD:-c4migrated}@migrated-db:3306/${C4_MIGRATED_DB_NAME:-${C4_LEGACY_DB_NAME}}
@@ -96,6 +105,7 @@ services:
   gateway:
     image: haproxy:3.0-alpine
     container_name: c4-gateway
+    labels: *benchmark
     networks: [private, default]
     ports:
       - "127.0.0.1:${C4_LEGACY_WEB_PORT:-8080}:8080"

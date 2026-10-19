@@ -363,6 +363,23 @@ def differential_report(report: dict[str, Any], injection: dict[str, Any]) -> st
     return "\n".join(lines).rstrip() + "\n"
 
 
+def produce(config: Config, baselines: dict[str, dbstate.Snapshot]) -> tuple[dict, dict, dict[str, Path]]:
+    """Judge every captured scenario and probe, and write the three reports.
+
+    Returns the verdict report, the injection report, and where each file was written.
+    """
+    report = evaluate(config, baselines)
+    injection = evaluate_injection(config, baselines)
+    readable = config.report_dir / "differential_report.md"
+    paths = {
+        "verdicts": write_report(config, report),
+        "injection safety": write_report(config, injection, "injection_safety.json"),
+        "readable report": readable,
+    }
+    readable.write_text(differential_report(report, injection), encoding="utf-8", newline="\n")
+    return report, injection, paths
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m c4.verdict", description="Replay, compare and give a verdict per endpoint.")
     parser.add_argument("--benchmark", help="benchmark name; defaults to C4_BENCHMARK")
@@ -372,12 +389,8 @@ def main(argv: list[str] | None = None) -> int:
         config = load_config(args.benchmark)
         containers.wait_until_ready(config, timeout=0)
         baselines = {system.name: dbstate.reset(system) for system in config.systems}
-        report = evaluate(config, baselines)
-        injection = evaluate_injection(config, baselines)
-        path = write_report(config, report)
-        injection_path = write_report(config, injection, "injection_safety.json")
-        readable_path = config.report_dir / "differential_report.md"
-        readable_path.write_text(differential_report(report, injection), encoding="utf-8", newline="\n")
+        report, injection, paths = produce(config, baselines)
+        path, injection_path, readable_path = paths["verdicts"], paths["injection safety"], paths["readable report"]
     except (
         CaptureError, ConfigError, ReplayError,
         scenarios.EndpointMapError, scenarios.ScenarioError,
