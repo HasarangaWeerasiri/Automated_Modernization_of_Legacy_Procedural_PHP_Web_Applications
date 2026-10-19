@@ -30,6 +30,11 @@ def test_the_pipeline_and_the_evaluation_never_reach_it():
             assert "ui_cli" not in file.read_text(encoding="utf-8"), file
 
 
+def test_node_lines_read_the_timeline_through_the_loader_only():
+    text = (ROOT / "tools" / "ui_cli.py").read_text(encoding="utf-8")
+    assert "loader.load_timeline(" in text and "json.loads((unit / \"timeline.json\")" not in text
+
+
 def test_progress_comes_from_a_wrapper_not_an_edit_of_the_pipeline():
     text = (ROOT / "tools" / "ui_cli.py").read_text(encoding="utf-8")
     assert "run_apps.run_stages = traced" in text and "run_apps.run_stages = original" in text

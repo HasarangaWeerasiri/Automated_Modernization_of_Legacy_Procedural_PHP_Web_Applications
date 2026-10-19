@@ -55,6 +55,7 @@ export type C2Summary = {
   build?: string;
   layerTables?: { routes: string; assets: string };
   staticFiles?: number;
+  nodeLines?: string;
   seconds?: number;
 };
 

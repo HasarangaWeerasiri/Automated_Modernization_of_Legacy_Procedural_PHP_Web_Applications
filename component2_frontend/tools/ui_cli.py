@@ -17,6 +17,7 @@ where tools/runtime/replay/build/<app>/ exists. Build project: output/test-app/c
 """
 
 import collections
+import dataclasses
 import json
 import shutil
 import sys
@@ -34,6 +35,7 @@ import legacy_assets  # noqa: E402
 import routes  # noqa: E402
 import run_apps  # noqa: E402
 from app import APPS, app_timelines  # noqa: E402
+from src.mapping import loader  # noqa: E402
 from src.mapping.boundary_config import load_boundary_config  # noqa: E402
 
 REPLAY = ROOT / "tools" / "runtime" / "replay" / "build"
@@ -49,6 +51,37 @@ def step(name: str) -> None:
 
 def arg(argv: list[str], name: str, default: str | None = None) -> str | None:
     return argv[argv.index(name) + 1] if name in argv else default
+
+
+def node_lines(folder: Path) -> dict[str, dict[str, int]]:
+    """Per unit, every node id of its timeline with its first PHP line, so the UI can show the line of a flag that
+    Stage 5 records by node id only. The timeline is read through src/mapping/loader.py (the one reader of it)."""
+    def walk(value, found: dict) -> None:
+        if dataclasses.is_dataclass(value):
+            loc = getattr(value, "loc", None)
+            for name in ("id", "node_id"):
+                node = getattr(value, name, None)
+                if isinstance(node, str) and loc is not None and getattr(loc, "start_line", None):
+                    found.setdefault(node, loc.start_line)
+            for field in dataclasses.fields(value):
+                walk(getattr(value, field.name), found)
+        elif isinstance(value, (tuple, list)):
+            for item in value:
+                walk(item, found)
+        elif isinstance(value, dict):
+            for item in value.values():
+                walk(item, found)
+
+    index = {}
+    for unit in sorted(p for p in folder.iterdir() if (p / "timeline.json").exists()):
+        found: dict[str, int] = {}
+        timeline = loader.load_timeline(unit / "timeline.json")
+        walk(timeline, found)
+        # Only the unit's own file (its first node's file id): a shell joins a header and a footer file, and a line
+        # number is shown against the unit's path.
+        own = timeline.sequence[0].id.split("#")[0] + "#" if timeline.sequence else None
+        index[unit.name] = {k: v for k, v in sorted(found.items()) if own and k.startswith(own)}
+    return index
 
 
 def page_summary(folder: Path, entry: dict) -> dict:
@@ -117,6 +150,8 @@ def main(argv: list[str]) -> int:
     crashes = [p["key"] for p in pages if p["crash"]]
     failing = [p["key"] for p in pages if p["tsc"] not in (0, None)]
     say(f"{len(pages)} units: {len(crashes)} crashes, {len(failing)} not compiling")
+    (out / "node_lines.json").write_bytes((json.dumps(node_lines(folder)) + "\n").encode("utf-8"))
+    summary["nodeLines"] = "node_lines.json"
     severity = collections.Counter()
     for p in pages:
         severity.update(p.get("severity", {}))
