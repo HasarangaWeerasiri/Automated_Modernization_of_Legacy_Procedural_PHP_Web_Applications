@@ -661,7 +661,7 @@ function renderOutputs() {
         ${r.has_readable_report ? row("Readable differential report", `reports/${r.benchmark}/differential_report.md`, "The same findings, written for a person.") : ""}
         <div class="output-row"><div><div class="what">Generated test suite · ${r.suite_tests} tests</div><div class="where">${esc(base)}generated/${esc(r.benchmark)}/</div>
           <div class="note-line" style="margin-top:2px;">Runs on its own against the migrated system: pip install -r requirements.txt, then pytest.</div></div></div>
-        ${r.suite_files.map((name) => `<div class="output-row" style="padding:6px 0 6px 16px;"><span class="where">${esc(name)}</span><a href="${fileUrl(`generated/${r.benchmark}/${name}`)}" target="_blank">Open</a></div>`).join("")}
+        ${r.suite_files.filter((name) => name === "test_equivalence.py").map((name) => `<div class="output-row" style="padding:6px 0 6px 16px;"><span class="where">${esc(name)}</span><a href="${fileUrl(`generated/${r.benchmark}/${name}`)}" target="_blank">Open</a></div>`).join("")}
       </div>
       <div class="export-list"><div class="panel" style="padding:16px;"><div class="section-title" style="font-size:13px;">From a terminal</div>
         <div class="code-block">python -m c4 run --benchmark ${esc(r.benchmark)}</div>
