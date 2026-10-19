@@ -218,7 +218,9 @@ def _compare_response(record: dict[str, Any], replayed: Replay) -> tuple[list, l
                         "where": "response", "kind": "excluded_field_differs", "field": label,
                         "reason": excluded[label],
                         "legacy_value": item[label],
-                        "migrated_record": migrated_records[pairs[index]],
+                        # A value that differs on every capture differs on every run too.
+                        "migrated_record": VARIES if excluded[label] == "observed_nondeterministic"
+                        else migrated_records[pairs[index]],
                     })
             continue
         # Not reproduced. Point at the unpaired migrated record that shares the most
@@ -290,9 +292,60 @@ def _plain_delta(delta: dict[str, Any], excluded: set[str]) -> dict[str, Any]:
     }
 
 
+# A value a system writes differently on every run, as the current time: it is not
+# evidence, and printing it would make identical runs give different reports.
+VARIES = "different on every run"
+_PATH_KEY = re.compile(r"\['([^']*)'\]|\[(\d+)\]")
+
+
+def _column_at(path: str) -> str | None:
+    """The "table.column" a DeepDiff path into a delta points at, if it points at one."""
+    keys = [name if name else int(index) for name, index in _PATH_KEY.findall(path)]
+    if len(keys) >= 4 and keys[1] in ("inserted", "deleted"):
+        return f"{keys[0]}.{keys[3]}"
+    if len(keys) >= 5 and keys[1] == "updated" and keys[3] == "changes":
+        return f"{keys[0]}.{keys[4]}"
+    return None
+
+
+def _steady(detail: dict[str, Any], varying: set[str]) -> dict[str, Any]:
+    """A delta difference with the migrated values of varying columns left out.
+
+    The legacy value stays: it is the oracle's, and the same on every run.
+    """
+    if not varying:
+        return detail
+
+    def masked(table: str, row: Any) -> Any:
+        if not isinstance(row, dict):
+            return row
+        return {column: VARIES if f"{table}.{column}" in varying else value for column, value in row.items()}
+
+    steady: dict[str, Any] = {}
+    for change, places in detail.items():
+        if not isinstance(places, dict):
+            steady[change] = places
+            continue
+        steady[change] = {}
+        for path, info in places.items():
+            table = next(iter(_PATH_KEY.findall(path)), ("", ""))[0]
+            if change == "values_changed" and _column_at(path) in varying:
+                info = {"old_value": info["old_value"], "new_value": VARIES}
+            elif change in ("iterable_item_added", "dictionary_item_added"):
+                info = masked(table, info)  # rows only the migrated side wrote
+            elif change == "repetition_change" and isinstance(info, dict):
+                info = {**info, "value": masked(table, info.get("value"))}
+            steady[change][path] = info
+    return steady
+
+
 def _compare_database(record: dict[str, Any], replayed: Replay) -> tuple[list, list]:
     excluded = {
         entry["field"] for entry in record["excluded_fields"] if entry["scope"] == "database"
+    }
+    varying = {
+        entry["field"] for entry in record["excluded_fields"]
+        if entry["scope"] == "database" and entry["reason"] == "observed_nondeterministic"
     }
     legacy, migrated = record["db_state"]["delta"], replayed.delta
 
@@ -315,7 +368,7 @@ def _compare_database(record: dict[str, Any], replayed: Replay) -> tuple[list, l
     if everything:
         return [], [{
             "where": "database", "kind": "excluded_field_differs",
-            "detail": json.loads(everything.to_json()),
+            "detail": _steady(json.loads(everything.to_json()), varying),
         }]
     return [], []
 

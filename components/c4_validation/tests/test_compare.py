@@ -551,3 +551,61 @@ def test_on_the_migrated_side_an_unknown_column_does_not_turn_a_hashed_row_into_
 
     assert judged["label"] == IMPROVEMENT
     assert judged["migrated"]["effects"] == []
+
+
+# ------------------------------------------- values that differ on every run
+
+from c4.compare import VARIES  # noqa: E402
+from c4.verdict import _delta_lines  # noqa: E402
+
+
+def varying(record, *fields):
+    record["excluded_fields"] = [
+        {"scope": "database", "field": field, "reason": "observed_nondeterministic"} for field in fields
+    ]
+    return record
+
+
+def test_the_migrated_value_of_a_column_that_varies_is_left_out_and_the_legacy_value_kept():
+    legacy = inserted("guestbook", {"name": "Anu", "created_on": "2026-10-18 16:11:25"})
+    record = varying(oracle(delta=legacy), "guestbook.created_on")
+
+    first = compare(record, migrated(delta=inserted("guestbook", {"name": "Anu", "created_on": "2026-10-18 18:41:12"})))
+    second = compare(record, migrated(delta=inserted("guestbook", {"name": "Anu", "created_on": "2026-10-19 09:02:40"})))
+
+    assert first.verdict == INCONCLUSIVE
+    assert first.abstentions == second.abstentions  # identical runs, identical findings
+    (line,) = _delta_lines(first.abstentions[0]["detail"])
+    assert line == f"guestbook.inserted[0].created_on: value differs (legacy '2026-10-18 16:11:25'; the migrated value is {VARIES})"
+
+
+def test_an_updated_column_that_varies_is_left_out_too():
+    def seen(at):
+        return {"users": {"inserted": [], "deleted": [], "updated": [
+            {"key": {"id": 11}, "changes": {"last_login_on": {"before": "2009-02-18", "after": at}}}]}}
+
+    record = varying(oracle(delta=seen("2026-10-18 16:12:06")), "users.last_login_on")
+
+    result = compare(record, migrated(delta=seen("2026-10-18 18:41:03")))
+
+    assert "18:41:03" not in str(result.abstentions)
+    assert "2026-10-18 16:12:06" in str(result.abstentions)
+
+
+def test_a_column_excluded_for_another_reason_still_shows_both_values():
+    legacy = inserted("contact", {"name": "Anu", "created_at": "2026-10-12 10:00:01"})
+    record = oracle(delta=legacy, excluded=[("database", "contact.created_at")])
+
+    result = compare(record, migrated(delta=inserted("contact", {"name": "Anu", "created_at": "2026-10-12 10:07:44"})))
+
+    assert "2026-10-12 10:07:44" in str(result.abstentions)
+
+
+def test_a_real_difference_still_shows_the_migrated_value():
+    legacy = inserted("guestbook", {"name": "Anu", "created_on": "2026-10-18 16:11:25"})
+    record = varying(oracle(delta=legacy), "guestbook.created_on")
+
+    result = compare(record, migrated(delta=inserted("guestbook", {"name": "Anux", "created_on": "2026-10-18 18:41:12"})))
+
+    assert result.verdict == FAIL
+    assert "Anux" in str(result.differences)

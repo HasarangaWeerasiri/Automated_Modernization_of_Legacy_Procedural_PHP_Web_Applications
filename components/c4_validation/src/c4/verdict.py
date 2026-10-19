@@ -32,7 +32,7 @@ import requests
 
 from c4 import containers, dbstate, scenarios
 from c4.capture import CaptureError
-from c4.compare import FAIL, INCONCLUSIVE, NOT_JUDGED, PASS, compare, conflicts, judge_probe, not_judged
+from c4.compare import FAIL, INCONCLUSIVE, NOT_JUDGED, PASS, VARIES, compare, conflicts, judge_probe, not_judged
 from c4.config import Config, ConfigError, load_config
 from c4.replay import ReplayError, replay
 
@@ -176,7 +176,9 @@ def _delta_lines(detail: dict[str, Any]) -> list[str]:
             place = re.sub(r"\['([^']*)'\]", r".\1", path.removeprefix("root")).lstrip(".")
             line = f"{place}: {_DELTA_CHANGES.get(change, change.replace('_', ' '))}"
             info = places[path] if isinstance(places, dict) else None
-            if change == "values_changed":
+            if change == "values_changed" and info["new_value"] == VARIES:
+                line += f" (legacy {info['old_value']!r}; the migrated value is {VARIES})"
+            elif change == "values_changed":
                 line += f" (legacy {info['old_value']!r}, migrated {info['new_value']!r})"
             elif change == "repetition_change":
                 line += f" (legacy {info['old_repeat']}, migrated {info['new_repeat']})"
