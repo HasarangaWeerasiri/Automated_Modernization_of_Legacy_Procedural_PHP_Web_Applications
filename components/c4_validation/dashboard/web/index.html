@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Validation</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-name">Validation</span>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Setup</div>
+      <div class="nav-item active" data-screen="benchmarks">Benchmarks</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Validate</div>
+      <div class="nav-item" data-screen="run">Pipeline Run</div>
+      <div class="nav-item" data-screen="history">Run History</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Results</div>
+      <div class="nav-item" data-screen="overview">Overview</div>
+      <div class="nav-item" data-screen="validation">Validation</div>
+      <div class="nav-item" data-screen="injection">Injection Safety</div>
+      <div class="nav-item" data-screen="flags">Flags</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Deliver</div>
+      <div class="nav-item" data-screen="outputs">Outputs</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="header-bar">
+      <div class="hb-field">
+        <span class="hb-label">Benchmark</span>
+        <select class="field-input" id="benchmark-select" aria-label="Benchmark"></select>
+      </div>
+      <div class="hb-field">
+        <span class="hb-label">Results from</span>
+        <select class="field-input" id="source-select" aria-label="Results from"></select>
+      </div>
+      <div class="hb-spacer"></div>
+      <span class="pill pill-neutral" id="systems-pill"><span class="pill-dot"></span>Checking systems…</span>
+    </div>
+
+    <div class="content">
+      <section class="screen active" id="benchmarks"></section>
+      <section class="screen" id="run"></section>
+      <section class="screen" id="history"></section>
+      <section class="screen" id="overview"></section>
+      <section class="screen" id="validation"></section>
+      <section class="screen" id="injection"></section>
+      <section class="screen" id="flags"></section>
+      <section class="screen" id="outputs"></section>
+    </div>
+  </div>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
