@@ -40,6 +40,10 @@ COMPONENT = DASHBOARD.parent
 REPO = COMPONENT.parents[1]
 DEFAULT_RUN_ROOT = Path(os.environ.get("LOCALAPPDATA", str(Path.home() / "AppData" / "Local"))) / "Temp" / "c3try"
 
+sys.dont_write_bytecode = True  # importing the helper below must not create dashboard/__pycache__ in the repository
+sys.path.insert(0, str(DASHBOARD))
+import before_after  # noqa: E402  (Before / After view of a run: shared with scripts/summarize_evidence.py)
+
 MB = 1024 * 1024
 LIMITS = {
     "zip_bytes": 50 * MB,
@@ -376,6 +380,14 @@ class Bridge:
         return {"run_id": run_id, "file": name, "size_bytes": len(data), "truncated": len(data) > limit,
                 "text": data[:limit].decode("utf-8", "replace")}
 
+    def before_after(self, run_id: str) -> dict:
+        """Legacy SQL sites and tables next to the generated code, for this upload only (shown on this computer)."""
+        run_dir = self.run_dir(run_id)
+        app_dir = (run_dir / "app").resolve()
+        data = before_after.build(run_dir / "out", app_dir, detail=True)
+        text = sanitize(json.dumps(data), run_dir, app_dir)
+        return {"run_id": run_id, "label": UPLOAD_LABEL, **json.loads(text)}
+
     def download(self, run_id: str) -> bytes:
         out_dir = self.run_dir(run_id) / "out"
         buffer = io.BytesIO()
@@ -445,7 +457,7 @@ def make_handler(bridge: Bridge):
             try:
                 if path == "/api/limits":
                     return self.send_json(HTTPStatus.OK, {"limits": bridge.limits, "label": UPLOAD_LABEL})
-                match = re.match(r"^/api/runs/([^/]+)/(summary|unresolved|download|log|file/(models\.py|data_access\.py))$", path)
+                match = re.match(r"^/api/runs/([^/]+)/(summary|unresolved|before_after|download|log|file/(models\.py|data_access\.py))$", path)
                 if match:
                     run_id, what = match.group(1), match.group(2)
                     if what == "log":
@@ -455,6 +467,8 @@ def make_handler(bridge: Bridge):
                         return self.send_json(HTTPStatus.OK, bridge.summary(run_id))
                     if what == "unresolved":
                         return self.send_json(HTTPStatus.OK, bridge.unresolved(run_id))
+                    if what == "before_after":
+                        return self.send_json(HTTPStatus.OK, bridge.before_after(run_id))
                     if what == "download":
                         body = bridge.download(run_id)
                         bridge.delete(run_id)  # temp runs are deleted once downloaded (the zip is already in memory)

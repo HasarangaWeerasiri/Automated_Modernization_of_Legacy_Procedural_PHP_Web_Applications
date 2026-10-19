@@ -415,11 +415,24 @@ APP_INFO = {  # run folder -> label, role, latest S15 evaluation, licence / prov
     "mixed_crud": ("mixed_crud", "development fixture", None, "Project-authored fixture"),
     "hard_crud": ("hard_crud", "development fixture", None, "Project-authored fixture"),
 }
-FORBIDDEN_TEXT = [  # privacy guard over every exported string
-    re.compile(r"\bSELECT\b[^.]{0,200}\bFROM\b"), re.compile(r"\bINSERT\s+INTO\b"), re.compile(r"\bUPDATE\s+\w+\s+SET\b"),
-    re.compile(r"\bDELETE\s+FROM\b"), re.compile(r"mysql\+\w+://"), re.compile(r"password\s*[=:]", re.I),
-    re.compile(r"[A-Za-z]:[\\/]"), re.compile(r"AppData|/Users/|\\Users\\"),
-]
+SQL_TEXT = [re.compile(r"\bSELECT\b[^.]{0,200}\bFROM\b"), re.compile(r"\bINSERT\s+INTO\b"),
+            re.compile(r"\bUPDATE\s+\w+\s+SET\b"), re.compile(r"\bDELETE\s+FROM\b")]
+LOCAL_TEXT = [re.compile(r"mysql\+\w+://"), re.compile(r"[A-Za-z]:[\\/]"), re.compile(r"AppData|/Users/|\\Users\\")]
+FORBIDDEN_TEXT = SQL_TEXT + LOCAL_TEXT + [re.compile(r"password\s*[=:]", re.I)]  # privacy guard over every exported string
+# Before / After: SQL and table detail only for apps whose source may be published (MIT or project-authored).
+# HMS (no licence) and the other apps get counts only.
+BEFORE_AFTER_DETAIL = ("news_buzz", "helpdesk_legacy_holdout", "clinic_inventory_legacy_hard")
+BEFORE_AFTER_SQL_FIELD = re.compile(r"^\$\.before_after\.apps\.(%s)\.queries\[\d+\]\.(legacy_sql|generated_sql|php_argument|php_line|function\.code)$"
+                                    % "|".join(BEFORE_AFTER_DETAIL))
+# Verified by reading the source on 2026-10-19 (no source text exported): why bound parameters and user-controlled
+# values differ for Dignity-Dev.
+BEFORE_AFTER_APP_NOTES = {
+    "dignity_dev_hms": "Verified in the source: the bound values come from parameters of PHP functions in library.php "
+                       "(passed through a sanitising helper before the SQL is built). The security report does not follow "
+                       "function parameters to their call sites, so it classifies none of them as user-controlled.",
+}
+# A quoted literal password; '{{name}}' is C3's placeholder for a PHP variable, not a value.
+LITERAL_PASSWORD = re.compile(r"password\s*=\s*'(?!\{\{)[^'$]+'", re.I)
 
 
 def _pct(numerator, denominator):
@@ -899,6 +912,57 @@ def _pytest_log(file):
             **{k: counts.get(k, 0) for k in ("passed", "failed", "skipped", "warnings")}}
 
 
+def _before_after(base, e4, e1):
+    """Before / After per app from the current-code run: counts for every app, SQL and table detail only for
+    BEFORE_AFTER_DETAIL (never for SENSITIVE_APPS). Built by components/c3_data_layer/dashboard/before_after.py."""
+    if set(BEFORE_AFTER_DETAIL) & SENSITIVE_APPS:
+        raise SystemExit("BEFORE_AFTER_DETAIL must not include an app without a licence")
+    sys.dont_write_bytecode = True  # no dashboard/__pycache__ in the repository
+    sys.path.insert(0, str(COMPONENT / "dashboard"))
+    import before_after
+    apps = {}
+    for _, folder, php, _, _ in CURRENT_RUNS:
+        key = EXPERIMENT_KEY.get(folder, folder)
+        e4_app = e4["apps"][folder]
+        e4_item = before_after._item(
+            "e4", "E4 injection check (functions SAFE)", e4_app["safe"], e4_app["functions"], E4_REPORT,
+            field=f"apps.{key}.safe (of apps.{key}.functions)",
+            note=f"Bounded check ({e4['payload_count']} fixed payloads, SQL compiled for MySQL, no database); "
+                 "not a proof of general injection safety.")
+        detail = folder in BEFORE_AFTER_DETAIL
+        payload = before_after.build(base / folder, APPS / php, detail=detail, source_prefix=f"{TEMP}/{folder}/", e4=e4_item,
+                                     include_reason_text=folder not in SENSITIVE_APPS)
+        payload["licence"] = APP_INFO[folder][3]
+        payload["role"] = APP_INFO[folder][1]
+        payload["verified_ground_truth"] = APP_INFO[folder][2] is not None
+        if folder in BEFORE_AFTER_APP_NOTES:
+            payload["explanations"].append(BEFORE_AFTER_APP_NOTES[folder])
+        # Verification evidence for THIS app only (never borrowed from another app).
+        final_e1 = next((r for r in e1["runs"] if r["kind"] == "final" and r["app"] == folder), None)
+        suite = next((s for s in e1.get("separate_suites", []) if s["app"] == folder), None)
+        payload["verification"] = {
+            "e4": {"safe": e4_app["safe"], "functions": e4_app["functions"], "payload_count": e4["payload_count"],
+                   "source": E4_REPORT, "note": e4_item["note"]},
+            "e1": {"verdicts": final_e1["verdicts"], "sites": final_e1["sites"], "source": final_e1["file"],
+                   "note": "E1 harness on MySQL, per SQL site; INCONCLUSIVE is not PASS."} if final_e1 else None,
+            "mysql_suite": {"passed": suite["passed"], "collected": suite["collected"], "source": suite["file"],
+                            "note": suite["note"]} if suite else None,
+        }
+        apps[folder] = payload
+    labels = ", ".join(APP_INFO[f][0] for f in BEFORE_AFTER_DETAIL)
+    coverage = [{"app": f, "label": APP_INFO[f][0], "detail": apps[f]["detail"],
+                 **{k: apps[f]["facts"][k] for k in ("detected", "converted", "unresolved_recovery", "unresolved_conversion",
+                                                      "templates")}} for f in apps]
+    return {"note": before_after.NOTE, "coverage_note": before_after.COVERAGE_NOTE, "coverage": coverage,
+            "coverage_source": f"{TEMP}/<app>/summary.json (total_queries, converted_queries, unresolved_recovery_stage, "
+                               "unresolved_conversion_stage, converted_by_query_specific_template)",
+            "detail_apps": list(BEFORE_AFTER_DETAIL),
+            "detail_policy": f"SQL, PHP site and table detail is shown for {labels} only (MIT or project-authored source). "
+                             "Other applications show counts only; HMS (kishan0725) has no licence, so none of its SQL or "
+                             "source text is exported.",
+            "apps": apps}
+
+
 def _baseline(measurements):
     """The sqlacodegen schema-only baseline: model-file comparison counts, summed over the apps in its summary.json."""
     data = json.loads((ROOT / BASELINE_SUMMARY).read_text(encoding="utf-8"))
@@ -1008,7 +1072,10 @@ def _privacy_check(node, path="$"):
         for i, value in enumerate(node):
             _privacy_check(value, f"{path}[{i}]")
     elif isinstance(node, str):
-        for pattern in FORBIDDEN_TEXT:
+        # SQL text is allowed only in the Before / After SQL fields of the publishable apps; local paths, database
+        # URLs and literal passwords are never allowed.
+        patterns = LOCAL_TEXT + [LITERAL_PASSWORD] if BEFORE_AFTER_SQL_FIELD.match(path) else FORBIDDEN_TEXT
+        for pattern in patterns:
             if pattern.search(node):
                 raise SystemExit(f"privacy check failed at {path}: matches {pattern.pattern!r}")
 
@@ -1045,6 +1112,7 @@ def write_dashboard_json(target: Path, base: Path, head: str) -> None:
     disclosures = _disclosures(records, measurements)
     e1, e2, e3, e4, tests, e2_dates, e3_dates, e3_runs = _experiments(measurements)
     baseline = _baseline(measurements)
+    before_after = _before_after(base, e4, e1)
     for metric, label, note in [
         ("migration_effort", "Measured migration effort (developer time)",
          "Not measured. The manual-review rate is a derived proxy (sites), not developer effort."),
@@ -1064,6 +1132,7 @@ def write_dashboard_json(target: Path, base: Path, head: str) -> None:
         "experiments": {"e1": e1, "e2": e2, "e2_dates": e2_dates, "e3": e3, "e3_dates": e3_dates, "e3_runs": e3_runs, "e4": e4,
                         "tests": tests, "performance": performance, "baseline": baseline},
         "manual_review": {"formula": MANUAL_REVIEW_FORMULA, "limits": MANUAL_REVIEW_LIMITS, "apps": manual_review},
+        "before_after": before_after,
         "disclosures": disclosures,
         "limitations": [
             {"fr": "FR2", "title": "Branch-dependent SQL",

@@ -180,6 +180,40 @@ def test_real_run_counts_previews_download_and_nothing_in_repo(bridge):
     assert not (DASHBOARD / "__pycache__").exists()
 
 
+@needs_php
+def test_before_after_of_a_live_run_is_upload_relative_and_has_no_percentage(bridge):
+    summary = bridge.analyze("simple_crud.zip", simple_crud_zip(), "schema.sql", (SIMPLE / "schema.sql").read_bytes())
+    pipeline = json.loads((bridge.run_root / summary["run_id"] / "out" / "summary.json").read_text(encoding="utf-8"))
+    ba = bridge.before_after(summary["run_id"])
+    assert ba["detail"] is True and ba["label"] == server.UPLOAD_LABEL
+    assert ba["note"] == "These are measured properties of the generated code, not performance claims."
+    assert len(ba["queries"]) == pipeline["total_queries"]
+    assert sum(q["status"] == "converted" for q in ba["queries"]) == pipeline["converted_queries"]
+    for q in ba["queries"]:
+        assert not re.match(r"^[A-Za-z]:|/", q["site"]) and q["legacy_sql"]
+        if q["status"] == "converted":
+            assert all(f":{key}" in q["generated_sql"] for key in q["function"]["bind_keys"])
+    e4 = next(b for b in ba["benefits"] if b["key"] == "e4")
+    assert e4["value"] is None and e4["note"].startswith("Not measured")
+    f = ba["facts"]
+    assert (f["detected"], f["converted"], f["unresolved"]) == (pipeline["total_queries"], pipeline["converted_queries"], pipeline["unresolved_total"])
+    assert f["converted"] + f["unresolved_recovery"] + f["unresolved_conversion"] == f["detected"]
+    assert "verification" not in ba  # uploads have no E1/E4: the view shows "Not measured"
+    assert all(q["php_line"] and "mysqli_query" in q["php_line"] for q in ba["queries"])
+    assert all(q["function"]["code"].startswith("def ") for q in ba["queries"] if q["status"] == "converted")
+    text = json.dumps(ba)
+    assert str(bridge.run_root) not in text and str(server.REPO) not in text and "%" not in text
+    bridge.delete(summary["run_id"])
+
+
+def test_try_it_shows_migration_impact_through_the_shared_renderer():
+    block = _try_it_block()
+    assert "MigrationImpact.render" in block and "runs/${state.run}/before_after" in block
+    code = (DASHBOARD / "app.js").read_text(encoding="utf-8")
+    renderer = re.search(r"/\* ===== MIGRATION IMPACT .*?===== \*/(.*?)/\* ===== END MIGRATION IMPACT ===== \*/", code, re.S).group(1)
+    assert "%" not in renderer and not PERCENT_WORDS.search(re.sub(r"//.*", "", renderer))
+
+
 def _keys(node):
     if isinstance(node, dict):
         for key, value in node.items():
@@ -286,6 +320,8 @@ def test_http_end_to_end_and_download_deletes_the_run(running):
     run_id = json.loads(payload)["run_id"]
     assert request(running, "GET", f"/api/runs/{run_id}/unresolved")[0] == 200
     assert request(running, "GET", f"/api/runs/{run_id}/file/models.py")[0] == 200
+    status, _, payload = request(running, "GET", f"/api/runs/{run_id}/before_after")
+    assert status == 200 and json.loads(payload)["detail"] is True
     status, headers, data = request(running, "GET", f"/api/runs/{run_id}/download")
     assert status == 200 and headers["Content-Type"] == "application/zip" and zipfile.is_zipfile(io.BytesIO(data))
     assert request(running, "GET", f"/api/runs/{run_id}/summary")[0] == 404

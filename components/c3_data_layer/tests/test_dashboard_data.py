@@ -175,6 +175,176 @@ def test_e3_runs_match_their_evidence_and_the_newest_is_shown_per_app(data):
     assert any(m["id"] == "all|post-adaptation (E3, 2026-10-15)|e3_roundtrip_pass" for m in data["measurements"])
 
 
+def _strings(node, path="$"):
+    if isinstance(node, dict):
+        for key, value in node.items():
+            yield from _strings(value, f"{path}.{key}")
+    elif isinstance(node, list):
+        for i, value in enumerate(node):
+            yield from _strings(value, f"{path}[{i}]")
+    elif isinstance(node, str):
+        yield path, node
+
+
+def test_migration_impact_detail_only_for_publishable_apps(data):
+    ba = data["before_after"]
+    assert ba["detail_apps"] == list(summarize.BEFORE_AFTER_DETAIL)
+    assert not set(ba["detail_apps"]) & summarize.SENSITIVE_APPS
+    assert set(ba["apps"]) == set(data["apps"])
+    for app_id, payload in ba["apps"].items():
+        assert payload["detail"] is (app_id in ba["detail_apps"])
+        if not payload["detail"]:
+            # Counts only: no SQL, PHP line, generated code, file, table or column names.
+            assert "queries" not in payload and "tables" not in payload, app_id
+            assert all(isinstance(v, (int, dict)) for k, v in payload["facts"].items()), app_id
+    # SQL text appears only in the SQL / code fields of the publishable apps.
+    for path, text in _strings(data):
+        if any(p.search(text) for p in summarize.SQL_TEXT):
+            assert summarize.BEFORE_AFTER_SQL_FIELD.match(path), path
+    # HMS: no reason text either (codes and counts only).
+    assert all(not item["reasons"] for item in ba["apps"]["hms_kishan0725"]["limitations"])
+
+
+HMS_PHP = ROOT / "benchmarks" / "apps" / "_app_only" / "hms_kishan0725"
+HMS_DUMP = ROOT / "benchmarks" / "apps" / "hms_kishan0725" / "myhmsdb.sql"
+
+
+@pytest.mark.skipif(not HMS_PHP.is_dir() or not HMS_DUMP.is_file(), reason="HMS source is not in this checkout (no licence)")
+def test_no_hms_source_text_in_dashboard_data(data):
+    text = DATA_FILE.read_text(encoding="utf-8")
+    hms = data["before_after"]["apps"]["hms_kishan0725"]
+    assert hms["detail"] is False and "queries" not in hms and "tables" not in hms
+    sql_literals, lines = set(), set()
+    for php in HMS_PHP.rglob("*.php"):
+        source = php.read_text(encoding="utf-8", errors="replace")
+        for literal in re.findall(r"\"([^\"]{20,})\"|'([^']{20,})'", source):
+            value = " ".join((literal[0] or literal[1]).split())
+            if re.search(r"\b(select|insert|update|delete)\b", value, re.I):
+                sql_literals.add(value)
+        lines |= {line.strip() for line in source.splitlines() if "mysqli_query" in line and len(line.strip()) > 30}
+    assert sql_literals and lines, "expected SQL string literals and query calls in the HMS source"
+    flat = " ".join(text.split())
+    assert not [s for s in sql_literals if s in flat]
+    assert not [line for line in lines if json.dumps(line)[1:-1] in text]
+    emails = set(re.findall(r"[\w.+-]+@[\w-]+\.[\w.]+", HMS_DUMP.read_text(encoding="utf-8", errors="replace")))
+    assert not [e for e in emails if e in text]
+
+
+def test_migration_impact_counts_reconcile_with_the_run_measurements(data):
+    current = lambda app, metric: next(m["value"] for m in data["measurements"]
+                                       if m["app"] == app and m["metric"] == metric and m["stage"] == "current-code")
+    for app_id, payload in data["before_after"]["apps"].items():
+        f, b = payload["facts"], {x["key"]: x for x in payload["benefits"]}
+        assert (f["detected"], f["recovered"], f["converted"], f["templates"], f["unresolved"],
+                f["unresolved_recovery"], f["unresolved_conversion"]) == (
+            current(app_id, "sql_detected"), current(app_id, "sql_recovered"), current(app_id, "converted_functions"),
+            current(app_id, "converted_template"), current(app_id, "unresolved_total"), current(app_id, "unresolved_recovery"),
+            current(app_id, "unresolved_conversion"))
+        assert f["converted"] + f["unresolved_recovery"] + f["unresolved_conversion"] == f["detected"]
+        assert f["general_rules"] + f["templates"] == f["converted"]
+        assert (b["functions_generated"]["value"], b["functions_generated"]["of"]) == (f["converted"], f["detected"])
+        assert b["flagged_for_review"]["value"] == f["unresolved"]
+        e4 = data["experiments"]["e4"]["apps"][app_id]
+        assert (b["e4"]["value"], b["e4"]["of"], b["e4"]["source"]["file"]) == (e4["safe"], e4["functions"], summarize.E4_REPORT)
+        assert f["orm_classes"] + f["core_tables"] == f["tables"] == data["experiments"]["e2"][app_id]["tables"]
+        assert f["columns"] == data["experiments"]["e2"][app_id]["columns"]
+        assert f["core_tables"] == data["artifacts"][app_id]["counts"]["core_tables"]
+        assert f["trace_entries"] == f["detected"] and f["data_access_functions"] == f["converted"]
+        assert sum(item["count"] for item in payload["limitations"]) == f["unresolved"]
+        assert all(item["future_work_status"] == "Proposed future work, not implemented" for item in payload["limitations"])
+        if payload["detail"]:
+            queries = payload["queries"]
+            assert len(queries) == f["detected"] and sum(q["status"] == "converted" for q in queries) == f["converted"]
+            assert sum(q["flag"] is not None for q in queries) == f["unresolved"]
+            assert sum(1 for q in queries if q["dynamic_values"]) == f["dynamic_value_sites"]
+            assert len({q["site"].rsplit(":", 1)[0] for q in queries}) == f["php_files"]
+            assert len(payload["tables"]) == f["tables"]
+            assert sum(t["no_primary_key"] for t in payload["tables"]) == f["core_tables"]
+            assert sum(len(t["model"]["relationships"]) for t in payload["tables"] if t["model"]) == f["relationships"]
+
+
+def test_explorer_mappings_come_from_traceability_and_flags_from_the_unresolved_report(data):
+    for app_id in data["before_after"]["detail_apps"]:
+        payload = data["before_after"]["apps"][app_id]
+        records = {r["query_id"]: r for r in data["records"][app_id]}
+        for q in payload["queries"]:
+            record = records[q["query_id"]]
+            assert q["site"] == f"{record['file']}:{record['line']}"
+            assert not re.match(r"^[A-Za-z]:|/", q["site"])
+            if q["status"] == "converted":
+                fn = q["function"]
+                assert fn and q["function_kind"] == "data_access" and not fn["raises_not_implemented"]
+                assert fn["cited_query_id"] in (None, q["query_id"]) and fn["cited_site"] in (None, q["site"])
+                assert fn["code"].startswith(f"def {fn['name']}(")
+                assert all(f":{key}" in fn["code"] for key in fn["bind_keys"])
+                assert [m["parameter"] for m in fn["parameter_mapping"]] == fn["parameters"] or not fn["parameter_mapping"]
+                assert q["flag"] is None
+            else:
+                assert q["flag"]["reason_code"] == record["unresolved_reason_code"]
+                assert q["flag"]["stage"] == record["unresolved_stage"]
+                assert q["function"] is None or q["function"]["raises_not_implemented"]
+            if q["security"]["remediated"]:
+                assert q["security"]["legacy_injection_site"] and q["status"] == "converted"
+
+
+def test_verification_is_never_borrowed_from_another_app(data):
+    e1_apps = {r["app"] for r in data["experiments"]["e1"]["runs"] if r["kind"] == "final"}
+    suite_apps = {s["app"] for s in data["experiments"]["e1"]["separate_suites"]}
+    for app_id, payload in data["before_after"]["apps"].items():
+        v = payload["verification"]
+        assert (v["e1"] is not None) is (app_id in e1_apps)
+        assert (v["mysql_suite"] is not None) is (app_id in suite_apps)
+        e4 = data["experiments"]["e4"]["apps"][app_id]
+        assert (v["e4"]["safe"], v["e4"]["functions"]) == (e4["safe"], e4["functions"])
+        assert "not a proof of general injection safety" in v["e4"]["note"]
+    assert data["before_after"]["apps"]["hms_kishan0725"]["verification"]["e1"]["verdicts"] == \
+        next(r["verdicts"] for r in data["experiments"]["e1"]["runs"] if r["kind"] == "final")
+
+
+def test_coverage_rows_cover_every_app_with_comparable_units(data):
+    ba = data["before_after"]
+    assert [r["app"] for r in ba["coverage"]] == list(ba["apps"])
+    for row in ba["coverage"]:
+        f = ba["apps"][row["app"]]["facts"]
+        assert (row["detected"], row["converted"], row["unresolved_recovery"], row["unresolved_conversion"]) == \
+            (f["detected"], f["converted"], f["unresolved_recovery"], f["unresolved_conversion"])
+    assert ba["coverage_note"] == ("Conversion coverage is measured over detected sites and does not establish "
+                                   "complete application migration accuracy.")
+
+
+def test_dignity_dev_parameter_and_user_input_counts_are_explained(data):
+    payload = data["before_after"]["apps"]["dignity_dev_hms"]
+    f = payload["facts"]
+    assert f["functions_with_bind_parameters"] > 0 and f["user_controlled_values"] == 0
+    text = " ".join(payload["explanations"])
+    assert "different definitions" in text and "does not show that the application has no user input" in text
+    assert "function parameters" in text
+
+
+def test_migration_impact_view_makes_no_unsupported_claims(data):
+    note = "These are measured properties of the generated code, not performance claims."
+    assert data["before_after"]["note"] == note
+    claim = re.compile(r"\b(faster|speed|speedup|seconds?|minutes?|hours?|effort|performance|productivity|saves?)\b", re.I)
+    for payload in data["before_after"]["apps"].values():
+        assert payload["note"] == note
+        for b in payload["benefits"]:
+            assert b["source"]["file"] and (b["source"].get("field") or b["source"].get("derivation")), b["key"]
+            assert not claim.search(b["label"] + " " + (b.get("note") or "")), b["label"]
+    code = (DASHBOARD / "app.js").read_text(encoding="utf-8")
+    block = re.search(r"/\* ===== MIGRATION IMPACT .*?===== \*/(.*?)/\* ===== END MIGRATION IMPACT ===== \*/", code, re.S).group(1)
+    # The renderer reads only the payload it is given: no global data, no fetch, no Evidence measurement helpers.
+    for forbidden in ("DATA", "dashboard_data", "fetch(", "measurement(", "measurements(", "byId("):
+        assert forbidden not in block, forbidden
+    # No complexity, maintainability-index, LOC-reduction or speed claim; only the explicit disclaimer may name them.
+    stripped = block.replace("No cyclomatic complexity, maintainability index, cognitive complexity or lines-of-code comparison is shown", "")
+    assert not re.search(r"cyclomatic|maintainability index|lines of code|lines-of-code|faster|speedup|\bhours\b", stripped, re.I)
+    # 0 of 0 is shown as not applicable, never as a ratio.
+    assert 'const NA = "N/A - No applicable cases identified"' in block and "of === 0 && v === 0 ? NA" in block
+    html = (DASHBOARD / "index.html").read_text(encoding="utf-8")
+    assert 'data-section="impact">Migration Impact<' in html and '"impact"' in code
+    assert 'section === "before-after" ? "impact"' in code  # old links still open the view
+
+
 def test_fr9_and_fr10_cite_the_newest_committed_evidence(data):
     items = {item["fr"]: item for item in data["functions"]["items"]}
     current_e3 = next(r for r in data["experiments"]["e3_runs"] if r["current"])
@@ -451,9 +621,20 @@ def test_function_cards_take_numbers_only_from_referenced_measurements():
 
 def test_export_contains_no_sql_values_credentials_or_paths(data):
     summarize._privacy_check(data)
-    text = DATA_FILE.read_text(encoding="utf-8")
-    for key in ('"recovered_sql"', '"parameterized_sql"', '"sql_argument"', '"payloads"', '"inputs"', '"database"', '"cases"'):
-        assert key not in text, key
+    # Raw run and E1/E4 fields must not be exported as keys. (A generated function may have a parameter named
+    # "inputs"; that is a value, not an exported field. Before / After SQL is checked in the before_after tests.)
+    keys = set()
+    def walk(node):
+        if isinstance(node, dict):
+            keys.update(node)
+            for value in node.values():
+                walk(value)
+        elif isinstance(node, list):
+            for value in node:
+                walk(value)
+    walk(data)
+    for key in ("recovered_sql", "parameterized_sql", "sql_argument", "payloads", "inputs", "database", "cases"):
+        assert key not in keys, key
     assert all(r["unresolved_reason"] is None for r in data["records"]["hms_kishan0725"])
 
 

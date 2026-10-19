@@ -45,8 +45,8 @@ const Evidence = (() => {
   const state = { app: null, section: "functions", sqlFilter: "all", sqlSearch: "" };
   const NOT_MEASURED = "Not yet measured";
   const NOT_APPLICABLE = "Not applicable";
-  const SECTIONS = ["functions", "overview", "sql", "models", "evaluation", "reports"];
-  const APP_SCOPED = new Set(["overview", "sql", "models"]);
+  const SECTIONS = ["functions", "overview", "sql", "models", "impact", "evaluation", "reports"];
+  const APP_SCOPED = new Set(["overview", "sql", "models", "impact"]);
   const NUMERIC_CELL = /^-?\d[\d.,]*%?(\s*\(\d+\/\d+\))?$/;
   const EXPERIMENT_LABELS = { e1: "E1 behavioural equivalence", e2: "E2 schema fidelity", e3: "E3 Alembic round trip",
     e4: "E4 injection negatives", tests: "Regression tests" };
@@ -410,6 +410,26 @@ const Evidence = (() => {
     );
   }
 
+  // Migration Impact for the selected application (built by before_after.py from the current-code run).
+  function renderImpact(root) {
+    const ba = DATA.before_after;
+    const app = DATA.apps[state.app];
+    const payload = ba.apps[state.app];
+    const body = h("div", { class: "mi-root" });
+    fill(root,
+      h("div", { class: "section-head" }, h("div", {},
+        h("h2", { text: `Migration Impact · ${app.label}` }),
+        h("p", { class: "mi-subtitle", text: "From Embedded Legacy PHP SQL to Structured Python Data Access" }),
+        h("p", { text: "Built from the current-code run of the selected application; every figure names its source file." }))),
+      payload.detail ? null : h("div", { class: "notice info", text: ba.detail_policy }),
+      body);
+    MigrationImpact.render(body, payload, {
+      label: app.label, role: payload.role, licence: payload.licence, verified: payload.verified_ground_truth,
+      coverage: ba.coverage, coverageNote: ba.coverage_note, coverageSource: ba.coverage_source,
+      countsOnlyText: `Code detail is not exported for ${app.label}. ${ba.detail_policy}`,
+    });
+  }
+
   // sqlacodegen schema-only baseline: model-file comparison counts from its summary.json (no query migration involved).
   function baselineCard() {
     const base = DATA.experiments.baseline;
@@ -556,12 +576,13 @@ const Evidence = (() => {
     }
     document.getElementById("app-controls").hidden = !APP_SCOPED.has(state.section);
     const root = document.getElementById(`section-${state.section}`);
-    ({ functions: renderFunctions, overview: renderOverview, sql: renderSql, models: renderModels, evaluation: renderEvaluation,
-      reports: renderReports })[state.section](root);
+    ({ functions: renderFunctions, overview: renderOverview, sql: renderSql, models: renderModels, impact: renderImpact,
+      evaluation: renderEvaluation, reports: renderReports })[state.section](root);
   }
 
   function setSection(section) {
-    state.section = SECTIONS.includes(section) ? section : "functions";
+    const name = section === "before-after" ? "impact" : section;  // old links to the earlier Before / After tab
+    state.section = SECTIONS.includes(name) ? name : "functions";
     render();
   }
 
@@ -593,6 +614,309 @@ const Evidence = (() => {
   return { init, setSection, closeDrawer };
 })();
 /* ===== END EVIDENCE ===== */
+
+/* ===== MIGRATION IMPACT (renders one payload passed in; reads no global data) ===== */
+// Payload: components/c3_data_layer/dashboard/before_after.py build() for one C3 run (plus, on the evidence tab, the
+// app's own verification evidence). Every number shown is read from the payload; nothing is computed beyond sums.
+const MigrationImpact = (() => {
+  const show = (v) => (v === null || v === undefined || v === "" ? "-" : v);
+  const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+  const NA = "N/A - No applicable cases identified";
+  const ofText = (v, of) => (v === null || v === undefined ? "Not measured"
+    : of === null || of === undefined ? String(v) : of === 0 && v === 0 ? NA : `${v} of ${of}`);
+  const grid = (headers, rows, cls) => h("div", { class: "table-wrap" }, h("table", { class: cls || null },
+    h("thead", {}, h("tr", {}, headers.map((x) => h("th", { scope: "col", text: x })))),
+    h("tbody", {}, rows.map((cells) => h("tr", {}, cells.map((c) => h("td", {}, show(c))))))));
+  const icon = (name) => h("span", { class: `mi-icon ${name}`, "aria-hidden": "true" });
+  const step = (title, sub, iconName, ...children) => h("section", { class: "card mi-step" },
+    h("h3", {}, icon(iconName), h("span", { class: "mi-step-no", "aria-hidden": "true" }), title),
+    sub ? h("p", { class: "sub", text: sub }) : null, children);
+  const KIND = { measured: ["measured", "Measured"], design: ["design", "Design property"], none: ["warn", "Not measured"] };
+  const chip = (kind) => h("span", { class: `badge ${KIND[kind][0]}`, text: KIND[kind][1] });
+  const code = (text, pattern, cls) => {
+    const node = h("code", {});
+    if (!text) return node;
+    let last = 0;
+    for (const m of pattern ? text.matchAll(pattern) : []) {
+      node.append(text.slice(last, m.index), h("mark", { class: cls, text: m[0] }));
+      last = m.index + m[0].length;
+    }
+    node.append(text.slice(last));
+    return node;
+  };
+  const pre = (text, pattern, cls) => h("pre", { class: "code-preview mi-code" }, code(text, pattern, cls));
+  const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const bindPattern = (keys) => (keys && keys.length ? new RegExp(`:(?:${keys.map(escapeRe).join("|")})\\b`, "g") : null);
+  const PHP_VALUE = /\{\{\w+\}\}/g;
+
+  // ---------- 1. overview ----------
+  function overview(p, opt) {
+    const f = p.facts;
+    const kpi = (label, value, foot, extra) => h("div", { class: "kpi mi-kpi" },
+      h("div", { class: "kpi-label", text: label }), h("div", { class: "kpi-value", text: String(value) }),
+      h("div", { class: "kpi-foot" }, foot), extra || null);
+    const topReasons = p.limitations.map((l) => `${l.code} ${l.count}`).join(", ");
+    return step("Migration Impact Overview", null, "overview",
+      h("div", { class: "mi-app-head" },
+        h("strong", { text: opt.label }),
+        opt.role ? h("span", { class: "badge", text: opt.role }) : null,
+        opt.verified === true ? h("span", { class: "badge measured", text: "author-verified ground truth" })
+          : opt.verified === false ? h("span", { class: "badge warn", text: "no ground truth: pipeline counts" }) : null,
+        opt.licence ? h("span", { class: "muted", text: `Licence / provenance: ${opt.licence}` }) : null),
+      h("div", { class: "grid kpis mi-kpis" },
+        kpi("SQL operations analysed", f.detected, `detected SQL sites · ${f.recovered} recovered · in ${count(f.php_files, "PHP file", "PHP files")}`),
+        kpi("Automatically generated functions", f.converted,
+          `general rules ${f.general_rules} · query-specific templates ${f.templates}`,
+          h("div", {}, coverageBar(f), h("div", { class: "kpi-foot", text: `${f.converted} of ${f.detected} detected sites converted` }))),
+        kpi("Parameterized data access", f.functions_with_bind_parameters,
+          `of ${f.data_access_functions} generated functions take bound runtime parameters (${f.bind_parameters} in total)`,
+          h("div", { class: "kpi-foot", text: `Confirmed legacy injection sites remediated: ${ofText(f.legacy_injection_sites_remediated, f.legacy_injection_sites)}` })),
+        kpi("Manual review required", f.unresolved,
+          `recovery stage ${f.unresolved_recovery} · conversion stage ${f.unresolved_conversion}`,
+          topReasons ? h("div", { class: "kpi-foot", text: `Reason codes: ${topReasons}` }) : null)),
+      h("p", { class: "muted mi-fine", text: p.coverage_note }));
+  }
+
+  function coverageBar(row) {
+    const parts = [["converted", row.converted, "converted"], ["conversion", row.unresolved_conversion, "recovered, not converted"],
+      ["recovery", row.unresolved_recovery, "not recovered"]];
+    return h("div", { class: "mi-bar", role: "img",
+      "aria-label": parts.map(([, n, t]) => `${t} ${n}`).join(", ") + ` of ${row.detected} detected` },
+      parts.filter(([, n]) => n > 0).map(([cls, n, t]) =>
+        h("span", { class: `mi-seg ${cls}`, style: `flex-grow:${n}`, title: `${t}: ${n} of ${row.detected}` })));
+  }
+
+  // ---------- 2. explorer ----------
+  function explorer(p, opt) {
+    const queries = p.queries;
+    const holder = h("div", {});
+    const preferred = queries.find((q) => q.status === "converted" && q.security.legacy_injection_site)
+      || queries.find((q) => q.status === "converted" && q.function && q.function.bind_keys.length) || queries[0];
+    const select = h("select", { "aria-label": "SQL site", onchange: (e) => draw(queries[Number(e.target.value)]) },
+      queries.map((q, i) => h("option", { value: String(i), selected: q === preferred ? true : null,
+        text: `${q.query_id} · ${q.site} · ${q.status === "converted" ? "converted" : `flagged (${q.flag ? q.flag.reason_code : "-"})`}` })));
+    function draw(q) {
+      const fn = q.function;
+      const left = h("div", { class: "mi-panel before" },
+        h("div", { class: "mi-panel-head" }, h("span", { class: "mi-tag before", text: "BEFORE" }), h("strong", { text: "Legacy PHP data access" })),
+        h("dl", { class: "mi-facts" },
+          h("dt", { text: "Application" }), h("dd", { text: opt.label }),
+          h("dt", { text: "PHP file:line" }), h("dd", {}, h("code", { text: q.site })),
+          h("dt", { text: "Query ID" }), h("dd", { text: q.query_id }),
+          h("dt", { text: "Executor" }), h("dd", {}, h("code", { text: show(q.executor) })),
+          h("dt", { text: "Operation" }), h("dd", { text: show(q.operation) })),
+        q.php_line ? [h("h4", { text: `PHP source line (verbatim, line ${q.site.split(":").pop()})` }), pre(q.php_line)] : null,
+        h("h4", { text: "Recovered SQL (reconstructed by C3, not verbatim source)" }),
+        q.legacy_sql ? pre(q.legacy_sql, PHP_VALUE, "mi-mark-php") : h("p", { class: "muted", text: "C3 could not recover the SQL text for this site." }),
+        q.dynamic_values.length ? h("p", { class: "mi-fine" }, "PHP values interpolated into the SQL text: ",
+          q.dynamic_values.map((v) => h("mark", { class: "mi-mark-php", text: `{{${v}}}` })), ` (${q.dynamic_values.length})`) : null);
+      const right = h("div", { class: "mi-panel after" },
+        h("div", { class: "mi-panel-head" }, h("span", { class: "mi-tag after", text: "AFTER" }),
+          h("strong", { text: q.status === "converted" ? "Generated Python data access" : "Flagged for manual review" })),
+        q.status === "converted" && fn ? [
+          h("dl", { class: "mi-facts" },
+            h("dt", { text: "Function" }), h("dd", {}, h("code", { text: `data_access.${fn.name}` })),
+            h("dt", { text: "Rule" }), h("dd", { text: q.conversion_rule === "query_specific_template" ? "query-specific template" : "general rule" }),
+            h("dt", { text: "Returns" }), h("dd", { text: fn.returns }),
+            h("dt", { text: "Traceability" }), h("dd", {}, fn.cited_site ? h("code", { text: `docstring cites ${fn.cited_site}` })
+              : h("span", { text: "site recorded in traceability_report.json (docstring does not cite it)" }))),
+          h("h4", { text: "Generated function (exact excerpt of data_access.py)" }),
+          fn.code ? pre(fn.code, bindPattern(fn.bind_keys), "mi-mark-bind") : null,
+          fn.parameter_mapping.length ? [h("h4", { text: "Parameter mapping (PHP value → bound parameter)" }),
+            grid(["PHP value at the call", "Bound as"], fn.parameter_mapping.map((m) => [h("code", { text: m.php_value }), h("code", { text: `:${m.parameter}` })]))]
+            : h("p", { class: "muted", text: "This function takes no runtime value." }),
+          q.model ? h("p", { class: "mi-fine" }, "Table ", h("code", { text: q.table }), " → ", h("code", { text: q.model.name }), " ",
+            h("span", { class: `badge ${q.model.kind.startsWith("Core") ? "warn" : "good"}`, text: q.model.kind })) : null,
+        ] : [
+          h("dl", { class: "mi-facts" },
+            h("dt", { text: "Reason code" }), h("dd", {}, h("span", { class: "badge warn", text: q.flag ? q.flag.reason_code : "-" })),
+            h("dt", { text: "Stage" }), h("dd", { text: q.flag ? q.flag.stage : "-" }),
+            h("dt", { text: "Reason" }), h("dd", { text: q.flag ? show(q.flag.reason) : "-" }),
+            h("dt", { text: "Action" }), h("dd", { text: q.flag ? show(q.flag.action) : "-" }),
+            h("dt", { text: "Generated" }), h("dd", {}, fn ? [h("code", { text: fn.name }), " (a stub that raises NotImplementedError; no SQL is generated)"] : "nothing")),
+        ]);
+      fill(holder, h("div", { class: "mi-code-grid" }, left, h("div", { class: "mi-arrow", "aria-hidden": "true", text: "→" }), right), callouts(q));
+    }
+    draw(preferred);
+    return step("Real Code Transformation Explorer", "Choose a detected SQL site. Left: what C3 found in the PHP. Right: what C3 generated for that exact site (mapped through traceability_report.json).",
+      "explorer", h("label", { class: "field mi-select" }, "SQL site", select), holder);
+  }
+
+  function callouts(q) {
+    const fn = q.function;
+    const sec = q.security;
+    const user = sec.values.filter((v) => v.user_controlled);
+    const a = q.status !== "converted" ? "Not converted, so no parameters were generated for this site."
+      : fn && fn.bind_keys.length
+        ? `${fn.bind_keys.length} value(s) are passed as bound parameters (${fn.bind_keys.map((k) => `:${k}`).join(", ")}) instead of being written into the SQL text. `
+          + (sec.legacy_injection_site
+            ? `The security report classifies this site as a legacy injection site (${user.map((v) => `${v.variable} from ${v.sources.join("/")}`).join(", ")} reached the SQL text) and marks it ${sec.remediated ? "remediated" : "not remediated"}.`
+            : "The security report does not classify this site as a confirmed legacy injection site, so no remediation claim is made.")
+        : "This query takes no runtime value; there is nothing to bind.";
+    const b = q.status === "converted" && fn
+      ? `The embedded ${show(q.executor)} call at ${q.site} is available as ${fn.name}() in data_access.py${fn.cited_site ? `, whose docstring cites ${fn.cited_site}` : ""}.`
+      : `No function was generated; the site is listed in unresolved_queries.json with reason ${q.flag ? q.flag.reason_code : "-"} for manual review.`;
+    const c = q.model ? `The table ${q.table} is represented as ${q.model.kind === "ORM class" ? "the ORM class" : "the SQLAlchemy Core Table"} ${q.model.name}${q.model.relationships.length ? ` with ${q.model.relationships.length} relationship attribute(s)` : ""}. The database itself is not redesigned.`
+      : "No single target table is recorded for this site (see the schema section below).";
+    const box = (letter, title, text) => h("div", { class: "mi-callout" }, h("div", { class: "mi-callout-head" }, h("span", { class: "mi-letter", text: letter }), h("strong", { text: title })), h("p", { text }));
+    return h("div", { class: "mi-callouts" },
+      box("A", "Dynamic SQL values → bound parameters", a),
+      box("B", "Embedded database call → generated function", b),
+      box("C", "Database schema → SQLAlchemy model", c));
+  }
+
+  // ---------- 3. scoreboard ----------
+  function scoreboard(p) {
+    const f = p.facts;
+    const card = (title, kind, before, after, benefit, measured, iconName) => h("div", { class: "mi-score" },
+      h("div", { class: "mi-score-head" }, icon(iconName), h("strong", { text: title }), chip(kind)),
+      h("div", { class: "mi-flow" },
+        h("div", {}, h("span", { class: "mi-tag before", text: "BEFORE" }), h("p", { text: before })),
+        h("span", { class: "mi-arrow small", "aria-hidden": "true", text: "→" }),
+        h("div", {}, h("span", { class: "mi-tag after", text: "AFTER" }), h("p", { text: after }))),
+      h("p", { class: "mi-benefit" }, h("strong", { text: "Developer benefit: " }), benefit),
+      h("p", { class: "mi-fine muted" }, h("strong", { text: "Measurement: " }), measured));
+    return step("Before → After Improvement Scoreboard", null, "score", h("div", { class: "mi-scores" },
+      card("SQL locality", "measured", `${count(f.detected, "SQL site", "SQL sites")} spread across ${count(f.php_files, "PHP source file", "PHP source files")}.`,
+        `${count(f.data_access_functions, "generated function", "generated functions")} in one module, data_access.py.`,
+        "Supported database operations sit in one generated layer, which makes the migration easier to review. No maintenance-time saving is claimed.",
+        "distinct source_file values in queries.json; data-access functions listed in traceability_report.json.", "files"),
+      card("Parameterization", "measured", `${f.dynamic_value_sites} of ${f.detected} sites build SQL text from PHP values (recovered as {{name}}).`,
+        `${f.bind_parameters} named bind parameters across ${f.functions_with_bind_parameters} generated functions. Confirmed legacy injection sites remediated: ${ofText(f.legacy_injection_sites_remediated, f.legacy_injection_sites)}.`,
+        "Runtime values are handled as bound parameters instead of being interpolated into SQL text.",
+        "dynamic_variables in queries.json; bind keys in data_access.py; security_report.json summary.", "shield"),
+      card("Schema representation", "measured", `${f.tables} MySQL tables, ${f.columns} columns, ${f.tables_with_primary_key} with a primary key, ${f.foreign_keys} declared foreign keys.`,
+        `${f.orm_classes} ORM classes, ${f.core_tables} Core Tables (no primary key), ${f.relationships} relationship attributes.`,
+        "The existing schema is available as structured Python models. The database is not redesigned.",
+        "schema.json; class and Table definitions in models.py.", "table"),
+      card("Traceability", "measured", `${f.detected} SQL sites located at a PHP file:line.`,
+        `${ofText(f.traceable_sites, f.trace_entries)} sites mapped in traceability_report.json; ${ofText(f.functions_citing_site, f.data_access_functions)} generated functions cite their site in the docstring.`,
+        "Each generated function can be audited against the PHP it replaces.",
+        "traceability_report.json; 'Migrated from <file>:<line>' docstrings in data_access.py. The two counts differ by definition.", "link"),
+      card("Manual review", "measured", `${count(f.unresolved, "site", "sites")} C3 could not convert safely.`,
+        `${count(f.unresolved, "site", "sites")} reported with a reason code (recovery ${f.unresolved_recovery}, conversion ${f.unresolved_conversion}); stubs raise NotImplementedError.`,
+        "Migration gaps are visible instead of being guessed. These sites are not migrated.",
+        "unresolved_queries.json; summary.json unresolved_total.", "flag")));
+  }
+
+  // ---------- 4. structural comparison ----------
+  function structural(p, verification) {
+    const f = p.facts;
+    const v = verification || {};
+    const e1 = v.e1 ? `E1: PASS ${v.e1.verdicts.PASS}, FAIL ${v.e1.verdicts.FAIL}, INCONCLUSIVE ${v.e1.verdicts.INCONCLUSIVE} of ${v.e1.sites} sites`
+      : v.mysql_suite ? `Separate MySQL test suite: ${v.mysql_suite.passed} of ${v.mysql_suite.collected} tests passed (not the E1 harness)` : "Not measured for this application";
+    const security = v.e4 ? `Security report: ${f.generated_code_violations} generated-code violations; E4: ${v.e4.safe} of ${v.e4.functions} functions SAFE (bounded check)`
+      : `Security report: ${f.generated_code_violations} generated-code violations; E4: not measured`;
+    const rows = [
+      ["SQL dispersion across PHP source files", `${count(f.detected, "site", "sites")} in ${count(f.php_files, "file", "files")}`, `${f.data_access_functions} functions in data_access.py`, "queries.json, traceability_report.json", chip("measured")],
+      ["Data-access module organisation", "SQL built and executed inside PHP pages and functions", "One generated module; one function per converted site, named after operation, table and query ID", "data_access.py structure", chip("design")],
+      ["Runtime parameter representation", `${f.dynamic_value_sites} sites interpolate PHP values into SQL text`, `${f.bind_parameters} named bind parameters`, "queries.json dynamic_variables; data_access.py bind keys", chip("measured")],
+      ["Database table representation", `${f.tables} tables, ${f.columns} columns`, `${f.orm_classes} ORM classes, ${f.core_tables} Core Tables`, "schema.json, models.py", chip("measured")],
+      ["Primary / foreign key handling", `${f.tables_with_primary_key} tables with a primary key; ${f.foreign_keys} declared foreign keys`, `${f.relationships} relationship attributes from declared foreign keys; tables without a key become Core Tables`, "schema.json, models.py", chip("measured")],
+      ["Query source traceability", `${f.detected} sites at PHP file:line`, `${ofText(f.traceable_sites, f.trace_entries)} mapped; ${ofText(f.functions_citing_site, f.data_access_functions)} docstrings cite the site`, "traceability_report.json, data_access.py", chip("measured")],
+      ["Unresolved-query visibility", "Not reported by the legacy code", `${f.unresolved} sites with reason codes and stage`, "unresolved_queries.json", chip("measured")],
+      ["Security checks", `Confirmed legacy injection sites: ${ofText(f.legacy_injection_sites, null)}`, security, "security_report.json; E4 report", chip(v.e4 ? "measured" : "none")],
+      ["Behavioural equivalence", "-", e1, v.e1 ? v.e1.source : v.mysql_suite ? v.mysql_suite.source : "-", chip(v.e1 || v.mysql_suite ? "measured" : "none")],
+    ];
+    return step("Structural Comparison & Maintainability", "Static structural counts only. No cyclomatic complexity, maintainability index, cognitive complexity or lines-of-code comparison is shown: the two codebases have not been measured with a comparable method.",
+      "layers", grid(["Attribute", "Before: legacy PHP", "After: C3 SQLAlchemy", "Evidence / calculation", "Classification"], rows, "mi-matrix"));
+  }
+
+  // ---------- 5. benefits matrix ----------
+  function benefitsMatrix(p, verification) {
+    const f = p.facts;
+    const v = verification || {};
+    const verify = [v.e1 ? `E1 (this app): PASS ${v.e1.verdicts.PASS} / FAIL ${v.e1.verdicts.FAIL} / INCONCLUSIVE ${v.e1.verdicts.INCONCLUSIVE} of ${v.e1.sites}` : null,
+      v.mysql_suite ? `MySQL suite (this app): ${v.mysql_suite.passed} of ${v.mysql_suite.collected}` : null,
+      v.e4 ? `E4 (this app): ${v.e4.safe} of ${v.e4.functions} SAFE with ${v.e4.payload_count} fixed payloads, MySQL SQL compilation, no database executed; not a general proof of injection safety` : null]
+      .filter(Boolean).join(". ") || "Not measured for this run";
+    const rows = [
+      ["Security-related transformation", "Dynamic values written into SQL text", "Parameterized SQLAlchemy text() with named binds", "Values are bound, not interpolated",
+        `${f.bind_parameters} bind parameters; confirmed legacy injection sites remediated ${ofText(f.legacy_injection_sites_remediated, f.legacy_injection_sites)}`, chip("measured")],
+      ["Automation", "Rewriting each data-access call by hand", "Generated functions for supported SQL", "Less manual rewriting for supported sites",
+        `${f.converted} of ${f.detected} detected sites converted`, chip("measured")],
+      ["Structural organisation", "SQL embedded in procedural PHP", "A generated Python data-access layer", "One place to review database access",
+        `${f.php_files} PHP files → 1 module (${f.data_access_functions} functions)`, chip("measured")],
+      ["Schema mapping", "Legacy MySQL schema", "SQLAlchemy ORM classes and Core Tables", "Typed Python models of the existing schema",
+        `${f.orm_classes} ORM, ${f.core_tables} Core, ${f.relationships} relationships`, chip("measured")],
+      ["Traceability", "Query locations scattered in PHP", "Source-to-function mapping", "Auditable migration",
+        `${ofText(f.traceable_sites, f.trace_entries)} sites mapped`, chip("measured")],
+      ["Reviewability", "Complex unsupported SQL", "Unresolved-query report with reasons", "Gaps are explicit",
+        `${f.unresolved} sites with reason codes`, chip("measured")],
+      ["Verification", "Migrated behaviour unverified", "App-specific E1 / MySQL tests and bounded E4 where run", "Evidence instead of assumption", verify,
+        chip(v.e1 || v.mysql_suite || v.e4 ? "measured" : "none")],
+    ];
+    return step("Migration Benefits Matrix", null, "matrix",
+      grid(["Category", "Legacy difficulty", "C3 transformation", "Benefit", "Supporting measurement", "Evidence type"], rows, "mi-matrix"));
+  }
+
+  // ---------- 6. coverage ----------
+  function coverage(rows, note, source) {
+    const legend = h("div", { class: "mi-legend" },
+      [["converted", "Converted to a generated function"], ["conversion", "Recovered, not converted"], ["recovery", "Not recovered"]]
+        .map(([cls, t]) => h("span", {}, h("span", { class: `mi-swatch ${cls}` }), t)));
+    const chart = h("div", { class: "mi-coverage" }, rows.map((r) => h("div", { class: "mi-cov-row" },
+      h("span", { class: "mi-cov-label", text: r.label }),
+      r.detected ? coverageBar(r) : h("span", { class: "muted", text: "Not available" }),
+      h("span", { class: "mi-cov-value", text: r.detected ? `${r.converted} of ${r.detected}` : "-" }))));
+    const table = h("details", { class: "mi-details" }, h("summary", { text: "Show as table" }),
+      grid(["Application", "Detected sites", "Converted", "of which templates", "Recovered, not converted", "Not recovered"],
+        rows.map((r) => [r.label, r.detected, r.converted, r.templates, r.unresolved_conversion, r.unresolved_recovery])));
+    return step("Application Coverage Comparison", note, "chart", legend, chart, table,
+      source ? h("p", { class: "mi-fine muted" }, "Source: ", h("code", { text: source })) : null);
+  }
+
+  // ---------- 7. limitations ----------
+  function limitations(p) {
+    if (!p.limitations.length) return step("Limitations & Manual Review", null, "flag", h("p", { class: "muted", text: "No site of this run was flagged for manual review." }));
+    return step("Limitations & Manual Review", "Reason codes from unresolved_queries.json. Proposed improvements are future work and are not implemented.", "flag",
+      h("div", { class: "mi-limits" }, p.limitations.map((l) => h("div", { class: "mi-limit" },
+        h("div", { class: "mi-score-head" }, h("span", { class: "badge warn", text: l.code }), h("strong", { text: l.category }),
+          h("span", { class: "mi-count", text: count(l.count, "site", "sites") })),
+        h("p", { class: "mi-fine" }, h("strong", { text: "Stage: " }), Object.entries(l.stages).map(([s, n]) => `${s} ${n}`).join(", ")),
+        h("p", { text: l.why }),
+        l.reasons.length ? h("ul", { class: "ba-list" }, l.reasons.map((r) => h("li", { class: "muted", text: r }))) : null,
+        h("p", { class: "mi-fine" }, h("strong", { text: `${l.future_work_status}: ` }), l.future_work)))));
+  }
+
+  // ---------- 8. technical evidence ----------
+  function evidence(p, opt) {
+    const rows = p.benefits.map((b) => [
+      h("span", {}, b.label, b.note ? h("div", { class: "muted", text: b.note }) : null),
+      ofText(b.value, b.of),
+      b.source && b.source.file ? h("span", {}, h("code", { text: b.source.file }), b.source.field || b.source.derivation ? ` · ${b.source.field || b.source.derivation}` : "") : "not measured"]);
+    return h("details", { class: "card mi-details mi-evidence" },
+      h("summary", {}, icon("source"), h("span", { class: "mi-step-no", "aria-hidden": "true" }), h("strong", { text: "Technical Evidence & Sources" })),
+      h("p", { class: "sub", text: p.note }),
+      grid(["Measured property", "Value", "Source"], rows),
+      h("h4", { text: "Definitions" }),
+      h("ul", { class: "ba-list" },
+        h("li", { text: "Functions with runtime bind parameters: generated functions whose code binds at least one named parameter." }),
+        h("li", { text: "User-controlled values: values the security report traces to a request superglobal (see below)." }),
+        h("li", { text: "Confirmed legacy injection sites: sites where a user-controlled value reaches the legacy SQL text unsafely (security report)." }),
+        h("li", { text: "E4: a separate bounded check of the generated functions with fixed payloads; it is not run on uploads." }),
+        p.explanations.map((t) => h("li", { text: t }))),
+      opt.sourcesNote ? h("p", { class: "mi-fine muted", text: opt.sourcesNote }) : null);
+  }
+
+  function render(root, payload, options) {
+    const opt = options || {};
+    const rows = opt.coverage || [{ label: opt.label, detected: payload.facts.detected, converted: payload.facts.converted,
+      templates: payload.facts.templates, unresolved_conversion: payload.facts.unresolved_conversion, unresolved_recovery: payload.facts.unresolved_recovery }];
+    fill(root,
+      overview(payload, opt),
+      payload.detail ? explorer(payload, opt)
+        : step("Real Code Transformation Explorer", null, "explorer", h("div", { class: "notice", text: opt.countsOnlyText || "Counts only for this application." })),
+      scoreboard(payload),
+      structural(payload, payload.verification),
+      benefitsMatrix(payload, payload.verification),
+      coverage(rows, opt.coverageNote || payload.coverage_note, opt.coverageSource),
+      limitations(payload),
+      evidence(payload, opt));
+  }
+  return { render };
+})();
+/* ===== END MIGRATION IMPACT ===== */
 
 /* ===== TRY IT (no evidence data) ===== */
 const TryIt = (() => {
@@ -684,6 +1008,20 @@ const TryIt = (() => {
     fill($("tryit-unresolved"), h("div", { class: "placeholder", text: "Unresolved SQL sites of your project will be listed here." }));
     fill($("tryit-code"), h("div", { class: "placeholder", text: "models.py and data_access.py of your project will be previewed here." }));
     fill($("tryit-download"), h("div", { class: "placeholder", text: "A download of the generated data layer will be offered here after a run." }));
+    fill($("tryit-impact"), h("div", { class: "placeholder", text: "The Migration Impact of your project (each SQL site next to its generated function, schema models and flagged sites) will be shown here after a run." }));
+  }
+
+  // Migration Impact of a live run, read from the bridge before any download (the download deletes the run).
+  function renderImpactInto(source, summary) {
+    const box = $("tryit-impact");
+    if (source !== "live") {
+      return fill(box, h("p", { class: "muted", text: "Migration Impact is built from a live run. For the recorded NEWS-BUZZ benchmark, see the Migration Impact section of the evidence tab." }));
+    }
+    fill(box, h("p", { class: "muted", text: "Loading Migration Impact…" }));
+    return getJson(`${API}runs/${state.run}/before_after`)
+      .then((payload) => MigrationImpact.render(box, payload, { label: summary.upload.zip_name, role: "live upload",
+        countsOnlyText: "Detail is not available for this run." }))
+      .catch((error) => fill(box, h("p", { class: "muted", text: error.message })));
   }
 
   function render(summary, unresolved, source, note) {
@@ -718,6 +1056,7 @@ const TryIt = (() => {
           onclick: () => renderPreviewInto(name) }))),
       h("div", { id: "tryit-code-view" }));
     renderPreviewInto("models.py");
+    renderImpactInto(source, summary);
 
     fill($("tryit-download"), source === "live"
       ? [h("a", { class: "button primary", href: `${API}runs/${state.run}/download`, download: "", text: "Download generated outputs (.zip)",
