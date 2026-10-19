@@ -1,0 +1,50 @@
+{
+  "apps": {
+    "hms": {"name": "Hospital Management System", "note": "discovery app"},
+    "phpblog": {"name": "phpBlog", "note": "discovery app"},
+    "attendance": {"name": "Online Attendance System", "note": "discovery app (PHP 5: generated, not runnable)"},
+    "warehouse": {"name": "Warehouse Inventory System", "note": "discovery app"},
+    "wackopicko": {"name": "WackoPicko", "note": "discovery app (PHP 5: generated, not runnable)"}
+  },
+  "components": {
+    "c1": {
+      "name": "Component 1 · Static analysis & backend",
+      "connected": false,
+      "note": "Not connected yet: add its command here (see ui/README.md, 'Adding a component')."
+    },
+    "c2": {
+      "name": "Component 2 · Frontend (PHP → Next.js)",
+      "connected": true,
+      "cwd": "component2_frontend",
+      "command": ["component2_frontend/venv/Scripts/python.exe", "tools/ui_cli.py", "--app", "{app}", "--out", "{out}"],
+      "options": [
+        {"id": "data", "flag": "--data", "default": true,
+         "label": "Replay data", "help": "Phase 4 substitute contract (a test fixture standing in for Component 1); HMS and phpBlog only"},
+        {"id": "layers", "flag": "--layers", "default": true,
+         "label": "Deployment layers", "help": "Routing, assets and inline JS: opt-in, not measured"}
+      ],
+      "apps": ["hms", "phpblog", "attendance", "warehouse", "wackopicko"],
+      "sourceRoot": "component2_frontend/legacy-apps/{app}",
+      "serve": {
+        "url": "http://127.0.0.1:3100/index.php",
+        "processes": [
+          {"when": "data", "cwd": "component2_frontend",
+           "command": ["component2_frontend/venv/Scripts/python.exe", "tools/runtime/replay/server.py", "{app}", "--port", "18190", "{replayArgs}"]},
+          {"cwd": "component2_frontend/output/test-app", "env": {"API_BASE_URL": "http://127.0.0.1:18190"},
+           "command": ["node", "node_modules/next/dist/bin/next", "start", "c2-build/ui-{app}", "-p", "3100"]}
+        ],
+        "replayArgs": {"phpblog": ["--db-port", "13307", "--database", "phpblog"]}
+      }
+    },
+    "c3": {
+      "name": "Component 3 · Data layer",
+      "connected": false,
+      "note": "Not connected yet: add its command here (see ui/README.md, 'Adding a component')."
+    },
+    "c4": {
+      "name": "Component 4 · Validation",
+      "connected": false,
+      "note": "Not connected yet: add its command here (see ui/README.md, 'Adding a component')."
+    }
+  }
+}
