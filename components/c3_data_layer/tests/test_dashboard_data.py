@@ -149,9 +149,23 @@ def test_test_counts_come_only_from_saved_committed_logs(data):
         for metric in ("passed", "failed", "skipped"):
             m = next(x for x in data["measurements"] if x["stage_label"] == run["stage_label"] and x["metric"] == f"{run['metric_prefix']}_{metric}")
             assert m["value"] == run[metric] and m["source"]["file"] == run["file"] and m["status"] == "measured"
-    # The earlier log keeps its original measurement id as dated history, not the latest run.
-    assert [r["latest"] for r in runs] == [True, True, False]
-    assert any(m["id"] == "all|current code (tests, 2026-10-17)|tests_passed" for m in data["measurements"])
+    # Superseded logs keep their original measurement ids as dated history, not the latest run.
+    assert [r["latest"] for r in runs] == [True, True, False, False, False]
+    ids = {m["id"] for m in data["measurements"]}
+    assert {"all|current code (tests, 2026-10-17)|tests_passed", "all|saved log (2026-10-18, HEAD 1d93e93)|tests_passed",
+            "all|saved log (2026-10-18, HEAD 1d93e93)|tests_with_mysql_passed"} <= ids
+
+
+def test_latest_saved_test_logs_are_the_post_sprint_runs(data):
+    latest = {r["key"]: r for r in data["experiments"]["tests"]["runs"] if r["latest"]}
+    assert (latest["non_mysql"]["passed"], latest["non_mysql"]["failed"], latest["non_mysql"]["skipped"]) == (940, 0, 61)
+    assert (latest["with_mysql"]["passed"], latest["with_mysql"]["failed"], latest["with_mysql"]["skipped"]) == (1001, 0, 0)
+    # The full suite with MySQL is the non-MySQL tree with MySQL available: same test count, no extra suites.
+    assert latest["with_mysql"]["passed"] == latest["non_mysql"]["passed"] + latest["non_mysql"]["skipped"]
+    suite = data["experiments"]["e1"]["separate_suites"][0]
+    assert (suite["passed"], suite["collected"], suite["file"]) == (63, 63, summarize.CLINIC_MYSQL_LOG)
+    assert suite["file"].startswith("evidence/mysql_runs/2026-10-20_123611/")
+    assert "already contains the Clinic MySQL equivalence tests" in data["experiments"]["tests"]["note"]
 
 
 def test_e3_runs_match_their_evidence_and_the_newest_is_shown_per_app(data):

@@ -80,7 +80,7 @@
    "title": "Data Access Generation",
    "requirement": "SQL operations that can be safely recovered must be converted into parameterized SQLAlchemy data access functions.",
    "status": "Partial",
-   "limitation": "Only static INNER JOIN SELECTs are converted: LEFT JOIN and implicit comma-join sites are recovered but not converted. MySQL behavioural equivalence (E1) exists for HMS only.",
+   "limitation": "Only static INNER JOIN SELECTs are converted: LEFT JOIN and implicit comma-join sites are recovered but not converted. MySQL behavioural equivalence (E1) exists for HMS only. The sites newly converted on the unseen ams-native application have unit-test, injection-check (E4-style) and byte-gate evidence only; their MySQL behavioural equivalence is not confirmed.",
    "measurements": [
     "hms_kishan0725|current code|conversion_coverage_gt",
     "dignity_dev_hms|current code|conversion_coverage_gt",
@@ -151,8 +151,8 @@
     "helpdesk_legacy_holdout|post-adaptation|recovery_recall",
     "news_buzz|post-fix (escape decoder)|recovery_recall",
     "fee_rainbow|post-fix (wrapper support + fragment rule)|recovery_recall",
-    "all|saved log (2026-10-18, HEAD 1d93e93)|tests_passed",
-    "all|saved log (2026-10-18, HEAD 1d93e93)|tests_with_mysql_passed"
+    "all|saved log (2026-10-20, HEAD d263cbb)|tests_passed",
+    "all|saved log (2026-10-20, HEAD 0939bc3)|tests_with_mysql_passed"
    ],
    "experiments": ["tests"]
   }

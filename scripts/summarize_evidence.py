@@ -360,17 +360,22 @@ E3_DIR = E3_RUNS[0][2]
 E4_REPORT = "evidence/e4/2026-10-17/injection_report.json"
 E4_SCRIPT = "scripts/e4_injection_check.py"
 # Saved (committed) pytest logs only, newest first: (key, title, metric prefix, file, fixed stage label or None).
-# A run without a saved log is never shown. docs/c3_fr_status.json FR10 cites the two newest logs; the 17 Oct log keeps
-# its original stage label (and measurement id) as dated history, not the latest run.
+# A run without a saved log is never shown. docs/c3_fr_status.json FR10 cites the two newest logs (fixed label None);
+# superseded logs keep their original stage label (and measurement id) as dated history, not the latest run.
+# The 2026-10-20 MySQL logs ran at 0939bc3, which only adds docs and evidence to d263cbb (the non-MySQL run).
 TEST_LOGS = [
-    ("non_mysql", "Non-MySQL suite (saved log)", "tests", "evidence/final/2026-10-19/test_run_non_mysql.txt", None),
+    ("non_mysql", "Non-MySQL suite (saved log)", "tests", "evidence/final/2026-10-21/test_run_non_mysql.txt", None),
     ("with_mysql", "Full suite with MySQL (saved log)", "tests_with_mysql",
-     "evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt", None),
+     "evidence/mysql_runs/2026-10-20_123611/full_suite_with_mysql_log.txt", None),
+    ("non_mysql_2026_10_18", "Non-MySQL suite, earlier saved log", "tests", "evidence/final/2026-10-19/test_run_non_mysql.txt",
+     "saved log (2026-10-18, HEAD 1d93e93)"),
+    ("with_mysql_2026_10_18", "Full suite with MySQL, earlier saved log", "tests_with_mysql",
+     "evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt", "saved log (2026-10-18, HEAD 1d93e93)"),
     ("non_mysql_2026_10_17", "Non-MySQL suite, earlier saved log", "tests", "evidence/tests/test_run_non_mysql_2026-10-17.txt",
      "current code (tests, 2026-10-17)"),
 ]
 TEST_LOG = TEST_LOGS[0][3]
-CLINIC_MYSQL_LOG = "evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt"
+CLINIC_MYSQL_LOG = "evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt"
 BASELINE_SUMMARY = "evidence/baseline/2026-10-19/summary.json"
 BASELINE_README = "evidence/baseline/2026-10-19/README.md"
 BASELINE_DIMENSIONS = ("tables", "columns", "primary_keys", "nullability", "types", "foreign_keys")
@@ -882,13 +887,14 @@ def _experiments(measurements):
 
     tests = {"runs": [], "note": "Only saved (committed) logs are shown; a run without a saved log is not evidence. Counts are "
                                  "copied from each log's pytest summary line; pytest omits zero counts, so an absent count is 0. "
-                                 "Skipped tests in the non-MySQL runs are the tests that need MySQL."}
+                                 "Skipped tests in the non-MySQL runs are the tests that need MySQL. The full suite with MySQL is the same "
+                                 "test tree with MySQL available, so it already contains the Clinic MySQL equivalence tests."}
     for key, title, prefix, file, fixed_label in TEST_LOGS:
         log = _pytest_log(file)
         stage_label = fixed_label or f"saved log ({log['date']}, HEAD {log['head'][:7]})"
         tests["runs"].append({"key": key, "title": title, "file": file, "stage_label": stage_label, "metric_prefix": prefix,
                               "summary_line": log["summary_line"], "date": log["date"], "head": log["head"], "head_short": log["head"][:7],
-                              "mysql_server": log["mysql_server"], "latest": key != "non_mysql_2026_10_17",
+                              "mysql_server": log["mysql_server"], "latest": fixed_label is None,
                               **{k: log[k] for k in ("passed", "failed", "skipped", "warnings")}})
         suite = "Full suite with MySQL" if prefix == "tests_with_mysql" else "Non-MySQL tests"
         for metric in ("passed", "failed", "skipped"):

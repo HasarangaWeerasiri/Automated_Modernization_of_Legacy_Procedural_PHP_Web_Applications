@@ -22,11 +22,14 @@ Project J26-SE-329, component C3 (Data Layer Migration), branch `database-migrat
   - Three are partial: FR2, FR4 and FR6.
   - This matches `docs/c3_fr_status.json` and the dashboard Functions view.
 - **Evidence.** Every headline number was re-checked against its evidence file. Verified recovery accuracy exists only for the five applications with author-verified ground truth.
-- **Test counts.**
-  - **Evidence-backed totals: the latest committed logs**, both run 2026-10-18 at HEAD `1d93e93`, filed under `evidence/final/2026-10-19/`:
-    - non-MySQL suite: 873 passed, 61 skipped (`evidence/final/2026-10-19/test_run_non_mysql.txt`);
-    - full suite with MySQL: 934 passed, 0 failed (`evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt`).
-  - **Later runs without a saved log** [this review]. These are not committed evidence and are not shown on the dashboard:
+- **Test counts** (updated 20 Oct after the improvement sprint, section 21; the dashboard regression card shows the same logs):
+  - **Current evidence-backed totals: the latest committed logs**, all run 2026-10-20:
+    - non-MySQL suite: 940 passed, 61 skipped, HEAD `d263cbb` (`evidence/final/2026-10-21/test_run_non_mysql.txt`);
+    - full suite with MySQL: 1001 passed, 0 failed, 0 skipped, HEAD `0939bc3` (`evidence/mysql_runs/2026-10-20_123611/full_suite_with_mysql_log.txt`);
+    - Clinic MySQL equivalence suite: 63 of 63 passed, HEAD `0939bc3` (`evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt`). These 63 tests are part of the 1001, not additional to them: the full suite is the same test tree with MySQL available (940 + 61 = 1001), and the 61 skipped non-MySQL tests are the Clinic tests that need MySQL.
+    - `0939bc3` adds only documentation and evidence to `d263cbb`, so both runs test the same pipeline code.
+  - **Superseded, kept as dated history** (these were the review-time totals; their logs are unchanged): non-MySQL 873 passed, 61 skipped and full suite with MySQL 934 passed, 0 failed, both run 2026-10-18 at HEAD `1d93e93` (`evidence/final/2026-10-19/test_run_non_mysql.txt`; `evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt`). The 900 passed / 61 skipped figure from before the sprint's new tests was never saved as a log.
+  - **Later runs without a saved log** at review time [this review]. These are not committed evidence and are not shown on the dashboard:
     - 885 passed / 61 skipped at HEAD `881e9b8` (873 plus the 12 sqlacodegen-baseline tests from `bae8e6b`);
     - after the dashboard consistency fix and the FR9/FR10 reference update (section 13.1), 890 passed / 61 skipped (plus 5 new dashboard tests).
 - **No hard blocker was found.** The dashboard inconsistencies found in the first version of this review (stale tests, E3 and sqlacodegen cards, and the FR9/FR10 references) were corrected the same day (section 13.1).
@@ -554,11 +557,11 @@ start http://127.0.0.1:8765/
 | Current-code counts, Clinic split | `docs/C3_results_summary.md` |
 | Manual-review proxy, all measurements with sources | `components/c3_data_layer/dashboard/data/dashboard_data.json` |
 | E1 | `evidence/mysql_runs/2026-10-15_195730/e1/`; `evidence/hms/E1_triage/triage.md` |
-| Clinic MySQL equivalence | `evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt` |
+| Clinic MySQL equivalence | `evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt` (current); `evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt` (superseded) |
 | E2 | `evidence/e2/2026-10-15/`; `evidence/mysql_runs/2026-10-15_173248/e2/` |
 | E3 | `evidence/mysql_runs/2026-10-15_173218/e3/`; `evidence/mysql_runs/2026-10-19_000500/e3/` |
 | E4 | `evidence/e4/2026-10-17/README.md`; `evidence/final/2026-10-19/e4/` |
-| Tests | `evidence/final/2026-10-19/test_run_non_mysql.txt`; `evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt` |
+| Tests | `evidence/final/2026-10-21/test_run_non_mysql.txt`; `evidence/mysql_runs/2026-10-20_123611/full_suite_with_mysql_log.txt` (current); `evidence/final/2026-10-19/test_run_non_mysql.txt`; `evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt` (superseded) |
 | Byte identity and frozen HMS hash | `evidence/final/2026-10-19/gate/gate_result.txt` |
 | Timing | `evidence/performance/2026-10-18/` |
 | sqlacodegen baseline | `evidence/baseline/2026-10-19/` |
@@ -642,6 +645,7 @@ start http://127.0.0.1:8765/
 
 **Remaining, each needing your decision:**
 1. **No committed test log at the current HEAD.** The 885/61 (HEAD `881e9b8`) and 890/61 (after the fixes) results are not saved. Cite 873/61 and 934/0 (HEAD `1d93e93`) unless a new log is saved under `evidence/`.
+   - *Resolved 20 Oct:* new logs are committed (940/61 at `d263cbb`; 1001/0/0 and Clinic 63/63 at `0939bc3`; see section 1). The 873/61 and 934/0 logs remain as dated history.
 2. **`HMS_HANDOFF.md` Q036 label** (`header.php:35` instead of `include/header.php:35`).
    - This is a documentation limitation only: `signatures.json` and the generated code carry the correct label.
    - It stays disclosed under FR10. The frozen handoff is not regenerated.
@@ -662,6 +666,8 @@ Stop here for approval before any commit, push, tag or component freeze.
 - **S15:** precision and recall are identical, with 0 differences from 19 Oct for all five ground-truth applications (`evidence/final/2026-10-21/s15/comparison_with_2026-10-19.txt`).
 - **E4:** 159 of 159 functions SAFE, 0 changed cases (`evidence/final/2026-10-21/e4/injection_report.json`).
 - **Non-MySQL suite:** 940 passed, 61 skipped (`evidence/final/2026-10-21/test_run_non_mysql.txt`).
+- **MySQL (Part 2, run 2026-10-20 at `0939bc3`, committed in `62a8509`):** full suite 1001 passed, 0 failed, 0 skipped; Clinic MySQL equivalence 63 of 63 passed (`evidence/mysql_runs/2026-10-20_123611/`). The Clinic tests are included in the 1001.
+- **Folder date.** `evidence/final/2026-10-21/` was named for the planned sprint end; its files were produced on 2026-10-20, as their own headers record. The folder is kept as committed.
 
 **One unseen application, ams-native** (licence unknown, no ground truth; counts only, from `evidence/final/2026-10-21/ams_native_post_t1.json`):
 
@@ -681,10 +687,12 @@ Stop here for approval before any commit, push, tag or component freeze.
 
 **Not claimed:**
 - any accuracy figure for ams-native (it has no ground truth);
-- MySQL behavioural equivalence for the new functions (no E1 run);
+- MySQL behavioural equivalence for the new functions (no E1 run). Their evidence is unit tests, the E4-style check and the byte gate; the 1001-test MySQL run covers the nine evaluated applications and Clinic, not ams-native;
 - any change to the S15 results.
 
 **Deferred to future work:**
 - **T2**, LEFT JOIN and comma-join conversion. It would change conversion coverage for three evaluated applications.
 - **The security-report tracer change.** It could change frozen HMS bytes.
 - Recovery of branch-dependent SQL, SQL fragment variables and dynamic identifiers. The ground truth classifies these sites as "abstain".
+
+**Pre-improvement ams-native baseline.** `evidence/baseline_unseen/ams_native/2026-10-20/` holds the counts-only baseline at `351be5b` (see its README). The original ZIP hash and the licence are unknown, so it is not a reproducible independent holdout.

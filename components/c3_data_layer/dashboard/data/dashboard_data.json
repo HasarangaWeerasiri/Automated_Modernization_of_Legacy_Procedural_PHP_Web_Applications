@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": {
   "by": "scripts/summarize_evidence.py --dashboard-json",
-  "date": "2026-10-20T12:20:48+05:30",
-  "git_head": "b1491b3b37196bb58080e045a9e413239e478920",
+  "date": "2026-10-20T12:45:05+05:30",
+  "git_head": "62a8509ad17410c8a9fe47c9437d63a47db8136d",
   "pipeline_unchanged_since_head": true,
   "current_code_run": "fresh C3 run of all 9 apps into a temp folder outside the repo (written <temp>)"
  },
@@ -4573,10 +4573,10 @@
    }
   },
   {
-   "id": "clinic_inventory_legacy_hard|saved log (2026-10-18, HEAD 1d93e93)|mysql_equivalence_tests_passed",
+   "id": "clinic_inventory_legacy_hard|saved log (2026-10-20, HEAD 0939bc3)|mysql_equivalence_tests_passed",
    "app": "clinic_inventory_legacy_hard",
    "stage": "current-code",
-   "stage_label": "saved log (2026-10-18, HEAD 1d93e93)",
+   "stage_label": "saved log (2026-10-20, HEAD 0939bc3)",
    "category": "mysql_tests",
    "metric": "mysql_equivalence_tests_passed",
    "label": "MySQL equivalence tests passed (Clinic suite, not the E1 harness)",
@@ -4586,9 +4586,9 @@
    "unit": "count",
    "status": "measured",
    "source": {
-    "file": "evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt",
+    "file": "evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt",
     "fields": {
-     "value": "summary line '63 passed in 9.86s'",
+     "value": "summary line '63 passed in 10.27s'",
      "denominator": "line 'collected 63 items'"
     }
    },
@@ -5000,6 +5000,129 @@
     "file": "evidence/e4/2026-10-17/injection_report.json; scripts/e4_injection_check.py",
     "derivation": "functions x len(BENIGN) in the script"
    }
+  },
+  {
+   "id": "all|saved log (2026-10-20, HEAD d263cbb)|tests_passed",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-20, HEAD d263cbb)",
+   "category": "tests",
+   "metric": "tests_passed",
+   "label": "Non-MySQL tests passed",
+   "numerator": null,
+   "denominator": null,
+   "value": 940,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/final/2026-10-21/test_run_non_mysql.txt",
+    "fields": {
+     "value": "summary line '940 passed, 61 skipped, 1 warning in 51.62s'"
+    }
+   }
+  },
+  {
+   "id": "all|saved log (2026-10-20, HEAD d263cbb)|tests_failed",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-20, HEAD d263cbb)",
+   "category": "tests",
+   "metric": "tests_failed",
+   "label": "Non-MySQL tests failed",
+   "numerator": null,
+   "denominator": null,
+   "value": 0,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/final/2026-10-21/test_run_non_mysql.txt",
+    "fields": {
+     "value": "summary line '940 passed, 61 skipped, 1 warning in 51.62s'"
+    }
+   },
+   "note": "pytest omits zero counts; absent means 0."
+  },
+  {
+   "id": "all|saved log (2026-10-20, HEAD d263cbb)|tests_skipped",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-20, HEAD d263cbb)",
+   "category": "tests",
+   "metric": "tests_skipped",
+   "label": "Non-MySQL tests skipped",
+   "numerator": null,
+   "denominator": null,
+   "value": 61,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/final/2026-10-21/test_run_non_mysql.txt",
+    "fields": {
+     "value": "summary line '940 passed, 61 skipped, 1 warning in 51.62s'"
+    }
+   }
+  },
+  {
+   "id": "all|saved log (2026-10-20, HEAD 0939bc3)|tests_with_mysql_passed",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-20, HEAD 0939bc3)",
+   "category": "tests",
+   "metric": "tests_with_mysql_passed",
+   "label": "Full suite with MySQL passed",
+   "numerator": null,
+   "denominator": null,
+   "value": 1001,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/mysql_runs/2026-10-20_123611/full_suite_with_mysql_log.txt",
+    "fields": {
+     "value": "summary line '1001 passed, 1 warning in 57.58s'"
+    }
+   }
+  },
+  {
+   "id": "all|saved log (2026-10-20, HEAD 0939bc3)|tests_with_mysql_failed",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-20, HEAD 0939bc3)",
+   "category": "tests",
+   "metric": "tests_with_mysql_failed",
+   "label": "Full suite with MySQL failed",
+   "numerator": null,
+   "denominator": null,
+   "value": 0,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/mysql_runs/2026-10-20_123611/full_suite_with_mysql_log.txt",
+    "fields": {
+     "value": "summary line '1001 passed, 1 warning in 57.58s'"
+    }
+   },
+   "note": "pytest omits zero counts; absent means 0."
+  },
+  {
+   "id": "all|saved log (2026-10-20, HEAD 0939bc3)|tests_with_mysql_skipped",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-20, HEAD 0939bc3)",
+   "category": "tests",
+   "metric": "tests_with_mysql_skipped",
+   "label": "Full suite with MySQL skipped",
+   "numerator": null,
+   "denominator": null,
+   "value": 0,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/mysql_runs/2026-10-20_123611/full_suite_with_mysql_log.txt",
+    "fields": {
+     "value": "summary line '1001 passed, 1 warning in 57.58s'"
+    }
+   },
+   "note": "pytest omits zero counts; absent means 0."
   },
   {
    "id": "all|saved log (2026-10-18, HEAD 1d93e93)|tests_passed",
@@ -10088,12 +10211,12 @@
    "separate_suites": [
     {
      "app": "clinic_inventory_legacy_hard",
-     "file": "evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt",
+     "file": "evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt",
      "passed": 63,
      "collected": 63,
      "failed": 0,
-     "head": "1d93e93c89106611b81712a998f13bb7443cccb6",
-     "date": "2026-10-18",
+     "head": "0939bc3172ccea66d4f15e6d8d5c893063d4ead9",
+     "date": "2026-10-20",
      "mysql_server": "8.0.39",
      "note": "Clinic's own pytest MySQL equivalence suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. It includes test_q002_sql_injection_is_blocked."
     }
@@ -10421,6 +10544,40 @@
     {
      "key": "non_mysql",
      "title": "Non-MySQL suite (saved log)",
+     "file": "evidence/final/2026-10-21/test_run_non_mysql.txt",
+     "stage_label": "saved log (2026-10-20, HEAD d263cbb)",
+     "metric_prefix": "tests",
+     "summary_line": "940 passed, 61 skipped, 1 warning in 51.62s",
+     "date": "2026-10-20",
+     "head": "d263cbb48d68e0b098a885c7ef772591ca759d98",
+     "head_short": "d263cbb",
+     "mysql_server": null,
+     "latest": true,
+     "passed": 940,
+     "failed": 0,
+     "skipped": 61,
+     "warnings": 1
+    },
+    {
+     "key": "with_mysql",
+     "title": "Full suite with MySQL (saved log)",
+     "file": "evidence/mysql_runs/2026-10-20_123611/full_suite_with_mysql_log.txt",
+     "stage_label": "saved log (2026-10-20, HEAD 0939bc3)",
+     "metric_prefix": "tests_with_mysql",
+     "summary_line": "1001 passed, 1 warning in 57.58s",
+     "date": "2026-10-20",
+     "head": "0939bc3172ccea66d4f15e6d8d5c893063d4ead9",
+     "head_short": "0939bc3",
+     "mysql_server": "8.0.39",
+     "latest": true,
+     "passed": 1001,
+     "failed": 0,
+     "skipped": 0,
+     "warnings": 1
+    },
+    {
+     "key": "non_mysql_2026_10_18",
+     "title": "Non-MySQL suite, earlier saved log",
      "file": "evidence/final/2026-10-19/test_run_non_mysql.txt",
      "stage_label": "saved log (2026-10-18, HEAD 1d93e93)",
      "metric_prefix": "tests",
@@ -10429,15 +10586,15 @@
      "head": "1d93e93c89106611b81712a998f13bb7443cccb6",
      "head_short": "1d93e93",
      "mysql_server": null,
-     "latest": true,
+     "latest": false,
      "passed": 873,
      "failed": 0,
      "skipped": 61,
      "warnings": 1
     },
     {
-     "key": "with_mysql",
-     "title": "Full suite with MySQL (saved log)",
+     "key": "with_mysql_2026_10_18",
+     "title": "Full suite with MySQL, earlier saved log",
      "file": "evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt",
      "stage_label": "saved log (2026-10-18, HEAD 1d93e93)",
      "metric_prefix": "tests_with_mysql",
@@ -10446,7 +10603,7 @@
      "head": "1d93e93c89106611b81712a998f13bb7443cccb6",
      "head_short": "1d93e93",
      "mysql_server": "8.0.39",
-     "latest": true,
+     "latest": false,
      "passed": 934,
      "failed": 0,
      "skipped": 0,
@@ -10470,7 +10627,7 @@
      "warnings": 1
     }
    ],
-   "note": "Only saved (committed) logs are shown; a run without a saved log is not evidence. Counts are copied from each log's pytest summary line; pytest omits zero counts, so an absent count is 0. Skipped tests in the non-MySQL runs are the tests that need MySQL."
+   "note": "Only saved (committed) logs are shown; a run without a saved log is not evidence. Counts are copied from each log's pytest summary line; pytest omits zero counts, so an absent count is 0. Skipped tests in the non-MySQL runs are the tests that need MySQL. The full suite with MySQL is the same test tree with MySQL available, so it already contains the Clinic MySQL equivalence tests."
   },
   "performance": {
    "file": "evidence/performance/2026-10-18/execution_time.json",
@@ -17658,7 +17815,7 @@
      "mysql_suite": {
       "passed": 63,
       "collected": 63,
-      "source": "evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt",
+      "source": "evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt",
       "note": "Clinic's own pytest MySQL equivalence suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. It includes test_q002_sql_injection_is_blocked."
      }
     }
@@ -18466,13 +18623,27 @@
   },
   {
    "title": "Non-MySQL suite (saved log) (test_run_non_mysql.txt)",
-   "path": "evidence/final/2026-10-19/test_run_non_mysql.txt",
+   "path": "evidence/final/2026-10-21/test_run_non_mysql.txt",
    "exists": true,
    "downloadable": false,
    "note": "Repository file; open it in the repository (not served by the dashboard)."
   },
   {
    "title": "Full suite with MySQL (saved log) (full_suite_with_mysql_log.txt)",
+   "path": "evidence/mysql_runs/2026-10-20_123611/full_suite_with_mysql_log.txt",
+   "exists": true,
+   "downloadable": false,
+   "note": "Repository file; open it in the repository (not served by the dashboard)."
+  },
+  {
+   "title": "Non-MySQL suite, earlier saved log (test_run_non_mysql.txt)",
+   "path": "evidence/final/2026-10-19/test_run_non_mysql.txt",
+   "exists": true,
+   "downloadable": false,
+   "note": "Repository file; open it in the repository (not served by the dashboard)."
+  },
+  {
+   "title": "Full suite with MySQL, earlier saved log (full_suite_with_mysql_log.txt)",
    "path": "evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt",
    "exists": true,
    "downloadable": false,
@@ -18487,7 +18658,7 @@
   },
   {
    "title": "Clinic MySQL equivalence test suite (saved log)",
-   "path": "evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt",
+   "path": "evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt",
    "exists": true,
    "downloadable": false,
    "note": "Repository file; open it in the repository (not served by the dashboard)."
@@ -18637,7 +18808,7 @@
     "title": "Data Access Generation",
     "requirement": "SQL operations that can be safely recovered must be converted into parameterized SQLAlchemy data access functions.",
     "status": "Partial",
-    "limitation": "Only static INNER JOIN SELECTs are converted: LEFT JOIN and implicit comma-join sites are recovered but not converted. MySQL behavioural equivalence (E1) exists for HMS only.",
+    "limitation": "Only static INNER JOIN SELECTs are converted: LEFT JOIN and implicit comma-join sites are recovered but not converted. MySQL behavioural equivalence (E1) exists for HMS only. The sites newly converted on the unseen ams-native application have unit-test, injection-check (E4-style) and byte-gate evidence only; their MySQL behavioural equivalence is not confirmed.",
     "measurements": [
      "hms_kishan0725|current code|conversion_coverage_gt",
      "dignity_dev_hms|current code|conversion_coverage_gt",
@@ -18716,8 +18887,8 @@
      "helpdesk_legacy_holdout|post-adaptation|recovery_recall",
      "news_buzz|post-fix (escape decoder)|recovery_recall",
      "fee_rainbow|post-fix (wrapper support + fragment rule)|recovery_recall",
-     "all|saved log (2026-10-18, HEAD 1d93e93)|tests_passed",
-     "all|saved log (2026-10-18, HEAD 1d93e93)|tests_with_mysql_passed"
+     "all|saved log (2026-10-20, HEAD d263cbb)|tests_passed",
+     "all|saved log (2026-10-20, HEAD 0939bc3)|tests_with_mysql_passed"
     ],
     "experiments": [
      "tests"
