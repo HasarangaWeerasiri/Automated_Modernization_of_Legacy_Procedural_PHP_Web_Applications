@@ -750,7 +750,7 @@ const MigrationImpact = (() => {
       : fn && fn.bind_keys.length
         ? `${fn.bind_keys.length} value(s) are passed as bound parameters (${fn.bind_keys.map((k) => `:${k}`).join(", ")}) instead of being written into the SQL text. `
           + (sec.legacy_injection_site
-            ? `The security report classifies this site as a legacy injection site (${user.map((v) => `${v.variable} from ${v.sources.join("/")}`).join(", ")} reached the SQL text) and marks it ${sec.remediated ? "remediated" : "not remediated"}.`
+            ? `The security report classifies this site as a legacy injection site and marks it ${sec.remediated ? "remediated" : "not remediated"}. Traced sources (may pass through a query result): ${user.map((v) => `${v.variable} from ${v.sources.join("/")}`).join(", ")}.`
             : "The security report does not classify this site as a confirmed legacy injection site, so no remediation claim is made.")
         : "This query takes no runtime value; there is nothing to bind.";
     const b = q.status === "converted" && fn

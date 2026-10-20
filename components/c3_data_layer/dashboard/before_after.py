@@ -45,10 +45,10 @@ REASON_INFO = {
     "UNSUPPORTED_SHAPE": ("Not a recognised CRUD statement",
                           "The recovered text is not a SELECT, INSERT, UPDATE or DELETE that C3 converts.",
                           "Recognising further statement types."),
-    "CONVERSION_UNSUPPORTED": ("Unsupported query transformation",
-                               "The SQL was recovered, but its shape (for example LEFT JOIN or an implicit comma join) "
-                               "is outside the converter's supported forms.",
-                               "Conversion rules for LEFT JOIN and implicit joins."),
+    "CONVERSION_UNSUPPORTED": ("Unsupported query transformation (other)",
+                               "The SQL was recovered, but the converter rejected it for a reason outside the known families; "
+                               "see the per-site reason.",
+                               "Depends on the per-site reason."),
     "UNSUPPORTED_EXECUTOR": ("Unsupported database API",
                              "The call uses a database API C3 does not target.", "Further executor support."),
     "MISSING_SQL_ARGUMENT": ("SQL argument not found", "The SQL argument of the call could not be identified.",
@@ -57,6 +57,30 @@ REASON_INFO = {
                                  "Several statements run in one call; they cannot become one parameterised statement.",
                                  "Splitting multi-statement calls."),
 }
+# CONVERSION_UNSUPPORTED covers different converter rejections; the family comes from the converter's reason text
+# (components/c3_data_layer/src/c3/conversion/query_converter.py), so each family gets its own explanation.
+CONVERSION_FAMILIES = [
+    ("multi_table", "Unsupported multi-table SQL structure",
+     ("Unsupported multi-table SQL structure",
+      "The SQL was recovered, but it combines tables in a form the converter does not accept: only static SELECT "
+      "statements with INNER JOINs are converted (LEFT, RIGHT and comma joins, for example, are not).",
+      "Conversion rules for LEFT JOIN and implicit comma joins.")),
+    ("placeholder_position", "Dynamic placeholder occurs in an unsupported structural SQL position",
+     ("Dynamic placeholder in an unsupported structural SQL position",
+      "The SQL was recovered, but a PHP value sits in a position the converter's allow-list does not accept as a bound "
+      "value, so binding it could change the statement's structure or meaning.",
+      "Extend the allow-list only to further positions where the value is provably a plain scalar, each with unit and "
+      "hostile-payload tests.")),
+]
+
+
+def conversion_family(reason: str | None) -> str:
+    for key, prefix, _ in CONVERSION_FAMILIES:
+        if (reason or "").startswith(prefix):
+            return key
+    return "other"
+
+
 USER_INPUT_DEFINITION = ("The security report counts a value as user-controlled only when it traces it, within the same "
                          "file and in order, to $_GET, $_POST, $_REQUEST or $_COOKIE. Function parameters and values "
                          "from other files are not traced (its stated scope).")
@@ -201,15 +225,17 @@ def build(out_dir, php_root, *, detail: bool, source_prefix: str = "", e4: dict 
     reasons = {}
     for u in unresolved:
         code = u.get("reason_code") or "UNKNOWN"
-        entry = reasons.setdefault(code, {"code": code, "count": 0, "stages": Counter(), "reasons": []})
+        family = conversion_family(u.get("reason")) if code == "CONVERSION_UNSUPPORTED" else None
+        entry = reasons.setdefault((code, family), {"code": code, "family": family, "count": 0, "stages": Counter(), "reasons": []})
         entry["count"] += 1
         entry["stages"][u.get("stage") or "recovery"] += 1
         if include_reason_text and u.get("reason") and u["reason"] not in entry["reasons"]:
             entry["reasons"].append(u["reason"])
     limitations = []
-    for code, entry in sorted(reasons.items(), key=lambda kv: (-kv[1]["count"], kv[0])):
-        category, why, future = REASON_INFO.get(code, (code, "See the unresolved-query report.", "Not defined."))
-        limitations.append({"code": code, "count": entry["count"], "stages": dict(entry["stages"]), "category": category,
+    family_info = {key: info for key, _, info in CONVERSION_FAMILIES}
+    for (code, family), entry in sorted(reasons.items(), key=lambda kv: (-kv[1]["count"], kv[0][0], kv[0][1] or "")):
+        category, why, future = (family_info.get(family) or REASON_INFO["CONVERSION_UNSUPPORTED"]) if family             else REASON_INFO.get(code, (code, "See the unresolved-query report.", "Not defined."))
+        limitations.append({"code": code, "family": family, "count": entry["count"], "stages": dict(entry["stages"]), "category": category,
                             "why": why, "reasons": entry["reasons"], "future_work": future,
                             "future_work_status": "Proposed future work, not implemented"})
 

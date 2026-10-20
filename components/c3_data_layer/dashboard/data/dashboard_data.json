@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": {
   "by": "scripts/summarize_evidence.py --dashboard-json",
-  "date": "2026-10-19T16:10:59+05:30",
-  "git_head": "caae89534ba3b60cd1e51762837fe1ce8d8ce155",
+  "date": "2026-10-20T12:10:38+05:30",
+  "git_head": "351be5b192529fe293c194388e494b3aba0bb2a4",
   "pipeline_unchanged_since_head": true,
   "current_code_run": "fresh C3 run of all 9 apps into a temp folder outside the repo (written <temp>)"
  },
@@ -11510,6 +11510,7 @@
     "limitations": [
      {
       "code": "STRUCTURAL",
+      "family": null,
       "count": 4,
       "stages": {
        "recovery": 4
@@ -11524,20 +11525,22 @@
      },
      {
       "code": "CONVERSION_UNSUPPORTED",
+      "family": "multi_table",
       "count": 3,
       "stages": {
        "conversion": 3
       },
-      "category": "Unsupported query transformation",
-      "why": "The SQL was recovered, but its shape (for example LEFT JOIN or an implicit comma join) is outside the converter's supported forms.",
+      "category": "Unsupported multi-table SQL structure",
+      "why": "The SQL was recovered, but it combines tables in a form the converter does not accept: only static SELECT statements with INNER JOINs are converted (LEFT, RIGHT and comma joins, for example, are not).",
       "reasons": [
        "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported."
       ],
-      "future_work": "Conversion rules for LEFT JOIN and implicit joins.",
+      "future_work": "Conversion rules for LEFT JOIN and implicit comma joins.",
       "future_work_status": "Proposed future work, not implemented"
      },
      {
       "code": "BRANCHING",
+      "family": null,
       "count": 1,
       "stages": {
        "recovery": 1
@@ -11552,6 +11555,7 @@
      },
      {
       "code": "LOOP_OR_SWITCH_CONTROL_FLOW",
+      "family": null,
       "count": 1,
       "stages": {
        "recovery": 1
@@ -11566,6 +11570,7 @@
      },
      {
       "code": "UNSUPPORTED_SHAPE",
+      "family": null,
       "count": 1,
       "stages": {
        "recovery": 1
@@ -11770,16 +11775,17 @@
     "limitations": [
      {
       "code": "CONVERSION_UNSUPPORTED",
+      "family": "multi_table",
       "count": 1,
       "stages": {
        "conversion": 1
       },
-      "category": "Unsupported query transformation",
-      "why": "The SQL was recovered, but its shape (for example LEFT JOIN or an implicit comma join) is outside the converter's supported forms.",
+      "category": "Unsupported multi-table SQL structure",
+      "why": "The SQL was recovered, but it combines tables in a form the converter does not accept: only static SELECT statements with INNER JOINs are converted (LEFT, RIGHT and comma joins, for example, are not).",
       "reasons": [
        "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported."
       ],
-      "future_work": "Conversion rules for LEFT JOIN and implicit joins.",
+      "future_work": "Conversion rules for LEFT JOIN and implicit comma joins.",
       "future_work_status": "Proposed future work, not implemented"
      }
     ],
@@ -12766,6 +12772,7 @@
     "limitations": [
      {
       "code": "BRANCHING",
+      "family": null,
       "count": 2,
       "stages": {
        "recovery": 2
@@ -15440,6 +15447,7 @@
     "limitations": [
      {
       "code": "STRUCTURAL",
+      "family": null,
       "count": 10,
       "stages": {
        "recovery": 10
@@ -15459,20 +15467,22 @@
      },
      {
       "code": "CONVERSION_UNSUPPORTED",
+      "family": "multi_table",
       "count": 2,
       "stages": {
        "conversion": 2
       },
-      "category": "Unsupported query transformation",
-      "why": "The SQL was recovered, but its shape (for example LEFT JOIN or an implicit comma join) is outside the converter's supported forms.",
+      "category": "Unsupported multi-table SQL structure",
+      "why": "The SQL was recovered, but it combines tables in a form the converter does not accept: only static SELECT statements with INNER JOINs are converted (LEFT, RIGHT and comma joins, for example, are not).",
       "reasons": [
        "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported."
       ],
-      "future_work": "Conversion rules for LEFT JOIN and implicit joins.",
+      "future_work": "Conversion rules for LEFT JOIN and implicit comma joins.",
       "future_work_status": "Proposed future work, not implemented"
      },
      {
       "code": "UNKNOWN_EXPR",
+      "family": null,
       "count": 2,
       "stages": {
        "recovery": 2
@@ -17885,6 +17895,7 @@
     "limitations": [
      {
       "code": "UNKNOWN_EXPR",
+      "family": null,
       "count": 1,
       "stages": {
        "recovery": 1
@@ -18087,6 +18098,7 @@
     "limitations": [
      {
       "code": "STRUCTURAL",
+      "family": null,
       "count": 2,
       "stages": {
        "recovery": 2
@@ -18102,6 +18114,7 @@
      },
      {
       "code": "BRANCHING",
+      "family": null,
       "count": 1,
       "stages": {
        "recovery": 1

@@ -287,6 +287,40 @@ def test_explorer_mappings_come_from_traceability_and_flags_from_the_unresolved_
                 assert q["security"]["legacy_injection_site"] and q["status"] == "converted"
 
 
+def test_conversion_limitations_are_grouped_by_reason_family(data):
+    for app_id, payload in data["before_after"]["apps"].items():
+        families = [l for l in payload["limitations"] if l["code"] == "CONVERSION_UNSUPPORTED"]
+        assert all(l["family"] in ("multi_table", "placeholder_position", "other") for l in families), app_id
+        assert all(l["family"] is None for l in payload["limitations"] if l["code"] != "CONVERSION_UNSUPPORTED"), app_id
+        assert len({l["family"] for l in families}) == len(families), app_id  # one entry per family
+        for l in families:
+            text = (l["category"] + " " + l["why"] + " " + l["future_work"]).lower()
+            assert ("join" in text) is (l["family"] == "multi_table"), (app_id, l["family"])
+        if app_id in data["records"]:
+            reasons = [r["unresolved_reason"] or "" for r in data["records"][app_id] if r["unresolved_reason_code"] == "CONVERSION_UNSUPPORTED"]
+            expected = {}
+            for reason in reasons:
+                key = ("multi_table" if reason.startswith("Unsupported multi-table SQL structure")
+                       else "placeholder_position" if reason.startswith("Dynamic placeholder occurs in an unsupported structural SQL position")
+                       else "other")
+                expected[key] = expected.get(key, 0) + 1
+            assert {l["family"]: l["count"] for l in families} == expected, app_id
+    code = (DASHBOARD / "app.js").read_text(encoding="utf-8")
+    assert "traced sources (may pass through a query result)" in code.lower()
+
+
+def test_conversion_family_classifier_and_texts():
+    ba_spec = importlib.util.spec_from_file_location("before_after_family", DASHBOARD / "before_after.py")
+    ba = importlib.util.module_from_spec(ba_spec)
+    ba_spec.loader.exec_module(ba)
+    assert ba.conversion_family("Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported.") == "multi_table"
+    assert ba.conversion_family("Dynamic placeholder occurs in an unsupported structural SQL position.") == "placeholder_position"
+    assert ba.conversion_family("Unsupported SQL operation: REPLACE") == "other"
+    info = {key: texts for key, _, texts in ba.CONVERSION_FAMILIES}
+    assert "join" not in " ".join(info["placeholder_position"]).lower()
+    assert "join" in " ".join(info["multi_table"]).lower()
+
+
 def test_verification_is_never_borrowed_from_another_app(data):
     e1_apps = {r["app"] for r in data["experiments"]["e1"]["runs"] if r["kind"] == "final"}
     suite_apps = {s["app"] for s in data["experiments"]["e1"]["separate_suites"]}
