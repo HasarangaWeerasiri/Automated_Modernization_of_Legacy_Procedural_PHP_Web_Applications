@@ -118,16 +118,10 @@ def _has_unsafe_placeholder_position(
 
     names = set(parameter_names)
 
-    comparison_types = (
-        exp.EQ,
-        exp.NEQ,
-        exp.GT,
-        exp.GTE,
-        exp.LT,
-        exp.LTE,
-        exp.Like,
-        exp.ILike,
-    )
+    # A recovered value that did not become a bind placeholder sits inside a
+    # string literal ('x{{v}}y'); binding it would change the literal, so abstain.
+    if names - {node.name for node in tree.find_all(exp.Placeholder)}:
+        return True
 
     for node in tree.walk():
         if not isinstance(node, exp.Placeholder):
@@ -141,40 +135,112 @@ def _has_unsafe_placeholder_position(
         if parent is None:
             return True
 
-        # Right-hand side of scalar comparisons.
-        if isinstance(parent, comparison_types):
-            if node.arg_key == "expression":
-                continue
-
-                # Right-hand scalar operand of addition.
-        # Example: UPDATE appointments SET fee = fee + :delta
-        if isinstance(parent, exp.Add):
-            if (
-                node.arg_key == "expression"
-                and isinstance(parent.this, (exp.Column, exp.Literal))
-            ):
-                continue
+        if _is_value_position(node, tree):
+            continue
 
         # Parameterized LIMIT and OFFSET values.
         if isinstance(parent, (exp.Limit, exp.Offset)):
             if node.arg_key == "expression":
                 continue
 
-        # Scalar values in IN lists.
-        if isinstance(parent, exp.In):
-            if node.arg_key == "expressions":
-                continue
-
-        # Values in INSERT statements.
-        if isinstance(parent, exp.Tuple):
-            if (
-                node.arg_key == "expressions"
-                and isinstance(tree, exp.Insert)
-            ):
-                continue
+        # The whole value argument of an allow-listed scalar function whose
+        # call itself sits in a value position, e.g. WHERE pwd = MD5(:pwd).
+        # Only one level: MD5(LOWER(:x)) or MD5(CONCAT(:x, 's')) abstain.
+        if (
+            isinstance(parent, VALUE_FUNCTIONS)
+            and node.arg_key == "this"
+            and not (isinstance(parent, exp.TsOrDsToDate) and parent.args.get("format") is not None)
+            and _is_value_position(parent, tree)
+        ):
+            continue
 
         # All other positions remain unsupported.
         return True
+
+    return False
+
+
+COMPARISON_TYPES = (
+    exp.EQ,
+    exp.NEQ,
+    exp.GT,
+    exp.GTE,
+    exp.LT,
+    exp.LTE,
+    exp.Like,
+    exp.ILike,
+)
+
+# Deterministic scalar functions whose value operand may be a bound parameter:
+# MD5, SHA1, SHA2 (first argument), LOWER, UPPER, TRIM, DATE and CAST (value
+# operand). Anything else (SLEEP, BENCHMARK, LOAD_FILE, ...) parses as another
+# node type and keeps abstaining; so do the SHA2 bit length, TRIM's character
+# set, a DATE format and CAST's target type (not the "this" argument).
+VALUE_FUNCTIONS = (
+    exp.MD5,
+    exp.SHA,
+    exp.SHA2,
+    exp.Lower,
+    exp.Upper,
+    exp.Trim,
+    exp.TsOrDsToDate,
+    exp.Cast,
+)
+
+PREDICATE_CONNECTIVES = (exp.And, exp.Or, exp.Not, exp.Paren)
+
+
+def _in_predicate_position(node) -> bool:
+    """True when node is a WHERE/HAVING/JOIN ON condition (possibly inside AND, OR, NOT, parentheses)."""
+
+    while isinstance(node.parent, PREDICATE_CONNECTIVES):
+        node = node.parent
+
+    parent = node.parent
+
+    if isinstance(parent, (exp.Where, exp.Having)):
+        return node.arg_key == "this"
+
+    return isinstance(parent, exp.Join) and node.arg_key == "on"
+
+
+def _is_value_position(node, tree) -> bool:
+    """
+    Scalar value positions accepted for a placeholder or for an allow-listed
+    function call: right-hand side of a comparison or LIKE, right-hand operand
+    of col + value, an IN-list item, an INSERT value, or a BETWEEN bound of a
+    column in a WHERE/HAVING/ON condition.
+    """
+
+    parent = node.parent
+
+    # Right-hand side of scalar comparisons (also UPDATE ... SET col = value).
+    if isinstance(parent, COMPARISON_TYPES):
+        return node.arg_key == "expression"
+
+    # Right-hand scalar operand of addition.
+    # Example: UPDATE appointments SET fee = fee + :delta
+    if isinstance(parent, exp.Add):
+        return (
+            node.arg_key == "expression"
+            and isinstance(parent.this, (exp.Column, exp.Literal))
+        )
+
+    # Scalar values in IN lists.
+    if isinstance(parent, exp.In):
+        return node.arg_key == "expressions"
+
+    # Values in INSERT statements.
+    if isinstance(parent, exp.Tuple):
+        return node.arg_key == "expressions" and isinstance(tree, exp.Insert)
+
+    # BETWEEN bounds: col BETWEEN :low AND :high in a condition.
+    if isinstance(parent, exp.Between):
+        return (
+            node.arg_key in ("low", "high")
+            and isinstance(parent.this, exp.Column)
+            and _in_predicate_position(parent)
+        )
 
     return False
 
