@@ -1,0 +1,159 @@
+{
+  "label": "pre-improvement baseline run on commit 351be5b192529fe293c194388e494b3aba0bb2a4",
+  "not_the_original_first_run": "The user's first look was a Try It upload (run 80f803de0d01419f, 2026-10-20 11:30). This is a fresh CLI run on the same extracted .php files and schema bytes; after path normalisation its outputs equal the Try It outputs except the docstring labels, which carry an extra 'ams-native/' prefix there (different --php root).",
+  "app": "ams-native-3c4d475",
+  "licence": "unknown: the original ZIP was not found on this machine, and the Try It run kept only the extracted .php files (28 non-PHP files were skipped), so whether a LICENSE file exists could not be checked.",
+  "date": "2026-10-20T12:04:08+05:30",
+  "git_head": "351be5b192529fe293c194388e494b3aba0bb2a4",
+  "command": "cd components/c3_data_layer; PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m c3.cli run --php <temp>/app/ams-native --schema <temp>/ams_native.sql --output <temp>/out   (<temp> = a short folder outside the repository)",
+  "inputs": {
+    "zip": {
+      "name": "ams-native-3c4d475.zip",
+      "sha256": null,
+      "note": "original ZIP not available; hash not recorded"
+    },
+    "schema": {
+      "name": "ams_native.sql",
+      "sha256": "c9d9a0f64eabe8d003018c977e9e2d8fd5ea0a44bd29d4a2a1011d3fd3b9e994",
+      "bytes": 6220,
+      "note": "the exact uploaded bytes kept by the Try It run"
+    },
+    "php_files": {
+      "count": 42,
+      "set_sha256": "372d476fdd74280a004ef17ccda9a316b88107d92d5f691a60953cf43206b088",
+      "set_sha256_method": "sha256 of the sha256sum-style listing '<sha256>  ./ams-native/<path>' sorted by path, one line per .php file"
+    }
+  },
+  "counts": {
+    "total_queries": 112,
+    "recovered_queries": 108,
+    "converted_queries": 99,
+    "converted_by_general_rules": 99,
+    "converted_by_query_specific_template": 0,
+    "unresolved_total": 13,
+    "unresolved_recovery_stage": 4,
+    "unresolved_conversion_stage": 9
+  },
+  "reason_codes": {
+    "CONVERSION_UNSUPPORTED": 9,
+    "LOOP_OR_SWITCH_CONTROL_FLOW": 1,
+    "STRUCTURAL": 1,
+    "UNSUPPORTED_SHAPE": 2
+  },
+  "reason_codes_by_stage": {
+    "recovery": {
+      "UNSUPPORTED_SHAPE": 2,
+      "STRUCTURAL": 1,
+      "LOOP_OR_SWITCH_CONTROL_FLOW": 1
+    },
+    "conversion": {
+      "CONVERSION_UNSUPPORTED": 9
+    }
+  },
+  "unresolved_sites": [
+    {
+      "query_id": "Q006",
+      "site": "agenda_surat_keluar.php:75",
+      "stage": "conversion",
+      "reason_code": "CONVERSION_UNSUPPORTED",
+      "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+    },
+    {
+      "query_id": "Q010",
+      "site": "agenda_surat_masuk.php:75",
+      "stage": "conversion",
+      "reason_code": "CONVERSION_UNSUPPORTED",
+      "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+    },
+    {
+      "query_id": "Q039",
+      "site": "galeri_sk.php:62",
+      "stage": "conversion",
+      "reason_code": "CONVERSION_UNSUPPORTED",
+      "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+    },
+    {
+      "query_id": "Q042",
+      "site": "galeri_sm.php:62",
+      "stage": "conversion",
+      "reason_code": "CONVERSION_UNSUPPORTED",
+      "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+    },
+    {
+      "query_id": "Q060",
+      "site": "include/functions.php:83",
+      "stage": "recovery",
+      "reason_code": "UNSUPPORTED_SHAPE",
+      "reason": "Recovered expression is not a recognized CRUD SQL operation."
+    },
+    {
+      "query_id": "Q061",
+      "site": "include/functions.php:95",
+      "stage": "recovery",
+      "reason_code": "STRUCTURAL",
+      "reason": "Dynamic table identifier cannot be parameterized safely."
+    },
+    {
+      "query_id": "Q062",
+      "site": "include/functions.php:99",
+      "stage": "recovery",
+      "reason_code": "UNSUPPORTED_SHAPE",
+      "reason": "Recovered expression is not a recognized CRUD SQL operation."
+    },
+    {
+      "query_id": "Q063",
+      "site": "include/functions.php:160",
+      "stage": "conversion",
+      "reason_code": "CONVERSION_UNSUPPORTED",
+      "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+    },
+    {
+      "query_id": "Q064",
+      "site": "include/functions.php:186",
+      "stage": "recovery",
+      "reason_code": "LOOP_OR_SWITCH_CONTROL_FLOW",
+      "reason": "SQL construction depends on loop iterations or on which switch case ran."
+    },
+    {
+      "query_id": "Q070",
+      "site": "index.php:222",
+      "stage": "conversion",
+      "reason_code": "CONVERSION_UNSUPPORTED",
+      "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+    },
+    {
+      "query_id": "Q076",
+      "site": "profil.php:59",
+      "stage": "conversion",
+      "reason_code": "CONVERSION_UNSUPPORTED",
+      "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+    },
+    {
+      "query_id": "Q077",
+      "site": "profil.php:61",
+      "stage": "conversion",
+      "reason_code": "CONVERSION_UNSUPPORTED",
+      "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+    },
+    {
+      "query_id": "Q097",
+      "site": "tambah_user.php:62",
+      "stage": "conversion",
+      "reason_code": "CONVERSION_UNSUPPORTED",
+      "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+    }
+  ],
+  "security_report_summary": {
+    "total_queries": 112,
+    "queries_with_user_input": 68,
+    "legacy_injection_sites": 50,
+    "legacy_injection_sites_remediated": 42,
+    "legacy_injection_sites_not_converted": 8,
+    "user_controlled_values_in_converted_queries": 161,
+    "bound_or_allowlisted": 161,
+    "injection_safety_coverage_percent": 100.0,
+    "generated_code_text_calls_not_literal": 0,
+    "generated_code_violations": 0
+  },
+  "contents_policy": "Counts and identifiers only: no SQL text, no PHP source, no schema data."
+}
