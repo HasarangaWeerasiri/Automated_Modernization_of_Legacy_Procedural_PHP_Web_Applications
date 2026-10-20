@@ -1,0 +1,48 @@
+{
+  "endpoint_id": "POST /api/accounts",
+  "legacy_url": "/signup.php",
+  "scenario_id": "signup_injection_name_02",
+  "scenario_type": "injection",
+  "input": {
+    "method": "POST",
+    "params": {},
+    "body": {
+      "signup": "Signup",
+      "email": "brittany93@example.org",
+      "uname": "Madison Bryant",
+      "pass": "admin",
+      "fname": "' OR '1'='1",
+      "phone": "114580",
+      "type": "Heather Gray MD"
+    }
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [],
+    "columns": {},
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:820e0e2bec486f67a77184ba168ea8878baf85e18282135f75268a6157c0b22a",
+    "delta": {
+      "admininfo": {
+        "inserted": [
+          {
+            "username": "Madison Bryant",
+            "password": "admin",
+            "email": "brittany93@example.org",
+            "fname": "1",
+            "phone": "114580",
+            "type": "Heather Gray MD"
+          }
+        ],
+        "updated": [],
+        "deleted": []
+      }
+    }
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-20T07:37:52+00:00"
+}

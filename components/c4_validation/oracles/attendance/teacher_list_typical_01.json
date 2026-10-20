@@ -1,0 +1,53 @@
+{
+  "endpoint_id": "GET /api/teachers",
+  "legacy_url": "/teacher/teachers.php",
+  "scenario_id": "teacher_list_typical_01",
+  "scenario_type": "typical",
+  "input": {
+    "method": "GET",
+    "params": {},
+    "body": null
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [
+      {
+        "Teacher ID": "1122",
+        "Name": "Ataullah Bhuiyan",
+        "Department": "CSE",
+        "Email": "asamad@gmail.com",
+        "Course": "Computer Network"
+      },
+      {
+        "Teacher ID": "1810",
+        "Name": "Ataus Samad Biplod",
+        "Department": "CSE",
+        "Email": "asamad@gmail.com",
+        "Course": "Software Engineering"
+      },
+      {
+        "Teacher ID": "1812",
+        "Name": "Sharmin Akter",
+        "Department": "CSE",
+        "Email": "sharmin@city.com",
+        "Course": "Digital System Design"
+      }
+    ],
+    "columns": {
+      "Teacher ID": "teachers.tc_id",
+      "Name": "teachers.tc_name",
+      "Department": "teachers.tc_dept",
+      "Email": "teachers.tc_email",
+      "Course": "teachers.tc_course"
+    },
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:820e0e2bec486f67a77184ba168ea8878baf85e18282135f75268a6157c0b22a",
+    "delta": {}
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-20T06:32:12+00:00"
+}

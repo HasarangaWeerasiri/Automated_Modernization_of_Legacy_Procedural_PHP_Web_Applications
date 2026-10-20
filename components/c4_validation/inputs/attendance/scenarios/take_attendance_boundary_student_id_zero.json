@@ -1,0 +1,13 @@
+{
+  "scenario_id": "take_attendance_boundary_student_id_zero",
+  "scenario_type": "boundary",
+  "case": "zero",
+  "parameter": "student_id",
+  "endpoint_id": "POST /api/attendance",
+  "source_id": "take_attendance",
+  "values": {
+    "student_id": 0,
+    "status": "Absent",
+    "course": "networking"
+  }
+}

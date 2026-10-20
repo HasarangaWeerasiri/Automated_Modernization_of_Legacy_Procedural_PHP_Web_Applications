@@ -1,0 +1,51 @@
+{
+  "endpoint_id": "GET /api/students/{id}/report",
+  "legacy_url": "/student/report.php",
+  "scenario_id": "student_own_report_boundary_id_largest",
+  "scenario_type": "boundary",
+  "input": {
+    "method": "POST",
+    "params": {},
+    "body": {
+      "sr_btn": "Go!",
+      "sr_id": 2147483647,
+      "whichcourse": "networking"
+    }
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [
+      {
+        "Total Class (Days):": "0",
+        "Present (Days):": "0",
+        "Absent (Days):": "0"
+      }
+    ],
+    "columns": {},
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:820e0e2bec486f67a77184ba168ea8878baf85e18282135f75268a6157c0b22a",
+    "delta": {}
+  },
+  "excluded_fields": [
+    {
+      "scope": "response",
+      "field": "Total Class (Days):",
+      "reason": "computed_on_page"
+    },
+    {
+      "scope": "response",
+      "field": "Present (Days):",
+      "reason": "computed_on_page"
+    },
+    {
+      "scope": "response",
+      "field": "Absent (Days):",
+      "reason": "computed_on_page"
+    }
+  ],
+  "capture_runs": 2,
+  "captured_at": "2026-10-20T07:38:45+00:00"
+}

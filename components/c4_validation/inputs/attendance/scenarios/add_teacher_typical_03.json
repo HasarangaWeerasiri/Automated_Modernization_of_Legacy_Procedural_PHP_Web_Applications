@@ -1,0 +1,15 @@
+{
+  "scenario_id": "add_teacher_typical_03",
+  "scenario_type": "typical",
+  "case": "typical",
+  "parameter": null,
+  "endpoint_id": "POST /api/teachers",
+  "source_id": "add_teacher",
+  "values": {
+    "tc_id": 1660,
+    "tc_name": "Danielle Hatfield",
+    "tc_dept": "CSE",
+    "tc_email": "jstewart@example.com",
+    "tc_course": "Chris Perez"
+  }
+}

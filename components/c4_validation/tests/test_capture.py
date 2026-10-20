@@ -468,3 +468,126 @@ def test_a_pointer_to_a_table_is_never_answered_from_outside_tables(config, page
 
     with pytest.raises(CaptureError, match="neither a table nor a message"):
         capture(config, {**SCENARIO, "legacy_table": 0}, {"legacy": ENTRIES, "migrated": ENTRIES})
+
+
+# ------------------------------------------------------- the date of the run
+
+from datetime import datetime, timezone  # noqa: E402
+
+TODAY = datetime.now(timezone.utc).date().isoformat()
+
+
+def marked(delta, **scenario):
+    return [(e["field"], e["reason"]) for e in capture_with(delta, **scenario)["excluded_fields"]]
+
+
+def capture_with(delta, **scenario):
+    import c4.capture as module
+    runs = iter([observed(delta=delta), observed(delta=delta)])
+    module_observe = module._observe
+    module._observe = lambda config, s, baselines, not_before=0.0: next(runs)
+    try:
+        return capture(load_config_for_tests(), {**SCENARIO, **scenario}, BASELINES)
+    finally:
+        module._observe = module_observe
+
+
+def load_config_for_tests():
+    import tempfile
+    root = Path(tempfile.mkdtemp())
+    (root / "benchmarks").mkdir()
+    (root / "benchmarks" / "demo.env").write_text("C4_LEGACY_DOCROOT=./app\nC4_LEGACY_SEED=./seed.sql\nC4_LEGACY_DB_NAME=demodb\n")
+    return load_config("demo", environ={}, root=root)
+
+
+def attendance(day):
+    return {"attendance": {"inserted": [{"stat_id": 1121, "course": "swe", "stat_date": day}], "updated": [], "deleted": []}}
+
+
+def test_a_written_date_equal_to_the_day_of_the_run_is_excluded():
+    assert marked(attendance(TODAY)) == [("attendance.stat_date", "current_date")]
+
+
+def test_another_date_is_still_expected():
+    assert marked(attendance("2018-07-07")) == []
+
+
+def test_a_date_the_scenario_itself_sent_is_still_expected():
+    assert marked(attendance(TODAY), values={"date": TODAY}) == []
+
+
+def test_an_updated_column_set_to_the_day_of_the_run_is_excluded():
+    delta = {"students": {"inserted": [], "deleted": [],
+                          "updated": [{"key": {"st_id": 1121}, "changes": {"seen_on": {"before": "2018-07-07", "after": TODAY}}}]}}
+
+    assert marked(delta) == [("students.seen_on", "current_date")]
+
+
+# ------------------------------------------ vertical tables, misnumbered tables
+
+STUDENTS = Snapshot(tables={"students": TableState(
+    columns=("st_id", "st_name", "st_dept"), primary_key=("st_id",), definition=(), auto_increment=None,
+    rows=({"st_id": 1121, "st_name": "Humaun Kabir", "st_dept": "CSE"},
+          {"st_id": 1122, "st_name": "Sarmin Sultana", "st_dept": "CSE"}),
+)})
+VERTICAL = """<table><tr><td>Student ID: </td><td>1121</td></tr><tr><td>Student Name: </td><td>Humaun Kabir</td></tr>
+              <tr><td>Total Class (Days): </td><td>3</td></tr></table>"""
+
+
+def with_students(page, monkeypatch, body):
+    page(body)
+    monkeypatch.setattr(capture_module.dbstate, "snapshot", lambda system: STUDENTS)
+    return {"legacy": STUDENTS, "migrated": STUDENTS}
+
+
+def test_a_table_of_labels_and_values_is_one_record(config, page, monkeypatch):
+    baselines = with_students(page, monkeypatch, VERTICAL)
+
+    record = capture(config, SCENARIO, baselines)
+
+    assert record["legacy_response"]["records"] == [
+        {"Student ID:": "1121", "Student Name:": "Humaun Kabir", "Total Class (Days):": "3"}
+    ]
+    assert ("Total Class (Days):", "computed_on_page") in [(e["field"], e["reason"]) for e in record["excluded_fields"]]
+
+
+def test_a_two_column_table_of_data_stays_a_table(config, page, monkeypatch):
+    # Its first cells are values of the database, not labels.
+    baselines = with_students(page, monkeypatch, "<table><tr><td>1121</td><td>Humaun Kabir</td></tr><tr><td>1122</td><td>Sarmin Sultana</td></tr></table>")
+
+    assert len(capture(config, SCENARIO, baselines)["legacy_response"]["records"]) == 2
+
+
+def test_a_table_number_that_does_not_fit_takes_the_one_table_showing_rows(config, page, monkeypatch):
+    # A page that shows a second table only for another request.
+    baselines = with_students(page, monkeypatch, VERTICAL)
+
+    record = capture(config, {**SCENARIO, "legacy_table": 1}, baselines)
+
+    assert record["legacy_response"]["records"][0]["Student ID:"] == "1121"
+
+
+def test_a_table_number_that_does_not_fit_is_refused_when_no_table_shows_rows(config, page, monkeypatch):
+    baselines = with_students(page, monkeypatch, "<table><tr><th>Total</th></tr><tr><td>0</td></tr></table>")
+
+    with pytest.raises(CaptureError, match="0 of the page's tables show rows of the database"):
+        capture(config, {**SCENARIO, "legacy_table": 1}, baselines)
+
+
+def test_a_table_number_that_does_not_fit_is_refused_when_two_tables_show_rows(config, page, monkeypatch):
+    two = "<table><tr><th>ID</th><th>Name</th></tr><tr><td>1121</td><td>Humaun Kabir</td></tr></table>" * 2
+    baselines = with_students(page, monkeypatch, two)
+
+    with pytest.raises(CaptureError, match="2 of the page's tables"):
+        capture(config, {**SCENARIO, "legacy_table": 5}, baselines)
+
+
+def test_forgetting_a_refused_scenario_removes_only_its_record(config):
+    from c4.capture import forget
+
+    write_record(config, {"scenario_id": "a", "legacy_response": {"records": []}})
+    write_record(config, {"scenario_id": "b", "legacy_response": {"records": []}})
+
+    assert forget(config, "a") is True
+    assert forget(config, "a") is False  # nothing left to remove
+    assert sorted(p.stem for p in config.oracle_dir.glob("*.json")) == ["b"]

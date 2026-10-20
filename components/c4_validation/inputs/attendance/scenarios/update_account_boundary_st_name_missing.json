@@ -1,0 +1,15 @@
+{
+  "scenario_id": "update_account_boundary_st_name_missing",
+  "scenario_type": "boundary",
+  "case": "missing",
+  "parameter": "st_name",
+  "endpoint_id": "PUT /api/students/{id}",
+  "source_id": "update_account",
+  "values": {
+    "id": 1121,
+    "st_dept": "CSE",
+    "st_batch": "37",
+    "st_sem": "Michael Martinez",
+    "st_email": "uramos@example.net"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "scenario_id": "add_teacher_injection_tc_dept_01",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "tc_dept",
+  "endpoint_id": "POST /api/teachers",
+  "source_id": "add_teacher",
+  "values": {
+    "tc_id": 1702,
+    "tc_name": "Diane Gutierrez",
+    "tc_dept": "'",
+    "tc_email": "christian23@example.net",
+    "tc_course": "Daniel Clarke"
+  },
+  "base": "add_teacher_typical_01"
+}

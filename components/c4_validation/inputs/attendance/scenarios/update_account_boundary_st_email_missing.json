@@ -1,0 +1,15 @@
+{
+  "scenario_id": "update_account_boundary_st_email_missing",
+  "scenario_type": "boundary",
+  "case": "missing",
+  "parameter": "st_email",
+  "endpoint_id": "PUT /api/students/{id}",
+  "source_id": "update_account",
+  "values": {
+    "id": 1121,
+    "st_name": "Amy Wiggins",
+    "st_dept": "CSE",
+    "st_batch": "37",
+    "st_sem": "Michael Martinez"
+  }
+}

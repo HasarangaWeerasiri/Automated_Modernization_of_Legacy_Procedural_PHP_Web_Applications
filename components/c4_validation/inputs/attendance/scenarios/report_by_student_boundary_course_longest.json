@@ -1,0 +1,12 @@
+{
+  "scenario_id": "report_by_student_boundary_course_longest",
+  "scenario_type": "boundary",
+  "case": "longest",
+  "parameter": "course",
+  "endpoint_id": "GET /api/students/{id}/report",
+  "source_id": "report_by_student",
+  "values": {
+    "id": 1121,
+    "course": "xxxxxxxxxxxxxxxxxxxx"
+  }
+}

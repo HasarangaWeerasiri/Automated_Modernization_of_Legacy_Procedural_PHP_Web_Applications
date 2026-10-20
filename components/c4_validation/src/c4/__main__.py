@@ -20,6 +20,8 @@ Each stage does only what is needed, and adds nothing to what the stages decide:
 
 --regenerate replaces the scenarios, and so captures everything again. --recapture
 captures everything again, as is needed after the engine's capture rules change.
+--until capture stops once the oracle is captured, for an application that has no
+migrated system yet.
 --down stops the systems at the end. --progress json prints one JSON object per line
 for a program to read, instead of text.
 
@@ -122,7 +124,9 @@ def _capture(config: Config, recapture: bool, emit: Emit) -> None:
             capture.write_record(config, capture.capture(config, scenario, baselines))
         except capture.CaptureError as error:
             reason = str(error).split(": ", 1)[-1]
-            refused.append({"scenario_id": scenario_id, "reason": reason})
+            # An earlier record of a scenario capture now refuses is not kept.
+            stale = capture.forget(config, scenario_id)
+            refused.append({"scenario_id": scenario_id, "reason": reason, **({"stale_record_removed": True} if stale else {})})
             emit("capture", "scenario", scenario_id=scenario_id, result="refused", reason=reason, number=number, of=len(resolved))
             continue
         captured += 1
@@ -134,13 +138,24 @@ def _capture(config: Config, recapture: bool, emit: Emit) -> None:
 
 def run(
     config: Config, *, regenerate: bool = False, recapture: bool = False, stop: bool = False,
-    emit: Emit = lambda *args, **kwargs: None,
+    until: str | None = None, emit: Emit = lambda *args, **kwargs: None,
 ) -> dict[str, Any]:
-    """Run every stage for one benchmark; returns the verdict report and the outputs."""
+    """Run every stage for one benchmark; returns the verdict report and the outputs.
+
+    With until="capture" it stops once the oracle is captured, for an application
+    that has no migrated system yet: there is nothing to replay against.
+    """
     emit("run", "start", benchmark=config.benchmark)
     _environment(config, emit)
     generated = _scenarios(config, regenerate, emit)
     _capture(config, recapture or generated, emit)
+    if until == "capture":
+        if stop:
+            containers.down(config, remove_volumes=True)
+            emit("environment", "stopped")
+        outputs = {"oracle records": _relative(config, config.oracle_dir)}
+        emit("run", "done", outputs=outputs, until="capture")
+        return {"report": None, "injection": None, "outputs": outputs}
 
     folder = harness.build(config, dbstate.reset(config.migrated))
     tests = (folder / "test_equivalence.py").read_text(encoding="utf-8").count("\ndef test_")
@@ -186,6 +201,8 @@ def _text(stage: str, event: str, **detail: Any) -> None:
         if detail["probes"]:
             print("               injection probes: " + ", ".join(f"{n} {label}" for label, n in detail["probes"].items()))
     elif stage == "run" and event == "done":
+        if detail.get("until") == "capture":
+            print("  stopped after capture: no migrated system to replay against, so no verdict")
         print("outputs:")
         for name, path in detail["outputs"].items():
             print(f"  {name:<18}{path}")
@@ -202,13 +219,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--regenerate", action="store_true", help="replace the scenarios, and capture everything again")
     parser.add_argument("--recapture", action="store_true", help="capture every scenario again")
     parser.add_argument("--down", action="store_true", help="stop both systems at the end")
+    parser.add_argument("--until", choices=("capture",), help="stop after capture: for an app with no migrated system yet")
     parser.add_argument("--progress", choices=("text", "json"), default="text", help="how progress is printed")
     args = parser.parse_args(argv)
     emit = _json if args.progress == "json" else _text
 
     try:
         config = load_config(args.benchmark)
-        result = run(config, regenerate=args.regenerate, recapture=args.recapture, stop=args.down, emit=emit)
+        result = run(
+            config, regenerate=args.regenerate, recapture=args.recapture, stop=args.down, until=args.until, emit=emit,
+        )
     except (
         ConfigError, IsolationError, ReplayError, harness.HarnessError,
         containers.ComposeError, containers.DockerUnavailableError, containers.NotReadyError,
@@ -222,7 +242,8 @@ def main(argv: list[str] | None = None) -> int:
             print(error, file=sys.stderr)
         return 2
 
-    failed = any(entry["verdict"] == FAIL for entry in result["report"]["endpoints"].values())
+    report = result["report"] or {"endpoints": {}}  # no report when the run stopped after capture
+    failed = any(entry["verdict"] == FAIL for entry in report["endpoints"].values())
     return 1 if failed else 0
 
 

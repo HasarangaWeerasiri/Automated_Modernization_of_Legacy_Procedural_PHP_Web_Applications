@@ -1,0 +1,16 @@
+{
+  "scenario_id": "add_student_typical_02",
+  "scenario_type": "typical",
+  "case": "typical",
+  "parameter": null,
+  "endpoint_id": "POST /api/students",
+  "source_id": "add_student",
+  "values": {
+    "st_id": 2683,
+    "st_name": "Selena Stevens",
+    "st_dept": "CSE",
+    "st_batch": "38",
+    "st_sem": "Todd Jenkins",
+    "st_email": "colin46@example.net"
+  }
+}

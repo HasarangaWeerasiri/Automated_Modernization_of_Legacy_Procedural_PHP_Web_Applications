@@ -1,0 +1,13 @@
+{
+  "scenario_id": "report_by_date_injection_date_02",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "date",
+  "endpoint_id": "GET /api/attendance",
+  "source_id": "report_by_date",
+  "values": {
+    "date": "' OR '1'='1",
+    "course": "networking"
+  },
+  "base": "report_by_date_typical_01"
+}

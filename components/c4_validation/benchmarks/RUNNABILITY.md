@@ -95,3 +95,33 @@ The clone was confirmed unmodified after the test.
 - **Most data is outside tables.** The guestbook, the recent pictures and a user's page show
   their data without any HTML table. The only tables found lay out the login and registration
   forms.
+
+## Result: attendance — PASS (2026-10-20)
+
+Commit `31781040c50f2be20514ef18c1b0d4ae7b2bf76e`. Environment: Docker 29.1.5 on Windows 11,
+`php:5.6-apache` (PHP 5.6.40, extensions `mysql` and `mysqli`) and `mysql:5.7` (5.7.44); migrated
+side `mysql:8.0`.
+
+| ID | Result | Evidence |
+|---|---|---|
+| R1 | Pass | Pinned in `PINS.md`. MIT licence. |
+| R2 | Pass | 19 PHP files, 2,252 lines, no framework, 38 calls to the `mysql_*` functions with SQL built by string interpolation. Session-based login (`$_SESSION` in 11 files). 4 tables and 1 view. |
+| R3 | Pass | `database/attsystem.sql` loaded with no error. `admininfo` 3, `attendance` 32, `students` 5, `teachers` 3. Both databases hold identical data, and repeated resets restore an identical state on both sides. |
+| R4 | Pass | `/`, `index.php`, `signup.php`, `reset.php` returned 200; the pages behind the login redirect (302) when no one is logged in. No fatal or parse error logged. |
+| R5 | Pass | Login as seed user `teacher` through `index.php` returned 302 to `teacher/index.php`; `teacher/students.php` for batch 38 then showed the 4 seed students of that batch, and `teacher/teachers.php` the 3 seed teachers. |
+| R6 | Pass | A POST to `admin/index.php` that adds a student inserted one row into `students`, read back by query. |
+| R7 | Pass | No `XMLHttpRequest`, `$.ajax` or `fetch` in the application's own pages. |
+
+The clone was confirmed unmodified after the test.
+
+## Observations from attendance that shape the engine
+
+- **A view in the dump.** `reports` is a view joining `attendance` and `students`. Snapshots read
+  base tables only, so the view's rows are never counted twice; its data is covered by the two
+  tables it reads.
+- **Tables without a primary key, with repeated rows.** `attendance` holds identical rows more than
+  once and `admininfo` has no primary key. Their deltas are compared as multisets.
+- **One session value for every role.** Each login sets the same session value, so any logged-in
+  user reaches every role's pages. Recorded as observed legacy behaviour, not judged.
+- **Redirects to a page that does not exist.** Some protected pages send a visitor who is not
+  logged in to `/am/index.php`, which is not in the application. Recorded as observed behaviour.

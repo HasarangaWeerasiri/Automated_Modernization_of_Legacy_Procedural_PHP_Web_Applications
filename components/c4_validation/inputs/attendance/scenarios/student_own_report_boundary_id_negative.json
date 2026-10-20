@@ -1,0 +1,12 @@
+{
+  "scenario_id": "student_own_report_boundary_id_negative",
+  "scenario_type": "boundary",
+  "case": "negative",
+  "parameter": "id",
+  "endpoint_id": "GET /api/students/{id}/report",
+  "source_id": "student_own_report",
+  "values": {
+    "id": -1,
+    "course": "networking"
+  }
+}

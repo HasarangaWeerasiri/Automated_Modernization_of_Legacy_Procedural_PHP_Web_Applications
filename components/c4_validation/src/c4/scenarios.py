@@ -355,6 +355,8 @@ class ColumnFacts:
     max_length: int | None
     # Distinct non-empty values in the seed data, in a fixed order.
     seed_values: tuple[Any, ...]
+    # How many seed rows hold a non-empty value.
+    filled: int = 0
 
 
 @dataclass(frozen=True)
@@ -399,6 +401,7 @@ def seed_facts(system: System) -> SeedFacts:
                 kind=_kind(column.type),
                 max_length=getattr(column.type, "length", None),
                 seed_values=tuple(sorted(values, key=lambda value: (str(type(value)), str(value)))),
+                filled=sum(row[column.name] not in (None, "") for row in rows),
             )
     return SeedFacts(columns=columns, rows={name: table.rows for name, table in snapshot.tables.items()})
 
@@ -454,10 +457,28 @@ def _absent(facts: ColumnFacts) -> Any:
     raise ScenarioError("Every candidate absent value is present in the seed data.")
 
 
-def _new_value(fake: Faker, facts: ColumnFacts | None) -> Any:
+# A text column whose seed rows repeat a few values is a set of choices (a course, a
+# status, a department): a typical value is one of them, not a made-up name.
+_MOST_CHOICES = 5
+# Values written as a telephone number is: digits, perhaps a leading "+", spaces or dashes.
+_PHONE = re.compile(r"\+?[\d][\d -]*")
+
+
+def _choices(facts: ColumnFacts | None) -> tuple[Any, ...]:
+    """The values of a column that is a set of choices, or nothing when it is not one."""
+    if facts is None or facts.kind != "text" or not facts.seed_values:
+        return ()
+    few = len(facts.seed_values) <= _MOST_CHOICES
+    repeated = facts.filled >= 2 * len(facts.seed_values)
+    return facts.seed_values if few and repeated else ()
+
+
+def _new_value(fake: Faker, facts: ColumnFacts | None, number: int = 1) -> Any:
     """A realistic value the seed data does not necessarily hold, shaped like its values."""
     if facts is None:
         return fake.word()
+    if choices := _choices(facts):
+        return choices[(number - 1) % len(choices)]
     numbers = [value for value in facts.seed_values if isinstance(value, (int, float))]
     low, high = (min(numbers), max(numbers)) if numbers else (1, 1000)
     if facts.kind == "integer":
@@ -476,6 +497,9 @@ def _new_value(fake: Faker, facts: ColumnFacts | None) -> Any:
         value = fake.email()
     elif _digits(facts):
         value = fake.numerify("#" * round(statistics.median(len(text) for text in texts)))
+    elif texts and all(_PHONE.fullmatch(text) for text in texts):
+        plus = "+" if sum(text.startswith("+") for text in texts) * 2 > len(texts) else ""
+        value = plus + fake.numerify("#" * round(statistics.median(sum(c.isdigit() for c in t) for t in texts)))
     else:
         words = round(statistics.median(len(text.split()) for text in texts)) if texts else 2
         value = fake.name() if words <= 3 else fake.sentence(nb_words=words).rstrip(".")
@@ -483,12 +507,24 @@ def _new_value(fake: Faker, facts: ColumnFacts | None) -> Any:
 
 
 def _typical_writes(source: Source, seed: SeedFacts) -> list[dict[str, Any]]:
-    """New values for a page that writes, so each scenario stores something new."""
+    """New values for a page that writes, so each scenario stores something new.
+
+    A parameter in the path names something that exists, as the student an update is
+    for: it takes a value the seed data holds, spread as for a page that reads.
+    """
     scenarios = []
     for number in range(1, TYPICAL_COUNT + 1):
         fake = Faker("en_US")
         fake.seed_instance(f"{source.source_id}:typical:{number}")
-        scenarios.append({p.name: _new_value(fake, seed.columns.get(p.column)) for p in source.parameters})
+        values = {}
+        for p in source.parameters:
+            facts = seed.columns.get(p.column)
+            if p.location == "path" and facts is not None and facts.seed_values:
+                existing = _spread(list(facts.seed_values), TYPICAL_COUNT)
+                values[p.name] = existing[min(number, len(existing)) - 1]
+            else:
+                values[p.name] = _new_value(fake, facts, number)
+        scenarios.append(values)
     return scenarios
 
 

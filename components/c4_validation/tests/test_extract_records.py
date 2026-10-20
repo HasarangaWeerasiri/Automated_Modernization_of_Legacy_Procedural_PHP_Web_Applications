@@ -120,3 +120,13 @@ def test_a_value_seen_only_inside_a_longer_value_of_the_row_is_not_one_more_valu
     assert extract_records("<body><h2>These are Sample User's Pictures:</h2></body>", users) == []
     (record,) = only_place("<body><p>Sample User</p><p>Sample</p></body>", users)
     assert sorted(record.values()) == ["Sample", "Sample User"]
+
+
+def test_one_value_that_several_columns_hold_is_still_one_value():
+    # A password recovery page showing only "admin": the admin row's username,
+    # password and type all hold it, but the page shows one value, not three.
+    accounts = {"admininfo": [{"username": "admin", "password": "admin", "type": "admin", "email": "admin@admin.com"}]}
+
+    assert extract_records("<body><p>Recovery key: <mark>admin</mark></p></body>", accounts) == []
+    (record,) = only_place("<body><p><mark>admin</mark> <i>admin@admin.com</i></p></body>", accounts)
+    assert sorted(record.values()) == ["admin", "admin@admin.com"]

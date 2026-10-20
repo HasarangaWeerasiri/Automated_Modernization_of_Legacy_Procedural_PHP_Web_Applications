@@ -1,0 +1,48 @@
+{
+  "endpoint_id": "POST /api/accounts",
+  "legacy_url": "/signup.php",
+  "scenario_id": "signup_typical_03",
+  "scenario_type": "typical",
+  "input": {
+    "method": "POST",
+    "params": {},
+    "body": {
+      "signup": "Signup",
+      "email": "baldwinthomas@example.com",
+      "uname": "Brian Davis",
+      "pass": "admin",
+      "fname": "Leah Hampton",
+      "phone": "728901",
+      "type": "Patricia Kim"
+    }
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [],
+    "columns": {},
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:820e0e2bec486f67a77184ba168ea8878baf85e18282135f75268a6157c0b22a",
+    "delta": {
+      "admininfo": {
+        "inserted": [
+          {
+            "username": "Brian Davis",
+            "password": "admin",
+            "email": "baldwinthomas@example.com",
+            "fname": "Leah Hampton",
+            "phone": "728901",
+            "type": "Patricia Kim"
+          }
+        ],
+        "updated": [],
+        "deleted": []
+      }
+    }
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-20T07:38:33+00:00"
+}

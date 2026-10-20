@@ -1,0 +1,46 @@
+{
+  "endpoint_id": "POST /api/teachers",
+  "legacy_url": "/admin/index.php",
+  "scenario_id": "add_teacher_injection_tc_id_02",
+  "scenario_type": "injection",
+  "input": {
+    "method": "POST",
+    "params": {},
+    "body": {
+      "tcr": "Add",
+      "tc_id": "' OR '1'='1",
+      "tc_name": "Diane Gutierrez",
+      "tc_dept": "CSE",
+      "tc_email": "christian23@example.net",
+      "tc_course": "Daniel Clarke"
+    }
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [],
+    "columns": {},
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:820e0e2bec486f67a77184ba168ea8878baf85e18282135f75268a6157c0b22a",
+    "delta": {
+      "teachers": {
+        "inserted": [
+          {
+            "tc_id": 1,
+            "tc_name": "Diane Gutierrez",
+            "tc_dept": "CSE",
+            "tc_email": "christian23@example.net",
+            "tc_course": "Daniel Clarke"
+          }
+        ],
+        "updated": [],
+        "deleted": []
+      }
+    }
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-20T07:35:20+00:00"
+}

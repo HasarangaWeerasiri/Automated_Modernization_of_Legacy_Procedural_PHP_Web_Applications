@@ -1,0 +1,12 @@
+{
+  "scenario_id": "report_by_student_boundary_course_empty",
+  "scenario_type": "boundary",
+  "case": "empty",
+  "parameter": "course",
+  "endpoint_id": "GET /api/students/{id}/report",
+  "source_id": "report_by_student",
+  "values": {
+    "id": 1121,
+    "course": ""
+  }
+}

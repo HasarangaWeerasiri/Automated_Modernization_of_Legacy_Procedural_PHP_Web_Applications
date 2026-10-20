@@ -345,7 +345,7 @@ def _compare_database(record: dict[str, Any], replayed: Replay) -> tuple[list, l
     }
     varying = {
         entry["field"] for entry in record["excluded_fields"]
-        if entry["scope"] == "database" and entry["reason"] == "observed_nondeterministic"
+        if entry["scope"] == "database" and entry["reason"] in ("observed_nondeterministic", "current_date")
     }
     legacy, migrated = record["db_state"]["delta"], replayed.delta
 

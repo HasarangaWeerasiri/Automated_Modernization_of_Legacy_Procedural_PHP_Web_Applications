@@ -1,0 +1,11 @@
+{
+  "scenario_id": "report_by_date_boundary_date_missing",
+  "scenario_type": "boundary",
+  "case": "missing",
+  "parameter": "date",
+  "endpoint_id": "GET /api/attendance",
+  "source_id": "report_by_date",
+  "values": {
+    "course": "networking"
+  }
+}

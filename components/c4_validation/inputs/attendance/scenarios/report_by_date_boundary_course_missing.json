@@ -1,0 +1,11 @@
+{
+  "scenario_id": "report_by_date_boundary_course_missing",
+  "scenario_type": "boundary",
+  "case": "missing",
+  "parameter": "course",
+  "endpoint_id": "GET /api/attendance",
+  "source_id": "report_by_date",
+  "values": {
+    "date": "2018-07-07"
+  }
+}

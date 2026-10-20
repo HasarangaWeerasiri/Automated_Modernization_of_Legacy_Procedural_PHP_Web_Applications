@@ -13,7 +13,8 @@ excluded instead of being compared: a value the page shows, or a database column
 the scenario writes, such as the current time stored with a new row. The captures
 are sent at least CAPTURE_GAP seconds apart, so a value taken from a clock that
 counts in seconds cannot come out the same twice by chance. A value that changes
-more slowly, such as today's date, is not caught this way.
+more slowly, such as today's date, is not caught this way: a date the request wrote
+that equals the day of the capture is excluded instead, as the date of the run.
 
 A column whose values occur nowhere in the database was computed by the page, as
 "Cancelled by Doctor" is computed from two status flags. A migrated API may well
@@ -39,7 +40,10 @@ procedural PHP answers 200 to almost everything, success or failure.
 A page expected to show records that shows a message instead, such as "No entries
 found", showed no data. A page that shows neither a table nor a message is refused:
 the engine cannot tell "no data" from data it is unable to read. A table that only
-lines up a form (see extract.py) is not a table of data here. A page with no table of
+lines up a form (see extract.py) is not a table of data here. A table that shows one
+record as rows of a label and its value is read as that one record. When the table
+number a scenario names does not fit the page, the one table that shows rows of the
+database is taken, if exactly one does. A page with no table of
 data may show its records outside tables, as rows of the database it can be seen to
 show (see extract.extract_records); records found in more than one place are refused, as
 several tables are.
@@ -49,6 +53,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import time
 from dataclasses import dataclass
@@ -154,19 +159,24 @@ def _observe(
                 f"{scenario['scenario_id']}: the page shows {len(data)} tables and the "
                 "scenario does not say which one holds this endpoint's data."
             )
-        records = data[0].records
-    elif chosen in range(len(tables)) and tables[chosen].form_layout:
-        raise CaptureError(
-            f"{scenario['scenario_id']}: the scenario points at table {chosen!r}, "
-            "which only lines up a form and holds no data."
-        )
-    elif chosen in range(len(tables)):
-        records = tables[chosen].records
+        records = _key_value(data[0].records, after_rows)
+    elif chosen in range(len(tables)) and not tables[chosen].form_layout:
+        records = _key_value(tables[chosen].records, after_rows)
     else:
-        raise CaptureError(
-            f"{scenario['scenario_id']}: the scenario points at table {chosen!r}, "
-            f"but the page shows {len(tables)} tables."
-        )
+        # The table number does not fit this page: a page can show a table only for
+        # some requests. The table that shows rows of the database is the one, if
+        # exactly one does; otherwise any choice would be a guess.
+        showing = [
+            _key_value(table.records, after_rows) for table in data
+            if _shows_rows(_key_value(table.records, after_rows), after_rows)
+        ]
+        if len(showing) != 1:
+            where = "only lines up a form" if chosen in range(len(tables)) else f"is not one of the page's {len(tables)} tables"
+            raise CaptureError(
+                f"{scenario['scenario_id']}: the scenario points at table {chosen!r}, which {where}, "
+                f"and {len(showing)} of the page's tables show rows of the database."
+            )
+        records = showing[0]
 
     return Observation(
         status_code=response.status_code,
@@ -177,6 +187,43 @@ def _observe(
         sent_at=sent_at,
         tables=after_rows,
     )
+
+
+def _plain_values(tables: Any) -> set[str]:
+    from c4.compare import normalise  # here, not at the top: compare imports this module's users
+
+    return {normalise(value) for rows in (tables or {}).values() for row in rows for value in row.values()} - {""}
+
+
+def _key_value(records: tuple[dict[str, str], ...], tables: Any) -> tuple[dict[str, str], ...]:
+    """One record laid out as rows of a label and its value, read as that one record.
+
+    A table with no header and two cells per row, whose first cells are all distinct
+    labels that occur nowhere in the database ("Student ID:", "Student Name:"), shows
+    one record vertically: {"Student ID:": "1121", "Student Name:": "Humaun Kabir"}.
+    Without database facts nothing can be called a label, and the rows stay records.
+    """
+    from c4.compare import normalise
+
+    if len(records) < 2 or not tables or any(set(record) != {"column 1", "column 2"} for record in records):
+        return records
+    labels = [normalise(record["column 1"]) for record in records]
+    if "" in labels or len(set(labels)) != len(labels) or set(labels) & _plain_values(tables):
+        return records
+    return ({record["column 1"]: record["column 2"] for record in records},)
+
+
+def _shows_rows(records: tuple[dict[str, str], ...], tables: Any) -> bool:
+    """Whether a record shows at least two values of one row of the database."""
+    from c4.compare import normalise
+
+    for record in records:
+        shown = {normalise(value) for value in record.values()} - {""}
+        for rows in (tables or {}).values():
+            for row in rows:
+                if len(shown & {normalise(value) for value in row.values()}) >= 2:
+                    return True
+    return False
 
 
 def _log_in(config: Config, session: requests.Session, scenario_id: str, name: str, login: dict[str, Any]) -> None:
@@ -351,16 +398,51 @@ def legacy_outcome(observation: Observation) -> str:
     return "success" if observation.shown or observation.delta else "no_effect"
 
 
+_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def _today() -> set[str]:
+    """Today's date as the systems' clocks may give it: in UTC and in local time."""
+    return {datetime.now(timezone.utc).date().isoformat(), datetime.now().date().isoformat()}
+
+
+def _dated_today(delta: dict[str, Any], days: set[str], inputs: dict[str, Any]) -> list[str]:
+    """Columns, "table.column", that the request wrote with the date of the run.
+
+    Two captures a few seconds apart cannot show a date that changes once a day, so a
+    written date equal to the day of the capture is caught here instead. Generated
+    inputs never hold that date, so such a value came from the system's clock; a value
+    that equals one of the scenario's own inputs is left alone.
+    """
+    given = {str(value) for value in inputs.values()}
+    found: set[str] = set()
+    for table, changes in delta.items():
+        written = [row.items() for row in changes["inserted"]] + [
+            ((column, change["after"]) for column, change in item["changes"].items()) for item in changes["updated"]
+        ]
+        for pairs in written:
+            for column, value in pairs:
+                if isinstance(value, str) and _DATE.fullmatch(value) and value in days and value not in given:
+                    found.add(f"{table}.{column}")
+    return sorted(found)
+
+
 def capture(
     config: Config, scenario: dict[str, Any], baselines: dict[str, dbstate.Snapshot]
 ) -> dict[str, Any]:
     """Observe one scenario on the legacy system and return its oracle record."""
+    days = _today()
     observations: list[Observation] = []
     for _ in range(CAPTURE_RUNS):
         not_before = observations[-1].sent_at + CAPTURE_GAP if observations else 0.0
         observations.append(_observe(config, scenario, baselines, not_before=not_before))
+    days |= _today()
     volatile, volatile_columns = _volatile(scenario["scenario_id"], observations)
     observed = observations[0]
+    dated = [
+        column for column in _dated_today(observed.delta, days, scenario.get("values", {}))
+        if column not in volatile_columns
+    ]
     computed = _computed_labels(observed, baselines["legacy"], volatile)
     columns = _field_columns(observed.records, observed.tables, [*volatile, *computed])
     request = scenario["legacy_request"]
@@ -400,10 +482,26 @@ def capture(
         ] + [
             {"scope": "database", "field": column, "reason": "observed_nondeterministic"}
             for column in volatile_columns
+        ] + [
+            {"scope": "database", "field": column, "reason": "current_date"}
+            for column in dated
         ],
         "capture_runs": CAPTURE_RUNS,
         "captured_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
+
+
+def forget(config: Config, scenario_id: str) -> bool:
+    """Remove a scenario's stored record after its capture was refused; whether there was one.
+
+    A refusal is what capture now concludes. A record from an earlier capture would
+    otherwise stay and be judged against, as evidence the engine no longer stands behind.
+    """
+    path = config.oracle_dir / f"{scenario_id}.json"
+    if not path.is_file():
+        return False
+    path.unlink()
+    return True
 
 
 def write_record(config: Config, record: dict[str, Any]) -> Path:
@@ -442,7 +540,11 @@ def main(argv: list[str] | None = None) -> int:
 
         print(f"benchmark: {config.benchmark}")
         for scenario in selected:
-            record = capture(config, scenario, baselines)
+            try:
+                record = capture(config, scenario, baselines)
+            except CaptureError:
+                forget(config, scenario["scenario_id"])
+                raise
             path = write_record(config, record)
             changed = ", ".join(record["db_state"]["delta"]) or "none"
             print(

@@ -1,0 +1,13 @@
+{
+  "scenario_id": "take_attendance_boundary_status_too_long",
+  "scenario_type": "boundary",
+  "case": "too_long",
+  "parameter": "status",
+  "endpoint_id": "POST /api/attendance",
+  "source_id": "take_attendance",
+  "values": {
+    "student_id": 1245,
+    "status": "xxxxxxxxxxxxxxxxxxxxx",
+    "course": "networking"
+  }
+}

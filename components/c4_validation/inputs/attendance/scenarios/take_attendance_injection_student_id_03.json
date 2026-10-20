@@ -1,0 +1,14 @@
+{
+  "scenario_id": "take_attendance_injection_student_id_03",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "student_id",
+  "endpoint_id": "POST /api/attendance",
+  "source_id": "take_attendance",
+  "values": {
+    "student_id": "' OR 1=1 -- ",
+    "status": "Absent",
+    "course": "networking"
+  },
+  "base": "take_attendance_typical_01"
+}

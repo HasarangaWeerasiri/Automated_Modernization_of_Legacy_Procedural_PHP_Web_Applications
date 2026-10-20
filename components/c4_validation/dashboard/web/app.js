@@ -90,6 +90,7 @@ const DELTA_CHANGES = {
 const EXCLUSION_REASONS = {
   computed_on_page: "computed by the legacy page from other data",
   observed_nondeterministic: "different in every capture",
+  current_date: "the date of the run",
   declared: "declared as excluded",
 };
 

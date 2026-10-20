@@ -20,7 +20,8 @@ form layout; the caller then finds no data to read and abstains.
 
 Data a page shows outside tables is read by `extract_records`, with the database as
 it is after the request. A record there is one database row the page shows: an
-element that shows at least two values of the row, at least one of them distinctive
+element that shows at least two values of the row, in two separate places (one value
+that several columns of the row hold counts once), at least one of them distinctive
 (text of three characters or more that only this row holds in its column), and no
 smaller element that does. Values are looked for in the page's text and in its link
 and image addresses, each as a whole piece (bounded by the start, the end or a
@@ -278,16 +279,22 @@ def extract_records(
     for row, hits in shown.items():
         if len({column for _, column, _, _ in hits}) < 2 or not any(flag for *_, flag in hits):
             continue
-        seen: dict[int, tuple[Tag, set[str], list[bool]]] = {}
-        for index, column, _, flag in hits:
+        # Per element: the columns shown, the places they are shown in (a piece of the
+        # page and the text found there), and whether one of them is distinctive. Two
+        # values must be two places: one value several columns hold is still one value.
+        seen: dict[int, tuple[Tag, set[str], set[tuple[int, str]], list[bool]]] = {}
+        for index, column, form, flag in hits:
             element = pieces[index][0]
             for ancestor in chain([element], element.parents):
-                entry = seen.setdefault(id(ancestor), (ancestor, set(), [False]))
+                entry = seen.setdefault(id(ancestor), (ancestor, set(), set(), [False]))
                 entry[1].add(column)
-                entry[2][0] = entry[2][0] or flag
+                entry[2].add((index, form))
+                entry[3][0] = entry[3][0] or flag
                 if ancestor is body:
                     break
-        qualifying = {key: entry[0] for key, entry in seen.items() if len(entry[1]) >= 2 and entry[2][0]}
+        qualifying = {
+            key: entry[0] for key, entry in seen.items() if len(entry[1]) >= 2 and len(entry[2]) >= 2 and entry[3][0]
+        }
         enclosing = {id(parent) for element in qualifying.values() for parent in element.parents}
         for key, element in qualifying.items():
             if key not in enclosing:

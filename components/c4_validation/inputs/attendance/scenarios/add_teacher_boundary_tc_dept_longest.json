@@ -1,0 +1,15 @@
+{
+  "scenario_id": "add_teacher_boundary_tc_dept_longest",
+  "scenario_type": "boundary",
+  "case": "longest",
+  "parameter": "tc_dept",
+  "endpoint_id": "POST /api/teachers",
+  "source_id": "add_teacher",
+  "values": {
+    "tc_id": 1702,
+    "tc_name": "Diane Gutierrez",
+    "tc_dept": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "tc_email": "christian23@example.net",
+    "tc_course": "Daniel Clarke"
+  }
+}

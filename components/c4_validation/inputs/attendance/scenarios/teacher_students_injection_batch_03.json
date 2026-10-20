@@ -1,0 +1,12 @@
+{
+  "scenario_id": "teacher_students_injection_batch_03",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "batch",
+  "endpoint_id": "GET /api/students",
+  "source_id": "teacher_students",
+  "values": {
+    "batch": "' OR 1=1 -- "
+  },
+  "base": "teacher_students_typical_01"
+}

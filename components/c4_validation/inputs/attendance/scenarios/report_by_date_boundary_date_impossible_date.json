@@ -1,0 +1,12 @@
+{
+  "scenario_id": "report_by_date_boundary_date_impossible_date",
+  "scenario_type": "boundary",
+  "case": "impossible_date",
+  "parameter": "date",
+  "endpoint_id": "GET /api/attendance",
+  "source_id": "report_by_date",
+  "values": {
+    "date": "2020-02-30",
+    "course": "networking"
+  }
+}

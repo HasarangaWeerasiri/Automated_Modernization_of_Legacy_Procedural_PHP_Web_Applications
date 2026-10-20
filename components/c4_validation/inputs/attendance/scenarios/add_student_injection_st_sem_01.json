@@ -1,0 +1,17 @@
+{
+  "scenario_id": "add_student_injection_st_sem_01",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "st_sem",
+  "endpoint_id": "POST /api/students",
+  "source_id": "add_student",
+  "values": {
+    "st_id": 2905,
+    "st_name": "Frank Duncan",
+    "st_dept": "CSE",
+    "st_batch": "37",
+    "st_sem": "'",
+    "st_email": "watsonpatricia@example.com"
+  },
+  "base": "add_student_typical_01"
+}

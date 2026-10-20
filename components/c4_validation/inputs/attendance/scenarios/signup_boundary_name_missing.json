@@ -1,0 +1,15 @@
+{
+  "scenario_id": "signup_boundary_name_missing",
+  "scenario_type": "boundary",
+  "case": "missing",
+  "parameter": "name",
+  "endpoint_id": "POST /api/accounts",
+  "source_id": "signup",
+  "values": {
+    "email": "brittany93@example.org",
+    "username": "Madison Bryant",
+    "password": "admin",
+    "phone": "114580",
+    "type": "Heather Gray MD"
+  }
+}

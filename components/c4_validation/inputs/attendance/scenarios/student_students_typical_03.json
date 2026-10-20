@@ -1,0 +1,11 @@
+{
+  "scenario_id": "student_students_typical_03",
+  "scenario_type": "typical",
+  "case": "typical",
+  "parameter": null,
+  "endpoint_id": "GET /api/students",
+  "source_id": "student_students",
+  "values": {
+    "batch": "38"
+  }
+}

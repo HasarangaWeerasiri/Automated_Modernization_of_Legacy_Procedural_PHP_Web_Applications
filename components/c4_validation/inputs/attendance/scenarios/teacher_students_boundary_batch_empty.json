@@ -1,0 +1,11 @@
+{
+  "scenario_id": "teacher_students_boundary_batch_empty",
+  "scenario_type": "boundary",
+  "case": "empty",
+  "parameter": "batch",
+  "endpoint_id": "GET /api/students",
+  "source_id": "teacher_students",
+  "values": {
+    "batch": ""
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "scenario_id": "add_teacher_boundary_tc_email_too_long",
+  "scenario_type": "boundary",
+  "case": "too_long",
+  "parameter": "tc_email",
+  "endpoint_id": "POST /api/teachers",
+  "source_id": "add_teacher",
+  "values": {
+    "tc_id": 1702,
+    "tc_name": "Diane Gutierrez",
+    "tc_dept": "CSE",
+    "tc_email": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "tc_course": "Daniel Clarke"
+  }
+}

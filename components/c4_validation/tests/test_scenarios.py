@@ -499,3 +499,63 @@ def test_a_resolved_probe_carries_its_base_and_the_column_of_its_parameter(tmp_p
 
     assert (named["base"], named["column"]) == ("sign_up_typical_01", "people.name")
     assert (unnamed["base"], unnamed["column"]) == ("sign_up_typical_01", None)
+
+
+# ------------------------------------------- choices, phone numbers, existing rows
+
+CLASSES = SeedFacts(
+    columns={
+        "attendance.course": ColumnFacts("text", 20, ("networking", "swe"), filled=32),
+        "attendance.st_status": ColumnFacts("text", 20, ("Absent", "Present"), filled=32),
+        "students.st_id": ColumnFacts("integer", None, (1121, 1122, 1125, 1126, 3433), filled=5),
+        "students.st_name": ColumnFacts("text", 255, ("Faisal Jahid", "Humaun Kabir", "Liton Sarker"), filled=3),
+        "admininfo.phone": ColumnFacts("text", 30, ("+8809121", "+8809122", "12344"), filled=3),
+    },
+    rows={"attendance": (), "students": (), "admininfo": ()},
+)
+TAKE = {"source_id": "take", "legacy": {"method": "POST", "path": "/attendance.php", "records": "none"},
+        "parameters": [_param("course", "attendance.course", "body"), _param("status", "attendance.st_status", "body")]}
+UPDATE = {"source_id": "update", "legacy": {"method": "POST", "path": "/account.php", "records": "none"},
+          "parameters": [_param("id", "students.st_id", "path"), _param("name", "students.st_name", "body")]}
+
+
+def _writes(tmp_path, source, method="POST", path="/api/people"):
+    document = {"format": "c4-stand-in/1", "endpoints": [{
+        "endpoint_id": f"{method} {path}", "method": method, "path": path, "records_at": None, "sources": [source],
+    }]}
+    return by_id(generate(load_endpoint_map(write_map(tmp_path, document)), CLASSES))
+
+
+def test_a_column_of_choices_gets_one_of_its_values_in_every_typical_write(tmp_path):
+    scenarios = _writes(tmp_path, TAKE)
+
+    courses = [scenarios[f"take_typical_0{n}"]["values"]["course"] for n in (1, 2, 3)]
+    statuses = [scenarios[f"take_typical_0{n}"]["values"]["status"] for n in (1, 2, 3)]
+    assert set(courses) <= {"networking", "swe"} and set(statuses) <= {"Absent", "Present"}
+    assert scenarios["take_boundary_course_too_long"]["values"]["course"] == "x" * 21  # edges are still edges
+
+
+def test_a_column_whose_values_each_appear_once_is_not_a_set_of_choices(tmp_path):
+    scenarios = _writes(tmp_path, {**UPDATE, "parameters": [_param("name", "students.st_name", "body")]})
+
+    assert scenarios["update_typical_01"]["values"]["name"] not in CLASSES.columns["students.st_name"].seed_values
+
+
+def test_a_column_of_phone_numbers_gets_a_phone_number():
+    from faker import Faker
+    from c4.scenarios import _new_value
+
+    fake = Faker("en_US")
+    fake.seed_instance("phone")
+
+    value = _new_value(fake, CLASSES.columns["admininfo.phone"])
+
+    assert value.startswith("+") and value[1:].isdigit() and len(value) == 8
+
+
+def test_a_path_parameter_of_a_write_names_a_row_that_exists(tmp_path):
+    scenarios = _writes(tmp_path, UPDATE, method="PUT", path="/api/people/{id}")
+
+    ids = [scenarios[f"update_typical_0{n}"]["values"]["id"] for n in (1, 2, 3)]
+    assert ids == [1121, 1125, 3433]
+    assert scenarios["update_typical_01"]["values"]["name"] not in CLASSES.columns["students.st_name"].seed_values

@@ -1,0 +1,12 @@
+{
+  "scenario_id": "report_by_date_typical_02",
+  "scenario_type": "typical",
+  "case": "typical",
+  "parameter": null,
+  "endpoint_id": "GET /api/attendance",
+  "source_id": "report_by_date",
+  "values": {
+    "date": "2018-06-25",
+    "course": "swe"
+  }
+}

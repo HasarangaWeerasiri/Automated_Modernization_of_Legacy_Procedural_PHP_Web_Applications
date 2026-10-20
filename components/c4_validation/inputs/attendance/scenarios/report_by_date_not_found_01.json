@@ -1,0 +1,12 @@
+{
+  "scenario_id": "report_by_date_not_found_01",
+  "scenario_type": "typical",
+  "case": "not_found",
+  "parameter": "date",
+  "endpoint_id": "GET /api/attendance",
+  "source_id": "report_by_date",
+  "values": {
+    "date": "absent0",
+    "course": "networking"
+  }
+}

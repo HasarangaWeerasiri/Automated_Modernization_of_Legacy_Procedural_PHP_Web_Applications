@@ -1,0 +1,15 @@
+{
+  "scenario_id": "add_student_boundary_st_batch_missing",
+  "scenario_type": "boundary",
+  "case": "missing",
+  "parameter": "st_batch",
+  "endpoint_id": "POST /api/students",
+  "source_id": "add_student",
+  "values": {
+    "st_id": 2905,
+    "st_name": "Frank Duncan",
+    "st_dept": "CSE",
+    "st_sem": "Patrick Smith",
+    "st_email": "watsonpatricia@example.com"
+  }
+}

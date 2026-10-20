@@ -1,0 +1,523 @@
+{
+  "format": "c4-stand-in/1",
+  "endpoints": [
+    {
+      "endpoint_id": "GET /api/students",
+      "method": "GET",
+      "path": "/api/students",
+      "records_at": "students",
+      "fields": {
+        "st_id": "students.st_id",
+        "st_name": "students.st_name",
+        "st_dept": "students.st_dept",
+        "st_batch": "students.st_batch",
+        "st_sem": "students.st_sem",
+        "st_email": "students.st_email"
+      },
+      "sources": [
+        {
+          "source_id": "teacher_students",
+          "login": "teacher",
+          "legacy": {
+            "method": "POST",
+            "path": "/teacher/students.php",
+            "fixed": {
+              "sr_btn": "Go!"
+            },
+            "records": "only"
+          },
+          "parameters": [
+            {
+              "name": "batch",
+              "in": "query",
+              "legacy_name": "sr_batch",
+              "legacy_in": "body",
+              "column": "students.st_batch"
+            }
+          ]
+        },
+        {
+          "source_id": "student_students",
+          "login": "student",
+          "legacy": {
+            "method": "POST",
+            "path": "/student/students.php",
+            "fixed": {
+              "sr_btn": "Go!"
+            },
+            "records": "only"
+          },
+          "parameters": [
+            {
+              "name": "batch",
+              "in": "query",
+              "legacy_name": "sr_batch",
+              "legacy_in": "body",
+              "column": "students.st_batch"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint_id": "GET /api/teachers",
+      "method": "GET",
+      "path": "/api/teachers",
+      "records_at": "teachers",
+      "fields": {
+        "tc_id": "teachers.tc_id",
+        "tc_name": "teachers.tc_name",
+        "tc_dept": "teachers.tc_dept",
+        "tc_email": "teachers.tc_email",
+        "tc_course": "teachers.tc_course"
+      },
+      "sources": [
+        {
+          "source_id": "teacher_list",
+          "login": "teacher",
+          "legacy": {
+            "method": "GET",
+            "path": "/teacher/teachers.php",
+            "records": "only"
+          },
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "endpoint_id": "GET /api/attendance",
+      "method": "GET",
+      "path": "/api/attendance",
+      "records_at": "records",
+      "fields": {
+        "st_id": "students.st_id",
+        "st_name": "students.st_name",
+        "st_dept": "students.st_dept",
+        "st_batch": "students.st_batch",
+        "stat_date": "attendance.stat_date",
+        "st_status": "attendance.st_status",
+        "course": "attendance.course"
+      },
+      "sources": [
+        {
+          "source_id": "report_by_date",
+          "login": "teacher",
+          "legacy": {
+            "method": "POST",
+            "path": "/teacher/report.php",
+            "fixed": {
+              "sr_date": "Go!"
+            },
+            "records": {
+              "table": 0
+            }
+          },
+          "parameters": [
+            {
+              "name": "date",
+              "in": "query",
+              "legacy_name": "date",
+              "legacy_in": "body",
+              "column": "attendance.stat_date"
+            },
+            {
+              "name": "course",
+              "in": "query",
+              "legacy_name": "whichcourse",
+              "legacy_in": "body",
+              "column": "attendance.course"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint_id": "GET /api/students/{id}/report",
+      "method": "GET",
+      "path": "/api/students/{id}/report",
+      "records_at": "report",
+      "sources": [
+        {
+          "source_id": "report_by_student",
+          "login": "teacher",
+          "legacy": {
+            "method": "POST",
+            "path": "/teacher/report.php",
+            "fixed": {
+              "sr_btn": "Go!"
+            },
+            "records": {
+              "table": 1
+            }
+          },
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "legacy_name": "sr_id",
+              "legacy_in": "body",
+              "column": "students.st_id"
+            },
+            {
+              "name": "course",
+              "in": "query",
+              "legacy_name": "whichcourse",
+              "legacy_in": "body",
+              "column": "attendance.course"
+            }
+          ]
+        },
+        {
+          "source_id": "student_own_report",
+          "login": "student",
+          "legacy": {
+            "method": "POST",
+            "path": "/student/report.php",
+            "fixed": {
+              "sr_btn": "Go!"
+            },
+            "records": "only"
+          },
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "legacy_name": "sr_id",
+              "legacy_in": "body",
+              "column": "students.st_id"
+            },
+            {
+              "name": "course",
+              "in": "query",
+              "legacy_name": "whichcourse",
+              "legacy_in": "body",
+              "column": "attendance.course"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint_id": "GET /api/password-recovery",
+      "method": "GET",
+      "path": "/api/password-recovery",
+      "records_at": "accounts",
+      "fields": {
+        "password": "admininfo.password"
+      },
+      "sources": [
+        {
+          "source_id": "password_recovery",
+          "legacy": {
+            "method": "POST",
+            "path": "/reset.php",
+            "fixed": {
+              "reset": "Go"
+            },
+            "records": "only"
+          },
+          "parameters": [
+            {
+              "name": "email",
+              "in": "query",
+              "legacy_name": "email",
+              "legacy_in": "body",
+              "column": "admininfo.email"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint_id": "POST /api/students",
+      "method": "POST",
+      "path": "/api/students",
+      "records_at": null,
+      "sources": [
+        {
+          "source_id": "add_student",
+          "login": "admin",
+          "legacy": {
+            "method": "POST",
+            "path": "/admin/index.php",
+            "fixed": {
+              "std": "Add"
+            },
+            "records": "none"
+          },
+          "parameters": [
+            {
+              "name": "st_id",
+              "in": "body",
+              "legacy_name": "st_id",
+              "legacy_in": "body",
+              "column": "students.st_id"
+            },
+            {
+              "name": "st_name",
+              "in": "body",
+              "legacy_name": "st_name",
+              "legacy_in": "body",
+              "column": "students.st_name"
+            },
+            {
+              "name": "st_dept",
+              "in": "body",
+              "legacy_name": "st_dept",
+              "legacy_in": "body",
+              "column": "students.st_dept"
+            },
+            {
+              "name": "st_batch",
+              "in": "body",
+              "legacy_name": "st_batch",
+              "legacy_in": "body",
+              "column": "students.st_batch"
+            },
+            {
+              "name": "st_sem",
+              "in": "body",
+              "legacy_name": "st_sem",
+              "legacy_in": "body",
+              "column": "students.st_sem"
+            },
+            {
+              "name": "st_email",
+              "in": "body",
+              "legacy_name": "st_email",
+              "legacy_in": "body",
+              "column": "students.st_email"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint_id": "POST /api/teachers",
+      "method": "POST",
+      "path": "/api/teachers",
+      "records_at": null,
+      "sources": [
+        {
+          "source_id": "add_teacher",
+          "login": "admin",
+          "legacy": {
+            "method": "POST",
+            "path": "/admin/index.php",
+            "fixed": {
+              "tcr": "Add"
+            },
+            "records": "none"
+          },
+          "parameters": [
+            {
+              "name": "tc_id",
+              "in": "body",
+              "legacy_name": "tc_id",
+              "legacy_in": "body",
+              "column": "teachers.tc_id"
+            },
+            {
+              "name": "tc_name",
+              "in": "body",
+              "legacy_name": "tc_name",
+              "legacy_in": "body",
+              "column": "teachers.tc_name"
+            },
+            {
+              "name": "tc_dept",
+              "in": "body",
+              "legacy_name": "tc_dept",
+              "legacy_in": "body",
+              "column": "teachers.tc_dept"
+            },
+            {
+              "name": "tc_email",
+              "in": "body",
+              "legacy_name": "tc_email",
+              "legacy_in": "body",
+              "column": "teachers.tc_email"
+            },
+            {
+              "name": "tc_course",
+              "in": "body",
+              "legacy_name": "tc_course",
+              "legacy_in": "body",
+              "column": "teachers.tc_course"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint_id": "POST /api/attendance",
+      "method": "POST",
+      "path": "/api/attendance",
+      "records_at": null,
+      "sources": [
+        {
+          "source_id": "take_attendance",
+          "login": "teacher",
+          "legacy": {
+            "method": "POST",
+            "path": "/teacher/attendance.php",
+            "fixed": {
+              "att": "Save!"
+            },
+            "records": "none"
+          },
+          "parameters": [
+            {
+              "name": "student_id",
+              "in": "body",
+              "legacy_name": "stat_id[0]",
+              "legacy_in": "body",
+              "column": "attendance.stat_id"
+            },
+            {
+              "name": "status",
+              "in": "body",
+              "legacy_name": "st_status[0]",
+              "legacy_in": "body",
+              "column": "attendance.st_status"
+            },
+            {
+              "name": "course",
+              "in": "body",
+              "legacy_name": "whichcourse",
+              "legacy_in": "body",
+              "column": "attendance.course"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint_id": "PUT /api/students/{id}",
+      "method": "PUT",
+      "path": "/api/students/{id}",
+      "records_at": null,
+      "sources": [
+        {
+          "source_id": "update_account",
+          "login": "student",
+          "legacy": {
+            "method": "POST",
+            "path": "/student/account.php",
+            "fixed": {
+              "done": "Update"
+            },
+            "records": "none"
+          },
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "legacy_name": "id",
+              "legacy_in": "body",
+              "column": "students.st_id"
+            },
+            {
+              "name": "st_name",
+              "in": "body",
+              "legacy_name": "name",
+              "legacy_in": "body",
+              "column": "students.st_name"
+            },
+            {
+              "name": "st_dept",
+              "in": "body",
+              "legacy_name": "dept",
+              "legacy_in": "body",
+              "column": "students.st_dept"
+            },
+            {
+              "name": "st_batch",
+              "in": "body",
+              "legacy_name": "batch",
+              "legacy_in": "body",
+              "column": "students.st_batch"
+            },
+            {
+              "name": "st_sem",
+              "in": "body",
+              "legacy_name": "semester",
+              "legacy_in": "body",
+              "column": "students.st_sem"
+            },
+            {
+              "name": "st_email",
+              "in": "body",
+              "legacy_name": "email",
+              "legacy_in": "body",
+              "column": "students.st_email"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint_id": "POST /api/accounts",
+      "method": "POST",
+      "path": "/api/accounts",
+      "records_at": null,
+      "sources": [
+        {
+          "source_id": "signup",
+          "legacy": {
+            "method": "POST",
+            "path": "/signup.php",
+            "fixed": {
+              "signup": "Signup"
+            },
+            "records": "none"
+          },
+          "parameters": [
+            {
+              "name": "email",
+              "in": "body",
+              "legacy_name": "email",
+              "legacy_in": "body",
+              "column": "admininfo.email"
+            },
+            {
+              "name": "username",
+              "in": "body",
+              "legacy_name": "uname",
+              "legacy_in": "body",
+              "column": "admininfo.username"
+            },
+            {
+              "name": "password",
+              "in": "body",
+              "legacy_name": "pass",
+              "legacy_in": "body",
+              "column": "admininfo.password"
+            },
+            {
+              "name": "name",
+              "in": "body",
+              "legacy_name": "fname",
+              "legacy_in": "body",
+              "column": "admininfo.fname"
+            },
+            {
+              "name": "phone",
+              "in": "body",
+              "legacy_name": "phone",
+              "legacy_in": "body",
+              "column": "admininfo.phone"
+            },
+            {
+              "name": "type",
+              "in": "body",
+              "legacy_name": "type",
+              "legacy_in": "body",
+              "column": "admininfo.type"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

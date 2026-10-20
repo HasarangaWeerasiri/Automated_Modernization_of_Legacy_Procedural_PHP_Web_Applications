@@ -1,0 +1,15 @@
+{
+  "scenario_id": "add_teacher_boundary_tc_id_zero",
+  "scenario_type": "boundary",
+  "case": "zero",
+  "parameter": "tc_id",
+  "endpoint_id": "POST /api/teachers",
+  "source_id": "add_teacher",
+  "values": {
+    "tc_id": 0,
+    "tc_name": "Diane Gutierrez",
+    "tc_dept": "CSE",
+    "tc_email": "christian23@example.net",
+    "tc_course": "Daniel Clarke"
+  }
+}

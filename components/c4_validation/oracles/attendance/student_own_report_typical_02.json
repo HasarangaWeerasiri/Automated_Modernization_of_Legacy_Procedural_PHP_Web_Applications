@@ -1,0 +1,60 @@
+{
+  "endpoint_id": "GET /api/students/{id}/report",
+  "legacy_url": "/student/report.php",
+  "scenario_id": "student_own_report_typical_02",
+  "scenario_type": "typical",
+  "input": {
+    "method": "POST",
+    "params": {},
+    "body": {
+      "sr_btn": "Go!",
+      "sr_id": 1125,
+      "whichcourse": "swe"
+    }
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [
+      {
+        "Student ID:": "1125",
+        "Student Name:": "Liton Sarker",
+        "Department:": "CSE",
+        "Batch:": "38",
+        "Total Class (Days):": "4",
+        "Present (Days):": "3",
+        "Absent (Days):": "1"
+      }
+    ],
+    "columns": {
+      "Student ID:": "students.st_id",
+      "Student Name:": "students.st_name",
+      "Department:": "students.st_dept",
+      "Batch:": "students.st_batch"
+    },
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:820e0e2bec486f67a77184ba168ea8878baf85e18282135f75268a6157c0b22a",
+    "delta": {}
+  },
+  "excluded_fields": [
+    {
+      "scope": "response",
+      "field": "Total Class (Days):",
+      "reason": "computed_on_page"
+    },
+    {
+      "scope": "response",
+      "field": "Present (Days):",
+      "reason": "computed_on_page"
+    },
+    {
+      "scope": "response",
+      "field": "Absent (Days):",
+      "reason": "computed_on_page"
+    }
+  ],
+  "capture_runs": 2,
+  "captured_at": "2026-10-20T07:39:13+00:00"
+}

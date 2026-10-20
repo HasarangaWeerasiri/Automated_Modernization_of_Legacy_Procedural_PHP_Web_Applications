@@ -1,0 +1,33 @@
+{
+  "endpoint_id": "PUT /api/students/{id}",
+  "legacy_url": "/student/account.php",
+  "scenario_id": "update_account_injection_st_name_01",
+  "scenario_type": "injection",
+  "input": {
+    "method": "POST",
+    "params": {},
+    "body": {
+      "done": "Update",
+      "id": 1121,
+      "name": "'",
+      "dept": "CSE",
+      "batch": "37",
+      "semester": "Michael Martinez",
+      "email": "uramos@example.net"
+    }
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "no_effect",
+    "records": [],
+    "columns": {},
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:820e0e2bec486f67a77184ba168ea8878baf85e18282135f75268a6157c0b22a",
+    "delta": {}
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-20T07:42:56+00:00"
+}

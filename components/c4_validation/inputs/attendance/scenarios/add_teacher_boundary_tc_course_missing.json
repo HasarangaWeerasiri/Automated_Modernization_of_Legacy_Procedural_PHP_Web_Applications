@@ -1,0 +1,14 @@
+{
+  "scenario_id": "add_teacher_boundary_tc_course_missing",
+  "scenario_type": "boundary",
+  "case": "missing",
+  "parameter": "tc_course",
+  "endpoint_id": "POST /api/teachers",
+  "source_id": "add_teacher",
+  "values": {
+    "tc_id": 1702,
+    "tc_name": "Diane Gutierrez",
+    "tc_dept": "CSE",
+    "tc_email": "christian23@example.net"
+  }
+}

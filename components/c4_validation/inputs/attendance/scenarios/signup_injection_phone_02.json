@@ -1,0 +1,17 @@
+{
+  "scenario_id": "signup_injection_phone_02",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "phone",
+  "endpoint_id": "POST /api/accounts",
+  "source_id": "signup",
+  "values": {
+    "email": "brittany93@example.org",
+    "username": "Madison Bryant",
+    "password": "admin",
+    "name": "Kenneth Campbell",
+    "phone": "' OR '1'='1",
+    "type": "Heather Gray MD"
+  },
+  "base": "signup_typical_01"
+}

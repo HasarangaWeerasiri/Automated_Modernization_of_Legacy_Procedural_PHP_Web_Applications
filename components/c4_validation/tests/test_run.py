@@ -240,3 +240,40 @@ def test_a_system_with_a_route_out_stops_the_run(environment, monkeypatch):
 
     with pytest.raises(run_module.IsolationError, match="c4-legacy-web"):
         environment("demo")
+
+
+# ------------------------------------------------------------ capture only
+
+
+def test_until_capture_stops_before_the_suite_and_the_verdict(config, stages, monkeypatch):
+    built = []
+    monkeypatch.setattr(run_module.harness, "build", lambda config, baseline: built.append(True))
+    events = []
+
+    result = run_module.run(config, until="capture", emit=lambda stage, event, **detail: events.append((stage, event, detail)))
+
+    assert stages.captured == ["s_01", "s_02"]
+    assert built == []
+    assert [stage for stage, event, _ in events if event == "done"] == ["environment", "scenarios", "capture", "run"]
+    assert result["report"] is None and result["outputs"] == {"oracle records": "oracles/demo"}
+
+
+def test_a_capture_only_run_exits_with_0(config, stages, monkeypatch, capsys):
+    monkeypatch.setattr(run_module, "load_config", lambda benchmark: config)
+
+    assert run_module.main(["run", "--until", "capture"]) == 0
+    assert "no migrated system to replay against, so no verdict" in capsys.readouterr().out
+
+
+def test_a_scenario_refused_on_capturing_again_loses_its_old_record(config, stages):
+    run_module.run(config)
+    assert (config.oracle_dir / "s_01.json").is_file()
+    stages.planned[0]["refuse"] = True
+    events = []
+
+    run_module.run(config, recapture=True, emit=lambda stage, event, **detail: events.append((stage, event, detail)))
+
+    assert not (config.oracle_dir / "s_01.json").exists()
+    assert (config.oracle_dir / "s_02.json").is_file()
+    (done,) = [detail for stage, event, detail in events if (stage, event) == ("capture", "done")]
+    assert done["refused"][0]["stale_record_removed"] is True

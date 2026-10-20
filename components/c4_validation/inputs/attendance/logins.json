@@ -1,0 +1,71 @@
+{
+  "format": "c4-stand-in/1",
+  "logins": {
+    "teacher": {
+      "legacy": {
+        "method": "POST",
+        "path": "/index.php",
+        "body": {
+          "username": "teacher",
+          "password": "admin",
+          "type": "teacher",
+          "login": "Login"
+        },
+        "expect_redirect": "teacher/index.php"
+      },
+      "migrated": {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "body": {
+          "username": "teacher",
+          "password": "admin"
+        },
+        "token_at": "access_token"
+      }
+    },
+    "student": {
+      "legacy": {
+        "method": "POST",
+        "path": "/index.php",
+        "body": {
+          "username": "student",
+          "password": "admin",
+          "type": "student",
+          "login": "Login"
+        },
+        "expect_redirect": "student/index.php"
+      },
+      "migrated": {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "body": {
+          "username": "student",
+          "password": "admin"
+        },
+        "token_at": "access_token"
+      }
+    },
+    "admin": {
+      "legacy": {
+        "method": "POST",
+        "path": "/index.php",
+        "body": {
+          "username": "admin",
+          "password": "admin",
+          "type": "admin",
+          "login": "Login"
+        },
+        "expect_redirect": "admin/index.php"
+      },
+      "migrated": {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "body": {
+          "username": "admin",
+          "password": "admin"
+        },
+        "token_at": "access_token"
+      }
+    }
+  }
+}

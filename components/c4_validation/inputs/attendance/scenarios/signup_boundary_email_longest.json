@@ -1,0 +1,16 @@
+{
+  "scenario_id": "signup_boundary_email_longest",
+  "scenario_type": "boundary",
+  "case": "longest",
+  "parameter": "email",
+  "endpoint_id": "POST /api/accounts",
+  "source_id": "signup",
+  "values": {
+    "email": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "username": "Madison Bryant",
+    "password": "admin",
+    "name": "Kenneth Campbell",
+    "phone": "114580",
+    "type": "Heather Gray MD"
+  }
+}

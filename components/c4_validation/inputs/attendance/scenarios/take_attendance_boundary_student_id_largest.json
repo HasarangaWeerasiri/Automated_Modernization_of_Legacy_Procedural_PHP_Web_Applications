@@ -1,0 +1,13 @@
+{
+  "scenario_id": "take_attendance_boundary_student_id_largest",
+  "scenario_type": "boundary",
+  "case": "largest",
+  "parameter": "student_id",
+  "endpoint_id": "POST /api/attendance",
+  "source_id": "take_attendance",
+  "values": {
+    "student_id": 2147483647,
+    "status": "Absent",
+    "course": "networking"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "scenario_id": "student_own_report_typical_01",
+  "scenario_type": "typical",
+  "case": "typical",
+  "parameter": null,
+  "endpoint_id": "GET /api/students/{id}/report",
+  "source_id": "student_own_report",
+  "values": {
+    "id": 1121,
+    "course": "networking"
+  }
+}

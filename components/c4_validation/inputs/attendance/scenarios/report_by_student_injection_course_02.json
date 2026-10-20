@@ -1,0 +1,13 @@
+{
+  "scenario_id": "report_by_student_injection_course_02",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "course",
+  "endpoint_id": "GET /api/students/{id}/report",
+  "source_id": "report_by_student",
+  "values": {
+    "id": 1121,
+    "course": "' OR '1'='1"
+  },
+  "base": "report_by_student_typical_01"
+}

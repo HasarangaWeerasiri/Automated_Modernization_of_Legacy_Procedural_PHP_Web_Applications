@@ -1,0 +1,12 @@
+{
+  "scenario_id": "report_by_date_boundary_course_too_long",
+  "scenario_type": "boundary",
+  "case": "too_long",
+  "parameter": "course",
+  "endpoint_id": "GET /api/attendance",
+  "source_id": "report_by_date",
+  "values": {
+    "date": "2018-07-07",
+    "course": "xxxxxxxxxxxxxxxxxxxxx"
+  }
+}

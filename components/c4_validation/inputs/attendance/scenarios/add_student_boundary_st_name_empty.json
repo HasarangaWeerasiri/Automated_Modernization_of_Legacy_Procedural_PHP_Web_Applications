@@ -1,0 +1,16 @@
+{
+  "scenario_id": "add_student_boundary_st_name_empty",
+  "scenario_type": "boundary",
+  "case": "empty",
+  "parameter": "st_name",
+  "endpoint_id": "POST /api/students",
+  "source_id": "add_student",
+  "values": {
+    "st_id": 2905,
+    "st_name": "",
+    "st_dept": "CSE",
+    "st_batch": "37",
+    "st_sem": "Patrick Smith",
+    "st_email": "watsonpatricia@example.com"
+  }
+}

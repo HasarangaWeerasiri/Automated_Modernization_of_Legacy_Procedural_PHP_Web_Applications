@@ -1,0 +1,11 @@
+{
+  "scenario_id": "student_own_report_boundary_course_missing",
+  "scenario_type": "boundary",
+  "case": "missing",
+  "parameter": "course",
+  "endpoint_id": "GET /api/students/{id}/report",
+  "source_id": "student_own_report",
+  "values": {
+    "id": 1121
+  }
+}

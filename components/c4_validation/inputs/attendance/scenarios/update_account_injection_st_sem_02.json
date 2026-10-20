@@ -1,0 +1,17 @@
+{
+  "scenario_id": "update_account_injection_st_sem_02",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "st_sem",
+  "endpoint_id": "PUT /api/students/{id}",
+  "source_id": "update_account",
+  "values": {
+    "id": 1121,
+    "st_name": "Amy Wiggins",
+    "st_dept": "CSE",
+    "st_batch": "37",
+    "st_sem": "' OR '1'='1",
+    "st_email": "uramos@example.net"
+  },
+  "base": "update_account_typical_01"
+}

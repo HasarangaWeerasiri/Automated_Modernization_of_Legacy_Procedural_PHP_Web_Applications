@@ -1,0 +1,16 @@
+{
+  "scenario_id": "add_student_typical_03",
+  "scenario_type": "typical",
+  "case": "typical",
+  "parameter": null,
+  "endpoint_id": "POST /api/students",
+  "source_id": "add_student",
+  "values": {
+    "st_id": 3433,
+    "st_name": "Rebecca Martinez",
+    "st_dept": "CSE",
+    "st_batch": "37",
+    "st_sem": "Mr. Ronnie Rodriguez Jr.",
+    "st_email": "singletonchristina@example.org"
+  }
+}

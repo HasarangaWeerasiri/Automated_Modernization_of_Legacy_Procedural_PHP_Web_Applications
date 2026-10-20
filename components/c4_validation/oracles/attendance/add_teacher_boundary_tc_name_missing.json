@@ -1,0 +1,45 @@
+{
+  "endpoint_id": "POST /api/teachers",
+  "legacy_url": "/admin/index.php",
+  "scenario_id": "add_teacher_boundary_tc_name_missing",
+  "scenario_type": "boundary",
+  "input": {
+    "method": "POST",
+    "params": {},
+    "body": {
+      "tcr": "Add",
+      "tc_id": 1702,
+      "tc_dept": "CSE",
+      "tc_email": "christian23@example.net",
+      "tc_course": "Daniel Clarke"
+    }
+  },
+  "legacy_response": {
+    "status_code": 200,
+    "outcome": "success",
+    "records": [],
+    "columns": {},
+    "messages": []
+  },
+  "db_state": {
+    "baseline_fingerprint": "sha256:820e0e2bec486f67a77184ba168ea8878baf85e18282135f75268a6157c0b22a",
+    "delta": {
+      "teachers": {
+        "inserted": [
+          {
+            "tc_id": 1702,
+            "tc_name": "",
+            "tc_dept": "CSE",
+            "tc_email": "christian23@example.net",
+            "tc_course": "Daniel Clarke"
+          }
+        ],
+        "updated": [],
+        "deleted": []
+      }
+    }
+  },
+  "excluded_fields": [],
+  "capture_runs": 2,
+  "captured_at": "2026-10-20T07:34:49+00:00"
+}

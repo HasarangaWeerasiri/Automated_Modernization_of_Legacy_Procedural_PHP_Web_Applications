@@ -1,0 +1,13 @@
+{
+  "scenario_id": "report_by_date_injection_course_02",
+  "scenario_type": "injection",
+  "case": "probe",
+  "parameter": "course",
+  "endpoint_id": "GET /api/attendance",
+  "source_id": "report_by_date",
+  "values": {
+    "date": "2018-07-07",
+    "course": "' OR '1'='1"
+  },
+  "base": "report_by_date_typical_01"
+}

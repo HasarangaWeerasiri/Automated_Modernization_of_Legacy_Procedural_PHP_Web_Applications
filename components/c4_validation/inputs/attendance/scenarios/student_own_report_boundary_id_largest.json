@@ -1,0 +1,12 @@
+{
+  "scenario_id": "student_own_report_boundary_id_largest",
+  "scenario_type": "boundary",
+  "case": "largest",
+  "parameter": "id",
+  "endpoint_id": "GET /api/students/{id}/report",
+  "source_id": "student_own_report",
+  "values": {
+    "id": 2147483647,
+    "course": "networking"
+  }
+}
