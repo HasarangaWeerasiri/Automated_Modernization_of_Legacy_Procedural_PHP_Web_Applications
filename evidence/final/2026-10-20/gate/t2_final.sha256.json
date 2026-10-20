@@ -1,0 +1,542 @@
+{
+ "hms_kishan0725/alembic/alembic.ini": {
+  "normalised": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2",
+  "raw": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2"
+ },
+ "hms_kishan0725/alembic/env.py": {
+  "normalised": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34",
+  "raw": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34"
+ },
+ "hms_kishan0725/alembic/script.py.mako": {
+  "normalised": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243",
+  "raw": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243"
+ },
+ "hms_kishan0725/alembic/versions/0001_initial_schema.py": {
+  "normalised": "46dd670558a86c33c42dfcac03ea8af0620333d112f00360868238ab48cdfa6d",
+  "raw": "46dd670558a86c33c42dfcac03ea8af0620333d112f00360868238ab48cdfa6d"
+ },
+ "hms_kishan0725/column_usage.json": {
+  "normalised": "5b4845e2fc90e1749c2eccc03e91bf4a84e1e7bf55c8d9b41fc47268f930287a",
+  "raw": "5b4845e2fc90e1749c2eccc03e91bf4a84e1e7bf55c8d9b41fc47268f930287a"
+ },
+ "hms_kishan0725/converted_queries.json": {
+  "normalised": "f1830f508dae403257ceee0d4d61aed04d97b2a799046079f66bffda656a5592",
+  "raw": "f1830f508dae403257ceee0d4d61aed04d97b2a799046079f66bffda656a5592"
+ },
+ "hms_kishan0725/data_access.py": {
+  "normalised": "8090761cf91bfc121ad47f3cfe387f5d0db177f0a8f5a2d7e4feed617e02c526",
+  "raw": "8090761cf91bfc121ad47f3cfe387f5d0db177f0a8f5a2d7e4feed617e02c526"
+ },
+ "hms_kishan0725/migration_notes.md": {
+  "normalised": "eb366fce09375965d1e8ba93c04c192534de8f8db2765675afe40d8d93a6cf58",
+  "raw": "eb366fce09375965d1e8ba93c04c192534de8f8db2765675afe40d8d93a6cf58"
+ },
+ "hms_kishan0725/models.py": {
+  "normalised": "ece35eb35f192add90319779bbbdfe0fbd1a3801b8a12ead6cee9b0ba36781d8",
+  "raw": "ece35eb35f192add90319779bbbdfe0fbd1a3801b8a12ead6cee9b0ba36781d8"
+ },
+ "hms_kishan0725/queries.json": {
+  "normalised": "2feff8352c9e598279f6e05e98dac125ae40646e785de685f4c933f8fc78220c",
+  "raw": "2feff8352c9e598279f6e05e98dac125ae40646e785de685f4c933f8fc78220c"
+ },
+ "hms_kishan0725/schema.json": {
+  "normalised": "f6ad5eeb2a6d05d7d7c0788760e42f45bebeb83bf01736293039a10e8846c69c",
+  "raw": "f6ad5eeb2a6d05d7d7c0788760e42f45bebeb83bf01736293039a10e8846c69c"
+ },
+ "hms_kishan0725/security_report.json": {
+  "normalised": "b23ef1536d4bc187833639c98c780ca29830eb10bd32575989cb954d2d217778",
+  "raw": "b23ef1536d4bc187833639c98c780ca29830eb10bd32575989cb954d2d217778"
+ },
+ "hms_kishan0725/summary.json": {
+  "normalised": "afe31aee261f84caeb0b791babce5544391082f9bf0a1eb19655833ae99f8b80",
+  "raw": "79528efa96c4f5ba28f40f2df4a4ac939391f3e0906f07bf2253aa4c4d36150d"
+ },
+ "hms_kishan0725/traceability_report.json": {
+  "normalised": "18fd07156b6f9bfee45effae47dddfc29520c579fd06cb2c4bb9fa4e324b45e5",
+  "raw": "18fd07156b6f9bfee45effae47dddfc29520c579fd06cb2c4bb9fa4e324b45e5"
+ },
+ "hms_kishan0725/unresolved_queries.json": {
+  "normalised": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "raw": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+ },
+ "dignity_dev_hms/alembic/alembic.ini": {
+  "normalised": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2",
+  "raw": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2"
+ },
+ "dignity_dev_hms/alembic/env.py": {
+  "normalised": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34",
+  "raw": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34"
+ },
+ "dignity_dev_hms/alembic/script.py.mako": {
+  "normalised": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243",
+  "raw": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243"
+ },
+ "dignity_dev_hms/alembic/versions/0001_initial_schema.py": {
+  "normalised": "2c8032115b789f00d9c209c3641bfaa7bbe75b24c455835499baef4b7955cb88",
+  "raw": "2c8032115b789f00d9c209c3641bfaa7bbe75b24c455835499baef4b7955cb88"
+ },
+ "dignity_dev_hms/column_usage.json": {
+  "normalised": "4d6818fe7b94d2d83ba20f2a09f7d68ee9058e7007f84a7bb48b5fbdc542ac91",
+  "raw": "4d6818fe7b94d2d83ba20f2a09f7d68ee9058e7007f84a7bb48b5fbdc542ac91"
+ },
+ "dignity_dev_hms/converted_queries.json": {
+  "normalised": "50b441f0472297c08eee63d85a4bf2e428acd1941e7ded1519dac233aaa20177",
+  "raw": "50b441f0472297c08eee63d85a4bf2e428acd1941e7ded1519dac233aaa20177"
+ },
+ "dignity_dev_hms/data_access.py": {
+  "normalised": "1ef4866fe0f0157e70d838405db94e01bcc0e4f47b6b9ab1f3ddb6c3fe0280ff",
+  "raw": "1ef4866fe0f0157e70d838405db94e01bcc0e4f47b6b9ab1f3ddb6c3fe0280ff"
+ },
+ "dignity_dev_hms/migration_notes.md": {
+  "normalised": "abb2568e6b2d309fe6de33f7cfe55c33ae7f0ed9af0005b5ac2204302a661294",
+  "raw": "abb2568e6b2d309fe6de33f7cfe55c33ae7f0ed9af0005b5ac2204302a661294"
+ },
+ "dignity_dev_hms/models.py": {
+  "normalised": "2c902950932aed9284d503b9dfa926a86f413d9d43f5bfaa2cba4a24ca3f31a7",
+  "raw": "2c902950932aed9284d503b9dfa926a86f413d9d43f5bfaa2cba4a24ca3f31a7"
+ },
+ "dignity_dev_hms/queries.json": {
+  "normalised": "015b7703bd73a1dc8b5c9e75a86723e1c4dc0972a4ab5fefe758a594bf648a50",
+  "raw": "015b7703bd73a1dc8b5c9e75a86723e1c4dc0972a4ab5fefe758a594bf648a50"
+ },
+ "dignity_dev_hms/schema.json": {
+  "normalised": "77a980c02d2e818003386999d6b0aef84f606daecce7feb16ca33bca5fc15c24",
+  "raw": "77a980c02d2e818003386999d6b0aef84f606daecce7feb16ca33bca5fc15c24"
+ },
+ "dignity_dev_hms/security_report.json": {
+  "normalised": "ac97cc5b9c17f4dec78dcff2172869d2f20c869da43a7137425af601995706ad",
+  "raw": "ac97cc5b9c17f4dec78dcff2172869d2f20c869da43a7137425af601995706ad"
+ },
+ "dignity_dev_hms/summary.json": {
+  "normalised": "7f8eef7b5049c26bb17ae4d8ef50a70526b140292f56eaada8c3a315b774bd2c",
+  "raw": "d6127f6832464efc4f23fbc7d5ad7d335f47c006a524145301ff46529af416eb"
+ },
+ "dignity_dev_hms/traceability_report.json": {
+  "normalised": "a137c86438f4af1e8ddffee96cedb9e264065de523bad1c0124121631d8e8ca6",
+  "raw": "a137c86438f4af1e8ddffee96cedb9e264065de523bad1c0124121631d8e8ca6"
+ },
+ "dignity_dev_hms/unresolved_queries.json": {
+  "normalised": "db54baf4df48cdf33fa5d0558c4c7a18c3e6ddceec034fbc71bf781ee05a639c",
+  "raw": "db54baf4df48cdf33fa5d0558c4c7a18c3e6ddceec034fbc71bf781ee05a639c"
+ },
+ "helpdesk_legacy_holdout/alembic/alembic.ini": {
+  "normalised": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2",
+  "raw": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2"
+ },
+ "helpdesk_legacy_holdout/alembic/env.py": {
+  "normalised": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34",
+  "raw": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34"
+ },
+ "helpdesk_legacy_holdout/alembic/script.py.mako": {
+  "normalised": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243",
+  "raw": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243"
+ },
+ "helpdesk_legacy_holdout/alembic/versions/0001_initial_schema.py": {
+  "normalised": "9c958d77f7ea25e489c6824c260eaea4d0dc680cb02cbe5bdd27bb96b9729d19",
+  "raw": "9c958d77f7ea25e489c6824c260eaea4d0dc680cb02cbe5bdd27bb96b9729d19"
+ },
+ "helpdesk_legacy_holdout/column_usage.json": {
+  "normalised": "13929534bc0db54a33699e5c33d3cadf28a28378acf01e705b05fa050cbc0eca",
+  "raw": "13929534bc0db54a33699e5c33d3cadf28a28378acf01e705b05fa050cbc0eca"
+ },
+ "helpdesk_legacy_holdout/converted_queries.json": {
+  "normalised": "26438d7b43fde6bb29bb003ef1908191b27abcd89d03dcfc9dc868329daa6e90",
+  "raw": "26438d7b43fde6bb29bb003ef1908191b27abcd89d03dcfc9dc868329daa6e90"
+ },
+ "helpdesk_legacy_holdout/data_access.py": {
+  "normalised": "48c194c342c6c48216bd2a44f661076eac4181369ca621c27797c8e43154a89c",
+  "raw": "48c194c342c6c48216bd2a44f661076eac4181369ca621c27797c8e43154a89c"
+ },
+ "helpdesk_legacy_holdout/migration_notes.md": {
+  "normalised": "a65903e79563d57b188cb46b93c01c89445520ef83168780154743c799f596e3",
+  "raw": "a65903e79563d57b188cb46b93c01c89445520ef83168780154743c799f596e3"
+ },
+ "helpdesk_legacy_holdout/models.py": {
+  "normalised": "5292c5359a8dabfba3fab9cadd80b254303173d27ae4c91cddbf6fb3636b2634",
+  "raw": "5292c5359a8dabfba3fab9cadd80b254303173d27ae4c91cddbf6fb3636b2634"
+ },
+ "helpdesk_legacy_holdout/queries.json": {
+  "normalised": "6105e24fbdcf18ce0a32df40d31b866d15639a615da04aca4fcea43d80bdc650",
+  "raw": "6105e24fbdcf18ce0a32df40d31b866d15639a615da04aca4fcea43d80bdc650"
+ },
+ "helpdesk_legacy_holdout/schema.json": {
+  "normalised": "8d18ea420f906ef4f25eb8f6703a5c9c20f6fdbf697bd733c4ec4ba87eccf569",
+  "raw": "8d18ea420f906ef4f25eb8f6703a5c9c20f6fdbf697bd733c4ec4ba87eccf569"
+ },
+ "helpdesk_legacy_holdout/security_report.json": {
+  "normalised": "932fff5990dfd71e746e4377bd5344e88f538abf25060ee477ab939308bc1954",
+  "raw": "932fff5990dfd71e746e4377bd5344e88f538abf25060ee477ab939308bc1954"
+ },
+ "helpdesk_legacy_holdout/summary.json": {
+  "normalised": "96e327785b5d994b8c2131f04cfa0374109bd90f2d5b1d975d763309cb2d1404",
+  "raw": "355f9907e9ae4f177ea1cf72b4b6bbef222bbc90c4ae624f9be52d72d8b18e68"
+ },
+ "helpdesk_legacy_holdout/traceability_report.json": {
+  "normalised": "278e55991ed5e539ba10adddc366b18a5dfb0869c6e49ba33f766513540ed47e",
+  "raw": "278e55991ed5e539ba10adddc366b18a5dfb0869c6e49ba33f766513540ed47e"
+ },
+ "helpdesk_legacy_holdout/unresolved_queries.json": {
+  "normalised": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "raw": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+ },
+ "news_buzz/alembic/alembic.ini": {
+  "normalised": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2",
+  "raw": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2"
+ },
+ "news_buzz/alembic/env.py": {
+  "normalised": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34",
+  "raw": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34"
+ },
+ "news_buzz/alembic/script.py.mako": {
+  "normalised": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243",
+  "raw": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243"
+ },
+ "news_buzz/alembic/versions/0001_initial_schema.py": {
+  "normalised": "cffbab4d59755b36fd586c5607cd3f62a0bad49c2f09f2965e93d57a352b7582",
+  "raw": "cffbab4d59755b36fd586c5607cd3f62a0bad49c2f09f2965e93d57a352b7582"
+ },
+ "news_buzz/column_usage.json": {
+  "normalised": "d3db29a3432440964b270dfcd6f20cdf5564b038c2fa04dc9018a1d2210a6e1f",
+  "raw": "d3db29a3432440964b270dfcd6f20cdf5564b038c2fa04dc9018a1d2210a6e1f"
+ },
+ "news_buzz/converted_queries.json": {
+  "normalised": "36f72703cee7744d6bf44299cfe2b8d8a854e878319e5be6a5884d4f65b07685",
+  "raw": "36f72703cee7744d6bf44299cfe2b8d8a854e878319e5be6a5884d4f65b07685"
+ },
+ "news_buzz/data_access.py": {
+  "normalised": "ad718e214f3b4901ca54ff3a908107ada57b7071ad5900dd9370f5587cea358f",
+  "raw": "ad718e214f3b4901ca54ff3a908107ada57b7071ad5900dd9370f5587cea358f"
+ },
+ "news_buzz/migration_notes.md": {
+  "normalised": "afbb0853e15f48aac99f18318f2f909216bf1a15230c60bda3c1f78b62d116c9",
+  "raw": "afbb0853e15f48aac99f18318f2f909216bf1a15230c60bda3c1f78b62d116c9"
+ },
+ "news_buzz/models.py": {
+  "normalised": "24c72743c91557c24f579d1a02ce359f6ffc3f5aecf2cdc49cc4e34f2820b3da",
+  "raw": "24c72743c91557c24f579d1a02ce359f6ffc3f5aecf2cdc49cc4e34f2820b3da"
+ },
+ "news_buzz/queries.json": {
+  "normalised": "fe86719c249d4085497d73adb93d1b7f6aaa1c45b8f69b4c747de02ecf2e1eca",
+  "raw": "fe86719c249d4085497d73adb93d1b7f6aaa1c45b8f69b4c747de02ecf2e1eca"
+ },
+ "news_buzz/schema.json": {
+  "normalised": "7f4e7ffd80297b24e60bc77e24c2eb98f72046ab687c9c8d4fc6271e9da5a576",
+  "raw": "7f4e7ffd80297b24e60bc77e24c2eb98f72046ab687c9c8d4fc6271e9da5a576"
+ },
+ "news_buzz/security_report.json": {
+  "normalised": "c042e18e661105a683500b2908d768142f0d8a6294ec842d090c2bf17e85bed6",
+  "raw": "c042e18e661105a683500b2908d768142f0d8a6294ec842d090c2bf17e85bed6"
+ },
+ "news_buzz/summary.json": {
+  "normalised": "252cd44f7bbf42c36f272684b432688bf3ca86990ae8c4839f1fbc3764aad2a8",
+  "raw": "2be92552f2fd92e42e94d3b98a183a721270a8db548e98c250a13441d6085e89"
+ },
+ "news_buzz/traceability_report.json": {
+  "normalised": "94410f8be333382ff3bdaa52ed6fbb748c0030e601259eb33e119de1c3835bdc",
+  "raw": "94410f8be333382ff3bdaa52ed6fbb748c0030e601259eb33e119de1c3835bdc"
+ },
+ "news_buzz/unresolved_queries.json": {
+  "normalised": "65d7a276a02c29fb2cba8f50fc43bae4a39a0f551b2c3b7e1795bbb411d2403f",
+  "raw": "65d7a276a02c29fb2cba8f50fc43bae4a39a0f551b2c3b7e1795bbb411d2403f"
+ },
+ "fee_rainbow/alembic/alembic.ini": {
+  "normalised": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2",
+  "raw": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2"
+ },
+ "fee_rainbow/alembic/env.py": {
+  "normalised": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34",
+  "raw": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34"
+ },
+ "fee_rainbow/alembic/script.py.mako": {
+  "normalised": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243",
+  "raw": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243"
+ },
+ "fee_rainbow/alembic/versions/0001_initial_schema.py": {
+  "normalised": "d12415b77ad60fd58477818e09dfa16b31e7c1e449fe2fa1758700f5a9289460",
+  "raw": "d12415b77ad60fd58477818e09dfa16b31e7c1e449fe2fa1758700f5a9289460"
+ },
+ "fee_rainbow/column_usage.json": {
+  "normalised": "8b98562b7fa804d52bc43ec5b501e27f9a93961e0ae021968b3389d822f4b7f4",
+  "raw": "8b98562b7fa804d52bc43ec5b501e27f9a93961e0ae021968b3389d822f4b7f4"
+ },
+ "fee_rainbow/converted_queries.json": {
+  "normalised": "e1b8f7aad2079607497a1bea0c544fd4b2341db8d3f59fa30b89bfc1bfab22ab",
+  "raw": "e1b8f7aad2079607497a1bea0c544fd4b2341db8d3f59fa30b89bfc1bfab22ab"
+ },
+ "fee_rainbow/data_access.py": {
+  "normalised": "7b35d82f6a1a0eb669e358221b8a59af9be7594700baa4f07ccf7f1c08a7761a",
+  "raw": "7b35d82f6a1a0eb669e358221b8a59af9be7594700baa4f07ccf7f1c08a7761a"
+ },
+ "fee_rainbow/migration_notes.md": {
+  "normalised": "8fdd1c3529f58e1c989722be324dd4560df532bd8ec6a5f43531ec4dcac8ad2c",
+  "raw": "8fdd1c3529f58e1c989722be324dd4560df532bd8ec6a5f43531ec4dcac8ad2c"
+ },
+ "fee_rainbow/models.py": {
+  "normalised": "88aee1419809900e782ac4c8f025066a7be8bea7186c50dc01533e5d59e128ef",
+  "raw": "88aee1419809900e782ac4c8f025066a7be8bea7186c50dc01533e5d59e128ef"
+ },
+ "fee_rainbow/queries.json": {
+  "normalised": "b22b0fe79c53cba034f62fa460824cef722764126b303f5df2d33ea82b7dd98f",
+  "raw": "b22b0fe79c53cba034f62fa460824cef722764126b303f5df2d33ea82b7dd98f"
+ },
+ "fee_rainbow/schema.json": {
+  "normalised": "c16b294f17aeb67ab02eed22a69fb46f928c020ee81eeb2b17f6dafb169b664e",
+  "raw": "c16b294f17aeb67ab02eed22a69fb46f928c020ee81eeb2b17f6dafb169b664e"
+ },
+ "fee_rainbow/security_report.json": {
+  "normalised": "4c27dd5201b4881a0bf02b73aee88983f3d4bdfee37a000eebd87d3365e8a208",
+  "raw": "4c27dd5201b4881a0bf02b73aee88983f3d4bdfee37a000eebd87d3365e8a208"
+ },
+ "fee_rainbow/summary.json": {
+  "normalised": "8890d7aefb63385ebf69d77317e095500b0cfde7a9ae7c2056929ec0634b01c3",
+  "raw": "ba89d683c8935c28d745229f7beca364c379510ea7a547659c124be0f84a8ede"
+ },
+ "fee_rainbow/traceability_report.json": {
+  "normalised": "328949e14d204b01d8369ccefd6ee89cf270d8801653da62315bd195f3ebf92a",
+  "raw": "328949e14d204b01d8369ccefd6ee89cf270d8801653da62315bd195f3ebf92a"
+ },
+ "fee_rainbow/unresolved_queries.json": {
+  "normalised": "0bf11c25400aad9389ba9a9ae494264ec70f532bdaecdfef2b8e51c3f1bd6584",
+  "raw": "0bf11c25400aad9389ba9a9ae494264ec70f532bdaecdfef2b8e51c3f1bd6584"
+ },
+ "clinic_inventory_legacy_hard/alembic/alembic.ini": {
+  "normalised": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2",
+  "raw": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2"
+ },
+ "clinic_inventory_legacy_hard/alembic/env.py": {
+  "normalised": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34",
+  "raw": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34"
+ },
+ "clinic_inventory_legacy_hard/alembic/script.py.mako": {
+  "normalised": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243",
+  "raw": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243"
+ },
+ "clinic_inventory_legacy_hard/alembic/versions/0001_initial_schema.py": {
+  "normalised": "381cab6ab7f6358e02154474ae77d5cfce2ee9a0536555579bf5990f0164841c",
+  "raw": "381cab6ab7f6358e02154474ae77d5cfce2ee9a0536555579bf5990f0164841c"
+ },
+ "clinic_inventory_legacy_hard/column_usage.json": {
+  "normalised": "0f963a8bd34db09e6b9243fa228f7ca3fb0be34a4ec6331756808181707c417a",
+  "raw": "0f963a8bd34db09e6b9243fa228f7ca3fb0be34a4ec6331756808181707c417a"
+ },
+ "clinic_inventory_legacy_hard/converted_queries.json": {
+  "normalised": "5fb17d4de0ca8dd41f4922d6aaeb86492969845ccfb60668de36d25683d90403",
+  "raw": "5fb17d4de0ca8dd41f4922d6aaeb86492969845ccfb60668de36d25683d90403"
+ },
+ "clinic_inventory_legacy_hard/data_access.py": {
+  "normalised": "d73bb48620204075fd657842ab0d3e4a4e268abe598782115a9e9c1310320982",
+  "raw": "d73bb48620204075fd657842ab0d3e4a4e268abe598782115a9e9c1310320982"
+ },
+ "clinic_inventory_legacy_hard/migration_notes.md": {
+  "normalised": "a65903e79563d57b188cb46b93c01c89445520ef83168780154743c799f596e3",
+  "raw": "a65903e79563d57b188cb46b93c01c89445520ef83168780154743c799f596e3"
+ },
+ "clinic_inventory_legacy_hard/models.py": {
+  "normalised": "5e5b37b667796d544ee0043e622b1c6b1d943eb855d86c94d2e106344f6b2563",
+  "raw": "5e5b37b667796d544ee0043e622b1c6b1d943eb855d86c94d2e106344f6b2563"
+ },
+ "clinic_inventory_legacy_hard/queries.json": {
+  "normalised": "afdb048598cb84495384fdeb58f91fe2dd62349f49c1366961b37662fc9468da",
+  "raw": "afdb048598cb84495384fdeb58f91fe2dd62349f49c1366961b37662fc9468da"
+ },
+ "clinic_inventory_legacy_hard/schema.json": {
+  "normalised": "f4b5a4f66da508e29c0544efc36440806026aab4be6d670ddb8c85a5ae8946b1",
+  "raw": "f4b5a4f66da508e29c0544efc36440806026aab4be6d670ddb8c85a5ae8946b1"
+ },
+ "clinic_inventory_legacy_hard/security_report.json": {
+  "normalised": "4772ce9318e13bfadb988a0d6912b2c6559782533bb6b5e2a2f90dc15761be18",
+  "raw": "4772ce9318e13bfadb988a0d6912b2c6559782533bb6b5e2a2f90dc15761be18"
+ },
+ "clinic_inventory_legacy_hard/summary.json": {
+  "normalised": "70349a6afe966c7db2ef19a503e0fc1770c32fcb8c2dbb6e843ff04afc267cc6",
+  "raw": "0fdbae7b50611725bccae7030f9b88201ea1f1658ca3c1b424c68541edc1eaad"
+ },
+ "clinic_inventory_legacy_hard/traceability_report.json": {
+  "normalised": "448ec1cc1a0c10826d9be3ae9ee2099e55328c09dfa04f6aaa340db3770ed32d",
+  "raw": "448ec1cc1a0c10826d9be3ae9ee2099e55328c09dfa04f6aaa340db3770ed32d"
+ },
+ "clinic_inventory_legacy_hard/unresolved_queries.json": {
+  "normalised": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "raw": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+ },
+ "simple_crud/alembic/alembic.ini": {
+  "normalised": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2",
+  "raw": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2"
+ },
+ "simple_crud/alembic/env.py": {
+  "normalised": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34",
+  "raw": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34"
+ },
+ "simple_crud/alembic/script.py.mako": {
+  "normalised": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243",
+  "raw": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243"
+ },
+ "simple_crud/alembic/versions/0001_initial_schema.py": {
+  "normalised": "e74e115ef8c1ee40a0303785a31d9695b3b0fdf87e99b24f157f08bccdf74e4a",
+  "raw": "e74e115ef8c1ee40a0303785a31d9695b3b0fdf87e99b24f157f08bccdf74e4a"
+ },
+ "simple_crud/column_usage.json": {
+  "normalised": "9a4b2d3f46730e38c424acf01f62f6c8a89e24ab5b01942a70813b1d09da28d9",
+  "raw": "9a4b2d3f46730e38c424acf01f62f6c8a89e24ab5b01942a70813b1d09da28d9"
+ },
+ "simple_crud/converted_queries.json": {
+  "normalised": "c274f5c61acbaa2dac037d1cef5c6f3ba2e1d01e10f78956c1f8fc844db28edc",
+  "raw": "c274f5c61acbaa2dac037d1cef5c6f3ba2e1d01e10f78956c1f8fc844db28edc"
+ },
+ "simple_crud/data_access.py": {
+  "normalised": "f302b8e5660ddc9da12ae381d425050b12bf93019030624196e9ae1f6bfdf0a2",
+  "raw": "f302b8e5660ddc9da12ae381d425050b12bf93019030624196e9ae1f6bfdf0a2"
+ },
+ "simple_crud/migration_notes.md": {
+  "normalised": "a65903e79563d57b188cb46b93c01c89445520ef83168780154743c799f596e3",
+  "raw": "a65903e79563d57b188cb46b93c01c89445520ef83168780154743c799f596e3"
+ },
+ "simple_crud/models.py": {
+  "normalised": "10de1b6073872703a276b4b407164dcd243e3acc7cf652a723e835e23a434bb5",
+  "raw": "10de1b6073872703a276b4b407164dcd243e3acc7cf652a723e835e23a434bb5"
+ },
+ "simple_crud/queries.json": {
+  "normalised": "e5027d8feaa730f7b2472e5c2b6bbaf198b395f62e8b1fdfcc796d41d7246794",
+  "raw": "e5027d8feaa730f7b2472e5c2b6bbaf198b395f62e8b1fdfcc796d41d7246794"
+ },
+ "simple_crud/schema.json": {
+  "normalised": "2ba11c55d4b60fa97ecd4be8f2ed042cdcf6a6f4f4f87c9816a30d2d7431a39d",
+  "raw": "2ba11c55d4b60fa97ecd4be8f2ed042cdcf6a6f4f4f87c9816a30d2d7431a39d"
+ },
+ "simple_crud/security_report.json": {
+  "normalised": "d08b873ed30ef2ab8018af8bac4e74a8ae49c115b5b517b9c5d16fa038ba62c4",
+  "raw": "d08b873ed30ef2ab8018af8bac4e74a8ae49c115b5b517b9c5d16fa038ba62c4"
+ },
+ "simple_crud/summary.json": {
+  "normalised": "eab665501d0be31150256eba013fec7983b1a904185b0edf28cf01680aae61f3",
+  "raw": "97097d406840e9f6bc64875e4a7d7cc5e39b8c700d5c56484df9c5a17eb8c75f"
+ },
+ "simple_crud/traceability_report.json": {
+  "normalised": "6bf17ed3f10e63967e94dc97cfd6da2d896a0cf5dd5baedffbbfb42919fdac0e",
+  "raw": "6bf17ed3f10e63967e94dc97cfd6da2d896a0cf5dd5baedffbbfb42919fdac0e"
+ },
+ "simple_crud/unresolved_queries.json": {
+  "normalised": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "raw": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+ },
+ "mixed_crud/alembic/alembic.ini": {
+  "normalised": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2",
+  "raw": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2"
+ },
+ "mixed_crud/alembic/env.py": {
+  "normalised": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34",
+  "raw": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34"
+ },
+ "mixed_crud/alembic/script.py.mako": {
+  "normalised": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243",
+  "raw": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243"
+ },
+ "mixed_crud/alembic/versions/0001_initial_schema.py": {
+  "normalised": "6f28b9ced8751a297fd31d77f1ca074a4bc993ace8aeed832a93b44765228180",
+  "raw": "6f28b9ced8751a297fd31d77f1ca074a4bc993ace8aeed832a93b44765228180"
+ },
+ "mixed_crud/column_usage.json": {
+  "normalised": "6722cb92db979432891bf0a7944639727b3762659a7d6f7381e03f67fac51fbc",
+  "raw": "6722cb92db979432891bf0a7944639727b3762659a7d6f7381e03f67fac51fbc"
+ },
+ "mixed_crud/converted_queries.json": {
+  "normalised": "dce33f01aee856c73fb23a894c3368ce64a67d71e1bd1d542aed259c10ab9a93",
+  "raw": "dce33f01aee856c73fb23a894c3368ce64a67d71e1bd1d542aed259c10ab9a93"
+ },
+ "mixed_crud/data_access.py": {
+  "normalised": "19a40c863296650088203adefacabae9e52bc6b15fd6a573af196cb204db5b0b",
+  "raw": "19a40c863296650088203adefacabae9e52bc6b15fd6a573af196cb204db5b0b"
+ },
+ "mixed_crud/migration_notes.md": {
+  "normalised": "a65903e79563d57b188cb46b93c01c89445520ef83168780154743c799f596e3",
+  "raw": "a65903e79563d57b188cb46b93c01c89445520ef83168780154743c799f596e3"
+ },
+ "mixed_crud/models.py": {
+  "normalised": "cf264f917e6e7d428fcfbc8cbb3b3abd9cc5da1b57970984b3daf4509b630c8b",
+  "raw": "cf264f917e6e7d428fcfbc8cbb3b3abd9cc5da1b57970984b3daf4509b630c8b"
+ },
+ "mixed_crud/queries.json": {
+  "normalised": "67197ef94f2789b1f9c5b75dce9a5bea1d2418ebfa79b9ef67597b6d4df74fd9",
+  "raw": "67197ef94f2789b1f9c5b75dce9a5bea1d2418ebfa79b9ef67597b6d4df74fd9"
+ },
+ "mixed_crud/schema.json": {
+  "normalised": "e05116c0ab2acfc6e10bb0b520ca5931b41ef0e77384877ecd472f2adca27af2",
+  "raw": "e05116c0ab2acfc6e10bb0b520ca5931b41ef0e77384877ecd472f2adca27af2"
+ },
+ "mixed_crud/security_report.json": {
+  "normalised": "84662eaa44a8b3190487140b2684073f86db6d822670cd8ec24b9b92bce6eb36",
+  "raw": "84662eaa44a8b3190487140b2684073f86db6d822670cd8ec24b9b92bce6eb36"
+ },
+ "mixed_crud/summary.json": {
+  "normalised": "75bc57b662d7d3d6b5e9ecfb5471cbf4856f284b723935a9873fb3c44f6c9182",
+  "raw": "5bcf2649889273c652b75babdc9cb79eeb50632635549c402e26b9fbda5813c9"
+ },
+ "mixed_crud/traceability_report.json": {
+  "normalised": "0f1e3c448af4dcd0ed297132118728b31a972ae9dea05960912ed0bd2c09d09a",
+  "raw": "0f1e3c448af4dcd0ed297132118728b31a972ae9dea05960912ed0bd2c09d09a"
+ },
+ "mixed_crud/unresolved_queries.json": {
+  "normalised": "1278761692ef703d4f2fe46adeb4e87cde1c0f443c1f541c998d9fe7bae97d01",
+  "raw": "1278761692ef703d4f2fe46adeb4e87cde1c0f443c1f541c998d9fe7bae97d01"
+ },
+ "hard_crud/alembic/alembic.ini": {
+  "normalised": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2",
+  "raw": "1b548585a428bf93f9b73e24ac901a96694d57c937e7f0cc4a224f299c77aef2"
+ },
+ "hard_crud/alembic/env.py": {
+  "normalised": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34",
+  "raw": "1cb10b38ada2292e9027604093c42d3c9db7b11468ceb8b2ca223ee147c52a34"
+ },
+ "hard_crud/alembic/script.py.mako": {
+  "normalised": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243",
+  "raw": "538579497ba6499b7b4c16edc4179075fbb0b446f15851c95502e88caee3c243"
+ },
+ "hard_crud/alembic/versions/0001_initial_schema.py": {
+  "normalised": "ff7b0f75ce28ec1b0abe4cbc35a8acc80acf317fdda38d5f9c7d8cc3bc0d6b66",
+  "raw": "ff7b0f75ce28ec1b0abe4cbc35a8acc80acf317fdda38d5f9c7d8cc3bc0d6b66"
+ },
+ "hard_crud/column_usage.json": {
+  "normalised": "01c29a9e7e70c9430f2a34e59636530386c26c320a8e9bc27ebfadbb5c509c66",
+  "raw": "01c29a9e7e70c9430f2a34e59636530386c26c320a8e9bc27ebfadbb5c509c66"
+ },
+ "hard_crud/converted_queries.json": {
+  "normalised": "4802dfbb695f84868310d0ea246db45672749b85f9eb0f140a66285d8b1c3892",
+  "raw": "4802dfbb695f84868310d0ea246db45672749b85f9eb0f140a66285d8b1c3892"
+ },
+ "hard_crud/data_access.py": {
+  "normalised": "669cfeda98a4e664b6cc730c273f3c5175c2061551f2e78fcd835f944fa9d8a6",
+  "raw": "669cfeda98a4e664b6cc730c273f3c5175c2061551f2e78fcd835f944fa9d8a6"
+ },
+ "hard_crud/migration_notes.md": {
+  "normalised": "a65903e79563d57b188cb46b93c01c89445520ef83168780154743c799f596e3",
+  "raw": "a65903e79563d57b188cb46b93c01c89445520ef83168780154743c799f596e3"
+ },
+ "hard_crud/models.py": {
+  "normalised": "4f32e6dbcf3050552e0a7d504019d8663a95452509734c76a5b2c7f3083d07b4",
+  "raw": "4f32e6dbcf3050552e0a7d504019d8663a95452509734c76a5b2c7f3083d07b4"
+ },
+ "hard_crud/queries.json": {
+  "normalised": "bcbdac8a84bcdcb65e5b0db0e0e4cc55c50f4aaee06f52913e36aa5712c13663",
+  "raw": "bcbdac8a84bcdcb65e5b0db0e0e4cc55c50f4aaee06f52913e36aa5712c13663"
+ },
+ "hard_crud/schema.json": {
+  "normalised": "ad2714b8d7cee992fe3fd521721d7eb59dcf38e1ce46a7a59e828dbb44a18c13",
+  "raw": "ad2714b8d7cee992fe3fd521721d7eb59dcf38e1ce46a7a59e828dbb44a18c13"
+ },
+ "hard_crud/security_report.json": {
+  "normalised": "593cb1682fa81b62deabf5485a7f25ad76fc6eb0e5a4a0eb452f3c3977bba333",
+  "raw": "593cb1682fa81b62deabf5485a7f25ad76fc6eb0e5a4a0eb452f3c3977bba333"
+ },
+ "hard_crud/summary.json": {
+  "normalised": "cf457a10238480ed20cd4e83f11c90e8c9f9afc6a993b78c1307216e5056000e",
+  "raw": "35b03bdf60e2cc910972f7b70dfe870c4916947353ed112d619bfbf72a6b768c"
+ },
+ "hard_crud/traceability_report.json": {
+  "normalised": "c7e75b9396221abf82b328310cce6b5a17164f74fdff24153fbe75afa5d59403",
+  "raw": "c7e75b9396221abf82b328310cce6b5a17164f74fdff24153fbe75afa5d59403"
+ },
+ "hard_crud/unresolved_queries.json": {
+  "normalised": "8de328c0dc2e1d23d07a3d3c4b9d3bb697fe522cedda6756dbc824ecce6ce6cb",
+  "raw": "8de328c0dc2e1d23d07a3d3c4b9d3bb697fe522cedda6756dbc824ecce6ce6cb"
+ }
+}

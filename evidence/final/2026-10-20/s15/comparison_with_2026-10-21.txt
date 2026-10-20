@@ -1,0 +1,7 @@
+S15 re-run (evidence/final/2026-10-20/s15, HEAD 4d62a90) vs evidence/final/2026-10-21/s15 (HEAD d263cbb)
+
+hms_kishan0725: precision 100.0 recall 100.0 TP 43 FN 0 FP 0 TN 0 | byte-identical to 21 Oct: True
+dignity_dev_hms: precision 100.0 recall 100.0 TP 7 FN 0 FP 0 TN 6 | byte-identical to 21 Oct: True
+helpdesk_legacy_holdout: precision 100.0 recall 100.0 TP 9 FN 0 FP 0 TN 0 | byte-identical to 21 Oct: True
+news_buzz: precision 100.0 recall 100.0 TP 30 FN 0 FP 0 TN 2 | byte-identical to 21 Oct: True
+fee_rainbow: precision 100.0 recall 100.0 TP 40 FN 0 FP 0 TN 12 | byte-identical to 21 Oct: True

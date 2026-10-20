@@ -1,0 +1,39 @@
+{
+  "exit_code": 0,
+  "totals": {
+    "functions": 163,
+    "safe": 163,
+    "hostile_cases": 1956
+  },
+  "new_join_functions": {
+    "dignity_dev_hms": {
+      "select_patient_info_q007": {
+        "query_id": "Q007",
+        "verdict": "SAFE",
+        "bound": 12,
+        "rejected": 0
+      },
+      "select_patient_info_q008": {
+        "query_id": "Q008",
+        "verdict": "SAFE",
+        "bound": 0,
+        "rejected": 0
+      },
+      "select_patient_info_q009": {
+        "query_id": "Q009",
+        "verdict": "SAFE",
+        "bound": 12,
+        "rejected": 0
+      }
+    },
+    "helpdesk": {
+      "select_teams_q007": {
+        "query_id": "Q007",
+        "verdict": "SAFE",
+        "bound": 0,
+        "rejected": 0
+      }
+    }
+  },
+  "note": "Recording session, MySQL dialect compilation, no database; not a proof of injection safety. A function that takes no value has no payload cases and passes trivially."
+}

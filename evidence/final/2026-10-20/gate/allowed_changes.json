@@ -1,0 +1,3 @@
+{"dignity_dev_hms": {"ids": ["Q007", "Q008", "Q009"], "reason_text_only": [], "count_files": ["summary.json", "security_report.json"]},
+ "helpdesk_legacy_holdout": {"ids": ["Q007"], "reason_text_only": [], "count_files": ["summary.json", "security_report.json"]},
+ "fee_rainbow": {"ids": [], "reason_text_only": ["Q007", "Q054"], "count_files": []}}

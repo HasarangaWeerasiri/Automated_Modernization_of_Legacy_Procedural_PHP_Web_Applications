@@ -1,0 +1,83 @@
+{
+  "label": "post-T2 (FR6 join rule), current code at HEAD 4d62a90",
+  "definition": "CONVERTED records joined on file:line with ground-truth label 'recoverable'; denominator recovery.TP + recovery.FN of the latest historical evaluation (same as conversion_coverage_gt on the dashboard). Conversion coverage, not recovery accuracy and not behavioural equivalence.",
+  "historical_evaluations_unchanged": "The original Dignity-Dev fresh-holdout evaluation and every other evidence/evaluation file are not modified; this file is a new, separately labelled measurement.",
+  "apps": {
+    "hms_kishan0725": {
+      "latest_evaluation": "evidence/evaluation/hms_kishan0725/evaluation.json",
+      "denominator": 43,
+      "prejoins": {
+        "converted_recoverable": 43,
+        "percent": 100.0
+      },
+      "t2_final": {
+        "converted_recoverable": 43,
+        "percent": 100.0
+      },
+      "newly_converted_recoverable": [],
+      "no_longer_converted": []
+    },
+    "dignity_dev_hms": {
+      "latest_evaluation": "evidence/evaluation/dignity_dev_hms/evaluation.json",
+      "denominator": 7,
+      "prejoins": {
+        "converted_recoverable": 4,
+        "percent": 57.1
+      },
+      "t2_final": {
+        "converted_recoverable": 7,
+        "percent": 100.0
+      },
+      "newly_converted_recoverable": [
+        "Q007",
+        "Q008",
+        "Q009"
+      ],
+      "no_longer_converted": []
+    },
+    "helpdesk_legacy_holdout": {
+      "latest_evaluation": "evidence/evaluation/helpdesk_legacy_holdout/evaluation.json",
+      "denominator": 9,
+      "prejoins": {
+        "converted_recoverable": 8,
+        "percent": 88.9
+      },
+      "t2_final": {
+        "converted_recoverable": 9,
+        "percent": 100.0
+      },
+      "newly_converted_recoverable": [
+        "Q007"
+      ],
+      "no_longer_converted": []
+    },
+    "news_buzz": {
+      "latest_evaluation": "evidence/evaluation/news_buzz/evaluation_post_escape_fix.json",
+      "denominator": 30,
+      "prejoins": {
+        "converted_recoverable": 30,
+        "percent": 100.0
+      },
+      "t2_final": {
+        "converted_recoverable": 30,
+        "percent": 100.0
+      },
+      "newly_converted_recoverable": [],
+      "no_longer_converted": []
+    },
+    "fee_rainbow": {
+      "latest_evaluation": "evidence/evaluation/fee_rainbow/evaluation_wrapper_support.json",
+      "denominator": 40,
+      "prejoins": {
+        "converted_recoverable": 39,
+        "percent": 97.5
+      },
+      "t2_final": {
+        "converted_recoverable": 39,
+        "percent": 97.5
+      },
+      "newly_converted_recoverable": [],
+      "no_longer_converted": []
+    }
+  }
+}

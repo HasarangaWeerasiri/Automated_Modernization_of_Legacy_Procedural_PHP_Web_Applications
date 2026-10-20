@@ -1,0 +1,191 @@
+{
+  "matching": "ground truth (file, line) = C3 (source_file relative to the PHP root, source_line)",
+  "gt_entries": 9,
+  "gt_live_sites": 9,
+  "detection": {
+    "live_detected": 9,
+    "recall": 100.0,
+    "non_live_sites_reported": [],
+    "c3_sites_not_in_gt": []
+  },
+  "recovery": {
+    "excluded_ambiguous": 0,
+    "evaluated": 9,
+    "TP": 9,
+    "FN": 0,
+    "FP": 0,
+    "TN": 0,
+    "precision": 100.0,
+    "recall": 100.0,
+    "accuracy": 100.0,
+    "false_abstentions": [],
+    "false_recoveries": []
+  },
+  "column_use_accuracy": {
+    "operation": 100.0,
+    "tables": 100.0,
+    "read": 100.0,
+    "write": 100.0,
+    "filter": 100.0,
+    "sites": 9
+  },
+  "schema_mismatch": {
+    "sites": [],
+    "column_use_accuracy": {
+      "operation": null,
+      "tables": null,
+      "read": null,
+      "write": null,
+      "filter": null,
+      "sites": 0
+    }
+  },
+  "ambiguous_sites": [],
+  "details": [
+    {
+      "gt_id": "G001",
+      "site": "agents.php:5",
+      "expected_recoverable": true,
+      "c3_query_id": "Q001",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G002",
+      "site": "create.php:13",
+      "expected_recoverable": true,
+      "c3_query_id": "Q002",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G003",
+      "site": "delete.php:8",
+      "expected_recoverable": true,
+      "c3_query_id": "Q003",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G004",
+      "site": "edit.php:10",
+      "expected_recoverable": true,
+      "c3_query_id": "Q004",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G005",
+      "site": "edit.php:15",
+      "expected_recoverable": true,
+      "c3_query_id": "Q005",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G006",
+      "site": "index.php:5",
+      "expected_recoverable": true,
+      "c3_query_id": "Q006",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G007",
+      "site": "report.php:5",
+      "expected_recoverable": true,
+      "c3_query_id": "Q007",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G008",
+      "site": "search.php:6",
+      "expected_recoverable": true,
+      "c3_query_id": "Q008",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    },
+    {
+      "gt_id": "G009",
+      "site": "view.php:6",
+      "expected_recoverable": true,
+      "c3_query_id": "Q009",
+      "c3_status": "RECOVERED",
+      "c3_reason_code": null,
+      "outcome": "TP",
+      "column_checks": {
+        "operation": true,
+        "tables": true,
+        "read": true,
+        "write": true,
+        "filter": true
+      }
+    }
+  ],
+  "ground_truth_file": "benchmarks/ground truth/helpdesk_legacy_holdout/queries.json"
+}

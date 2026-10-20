@@ -1,0 +1,109 @@
+# Site-scoped 9-app gate, FR6 join sprint (summary.json run-folder path normalised to <RUN>)
+# prejoins = run at tag c3-pre-joins-20261020 (adeb1c8); t2_final = run at HEAD 4d62a90c077ee2574433802f7b1f71208362bbaf
+# Allowed (allowed_changes.json): entries and functions of Dignity-Dev Q007, Q008, Q009 and Helpdesk Q007 with their
+# dependent summary/security counts; the reason TEXT of Fee-Rainbow Q007 and Q054 (code, stage, abstention unchanged).
+
+## File-level byte comparison
+compared 135 files; only in prejoins: []; only in t2_final: []
+content differences: ['dignity_dev_hms/converted_queries.json', 'dignity_dev_hms/data_access.py', 'dignity_dev_hms/security_report.json', 'dignity_dev_hms/summary.json', 'dignity_dev_hms/traceability_report.json', 'dignity_dev_hms/unresolved_queries.json', 'fee_rainbow/converted_queries.json', 'fee_rainbow/traceability_report.json', 'fee_rainbow/unresolved_queries.json', 'helpdesk_legacy_holdout/converted_queries.json', 'helpdesk_legacy_holdout/data_access.py', 'helpdesk_legacy_holdout/security_report.json', 'helpdesk_legacy_holdout/summary.json', 'helpdesk_legacy_holdout/traceability_report.json', 'helpdesk_legacy_holdout/unresolved_queries.json']
+raw-hash differences explained only by the run folder path: ['clinic_inventory_legacy_hard/summary.json', 'fee_rainbow/summary.json', 'hard_crud/summary.json', 'hms_kishan0725/summary.json', 'mixed_crud/summary.json', 'news_buzz/summary.json', 'simple_crud/summary.json']
+RESULT: DIFFERENT
+
+## Per query ID / per function comparison (every difference listed)
+allowed      dignity_dev_hms/converted_queries.json[Q007].conversion_rule  ids=['Q007'] 
+allowed      dignity_dev_hms/converted_queries.json[Q007].like_wildcard_parameters  ids=['Q007'] 
+allowed      dignity_dev_hms/converted_queries.json[Q007].parameterized_sql  ids=['Q007'] 
+allowed      dignity_dev_hms/converted_queries.json[Q007].parameters  ids=['Q007'] 
+allowed      dignity_dev_hms/converted_queries.json[Q007].reason  ids=['Q007'] 
+allowed      dignity_dev_hms/converted_queries.json[Q007].status  ids=['Q007'] 
+allowed      dignity_dev_hms/converted_queries.json[Q007].table  ids=['Q007'] 
+allowed      dignity_dev_hms/converted_queries.json[Q008].conversion_rule  ids=['Q008'] 
+allowed      dignity_dev_hms/converted_queries.json[Q008].like_wildcard_parameters  ids=['Q008'] 
+allowed      dignity_dev_hms/converted_queries.json[Q008].parameterized_sql  ids=['Q008'] 
+allowed      dignity_dev_hms/converted_queries.json[Q008].parameters  ids=['Q008'] 
+allowed      dignity_dev_hms/converted_queries.json[Q008].reason  ids=['Q008'] 
+allowed      dignity_dev_hms/converted_queries.json[Q008].status  ids=['Q008'] 
+allowed      dignity_dev_hms/converted_queries.json[Q008].table  ids=['Q008'] 
+allowed      dignity_dev_hms/converted_queries.json[Q009].conversion_rule  ids=['Q009'] 
+allowed      dignity_dev_hms/converted_queries.json[Q009].like_wildcard_parameters  ids=['Q009'] 
+allowed      dignity_dev_hms/converted_queries.json[Q009].parameterized_sql  ids=['Q009'] 
+allowed      dignity_dev_hms/converted_queries.json[Q009].parameters  ids=['Q009'] 
+allowed      dignity_dev_hms/converted_queries.json[Q009].reason  ids=['Q009'] 
+allowed      dignity_dev_hms/converted_queries.json[Q009].status  ids=['Q009'] 
+allowed      dignity_dev_hms/converted_queries.json[Q009].table  ids=['Q009'] 
+allowed      dignity_dev_hms/data_access.py::select_patient_info_q007 added ids=['Q007']
+allowed      dignity_dev_hms/data_access.py::select_patient_info_q008 added ids=['Q008']
+allowed      dignity_dev_hms/data_access.py::select_patient_info_q009 added ids=['Q009']
+allowed      dignity_dev_hms/data_access.py::unresolved_query_q007 removed ids=['Q007']
+allowed      dignity_dev_hms/data_access.py::unresolved_query_q008 removed ids=['Q008']
+allowed      dignity_dev_hms/data_access.py::unresolved_query_q009 removed ids=['Q009']
+allowed      dignity_dev_hms/security_report.json.queries[Q007].conversion_rule  ids=['Q007'] 
+allowed      dignity_dev_hms/security_report.json.queries[Q007].conversion_status  ids=['Q007'] 
+allowed      dignity_dev_hms/security_report.json.queries[Q008].conversion_rule  ids=['Q008'] 
+allowed      dignity_dev_hms/security_report.json.queries[Q008].conversion_status  ids=['Q008'] 
+allowed      dignity_dev_hms/security_report.json.queries[Q009].conversion_rule  ids=['Q009'] 
+allowed      dignity_dev_hms/security_report.json.queries[Q009].conversion_status  ids=['Q009'] 
+allowed      dignity_dev_hms/summary.json.conversion_unresolved  ids=[] 10 -> 7
+allowed      dignity_dev_hms/summary.json.converted_by_general_rules  ids=[] 4 -> 7
+allowed      dignity_dev_hms/summary.json.converted_queries  ids=[] 4 -> 7
+allowed      dignity_dev_hms/summary.json.not_converted  ids=[] 10 -> 7
+allowed      dignity_dev_hms/summary.json.recovered_not_converted  ids=[] 3 -> 0
+allowed      dignity_dev_hms/summary.json.unresolved_conversion_stage  ids=[] 3 -> 0
+allowed      dignity_dev_hms/summary.json.unresolved_total  ids=[] 10 -> 7
+allowed      dignity_dev_hms/traceability_report.json[Q007].action  ids=['Q007'] 
+allowed      dignity_dev_hms/traceability_report.json[Q007].conversion_reason  ids=['Q007'] 
+allowed      dignity_dev_hms/traceability_report.json[Q007].conversion_rule  ids=['Q007'] 
+allowed      dignity_dev_hms/traceability_report.json[Q007].conversion_status  ids=['Q007'] 
+allowed      dignity_dev_hms/traceability_report.json[Q007].generated_function  ids=['Q007'] 
+allowed      dignity_dev_hms/traceability_report.json[Q007].generated_function_kind  ids=['Q007'] 
+allowed      dignity_dev_hms/traceability_report.json[Q008].action  ids=['Q008'] 
+allowed      dignity_dev_hms/traceability_report.json[Q008].conversion_reason  ids=['Q008'] 
+allowed      dignity_dev_hms/traceability_report.json[Q008].conversion_rule  ids=['Q008'] 
+allowed      dignity_dev_hms/traceability_report.json[Q008].conversion_status  ids=['Q008'] 
+allowed      dignity_dev_hms/traceability_report.json[Q008].generated_function  ids=['Q008'] 
+allowed      dignity_dev_hms/traceability_report.json[Q008].generated_function_kind  ids=['Q008'] 
+allowed      dignity_dev_hms/traceability_report.json[Q009].action  ids=['Q009'] 
+allowed      dignity_dev_hms/traceability_report.json[Q009].conversion_reason  ids=['Q009'] 
+allowed      dignity_dev_hms/traceability_report.json[Q009].conversion_rule  ids=['Q009'] 
+allowed      dignity_dev_hms/traceability_report.json[Q009].conversion_status  ids=['Q009'] 
+allowed      dignity_dev_hms/traceability_report.json[Q009].generated_function  ids=['Q009'] 
+allowed      dignity_dev_hms/traceability_report.json[Q009].generated_function_kind  ids=['Q009'] 
+allowed      dignity_dev_hms/unresolved_queries.json[Q007]  ids=['Q007'] 
+allowed      dignity_dev_hms/unresolved_queries.json[Q008]  ids=['Q008'] 
+allowed      dignity_dev_hms/unresolved_queries.json[Q009]  ids=['Q009'] 
+allowed      fee_rainbow/converted_queries.json[Q007].reason  ids=['Q007'] 
+allowed      fee_rainbow/converted_queries.json[Q054].reason  ids=['Q054'] 
+allowed      fee_rainbow/traceability_report.json[Q007].conversion_reason  ids=['Q007'] 
+allowed      fee_rainbow/traceability_report.json[Q054].conversion_reason  ids=['Q054'] 
+allowed      fee_rainbow/unresolved_queries.json[Q007].reason  ids=['Q007'] 
+allowed      fee_rainbow/unresolved_queries.json[Q054].reason  ids=['Q054'] 
+allowed      helpdesk_legacy_holdout/converted_queries.json[Q007].conversion_rule  ids=['Q007'] 
+allowed      helpdesk_legacy_holdout/converted_queries.json[Q007].like_wildcard_parameters  ids=['Q007'] 
+allowed      helpdesk_legacy_holdout/converted_queries.json[Q007].parameterized_sql  ids=['Q007'] 
+allowed      helpdesk_legacy_holdout/converted_queries.json[Q007].parameters  ids=['Q007'] 
+allowed      helpdesk_legacy_holdout/converted_queries.json[Q007].reason  ids=['Q007'] 
+allowed      helpdesk_legacy_holdout/converted_queries.json[Q007].status  ids=['Q007'] 
+allowed      helpdesk_legacy_holdout/converted_queries.json[Q007].table  ids=['Q007'] 
+allowed      helpdesk_legacy_holdout/data_access.py::select_teams_q007 added ids=['Q007']
+allowed      helpdesk_legacy_holdout/data_access.py::unresolved_query_q007 removed ids=['Q007']
+allowed      helpdesk_legacy_holdout/security_report.json.queries[Q007].conversion_rule  ids=['Q007'] 
+allowed      helpdesk_legacy_holdout/security_report.json.queries[Q007].conversion_status  ids=['Q007'] 
+allowed      helpdesk_legacy_holdout/summary.json.conversion_unresolved  ids=[] 1 -> 0
+allowed      helpdesk_legacy_holdout/summary.json.converted_by_general_rules  ids=[] 8 -> 9
+allowed      helpdesk_legacy_holdout/summary.json.converted_queries  ids=[] 8 -> 9
+allowed      helpdesk_legacy_holdout/summary.json.not_converted  ids=[] 1 -> 0
+allowed      helpdesk_legacy_holdout/summary.json.recovered_not_converted  ids=[] 1 -> 0
+allowed      helpdesk_legacy_holdout/summary.json.unresolved_conversion_stage  ids=[] 1 -> 0
+allowed      helpdesk_legacy_holdout/summary.json.unresolved_total  ids=[] 1 -> 0
+allowed      helpdesk_legacy_holdout/traceability_report.json[Q007].action  ids=['Q007'] 
+allowed      helpdesk_legacy_holdout/traceability_report.json[Q007].conversion_reason  ids=['Q007'] 
+allowed      helpdesk_legacy_holdout/traceability_report.json[Q007].conversion_rule  ids=['Q007'] 
+allowed      helpdesk_legacy_holdout/traceability_report.json[Q007].conversion_status  ids=['Q007'] 
+allowed      helpdesk_legacy_holdout/traceability_report.json[Q007].generated_function  ids=['Q007'] 
+allowed      helpdesk_legacy_holdout/traceability_report.json[Q007].generated_function_kind  ids=['Q007'] 
+allowed      helpdesk_legacy_holdout/unresolved_queries.json[Q007]  ids=['Q007'] 
+RESULT: SITE-SCOPED GATE PASS
+
+# Frozen HMS signatures (output/hms_kishan0725/signatures.json, working-tree bytes)
+# expected: FA8C1AFE46576D51A3939067B3699F488E2021B5B8F2A5CDEC2D7ED9D931DDC1
+# measured: FA8C1AFE46576D51A3939067B3699F488E2021B5B8F2A5CDEC2D7ED9D931DDC1  match: True
