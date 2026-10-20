@@ -717,3 +717,113 @@ def test_export_contains_no_sql_values_credentials_or_paths(data):
 def test_dashboard_option_is_opt_in():
     with pytest.raises(SystemExit):
         summarize.main(["--no-markdown"])
+
+
+# PP1 views (dashboard/pp1_content.py, docs/c3_pp1_dashboard_content.json) ---------------------------------------
+
+PP1_CONTENT = ROOT / "docs" / "c3_pp1_dashboard_content.json"
+STAR_WARNING = "Generated successfully; result-column mapping equivalence has not been verified."
+
+
+def _numbers_without_source(node, path="$", parent=None):
+    if isinstance(node, bool):
+        return []
+    if isinstance(node, (int, float)):
+        return [] if isinstance(parent, dict) and "source" in parent else [path]
+    if isinstance(node, dict):
+        return [p for k, v in node.items() for p in _numbers_without_source(v, f"{path}.{k}", node)]
+    if isinstance(node, list):
+        return [p for i, v in enumerate(node) for p in _numbers_without_source(v, f"{path}[{i}]", None)]
+    return []
+
+
+def test_every_pp1_number_carries_its_source(data):
+    assert _numbers_without_source(data["pp1"]) == []
+
+
+def test_pp1_content_file_holds_no_research_numbers():
+    content = json.loads(PP1_CONTENT.read_text(encoding="utf-8"))
+    allowed = re.compile(r"\b(?:C3|PP1|sha256)\b|\b(?:FR|Q|G|S|E|H)\d+\b|\b[0-9a-f]{7}\b|\bMD5\b|\bSHA[12]\b|TINYINT\(1\)|[\w./-]*(?:\.py|\.php|\.json|\.md|/)[\w./-]*|\b\w*_\w*\b")
+
+    def strings(node, path="$"):
+        if isinstance(node, dict):
+            for k, v in node.items():
+                if k != "refs":  # measurement ids, resolved against dashboard_data.json
+                    yield from strings(v, f"{path}.{k}")
+        elif isinstance(node, list):
+            for i, v in enumerate(node):
+                yield from strings(v, f"{path}[{i}]")
+        elif isinstance(node, str):
+            yield path, node
+    offending = [(p, s) for p, s in strings(content) if re.search(r"\d", allowed.sub("", s))]
+    assert offending == []
+
+
+def test_star_join_sites_keep_their_conversion_and_show_the_warning(data):
+    star = data["pp1"]["star_join_sites"]
+    assert star["warning"] == STAR_WARNING
+    assert {(s["app"], s["query_id"]) for s in star["sites"]} == {("fee_rainbow", "Q038"), ("fee_rainbow", "Q041"),
+                                                                ("ams_native", "Q016"), ("ams_native", "Q019")}
+    fee = {r["query_id"]: r for r in data["records"]["fee_rainbow"]}
+    assert all(fee[q]["conversion_status"] == "CONVERTED" for q in ("Q038", "Q041"))
+    record = json.loads((ROOT / star["source"]).read_text(encoding="utf-8"))
+    for s in star["sites"]:
+        r = next(x for x in record["sites"] if (x["app"], x["query_id"]) == (s["app"], s["query_id"]))
+        assert s["duplicate_output_names"]["value"] == r["duplicate_output_names"] and r["conversion_status"] == "CONVERTED"
+        assert ("cannot be determined" in s["finding"]) == (r["duplicate_output_names"] is None)
+    assert "SELECT" not in json.dumps(record["sites"]) or all("FROM" not in x["finding"] for x in record["sites"])
+
+
+def test_reason_catalogue_is_counted_from_the_source_and_keeps_causes_apart(data):
+    p = data["pp1"]
+    cat = p["reason_catalogue"]
+    source = "".join((ROOT / f).read_text(encoding="utf-8") for f in ("components/c3_data_layer/src/c3/mapping/sql_recovery.py",
+                                                                      "components/c3_data_layer/src/c3/analysis/unresolved_report.py"))
+    assert all(f'"{c["code"]}"' in source for c in cat["defined"])
+    assert cat["defined_recovery"]["value"] == sum(c["stage"] == "recovery" for c in cat["defined"])
+    used = {r["code"] for r in p["reasons"]}
+    assert {c["code"] for c in cat["defined"] if c["in_use"]} == used
+    assert cat["in_use_recovery"]["value"] == sum(1 for c in cat["defined"] if c["in_use"] and c["stage"] == "recovery")
+    structural = {r["key"] for r in p["reasons"] if r["code"] == "STRUCTURAL"}
+    assert len(structural) > 1 and all(":" in k for k in structural)
+    # counts reconcile with the current-code unresolved records
+    for r in p["reasons"]:
+        for app, v in r["by_app"].items():
+            rows = [x for x in data["records"][app] if x["query_id"] in v["query_ids"]]
+            assert len(rows) == v["count"]["value"] and all(x["unresolved_reason_code"] == r["code"] for x in rows)
+    keys = {o["key"] for o in p["outcomes"]}
+    assert {"recoverable_unsupported", "non_recoverable", "ambiguous", "non_live", "unverified", "failed_verification"} <= keys
+
+
+def test_fee_rainbow_licence_is_flagged_not_resolved_and_stays_counts_only(data):
+    fee = next(r for r in data["pp1"]["register"] if r["app"] == "fee_rainbow")
+    assert fee["licence_status"] == "Licence information inconsistent across records - verification required."
+    assert fee["licence_manifest"].startswith("MIT") and "not verified" in fee["licence_generator"]
+    assert fee["display"] == "Counts and query IDs only" and "fee_rainbow" not in summarize.BEFORE_AFTER_DETAIL
+    ams = data["pp1"]["ams_native"]
+    assert ams["display"] == "Counts and query IDs only" and len(ams["licence_history"]) == 2
+    assert "ams_native" not in data["before_after"]["apps"]
+
+
+def test_partial_requirements_keep_their_status_and_reason(data):
+    items = {i["fr"]: i for i in data["functions"]["items"]}
+    for fr in ("FR2", "FR4", "FR6"):
+        assert items[fr]["status"] == "Partial" and data["pp1"]["functions"][fr]["partial_reason"]
+    assert set(data["pp1"]["functions"]) == set(items)
+
+
+def test_sql_matrix_uses_the_eight_status_classes(data):
+    statuses = set(data["pp1"]["statuses"])
+    assert statuses == {"supported_tested", "supported_restricted", "rejected", "encountered_unresolved", "not_implemented",
+                        "not_encountered", "not_tested", "out_of_scope"}
+    rows = data["pp1"]["sql_matrix"]
+    assert {r["status"] for r in rows} == statuses
+    in_fragment = next(r for r in rows if r["id"] == "in_fragment")
+    assert "Defence-in-depth" in in_fragment["limitation"]
+
+
+def test_pp1_views_are_rendered_by_app_js():
+    code = (DASHBOARD / "app.js").read_text(encoding="utf-8")
+    for needle in ("SQL Support Matrix", "Failure & Limitation Explorer", "Applications & Licensing Register", "View source evidence",
+                   "Evidence methodology", "Result-shape warning", "Technology and output inventory", "How to read these numbers"):
+        assert needle in code

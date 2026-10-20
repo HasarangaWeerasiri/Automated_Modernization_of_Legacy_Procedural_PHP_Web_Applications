@@ -1,0 +1,75 @@
+{
+ "title": "Result-shape check of converted INNER JOIN sites with a star projection (counts only)",
+ "date": "2026-10-20",
+ "git_head": "25b458c0ac90ee60850bf243134f005dd37fd042",
+ "pipeline_code": "4f75e79 (unchanged since)",
+ "method": "Each converted SELECT whose join projection contains * or table.* is parsed with SQLGlot; the projection is expanded against the C3 parsed schema (schema.json of the same run). Column and table names are not recorded.",
+ "inputs": {
+  "fee_rainbow": "9-app gate run of the current code (schema: benchmarks/apps/fee_rainbow/database/db.sql, one table)",
+  "ams_native": "ams-native run of the current code on the original ZIP's PHP files (set sha256 372d476f...b088) and schema (sha256 c9d9a0f6...e994); see evidence/final/2026-10-20/ams_native_post_t2.json"
+ },
+ "conversion_unchanged": "No conversion status or converter rule is changed by this record.",
+ "warning_text": "Generated successfully; result-column mapping equivalence has not been verified.",
+ "sites": [
+  {
+   "app": "ams_native",
+   "query_id": "Q016",
+   "conversion_status": "CONVERTED",
+   "conversion_rule": "general",
+   "join_tables": 2,
+   "tables_missing_from_parsed_schema": 0,
+   "projection": [
+    "*"
+   ],
+   "explicit_projections": 0,
+   "expanded_output_columns": 20,
+   "duplicate_output_names": 2,
+   "finding": "SELECT * over 2 tables expands to 20 output columns of which 2 names occur more than once; result.mappings() keys for those names are not verified."
+  },
+  {
+   "app": "ams_native",
+   "query_id": "Q019",
+   "conversion_status": "CONVERTED",
+   "conversion_rule": "general",
+   "join_tables": 2,
+   "tables_missing_from_parsed_schema": 0,
+   "projection": [
+    "*"
+   ],
+   "explicit_projections": 0,
+   "expanded_output_columns": 20,
+   "duplicate_output_names": 2,
+   "finding": "SELECT * over 2 tables expands to 20 output columns of which 2 names occur more than once; result.mappings() keys for those names are not verified."
+  },
+  {
+   "app": "fee_rainbow",
+   "query_id": "Q038",
+   "conversion_status": "CONVERTED",
+   "conversion_rule": "general",
+   "join_tables": 2,
+   "tables_missing_from_parsed_schema": 2,
+   "projection": [
+    "table.*"
+   ],
+   "explicit_projections": 0,
+   "expanded_output_columns": null,
+   "duplicate_output_names": null,
+   "finding": "Column list cannot be determined: the joined tables are not in the parsed schema. The projection is a single table.* with no other column, so duplicate output names cannot arise within it (a table's column names are unique)."
+  },
+  {
+   "app": "fee_rainbow",
+   "query_id": "Q041",
+   "conversion_status": "CONVERTED",
+   "conversion_rule": "general",
+   "join_tables": 2,
+   "tables_missing_from_parsed_schema": 2,
+   "projection": [
+    "table.*"
+   ],
+   "explicit_projections": 0,
+   "expanded_output_columns": null,
+   "duplicate_output_names": null,
+   "finding": "Column list cannot be determined: the joined tables are not in the parsed schema. The projection is a single table.* with no other column, so duplicate output names cannot arise within it (a table's column names are unique)."
+  }
+ ]
+}

@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": {
   "by": "scripts/summarize_evidence.py --dashboard-json",
-  "date": "2026-10-20T14:42:34+05:30",
-  "git_head": "5923dc2e66bb76176c1291d895ca4559998d9390",
+  "date": "2026-10-20T17:19:12+05:30",
+  "git_head": "25b458c0ac90ee60850bf243134f005dd37fd042",
   "pipeline_unchanged_since_head": true,
   "current_code_run": "fresh C3 run of all 9 apps into a temp folder outside the repo (written <temp>)"
  },
@@ -19115,6 +19115,4181 @@
      "tests"
     ]
    }
+  ]
+ },
+ "pp1": {
+  "content_source": "docs/c3_pp1_dashboard_content.json",
+  "methodology": [
+   "Requirement text is quoted verbatim from the proposal as extracted in docs/C3_audit_2026-10-17.md; statuses and limitations come from the reviewed file docs/c3_fr_status.json.",
+   "Every number is a referenced measurement or a computed count with its evidence file and derivation; select a value to open its evidence.",
+   "Stages are kept apart: historical evaluation files (pre-adaptation, post-adaptation, post-fix, fresh holdout) are never overwritten; current-code values come from a fresh run of the pipeline into a temporary folder outside the repository.",
+   "Restricted applications (HMS, Dignity-Dev, Fee-Rainbow, ams-native) are shown as counts and query IDs only: no SQL text, PHP source, schema data or reason text that quotes their source.",
+   "Conversion is not behavioural equivalence. Passing through the converter shows that a function was generated under the safety rules; behaviour is shown only where E1 or the Clinic MySQL verification ran.",
+   "Coverage figures are never called accuracy: recovery precision and recall are measured against author-verified ground truth; conversion coverage only counts generated functions."
+  ],
+  "statuses": {
+   "supported_tested": {
+    "label": "Supported and tested",
+    "tone": "good"
+   },
+   "supported_restricted": {
+    "label": "Supported with restrictions",
+    "tone": "partial"
+   },
+   "rejected": {
+    "label": "Explicitly rejected",
+    "tone": "warn"
+   },
+   "encountered_unresolved": {
+    "label": "Encountered and unresolved",
+    "tone": "bad"
+   },
+   "not_implemented": {
+    "label": "Not implemented",
+    "tone": "not-implemented"
+   },
+   "not_encountered": {
+    "label": "Not encountered",
+    "tone": "muted"
+   },
+   "not_tested": {
+    "label": "Not tested",
+    "tone": "warn"
+   },
+   "out_of_scope": {
+    "label": "Outside project scope",
+    "tone": "muted"
+   }
+  },
+  "functions": {
+   "FR1": {
+    "purpose": "Find every place where the legacy PHP sends SQL to MySQL, so that nothing is migrated blind.",
+    "implementation": "A PHP extractor built on the nikic/php-parser AST walks every PHP file and reports each database execution call with its file, line, executor and SQL-argument expression. Single-parameter wrapper functions that forward their argument to an executor are detected, and calls to them become sites.",
+    "techniques": [
+     "PHP abstract syntax tree traversal (nikic/php-parser)",
+     "Executor tables for mysqli, mysql_* and PDO-style methods (query, prepare, exec)",
+     "PHP named-argument handling",
+     "Wrapper-function detection",
+     "Other DBMS APIs reported as UNSUPPORTED_EXECUTOR instead of ignored"
+    ],
+    "code": [
+     {
+      "file": "components/c3_data_layer/tools/php_ast/extract_sql_calls.php",
+      "functions": [
+       "SQL_FUNCTION_ARGUMENT_POSITIONS",
+       "SQL_METHOD_NAMES"
+      ]
+     },
+     {
+      "file": "components/c3_data_layer/src/c3/mapping/sql_locator.py",
+      "functions": [
+       "analyze_php_ast",
+       "locate_sql_calls"
+      ]
+     }
+    ],
+    "demonstration": [
+     {
+      "app": "clinic_inventory_legacy_hard",
+      "query_ids": [
+       "Q022"
+      ],
+      "text": "A mysqli_prepare call is detected and later converted."
+     },
+     {
+      "app": "news_buzz",
+      "query_ids": [],
+      "text": "Every live executor site in the ground truth is detected (see the detection measurement)."
+     }
+    ],
+    "improvements": [
+     {
+      "commit": "4fdd0d0",
+      "text": "Wrapper-call detection and the SQL-fragment variable rule."
+     },
+     {
+      "commit": "a85a1a1",
+      "text": "Correct PHP string escape decoding."
+     },
+     {
+      "commit": "9b25bc1",
+      "text": "Prepared statements with ? and :name placeholders."
+     }
+    ],
+    "tests": [
+     "components/c3_data_layer/tests/test_sql_locator.py",
+     "components/c3_data_layer/tests/test_executor_coverage.py",
+     "components/c3_data_layer/tests/test_sql_wrappers.py",
+     "components/c3_data_layer/tests/test_prepared_statements.py"
+    ],
+    "future": [
+     "Multi-parameter wrapper functions and class-based database layers.",
+     "A benchmark application that uses PDO (PDO is covered by fixtures and unit tests only)."
+    ]
+   },
+   "FR2": {
+    "purpose": "Rebuild the SQL text that the PHP constructs at run time, so it can be analysed and converted.",
+    "implementation": "The assignment chain of the SQL variable is followed backwards through = and .= assignments; literals, concatenation, interpolation and array elements are rebuilt into a template with named placeholders for runtime values. SQL built and executed in the same conditional block is recovered. Chains that depend on which branch, loop iteration or switch case ran, or whose variables carry SQL text, are flagged UNRESOLVED with a reason code instead of guessed.",
+    "techniques": [
+     "Backward assignment-chain slicing",
+     "PHP string decoding (escapes, interpolation, array elements)",
+     "Template with named placeholders",
+     "Guards: branching, loop/switch, structural placeholder, SQL-fragment variable",
+     "Query-specific templates for exact Clinic shapes (reported separately)"
+    ],
+    "code": [
+     {
+      "file": "components/c3_data_layer/src/c3/mapping/sql_recovery.py",
+      "functions": [
+       "recover_queries_from_ast",
+       "_split_concat_expression",
+       "_decode_php_string",
+       "_detect_branching_assignment",
+       "_detect_loop_or_switch_dependency",
+       "_detect_structural_placeholder",
+       "_detect_sql_fragment_variable"
+      ]
+     },
+     {
+      "file": "components/c3_data_layer/src/c3/mapping/branch_recovery.py",
+      "functions": [
+       "recover_simple_if_else_candidate"
+      ]
+     }
+    ],
+    "demonstration": [
+     {
+      "app": "news_buzz",
+      "query_ids": [
+       "Q002",
+       "Q006"
+      ],
+      "text": "Branch-dependent SQL abstains with BRANCHING; the ground truth classifies these sites as not recoverable."
+     },
+     {
+      "app": "clinic_inventory_legacy_hard",
+      "query_ids": [
+       "Q014",
+       "Q016"
+      ],
+      "text": "Branch-dependent SQL rebuilt only by query-specific templates for those exact files."
+     }
+    ],
+    "improvements": [
+     {
+      "commit": "5c7dd9b",
+      "text": "SQL built and executed in the same conditional block (S13)."
+     },
+     {
+      "commit": "d542436",
+      "text": "Array elements with literal keys recovered as named values."
+     },
+     {
+      "commit": "a85a1a1",
+      "text": "Escape decoder."
+     },
+     {
+      "commit": "4fdd0d0",
+      "text": "SQL-fragment variable rule."
+     }
+    ],
+    "tests": [
+     "components/c3_data_layer/tests/test_sql_recovery.py",
+     "components/c3_data_layer/tests/test_guarded_block_recovery.py",
+     "components/c3_data_layer/tests/test_loop_switch_soundness.py",
+     "components/c3_data_layer/tests/test_sql_fragment_variables.py",
+     "components/c3_data_layer/tests/test_array_element_recovery.py",
+     "components/c3_data_layer/tests/test_php_string_decoding.py"
+    ],
+    "partial_reason": "Against the ground truth every site judged recoverable is recovered; against the requirement wording, SQL whose text differs between branches is not rebuilt by a general rule (only the Clinic templates do), so the status stays Partial.",
+    "future": [
+     "General branch-variant reconstruction (deferred).",
+     "Loop-built SQL as an explicit batch statement (not planned)."
+    ]
+   },
+   "FR3": {
+    "purpose": "Know the database structure the migrated code must target.",
+    "implementation": "The MySQL schema file is stripped of comments, its CREATE TABLE bodies are parsed into columns, keys, defaults, constraints and indexes, and phpMyAdmin-style ALTER TABLE key and AUTO_INCREMENT statements are applied afterwards. Views, triggers, procedures, functions and events are recorded as unsupported objects.",
+    "techniques": [
+     "Rule-based DDL parsing",
+     "ALTER TABLE application",
+     "Foreign-key relationship extraction",
+     "Unsupported-object reporting"
+    ],
+    "code": [
+     {
+      "file": "components/c3_data_layer/src/c3/mapping/schema_reader.py",
+      "functions": [
+       "read_schema",
+       "parse_create_table",
+       "apply_alter_table_statements",
+       "write_schema_json"
+      ]
+     }
+    ],
+    "demonstration": [
+     {
+      "app": "helpdesk_legacy_holdout",
+      "query_ids": [],
+      "text": "Tables, columns and declared foreign keys parsed into schema.json."
+     }
+    ],
+    "improvements": [
+     {
+      "commit": "71cfe98",
+      "text": "Recover ALTER TABLE keys; key-less tables become Core tables."
+     },
+     {
+      "commit": "1241491",
+      "text": "Never abort the pipeline on a column type."
+     },
+     {
+      "commit": "806d36c",
+      "text": "Schema fidelity and robust relationships (S9)."
+     }
+    ],
+    "tests": [
+     "components/c3_data_layer/tests/test_schema_reader.py",
+     "components/c3_data_layer/tests/test_alter_table_schema.py",
+     "components/c3_data_layer/tests/test_schema_types_robustness.py",
+     "components/c3_data_layer/tests/test_schema_fidelity.py"
+    ],
+    "future": [
+     "Relationship inference for schemas without declared foreign keys (not planned)."
+    ]
+   },
+   "FR4": {
+    "purpose": "Know which tables and columns each query reads, writes and filters.",
+    "implementation": "Each recovered or converted statement is parsed with SQLGlot; tables and aliases are attributed, SELECT * is expanded against the schema, and columns are classified as read, write, filter, join, group, order or having.",
+    "techniques": [
+     "SQLGlot abstract syntax tree",
+     "Alias resolution",
+     "Star expansion against the parsed schema",
+     "Column-role classification"
+    ],
+    "code": [
+     {
+      "file": "components/c3_data_layer/src/c3/analysis/column_analyzer.py",
+      "functions": [
+       "column_roles",
+       "analyze_sql_columns"
+      ]
+     },
+     {
+      "file": "components/c3_data_layer/src/c3/analysis/column_usage_generator.py",
+      "functions": [
+       "generate_column_usage"
+      ]
+     }
+    ],
+    "demonstration": [
+     {
+      "app": "helpdesk_legacy_holdout",
+      "query_ids": [
+       "Q007"
+      ],
+      "text": "Join, group and order columns across three tables."
+     }
+    ],
+    "improvements": [
+     {
+      "commit": "a33e0fc",
+      "text": "Column-use roles, table attribution, star expansion and template column use (S11)."
+     }
+    ],
+    "tests": [
+     "components/c3_data_layer/tests/test_column_analyzer.py",
+     "components/c3_data_layer/tests/test_column_roles.py",
+     "components/c3_data_layer/tests/test_column_usage_generator.py",
+     "components/c3_data_layer/tests/test_sql_parser.py"
+    ],
+    "partial_reason": "How result columns are used later in the PHP application logic is not traced, so the second half of the requirement is not implemented.",
+    "future": [
+     "Trace fetched-row keys into later PHP use (deferred; it could change frozen HMS outputs)."
+    ]
+   },
+   "FR5": {
+    "purpose": "Give the migrated application typed Python models of the existing database.",
+    "implementation": "One SQLAlchemy ORM class per table with a primary key and a Core Table for tables without one; generic types are used where they are exact and MySQL variants where a generic type would change the column; TINYINT(1) becomes Boolean only for non-key columns; relationships come from foreign keys.",
+    "techniques": [
+     "MySQL to SQLAlchemy type mapping with dialect variants",
+     "ORM class or Core Table selection",
+     "Relationship generation from foreign keys"
+    ],
+    "code": [
+     {
+      "file": "components/c3_data_layer/src/c3/conversion/model_builder.py",
+      "functions": [
+       "generate_models_source",
+       "key_columns",
+       "build_migration_notes"
+      ]
+     },
+     {
+      "file": "components/c3_data_layer/src/c3/conversion/type_map.py",
+      "functions": [
+       "mysql_to_sqlalchemy"
+      ]
+     }
+    ],
+    "demonstration": [
+     {
+      "app": "clinic_inventory_legacy_hard",
+      "query_ids": [],
+      "text": "models.py with ORM classes and foreign-key relationships."
+     }
+    ],
+    "improvements": [
+     {
+      "commit": "9aeb3f2",
+      "text": "Exact MySQL types where the generic type would change them."
+     },
+     {
+      "commit": "17eebc9",
+      "text": "TINYINT(1) is Boolean only for non-key columns."
+     }
+    ],
+    "tests": [
+     "components/c3_data_layer/tests/test_model_builder.py",
+     "components/c3_data_layer/tests/test_type_map.py",
+     "components/c3_data_layer/tests/test_baseline_sqlacodegen.py"
+    ],
+    "future": [
+     "ORM classes for key-less tables would need a chosen surrogate key (design decision, not planned)."
+    ]
+   },
+   "FR6": {
+    "purpose": "Replace string-built SQL with parameterized SQLAlchemy functions where this is safe.",
+    "implementation": "The recovered template is parameterized (quoted placeholders become named binds, LIKE wildcards are bound with the value), parsed with SQLGlot and accepted only if every placeholder is in a scalar value position. Multi-table SELECTs must satisfy the INNER JOIN rule or the LEFT/comma-join result-shape rule. One text() function with named binds is emitted per accepted site; the SQL text itself is unchanged.",
+    "techniques": [
+     "Named bind parameters with SQLAlchemy text()",
+     "SQLGlot value-position safety rule",
+     "INNER JOIN rule",
+     "LEFT and comma-join result-shape rule",
+     "Prepared-statement placeholder naming",
+     "Query-specific Clinic templates (reported separately)",
+     "Standalone generated module with inlined helpers"
+    ],
+    "code": [
+     {
+      "file": "components/c3_data_layer/src/c3/conversion/query_converter.py",
+      "functions": [
+       "convert_query",
+       "_has_unsafe_placeholder_position",
+       "_is_supported_join_select",
+       "_join_select_problem",
+       "_outer_join_shape_problem",
+       "_name_prepared_placeholders"
+      ]
+     },
+     {
+      "file": "components/c3_data_layer/src/c3/generation/emitter.py",
+      "functions": [
+       "generate_data_access_source"
+      ]
+     }
+    ],
+    "demonstration": [
+     {
+      "app": "helpdesk_legacy_holdout",
+      "query_ids": [
+       "Q007"
+      ],
+      "text": "Two LEFT JOINs with COUNT, GROUP BY and ORDER BY, converted under the result-shape rule."
+     },
+     {
+      "app": "dignity_dev_hms",
+      "query_ids": [
+       "Q007",
+       "Q008",
+       "Q009"
+      ],
+      "text": "Implicit comma joins converted under the result-shape rule."
+     },
+     {
+      "app": "fee_rainbow",
+      "query_ids": [
+       "Q054"
+      ],
+      "text": "Recoverable LEFT JOIN that abstains because its tables are not in the parsed schema."
+     }
+    ],
+    "improvements": [
+     {
+      "commit": "9b25bc1",
+      "text": "Prepared statements."
+     },
+     {
+      "commit": "fd7b2f8",
+      "text": "Transaction policy and LIMIT/OFFSET integer coercion."
+     },
+     {
+      "commit": "12d5759",
+      "text": "Standalone generated data_access.py."
+     },
+     {
+      "commit": "d263cbb",
+      "text": "BETWEEN bounds and allow-listed function arguments as bound values."
+     },
+     {
+      "commit": "cba45fc",
+      "text": "LEFT JOIN and comma-join SELECTs under the result-shape rule."
+     }
+    ],
+    "tests": [
+     "components/c3_data_layer/tests/test_query_converter.py",
+     "components/c3_data_layer/tests/test_outer_join_rule.py",
+     "components/c3_data_layer/tests/test_value_positions.py",
+     "components/c3_data_layer/tests/test_emitter.py",
+     "components/c3_data_layer/tests/test_behavioral_execution.py",
+     "components/c3_data_layer/tests/benchmarks/clinic_hard/test_join_rule_mysql.py"
+    ],
+    "partial_reason": "One ground-truth recoverable site (Fee-Rainbow Q054) is not converted; behavioural equivalence is shown only for HMS (E1, with inconclusive sites) and Clinic; the INNER JOIN rule has no result-shape check, so converted star projections over joins are unverified.",
+    "future": [
+     "Apply the result-shape check to INNER JOINs.",
+     "A complete Fee-Rainbow schema.",
+     "E1 behavioural runs for Dignity-Dev, Helpdesk and NEWS-BUZZ."
+    ]
+   },
+   "FR7": {
+    "purpose": "Make sure every runtime value reaches the database as a bound parameter, never as SQL text.",
+    "implementation": "A placeholder is bound only in a scalar value position: comparison right-hand side, IN item, INSERT value, column plus value, BETWEEN bound, LIMIT or OFFSET, or the value argument of an allow-listed function. Identifiers and SQL fragments are flagged STRUCTURAL. The security report traces legacy user inputs to placeholders and scans the generated code for non-literal text() calls.",
+    "techniques": [
+     "SQLGlot position analysis",
+     "Schema-derived identifier allow-lists (Clinic templates)",
+     "Input-source tracing",
+     "Generated-code scan",
+     "E4 recording-session payload check"
+    ],
+    "code": [
+     {
+      "file": "components/c3_data_layer/src/c3/conversion/query_converter.py",
+      "functions": [
+       "_has_unsafe_placeholder_position",
+       "_is_value_position"
+      ]
+     },
+     {
+      "file": "components/c3_data_layer/src/c3/conversion/identifier_allowlist.py",
+      "functions": [
+       "schema_columns",
+       "tables_with_columns"
+      ]
+     },
+     {
+      "file": "components/c3_data_layer/src/c3/analysis/security_report.py",
+      "functions": [
+       "build_security_report",
+       "scan_generated_code"
+      ]
+     }
+    ],
+    "demonstration": [
+     {
+      "app": "hard_crud",
+      "query_ids": [
+       "Q002"
+      ],
+      "text": "Dynamic ORDER BY flagged STRUCTURAL."
+     },
+     {
+      "app": "clinic_inventory_legacy_hard",
+      "query_ids": [
+       "Q012"
+      ],
+      "text": "ORDER BY bound to a schema allow-list (query-specific template)."
+     }
+    ],
+    "improvements": [
+     {
+      "commit": "17b3e51",
+      "text": "Security report and schema-derived identifier allow-lists (S6)."
+     },
+     {
+      "commit": "f04f939",
+      "text": "Array-element parameters credited in the security report."
+     },
+     {
+      "commit": "d263cbb",
+      "text": "String-literal placeholder guard and extended value positions."
+     }
+    ],
+    "tests": [
+     "components/c3_data_layer/tests/test_security_report.py",
+     "components/c3_data_layer/tests/test_value_positions.py",
+     "components/c3_data_layer/tests/test_e4_injection.py",
+     "components/c3_data_layer/tests/test_input_binding.py"
+    ],
+    "future": [
+     "Runtime hostile testing on MySQL beyond HMS and the Clinic cases.",
+     "A converter-level guard for whole-list IN fragments (recovery blocks them today)."
+    ]
+   },
+   "FR8": {
+    "purpose": "Never generate SQL that might be wrong: flag it for a person instead.",
+    "implementation": "Every site that fails a recovery or conversion guard is written to unresolved_queries.json with its stage, reason code and reason, and receives a stub function that raises instead of generated SQL.",
+    "techniques": [
+     "Stage-tagged reason codes",
+     "Unresolved-site stubs",
+     "Unresolved report"
+    ],
+    "code": [
+     {
+      "file": "components/c3_data_layer/src/c3/analysis/unresolved_report.py",
+      "functions": [
+       "build_unresolved_report"
+      ]
+     },
+     {
+      "file": "components/c3_data_layer/src/c3/generation/emitter.py",
+      "functions": [
+       "_build_unresolved_stub"
+      ]
+     }
+    ],
+    "demonstration": [
+     {
+      "app": "hard_crud",
+      "query_ids": [
+       "Q003"
+      ],
+      "text": "IN-list fragment abstains at recovery."
+     },
+     {
+      "app": "news_buzz",
+      "query_ids": [
+       "Q002"
+      ],
+      "text": "Branch-dependent SQL abstains."
+     }
+    ],
+    "improvements": [
+     {
+      "commit": "89aa819",
+      "text": "The unresolved report is one of the three primary outputs."
+     }
+    ],
+    "tests": [
+     "components/c3_data_layer/tests/test_unresolved_report.py",
+     "components/c3_data_layer/tests/test_report_consistency.py"
+    ],
+    "future": [
+     "Per-reason manual-review guidance in the unresolved report itself."
+    ]
+   },
+   "FR9": {
+    "purpose": "Give the modernized data layer a managed starting point for future schema changes.",
+    "implementation": "An Alembic environment (alembic.ini, env.py, script.py.mako) and an initial revision that creates every table in foreign-key dependency order are generated. Generating the files is not running a migration; the round trip was run separately in E3.",
+    "techniques": [
+     "Alembic revision generation",
+     "Dependency ordering of tables"
+    ],
+    "code": [
+     {
+      "file": "components/c3_data_layer/src/c3/generation/alembic_emitter.py",
+      "functions": [
+       "build_initial_revision",
+       "generate_alembic",
+       "dependency_order"
+      ]
+     }
+    ],
+    "demonstration": [
+     {
+      "app": "helpdesk_legacy_holdout",
+      "query_ids": [],
+      "text": "alembic/versions/0001_initial_schema.py in the generated output."
+     }
+    ],
+    "improvements": [
+     {
+      "commit": "2f43376",
+      "text": "Alembic emitter as pipeline stage seven (S10)."
+     },
+     {
+      "commit": "7ee1091",
+      "text": "env.py does not add the database password to SQLite URLs."
+     }
+    ],
+    "tests": [
+     "components/c3_data_layer/tests/test_alembic_emitter.py"
+    ],
+    "future": [
+     "Data migration and incremental revisions."
+    ]
+   },
+   "FR10": {
+    "purpose": "Let a reviewer go from any generated function back to the exact PHP line it replaces.",
+    "implementation": "Each site keeps its file and line through every stage; traceability_report.json maps file:line to recovery status, conversion status and rule, and the generated function name and kind; generated docstrings carry the source label.",
+    "techniques": [
+     "Stable query IDs",
+     "Source labels relative to the PHP root",
+     "Traceability report"
+    ],
+    "code": [
+     {
+      "file": "components/c3_data_layer/src/c3/analysis/traceability.py",
+      "functions": [
+       "build_traceability",
+       "generated_function_names"
+      ]
+     }
+    ],
+    "demonstration": [
+     {
+      "app": "helpdesk_legacy_holdout",
+      "query_ids": [
+       "Q007"
+      ],
+      "text": "report.php line to select_teams_q007."
+     }
+    ],
+    "improvements": [
+     {
+      "commit": "218acf7",
+      "text": "Traceability report as a pipeline output (S12)."
+     },
+     {
+      "commit": "62b8c82",
+      "text": "HMS handoff package with frozen signatures."
+     }
+    ],
+    "tests": [
+     "components/c3_data_layer/tests/test_traceability.py",
+     "components/c3_data_layer/tests/test_handoff_site_labels.py",
+     "components/c3_data_layer/tests/test_hms_handoff_signatures.py"
+    ],
+    "future": [
+     "Regenerate the HMS handoff document after the frozen tag (its Q036 label omits the include directory)."
+    ]
+   }
+  },
+  "sql_matrix": [
+   {
+    "id": "crud",
+    "category": "CRUD operations",
+    "feature": "SELECT, INSERT, UPDATE and DELETE on one table",
+    "status": "supported_tested",
+    "stage": "conversion",
+    "operations": [
+     "SELECT",
+     "INSERT",
+     "UPDATE",
+     "DELETE"
+    ],
+    "technique": "Parameterized text() with named binds; SQL text unchanged",
+    "source": [
+     "query_converter.convert_query"
+    ],
+    "examples": [
+     {
+      "app": "simple_crud",
+      "query_ids": []
+     }
+    ],
+    "tests": [
+     "test_query_converter.py"
+    ],
+    "constructs": [
+     "stmt_select",
+     "stmt_insert",
+     "stmt_update",
+     "stmt_delete"
+    ],
+    "limitation": "Behaviour is verified on MySQL only for HMS (E1) and Clinic.",
+    "future": "E1 runs for more applications.",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::convert_query"
+    ],
+    "occurrences": {
+     "value": 179,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {
+     "clinic_inventory_legacy_hard": {
+      "value": 22,
+      "source": "<temp>/clinic_inventory_legacy_hard/queries.json"
+     },
+     "dignity_dev_hms": {
+      "value": 13,
+      "source": "<temp>/dignity_dev_hms/queries.json"
+     },
+     "fee_rainbow": {
+      "value": 45,
+      "source": "<temp>/fee_rainbow/queries.json"
+     },
+     "hard_crud": {
+      "value": 5,
+      "source": "<temp>/hard_crud/queries.json"
+     },
+     "helpdesk_legacy_holdout": {
+      "value": 9,
+      "source": "<temp>/helpdesk_legacy_holdout/queries.json"
+     },
+     "hms_kishan0725": {
+      "value": 44,
+      "source": "<temp>/hms_kishan0725/queries.json"
+     },
+     "mixed_crud": {
+      "value": 5,
+      "source": "<temp>/mixed_crud/queries.json"
+     },
+     "news_buzz": {
+      "value": 32,
+      "source": "<temp>/news_buzz/queries.json"
+     },
+     "simple_crud": {
+      "value": 4,
+      "source": "<temp>/simple_crud/queries.json"
+     }
+    }
+   },
+   {
+    "id": "update_join",
+    "category": "CRUD operations",
+    "feature": "Multi-table UPDATE",
+    "status": "supported_restricted",
+    "stage": "conversion",
+    "operations": [
+     "UPDATE"
+    ],
+    "technique": "Guarded query-specific template for one Clinic file; any other UPDATE with a join is rejected",
+    "source": [
+     "join_update_converter.convert_q020_join_update",
+     "query_converter.MULTI_TABLE_REASON"
+    ],
+    "examples": [
+     {
+      "app": "clinic_inventory_legacy_hard",
+      "query_ids": [
+       "Q020"
+      ]
+     }
+    ],
+    "tests": [
+     "test_q020_join_update.py",
+     "test_q020_equivalence.py"
+    ],
+    "constructs": [
+     "multi_table_update"
+    ],
+    "limitation": "Not a general rule.",
+    "future": "General UPDATE join conversion (out of the approved scope).",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/join_update_converter.py::convert_q020_join_update",
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::MULTI_TABLE_REASON"
+    ],
+    "occurrences": {
+     "value": 1,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {
+     "clinic_inventory_legacy_hard": {
+      "value": 1,
+      "source": "<temp>/clinic_inventory_legacy_hard/queries.json"
+     }
+    }
+   },
+   {
+    "id": "delete_join",
+    "category": "CRUD operations",
+    "feature": "Multi-table DELETE",
+    "status": "rejected",
+    "stage": "conversion",
+    "operations": [
+     "DELETE"
+    ],
+    "technique": "Rejected with the generic multi-table reason",
+    "source": [
+     "query_converter.MULTI_TABLE_REASON"
+    ],
+    "examples": [],
+    "tests": [
+     "test_outer_join_rule.py"
+    ],
+    "constructs": [
+     "multi_table_delete"
+    ],
+    "limitation": "Not encountered in any benchmark application.",
+    "future": "None planned.",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::MULTI_TABLE_REASON"
+    ],
+    "occurrences": {
+     "value": 0,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "where_and_or",
+    "category": "SQL filtering and expressions",
+    "feature": "WHERE with AND, OR and NOT",
+    "status": "supported_tested",
+    "stage": "conversion",
+    "operations": [
+     "SELECT",
+     "UPDATE",
+     "DELETE"
+    ],
+    "technique": "Value-position rule through logical connectives",
+    "source": [
+     "query_converter._is_value_position",
+     "query_converter._in_predicate_position"
+    ],
+    "examples": [],
+    "tests": [
+     "test_query_converter.py",
+     "test_value_positions.py"
+    ],
+    "constructs": [
+     "where",
+     "and",
+     "or"
+    ],
+    "limitation": "None known.",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::_is_value_position",
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::_in_predicate_position"
+    ],
+    "occurrences": {
+     "value": 123,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {
+     "clinic_inventory_legacy_hard": {
+      "value": 18,
+      "source": "<temp>/clinic_inventory_legacy_hard/queries.json"
+     },
+     "dignity_dev_hms": {
+      "value": 13,
+      "source": "<temp>/dignity_dev_hms/queries.json"
+     },
+     "fee_rainbow": {
+      "value": 22,
+      "source": "<temp>/fee_rainbow/queries.json"
+     },
+     "hard_crud": {
+      "value": 4,
+      "source": "<temp>/hard_crud/queries.json"
+     },
+     "helpdesk_legacy_holdout": {
+      "value": 5,
+      "source": "<temp>/helpdesk_legacy_holdout/queries.json"
+     },
+     "hms_kishan0725": {
+      "value": 28,
+      "source": "<temp>/hms_kishan0725/queries.json"
+     },
+     "mixed_crud": {
+      "value": 3,
+      "source": "<temp>/mixed_crud/queries.json"
+     },
+     "news_buzz": {
+      "value": 28,
+      "source": "<temp>/news_buzz/queries.json"
+     },
+     "simple_crud": {
+      "value": 2,
+      "source": "<temp>/simple_crud/queries.json"
+     }
+    }
+   },
+   {
+    "id": "in_values",
+    "category": "SQL filtering and expressions",
+    "feature": "IN list of bound values",
+    "status": "supported_tested",
+    "stage": "conversion",
+    "operations": [
+     "SELECT",
+     "UPDATE",
+     "DELETE"
+    ],
+    "technique": "Each list item is a value position",
+    "source": [
+     "query_converter._is_value_position"
+    ],
+    "examples": [],
+    "tests": [
+     "test_value_positions.py"
+    ],
+    "constructs": [
+     "in"
+    ],
+    "limitation": "The IN occurrences in the benchmark applications are a subquery and whole-list fragments, not bound value lists.",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::_is_value_position"
+    ],
+    "occurrences": {
+     "value": 3,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {
+     "clinic_inventory_legacy_hard": {
+      "value": 2,
+      "source": "<temp>/clinic_inventory_legacy_hard/queries.json"
+     },
+     "hard_crud": {
+      "value": 1,
+      "source": "<temp>/hard_crud/queries.json"
+     }
+    }
+   },
+   {
+    "id": "in_fragment",
+    "category": "Dynamic SQL construction",
+    "feature": "IN with a whole-list fragment",
+    "status": "encountered_unresolved",
+    "stage": "recovery",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "Recovery flags the fragment as STRUCTURAL; the Clinic Q011 template binds an integer list for that exact file",
+    "source": [
+     "sql_recovery._detect_structural_placeholder",
+     "in_list_converter.convert_q011_in_list"
+    ],
+    "examples": [
+     {
+      "app": "hard_crud",
+      "query_ids": [
+       "Q003"
+      ]
+     },
+     {
+      "app": "clinic_inventory_legacy_hard",
+      "query_ids": [
+       "Q011"
+      ]
+     }
+    ],
+    "tests": [
+     "test_q011_in_list.py"
+    ],
+    "constructs": [],
+    "limitation": "Defence-in-depth gap: only the recovery stage blocks a whole-list fragment; the converter alone would bind it as one value. Not a current defect, because recovery runs first.",
+    "future": "A converter-level guard (not changed in this work).",
+    "source_files": [
+     "components/c3_data_layer/src/c3/mapping/sql_recovery.py::_detect_structural_placeholder",
+     "components/c3_data_layer/src/c3/conversion/in_list_converter.py::convert_q011_in_list"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "between",
+    "category": "SQL filtering and expressions",
+    "feature": "BETWEEN with bound bounds",
+    "status": "supported_restricted",
+    "stage": "conversion",
+    "operations": [
+     "SELECT",
+     "UPDATE",
+     "DELETE"
+    ],
+    "technique": "Low and high are value positions when the tested expression is a column inside a condition",
+    "source": [
+     "query_converter._is_value_position"
+    ],
+    "examples": [],
+    "tests": [
+     "test_value_positions.py"
+    ],
+    "constructs": [
+     "between"
+    ],
+    "limitation": "A bound value on the left of BETWEEN abstains.",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::_is_value_position"
+    ],
+    "occurrences": {
+     "value": 0,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "like",
+    "category": "SQL filtering and expressions",
+    "feature": "LIKE with a wildcard-wrapped value",
+    "status": "supported_tested",
+    "stage": "conversion",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "The wildcards move into the bound value",
+    "source": [
+     "query_converter.LIKE_WILDCARD_PATTERN"
+    ],
+    "examples": [
+     {
+      "app": "helpdesk_legacy_holdout",
+      "query_ids": []
+     }
+    ],
+    "tests": [
+     "test_like_parameterization.py",
+     "test_like_generated_function.py"
+    ],
+    "constructs": [
+     "like"
+    ],
+    "limitation": "Only the surrounding-wildcard shape is rewritten.",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::LIKE_WILDCARD_PATTERN"
+    ],
+    "occurrences": {
+     "value": 6,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {
+     "clinic_inventory_legacy_hard": {
+      "value": 1,
+      "source": "<temp>/clinic_inventory_legacy_hard/queries.json"
+     },
+     "fee_rainbow": {
+      "value": 2,
+      "source": "<temp>/fee_rainbow/queries.json"
+     },
+     "hard_crud": {
+      "value": 1,
+      "source": "<temp>/hard_crud/queries.json"
+     },
+     "helpdesk_legacy_holdout": {
+      "value": 1,
+      "source": "<temp>/helpdesk_legacy_holdout/queries.json"
+     },
+     "news_buzz": {
+      "value": 1,
+      "source": "<temp>/news_buzz/queries.json"
+     }
+    }
+   },
+   {
+    "id": "value_functions",
+    "category": "SQL filtering and expressions",
+    "feature": "Bound value inside a function call",
+    "status": "supported_restricted",
+    "stage": "conversion",
+    "operations": [
+     "SELECT",
+     "INSERT",
+     "UPDATE"
+    ],
+    "technique": "Allow-list: MD5, SHA1, SHA2 (first argument), LOWER, UPPER, TRIM, DATE without format, CAST (value operand); one level only; the call itself must be in a value position",
+    "source": [
+     "query_converter.VALUE_FUNCTIONS"
+    ],
+    "examples": [],
+    "tests": [
+     "test_value_positions.py"
+    ],
+    "constructs": [
+     "fn:MD5",
+     "fn:CAST"
+    ],
+    "limitation": "SLEEP, BENCHMARK, LOAD_FILE, CONCAT and nested calls abstain.",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::VALUE_FUNCTIONS"
+    ],
+    "occurrences": {
+     "value": 0,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "static_functions",
+    "category": "Aggregation and subqueries",
+    "feature": "Aggregate and scalar functions without bound values",
+    "status": "supported_tested",
+    "stage": "conversion",
+    "operations": [
+     "SELECT",
+     "INSERT",
+     "UPDATE"
+    ],
+    "technique": "SQL text is kept unchanged",
+    "source": [
+     "query_converter.convert_query"
+    ],
+    "examples": [
+     {
+      "app": "helpdesk_legacy_holdout",
+      "query_ids": [
+       "Q007"
+      ]
+     }
+    ],
+    "tests": [
+     "test_outer_join_rule.py"
+    ],
+    "constructs": [
+     "fn:COUNT",
+     "fn:SUM",
+     "fn:NOW",
+     "fn:CURRENTTIMESTAMP",
+     "fn:RAND"
+    ],
+    "limitation": "Passing through the converter is not behavioural verification.",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::convert_query"
+    ],
+    "occurrences": {
+     "value": 20,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {
+     "clinic_inventory_legacy_hard": {
+      "value": 2,
+      "source": "<temp>/clinic_inventory_legacy_hard/queries.json"
+     },
+     "dignity_dev_hms": {
+      "value": 1,
+      "source": "<temp>/dignity_dev_hms/queries.json"
+     },
+     "fee_rainbow": {
+      "value": 16,
+      "source": "<temp>/fee_rainbow/queries.json"
+     },
+     "helpdesk_legacy_holdout": {
+      "value": 1,
+      "source": "<temp>/helpdesk_legacy_holdout/queries.json"
+     }
+    }
+   },
+   {
+    "id": "order_static",
+    "category": "Aggregation and subqueries",
+    "feature": "ORDER BY, GROUP BY and DISTINCT with static text",
+    "status": "supported_tested",
+    "stage": "conversion",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "SQL text is kept unchanged",
+    "source": [
+     "query_converter.convert_query"
+    ],
+    "examples": [
+     {
+      "app": "helpdesk_legacy_holdout",
+      "query_ids": [
+       "Q007"
+      ]
+     }
+    ],
+    "tests": [
+     "test_query_converter.py",
+     "test_outer_join_rule.py"
+    ],
+    "constructs": [
+     "order_by",
+     "group_by",
+     "distinct"
+    ],
+    "limitation": "-",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::convert_query"
+    ],
+    "occurrences": {
+     "value": 32,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {
+     "clinic_inventory_legacy_hard": {
+      "value": 2,
+      "source": "<temp>/clinic_inventory_legacy_hard/queries.json"
+     },
+     "fee_rainbow": {
+      "value": 19,
+      "source": "<temp>/fee_rainbow/queries.json"
+     },
+     "hard_crud": {
+      "value": 1,
+      "source": "<temp>/hard_crud/queries.json"
+     },
+     "helpdesk_legacy_holdout": {
+      "value": 5,
+      "source": "<temp>/helpdesk_legacy_holdout/queries.json"
+     },
+     "hms_kishan0725": {
+      "value": 1,
+      "source": "<temp>/hms_kishan0725/queries.json"
+     },
+     "news_buzz": {
+      "value": 4,
+      "source": "<temp>/news_buzz/queries.json"
+     }
+    }
+   },
+   {
+    "id": "having",
+    "category": "Aggregation and subqueries",
+    "feature": "HAVING",
+    "status": "supported_restricted",
+    "stage": "conversion",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "Static text kept; a bound value is a value position",
+    "source": [
+     "query_converter._in_predicate_position"
+    ],
+    "examples": [
+     {
+      "app": "clinic_inventory_legacy_hard",
+      "query_ids": []
+     }
+    ],
+    "tests": [],
+    "constructs": [
+     "having"
+    ],
+    "limitation": "No dedicated test for a bound value in HAVING.",
+    "future": "Add a unit test.",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::_in_predicate_position"
+    ],
+    "occurrences": {
+     "value": 1,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {
+     "clinic_inventory_legacy_hard": {
+      "value": 1,
+      "source": "<temp>/clinic_inventory_legacy_hard/queries.json"
+     }
+    }
+   },
+   {
+    "id": "limit",
+    "category": "Aggregation and subqueries",
+    "feature": "LIMIT and OFFSET with bound values",
+    "status": "supported_tested",
+    "stage": "conversion",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "Bound values; the generated code coerces them to integers",
+    "source": [
+     "query_converter._has_unsafe_placeholder_position",
+     "limit_binding.to_row_count"
+    ],
+    "examples": [
+     {
+      "app": "clinic_inventory_legacy_hard",
+      "query_ids": [
+       "Q019"
+      ]
+     }
+    ],
+    "tests": [
+     "test_transaction_and_limit.py"
+    ],
+    "constructs": [
+     "limit",
+     "offset"
+    ],
+    "limitation": "-",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::_has_unsafe_placeholder_position",
+     "components/c3_data_layer/src/c3/conversion/limit_binding.py::to_row_count"
+    ],
+    "occurrences": {
+     "value": 11,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {
+     "clinic_inventory_legacy_hard": {
+      "value": 2,
+      "source": "<temp>/clinic_inventory_legacy_hard/queries.json"
+     },
+     "fee_rainbow": {
+      "value": 9,
+      "source": "<temp>/fee_rainbow/queries.json"
+     }
+    }
+   },
+   {
+    "id": "subquery",
+    "category": "Aggregation and subqueries",
+    "feature": "Subqueries",
+    "status": "supported_restricted",
+    "stage": "conversion",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "One table: single-table path. Several tables: only the exact Clinic Q010 template; otherwise rejected",
+    "source": [
+     "query_converter._is_supported_q010_subquery"
+    ],
+    "examples": [
+     {
+      "app": "clinic_inventory_legacy_hard",
+      "query_ids": [
+       "Q010"
+      ]
+     }
+    ],
+    "tests": [
+     "test_q010_subquery.py"
+    ],
+    "constructs": [
+     "subquery"
+    ],
+    "limitation": "The single-table subquery path has no dedicated test.",
+    "future": "A general subquery rule.",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::_is_supported_q010_subquery"
+    ],
+    "occurrences": {
+     "value": 1,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {
+     "clinic_inventory_legacy_hard": {
+      "value": 1,
+      "source": "<temp>/clinic_inventory_legacy_hard/queries.json"
+     }
+    }
+   },
+   {
+    "id": "union",
+    "category": "Aggregation and subqueries",
+    "feature": "UNION",
+    "status": "not_tested",
+    "stage": "conversion",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "A union over one table passes the single-table path; over several tables it is rejected",
+    "source": [
+     "query_converter.convert_query"
+    ],
+    "examples": [],
+    "tests": [],
+    "constructs": [
+     "union"
+    ],
+    "limitation": "Not encountered in any benchmark application and not tested.",
+    "future": "Explicit union handling and tests.",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::convert_query"
+    ],
+    "occurrences": {
+     "value": 0,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "cte",
+    "category": "Aggregation and subqueries",
+    "feature": "Common table expressions (WITH)",
+    "status": "rejected",
+    "stage": "conversion",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "The CTE name counts as a second table, so the multi-table reason applies",
+    "source": [
+     "query_converter.MULTI_TABLE_REASON"
+    ],
+    "examples": [],
+    "tests": [],
+    "constructs": [
+     "cte"
+    ],
+    "limitation": "Not encountered.",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::MULTI_TABLE_REASON"
+    ],
+    "occurrences": {
+     "value": 0,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "window",
+    "category": "Aggregation and subqueries",
+    "feature": "Window functions",
+    "status": "not_tested",
+    "stage": "conversion",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "Static text over one table passes the single-table path",
+    "source": [
+     "query_converter.convert_query"
+    ],
+    "examples": [],
+    "tests": [],
+    "constructs": [
+     "window"
+    ],
+    "limitation": "Not encountered and not tested.",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::convert_query"
+    ],
+    "occurrences": {
+     "value": 0,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "inner_join",
+    "category": "JOIN types",
+    "feature": "INNER JOIN with ON",
+    "status": "supported_restricted",
+    "stage": "conversion",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "Every join is a plain table with an ON condition; no schema or result-shape check",
+    "source": [
+     "query_converter._is_supported_join_select"
+    ],
+    "examples": [
+     {
+      "app": "helpdesk_legacy_holdout",
+      "query_ids": []
+     }
+    ],
+    "tests": [
+     "test_query_converter.py",
+     "test_outer_join_rule.py",
+     "test_join_rule_mysql.py"
+    ],
+    "constructs": [
+     "join_inner"
+    ],
+    "limitation": "Star projections over joins are accepted without a result-shape check; see the result-shape warning.",
+    "future": "Apply the result-shape rule to INNER JOINs.",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::_is_supported_join_select"
+    ],
+    "occurrences": {
+     "value": 8,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {
+     "clinic_inventory_legacy_hard": {
+      "value": 2,
+      "source": "<temp>/clinic_inventory_legacy_hard/queries.json"
+     },
+     "fee_rainbow": {
+      "value": 2,
+      "source": "<temp>/fee_rainbow/queries.json"
+     },
+     "hard_crud": {
+      "value": 1,
+      "source": "<temp>/hard_crud/queries.json"
+     },
+     "helpdesk_legacy_holdout": {
+      "value": 2,
+      "source": "<temp>/helpdesk_legacy_holdout/queries.json"
+     },
+     "hms_kishan0725": {
+      "value": 1,
+      "source": "<temp>/hms_kishan0725/queries.json"
+     }
+    }
+   },
+   {
+    "id": "left_join",
+    "category": "JOIN types",
+    "feature": "LEFT [OUTER] JOIN with ON",
+    "status": "supported_restricted",
+    "stage": "conversion",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "Result-shape rule: every table in the parsed schema, explicit distinctly named outputs, every column resolving to one joined table",
+    "source": [
+     "query_converter._outer_join_shape_problem"
+    ],
+    "examples": [
+     {
+      "app": "helpdesk_legacy_holdout",
+      "query_ids": [
+       "Q007"
+      ]
+     },
+     {
+      "app": "fee_rainbow",
+      "query_ids": [
+       "Q007",
+       "Q054"
+      ]
+     }
+    ],
+    "tests": [
+     "test_outer_join_rule.py",
+     "test_join_rule_mysql.py"
+    ],
+    "constructs": [
+     "join_left"
+    ],
+    "limitation": "MySQL evidence is direct SQL against the generated function, not differential testing of application PHP.",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::_outer_join_shape_problem"
+    ],
+    "occurrences": {
+     "value": 3,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {
+     "fee_rainbow": {
+      "value": 2,
+      "source": "<temp>/fee_rainbow/queries.json"
+     },
+     "helpdesk_legacy_holdout": {
+      "value": 1,
+      "source": "<temp>/helpdesk_legacy_holdout/queries.json"
+     }
+    }
+   },
+   {
+    "id": "comma_join",
+    "category": "JOIN types",
+    "feature": "Implicit comma join",
+    "status": "supported_restricted",
+    "stage": "conversion",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "Same result-shape rule; comma and explicit joins are not mixed",
+    "source": [
+     "query_converter._is_comma_join",
+     "query_converter._outer_join_shape_problem"
+    ],
+    "examples": [
+     {
+      "app": "dignity_dev_hms",
+      "query_ids": [
+       "Q007",
+       "Q008",
+       "Q009"
+      ]
+     }
+    ],
+    "tests": [
+     "test_outer_join_rule.py",
+     "test_join_rule_mysql.py"
+    ],
+    "constructs": [
+     "join_comma"
+    ],
+    "limitation": "-",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::_is_comma_join",
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::_outer_join_shape_problem"
+    ],
+    "occurrences": {
+     "value": 3,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {
+     "dignity_dev_hms": {
+      "value": 3,
+      "source": "<temp>/dignity_dev_hms/queries.json"
+     }
+    }
+   },
+   {
+    "id": "other_joins",
+    "category": "JOIN types",
+    "feature": "RIGHT, FULL, CROSS, NATURAL, USING, STRAIGHT_JOIN and JOIN without ON",
+    "status": "rejected",
+    "stage": "conversion",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "Rejected with a reason that names what is converted",
+    "source": [
+     "query_converter.MULTI_TABLE_REASON",
+     "query_converter.OUTER_JOIN_REASONS"
+    ],
+    "examples": [],
+    "tests": [
+     "test_outer_join_rule.py"
+    ],
+    "constructs": [
+     "join_right",
+     "join_full",
+     "join_cross",
+     "join_natural",
+     "join_using",
+     "join_straight",
+     "join_bare_no_on"
+    ],
+    "limitation": "Not encountered in any benchmark application.",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::MULTI_TABLE_REASON",
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::OUTER_JOIN_REASONS"
+    ],
+    "occurrences": {
+     "value": 0,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "mixed_self_derived",
+    "category": "JOIN types",
+    "feature": "Mixed join kinds, self-joins and derived-table joins",
+    "status": "supported_restricted",
+    "stage": "conversion",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "Mixed INNER and LEFT, and aliased self-joins, follow the join rules; mixed comma and JOIN forms and derived tables are rejected",
+    "source": [
+     "query_converter._outer_join_shape_problem"
+    ],
+    "examples": [],
+    "tests": [
+     "test_outer_join_rule.py"
+    ],
+    "constructs": [
+     "mixed_join_kinds",
+     "self_join",
+     "derived_table_join"
+    ],
+    "limitation": "Not encountered in any benchmark application.",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::_outer_join_shape_problem"
+    ],
+    "occurrences": {
+     "value": 0,
+     "source": "<temp>/<app>/queries.json recovered_sql (nine applications)",
+     "derivation": "statements whose SQLGlot parse contains the construct; ams-native is not included (its inputs are not in the repository)"
+    },
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "php_literal",
+    "category": "Dynamic SQL construction",
+    "feature": "Literal SQL strings",
+    "status": "supported_tested",
+    "stage": "recovery",
+    "operations": [
+     "SELECT",
+     "INSERT",
+     "UPDATE",
+     "DELETE"
+    ],
+    "technique": "PHP string decoding",
+    "source": [
+     "sql_recovery._decode_php_string"
+    ],
+    "examples": [
+     {
+      "app": "clinic_inventory_legacy_hard",
+      "query_ids": [
+       "Q001"
+      ]
+     }
+    ],
+    "tests": [
+     "test_php_string_decoding.py"
+    ],
+    "constructs": [],
+    "limitation": "-",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/mapping/sql_recovery.py::_decode_php_string"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "php_concat",
+    "category": "Dynamic SQL construction",
+    "feature": "Concatenation and .= appends",
+    "status": "supported_tested",
+    "stage": "recovery",
+    "operations": [
+     "SELECT",
+     "INSERT",
+     "UPDATE",
+     "DELETE"
+    ],
+    "technique": "Backward assignment chain",
+    "source": [
+     "sql_recovery._split_concat_expression"
+    ],
+    "examples": [],
+    "tests": [
+     "test_sql_recovery.py"
+    ],
+    "constructs": [],
+    "limitation": "-",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/mapping/sql_recovery.py::_split_concat_expression"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "php_interpolation",
+    "category": "Dynamic SQL construction",
+    "feature": "Variable and array-element interpolation",
+    "status": "supported_tested",
+    "stage": "recovery",
+    "operations": [
+     "SELECT",
+     "INSERT",
+     "UPDATE",
+     "DELETE"
+    ],
+    "technique": "Interpolation and array-element patterns become named placeholders",
+    "source": [
+     "sql_recovery.array_element_name"
+    ],
+    "examples": [],
+    "tests": [
+     "test_array_element_recovery.py"
+    ],
+    "constructs": [],
+    "limitation": "-",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/mapping/sql_recovery.py::array_element_name"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "prepared",
+    "category": "Dynamic SQL construction",
+    "feature": "Prepared statements (? and :name)",
+    "status": "supported_tested",
+    "stage": "conversion",
+    "operations": [
+     "SELECT",
+     "INSERT",
+     "UPDATE",
+     "DELETE"
+    ],
+    "technique": "Placeholders are named in textual order; mixing ? and named placeholders is rejected",
+    "source": [
+     "query_converter._name_prepared_placeholders"
+    ],
+    "examples": [
+     {
+      "app": "clinic_inventory_legacy_hard",
+      "query_ids": [
+       "Q022"
+      ]
+     }
+    ],
+    "tests": [
+     "test_prepared_statements.py"
+    ],
+    "constructs": [],
+    "limitation": "No benchmark application uses PDO.",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::_name_prepared_placeholders"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "wrappers",
+    "category": "Dynamic SQL construction",
+    "feature": "Wrapper functions around the executor",
+    "status": "supported_restricted",
+    "stage": "detection",
+    "operations": [
+     "SELECT",
+     "INSERT",
+     "UPDATE",
+     "DELETE"
+    ],
+    "technique": "Single-parameter wrappers are detected and their calls become sites",
+    "source": [
+     "extract_sql_calls.php"
+    ],
+    "examples": [
+     {
+      "app": "fee_rainbow",
+      "query_ids": []
+     }
+    ],
+    "tests": [
+     "test_sql_wrappers.py"
+    ],
+    "constructs": [],
+    "limitation": "Multi-parameter wrappers and class-based layers are not detected.",
+    "future": "Wider wrapper shapes.",
+    "source_files": [
+     "components/c3_data_layer/tools/php_ast/extract_sql_calls.php"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "function_params",
+    "category": "Dynamic SQL construction",
+    "feature": "Values from function parameters",
+    "status": "supported_restricted",
+    "stage": "recovery",
+    "operations": [
+     "SELECT",
+     "INSERT",
+     "UPDATE",
+     "DELETE"
+    ],
+    "technique": "A function parameter used as a value becomes a parameter of the generated function; used as an identifier it is STRUCTURAL",
+    "source": [
+     "sql_recovery.recover_queries_from_ast"
+    ],
+    "examples": [
+     {
+      "app": "dignity_dev_hms",
+      "query_ids": []
+     }
+    ],
+    "tests": [
+     "test_sql_recovery.py"
+    ],
+    "constructs": [],
+    "limitation": "-",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/mapping/sql_recovery.py::recover_queries_from_ast"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "sql_fragment",
+    "category": "Dynamic SQL construction",
+    "feature": "Variables that carry SQL clause text",
+    "status": "encountered_unresolved",
+    "stage": "recovery",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "STRUCTURAL (SQL-fragment variable)",
+    "source": [
+     "sql_recovery._detect_sql_fragment_variable"
+    ],
+    "examples": [
+     {
+      "app": "fee_rainbow",
+      "query_ids": []
+     }
+    ],
+    "tests": [
+     "test_sql_fragment_variables.py"
+    ],
+    "constructs": [],
+    "limitation": "Clause logic must be rebuilt by hand.",
+    "future": "Fragment templates (outside scope).",
+    "source_files": [
+     "components/c3_data_layer/src/c3/mapping/sql_recovery.py::_detect_sql_fragment_variable"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "placeholder_literal",
+    "category": "Dynamic SQL construction",
+    "feature": "Placeholder inside a longer string literal",
+    "status": "rejected",
+    "stage": "conversion",
+    "operations": [
+     "SELECT",
+     "INSERT",
+     "UPDATE",
+     "DELETE"
+    ],
+    "technique": "String-literal guard: binding would change the literal",
+    "source": [
+     "query_converter._has_unsafe_placeholder_position"
+    ],
+    "examples": [],
+    "tests": [
+     "test_value_positions.py"
+    ],
+    "constructs": [],
+    "limitation": "Not encountered.",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/conversion/query_converter.py::_has_unsafe_placeholder_position"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "branching",
+    "category": "PHP control-flow recovery",
+    "feature": "SQL that depends on which branch ran",
+    "status": "encountered_unresolved",
+    "stage": "recovery",
+    "operations": [
+     "SELECT",
+     "INSERT",
+     "UPDATE",
+     "DELETE"
+    ],
+    "technique": "BRANCHING; same-block conditionals are recovered; Clinic Q014 and Q016 templates",
+    "source": [
+     "sql_recovery._detect_branching_assignment",
+     "branch_recovery.recover_simple_if_else_candidate"
+    ],
+    "examples": [
+     {
+      "app": "news_buzz",
+      "query_ids": [
+       "Q002",
+       "Q006"
+      ]
+     },
+     {
+      "app": "clinic_inventory_legacy_hard",
+      "query_ids": [
+       "Q014",
+       "Q016"
+      ]
+     }
+    ],
+    "tests": [
+     "test_guarded_block_recovery.py",
+     "test_q014_branch_recovery.py",
+     "test_q016_conditional_concat.py"
+    ],
+    "constructs": [],
+    "limitation": "No general branch-variant rule.",
+    "future": "General branch-variant reconstruction.",
+    "source_files": [
+     "components/c3_data_layer/src/c3/mapping/sql_recovery.py::_detect_branching_assignment",
+     "components/c3_data_layer/src/c3/mapping/branch_recovery.py::recover_simple_if_else_candidate"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "loops",
+    "category": "PHP control-flow recovery",
+    "feature": "SQL built in loops or switch cases",
+    "status": "encountered_unresolved",
+    "stage": "recovery",
+    "operations": [
+     "SELECT",
+     "INSERT"
+    ],
+    "technique": "LOOP_OR_SWITCH_CONTROL_FLOW",
+    "source": [
+     "sql_recovery._detect_loop_or_switch_dependency"
+    ],
+    "examples": [
+     {
+      "app": "dignity_dev_hms",
+      "query_ids": [
+       "Q003"
+      ]
+     }
+    ],
+    "tests": [
+     "test_loop_switch_soundness.py"
+    ],
+    "constructs": [],
+    "limitation": "-",
+    "future": "Not planned.",
+    "source_files": [
+     "components/c3_data_layer/src/c3/mapping/sql_recovery.py::_detect_loop_or_switch_dependency"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "dynamic_table",
+    "category": "Dynamic identifiers",
+    "feature": "Dynamic table names",
+    "status": "encountered_unresolved",
+    "stage": "recovery",
+    "operations": [
+     "SELECT",
+     "INSERT",
+     "UPDATE",
+     "DELETE"
+    ],
+    "technique": "STRUCTURAL; the Clinic Q013 template binds a schema allow-list for that exact file",
+    "source": [
+     "sql_recovery._detect_structural_placeholder",
+     "table_converter.convert_q013_table"
+    ],
+    "examples": [
+     {
+      "app": "dignity_dev_hms",
+      "query_ids": [
+       "Q001",
+       "Q002",
+       "Q013",
+       "Q014"
+      ]
+     },
+     {
+      "app": "clinic_inventory_legacy_hard",
+      "query_ids": [
+       "Q013"
+      ]
+     }
+    ],
+    "tests": [
+     "test_q013_dynamic_table.py"
+    ],
+    "constructs": [],
+    "limitation": "No general allow-list rule.",
+    "future": "Generalise the schema allow-list.",
+    "source_files": [
+     "components/c3_data_layer/src/c3/mapping/sql_recovery.py::_detect_structural_placeholder",
+     "components/c3_data_layer/src/c3/conversion/table_converter.py::convert_q013_table"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "dynamic_column",
+    "category": "Dynamic identifiers",
+    "feature": "Dynamic ORDER BY column",
+    "status": "encountered_unresolved",
+    "stage": "recovery",
+    "operations": [
+     "SELECT"
+    ],
+    "technique": "STRUCTURAL; the Clinic Q012 template binds a schema allow-list",
+    "source": [
+     "sql_recovery._detect_structural_placeholder",
+     "order_by_converter.convert_q012_order_by"
+    ],
+    "examples": [
+     {
+      "app": "hard_crud",
+      "query_ids": [
+       "Q002"
+      ]
+     },
+     {
+      "app": "clinic_inventory_legacy_hard",
+      "query_ids": [
+       "Q012"
+      ]
+     }
+    ],
+    "tests": [
+     "test_q012_order_by.py"
+    ],
+    "constructs": [],
+    "limitation": "-",
+    "future": "Generalise the allow-list.",
+    "source_files": [
+     "components/c3_data_layer/src/c3/mapping/sql_recovery.py::_detect_structural_placeholder",
+     "components/c3_data_layer/src/c3/conversion/order_by_converter.py::convert_q012_order_by"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "non_crud",
+    "category": "Stored routines and other SQL features",
+    "feature": "SHOW and other non-CRUD statements",
+    "status": "encountered_unresolved",
+    "stage": "recovery",
+    "operations": [],
+    "technique": "UNSUPPORTED_SHAPE",
+    "source": [
+     "sql_recovery.recover_queries_from_ast"
+    ],
+    "examples": [],
+    "tests": [
+     "test_sql_recovery.py"
+    ],
+    "constructs": [],
+    "limitation": "Usually administrative SQL with no data-access function needed.",
+    "future": "Classify as non-data-access.",
+    "source_files": [
+     "components/c3_data_layer/src/c3/mapping/sql_recovery.py::recover_queries_from_ast"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "multi_statement",
+    "category": "Stored routines and other SQL features",
+    "feature": "Multi-statement executors",
+    "status": "rejected",
+    "stage": "recovery",
+    "operations": [],
+    "technique": "MULTI_STATEMENT_EXECUTOR",
+    "source": [
+     "sql_recovery._unanalysable_call_reason"
+    ],
+    "examples": [],
+    "tests": [
+     "test_executor_coverage.py"
+    ],
+    "constructs": [],
+    "limitation": "Not encountered.",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/mapping/sql_recovery.py::_unanalysable_call_reason"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "routines",
+    "category": "Stored routines and other SQL features",
+    "feature": "Stored procedures, triggers, views, functions and events",
+    "status": "out_of_scope",
+    "stage": "schema",
+    "operations": [],
+    "technique": "Recorded as unsupported objects and listed in migration_notes.md",
+    "source": [
+     "schema_reader.read_schema"
+    ],
+    "examples": [],
+    "tests": [
+     "test_schema_reader.py"
+    ],
+    "constructs": [],
+    "limitation": "Not migrated.",
+    "future": "-",
+    "source_files": [
+     "components/c3_data_layer/src/c3/mapping/schema_reader.py::read_schema"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "pdo_apps",
+    "category": "Stored routines and other SQL features",
+    "feature": "PDO in a real application",
+    "status": "not_encountered",
+    "stage": "detection",
+    "operations": [],
+    "technique": "PDO-style methods are in the executor table",
+    "source": [
+     "extract_sql_calls.php"
+    ],
+    "examples": [],
+    "tests": [
+     "test_executor_coverage.py"
+    ],
+    "constructs": [],
+    "limitation": "Covered by fixtures and unit tests only.",
+    "future": "A PDO benchmark application.",
+    "source_files": [
+     "components/c3_data_layer/tools/php_ast/extract_sql_calls.php"
+    ],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   },
+   {
+    "id": "multi_param_wrappers",
+    "category": "Dynamic SQL construction",
+    "feature": "Multi-parameter wrappers and class-based database layers",
+    "status": "not_implemented",
+    "stage": "detection",
+    "operations": [],
+    "technique": "-",
+    "source": [],
+    "examples": [],
+    "tests": [],
+    "constructs": [],
+    "limitation": "Calls through such layers are not detected as sites.",
+    "future": "Wider wrapper detection.",
+    "source_files": [],
+    "occurrences": null,
+    "occurrences_by_app": {}
+   }
+  ],
+  "star_join_sites": {
+   "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json",
+   "warning": "Generated successfully; result-column mapping equivalence has not been verified.",
+   "sites": [
+    {
+     "app": "ams_native",
+     "query_id": "Q016",
+     "projection": [
+      "*"
+     ],
+     "join_tables": {
+      "value": 2,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "tables_missing_from_parsed_schema": {
+      "value": 0,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "expanded_output_columns": {
+      "value": 20,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "duplicate_output_names": {
+      "value": 2,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "finding": "Duplicate projected column names exist; result.mappings() keys for them may need additional checking."
+    },
+    {
+     "app": "ams_native",
+     "query_id": "Q019",
+     "projection": [
+      "*"
+     ],
+     "join_tables": {
+      "value": 2,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "tables_missing_from_parsed_schema": {
+      "value": 0,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "expanded_output_columns": {
+      "value": 20,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "duplicate_output_names": {
+      "value": 2,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "finding": "Duplicate projected column names exist; result.mappings() keys for them may need additional checking."
+    },
+    {
+     "app": "fee_rainbow",
+     "query_id": "Q038",
+     "projection": [
+      "table.*"
+     ],
+     "join_tables": {
+      "value": 2,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "tables_missing_from_parsed_schema": {
+      "value": 2,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "expanded_output_columns": {
+      "value": null,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "duplicate_output_names": {
+      "value": null,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "finding": "Column list cannot be determined: the joined tables are not in the parsed schema (the supplied schema file defines one table). The projection is a single table.*, so duplicate names cannot arise within it."
+    },
+    {
+     "app": "fee_rainbow",
+     "query_id": "Q041",
+     "projection": [
+      "table.*"
+     ],
+     "join_tables": {
+      "value": 2,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "tables_missing_from_parsed_schema": {
+      "value": 2,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "expanded_output_columns": {
+      "value": null,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "duplicate_output_names": {
+      "value": null,
+      "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+     },
+     "finding": "Column list cannot be determined: the joined tables are not in the parsed schema (the supplied schema file defines one table). The projection is a single table.*, so duplicate names cannot arise within it."
+    }
+   ]
+  },
+  "reasons": [
+   {
+    "stage": "conversion",
+    "code": "CONVERSION_UNSUPPORTED",
+    "key": "CONVERSION_UNSUPPORTED:join_schema",
+    "meaning": "A LEFT JOIN or comma join whose tables are not in the parsed schema.",
+    "why": "The result row keys cannot be checked without the table definitions.",
+    "review": "Supply the complete schema and re-run.",
+    "future": "A complete Fee-Rainbow schema.",
+    "code_generated": "No: an unresolved-site stub that raises is emitted instead of SQL.",
+    "count": {
+     "value": 2,
+     "source": "<temp>/<app>/unresolved_queries.json (nine applications)"
+    },
+    "by_app": {
+     "fee_rainbow": {
+      "count": {
+       "value": 2,
+       "source": "<temp>/fee_rainbow/unresolved_queries.json"
+      },
+      "query_ids": [
+       "Q007",
+       "Q054"
+      ]
+     }
+    },
+    "ams_native": null
+   },
+   {
+    "stage": "recovery",
+    "code": "BRANCHING",
+    "key": "BRANCHING",
+    "meaning": "The SQL text depends on which branch ran.",
+    "why": "Different branches build different statements; no single safe statement exists.",
+    "review": "Review each variant and write one function per variant.",
+    "future": "General branch-variant reconstruction.",
+    "code_generated": "No: an unresolved-site stub that raises is emitted instead of SQL.",
+    "count": {
+     "value": 4,
+     "source": "<temp>/<app>/unresolved_queries.json (nine applications)"
+    },
+    "by_app": {
+     "dignity_dev_hms": {
+      "count": {
+       "value": 1,
+       "source": "<temp>/dignity_dev_hms/unresolved_queries.json"
+      },
+      "query_ids": [
+       "Q006"
+      ]
+     },
+     "hard_crud": {
+      "count": {
+       "value": 1,
+       "source": "<temp>/hard_crud/unresolved_queries.json"
+      },
+      "query_ids": [
+       "Q004"
+      ]
+     },
+     "news_buzz": {
+      "count": {
+       "value": 2,
+       "source": "<temp>/news_buzz/unresolved_queries.json"
+      },
+      "query_ids": [
+       "Q002",
+       "Q006"
+      ]
+     }
+    },
+    "ams_native": null
+   },
+   {
+    "stage": "recovery",
+    "code": "LOOP_OR_SWITCH_CONTROL_FLOW",
+    "key": "LOOP_OR_SWITCH_CONTROL_FLOW",
+    "meaning": "The SQL is built across loop iterations or depends on which switch case ran.",
+    "why": "The statement shape depends on run-time iteration.",
+    "review": "Rewrite as an explicit statement or batch.",
+    "future": "Not planned.",
+    "code_generated": "No: an unresolved-site stub that raises is emitted instead of SQL.",
+    "count": {
+     "value": 1,
+     "source": "<temp>/<app>/unresolved_queries.json (nine applications)"
+    },
+    "by_app": {
+     "dignity_dev_hms": {
+      "count": {
+       "value": 1,
+       "source": "<temp>/dignity_dev_hms/unresolved_queries.json"
+      },
+      "query_ids": [
+       "Q003"
+      ]
+     }
+    },
+    "ams_native": {
+     "count": {
+      "value": 1,
+      "source": "evidence/final/2026-10-21/ams_native_post_t1.json",
+      "derivation": "post.unresolved; equal to the current outputs (evidence/final/2026-10-20/ams_native_post_t2.json output_files_identical_after_path_normalisation)"
+     },
+     "query_ids": [
+      "Q064"
+     ]
+    }
+   },
+   {
+    "stage": "recovery",
+    "code": "STRUCTURAL",
+    "key": "STRUCTURAL:dynamic_order_by",
+    "meaning": "A variable supplies an ORDER BY column.",
+    "why": "A sort column is an identifier, not a value.",
+    "review": "Map the allowed sort keys.",
+    "future": "Generalise the Clinic Q012 allow-list.",
+    "code_generated": "No: an unresolved-site stub that raises is emitted instead of SQL.",
+    "count": {
+     "value": 1,
+     "source": "<temp>/<app>/unresolved_queries.json (nine applications)"
+    },
+    "by_app": {
+     "hard_crud": {
+      "count": {
+       "value": 1,
+       "source": "<temp>/hard_crud/unresolved_queries.json"
+      },
+      "query_ids": [
+       "Q002"
+      ]
+     }
+    },
+    "ams_native": null
+   },
+   {
+    "stage": "recovery",
+    "code": "STRUCTURAL",
+    "key": "STRUCTURAL:dynamic_table",
+    "meaning": "A variable supplies a table name.",
+    "why": "Identifiers cannot be bound as parameters, and writing them into the SQL would let input choose the table.",
+    "review": "List the possible table values and write one function per table, or bind an allow-list.",
+    "future": "Generalise the Clinic Q013 schema allow-list.",
+    "code_generated": "No: an unresolved-site stub that raises is emitted instead of SQL.",
+    "count": {
+     "value": 4,
+     "source": "<temp>/<app>/unresolved_queries.json (nine applications)"
+    },
+    "by_app": {
+     "dignity_dev_hms": {
+      "count": {
+       "value": 4,
+       "source": "<temp>/dignity_dev_hms/unresolved_queries.json"
+      },
+      "query_ids": [
+       "Q001",
+       "Q002",
+       "Q013",
+       "Q014"
+      ]
+     }
+    },
+    "ams_native": {
+     "count": {
+      "value": 1,
+      "source": "evidence/final/2026-10-21/ams_native_post_t1.json",
+      "derivation": "post.unresolved; equal to the current outputs (evidence/final/2026-10-20/ams_native_post_t2.json output_files_identical_after_path_normalisation)"
+     },
+     "query_ids": [
+      "Q061"
+     ]
+    }
+   },
+   {
+    "stage": "recovery",
+    "code": "STRUCTURAL",
+    "key": "STRUCTURAL:in_list_fragment",
+    "meaning": "A variable holds a whole comma-separated IN list.",
+    "why": "The list is SQL text, not one value.",
+    "review": "Confirm the element type and use an expanding bind.",
+    "future": "Generalise the Clinic Q011 expanding bind.",
+    "code_generated": "No: an unresolved-site stub that raises is emitted instead of SQL.",
+    "count": {
+     "value": 1,
+     "source": "<temp>/<app>/unresolved_queries.json (nine applications)"
+    },
+    "by_app": {
+     "hard_crud": {
+      "count": {
+       "value": 1,
+       "source": "<temp>/hard_crud/unresolved_queries.json"
+      },
+      "query_ids": [
+       "Q003"
+      ]
+     }
+    },
+    "ams_native": null
+   },
+   {
+    "stage": "recovery",
+    "code": "STRUCTURAL",
+    "key": "STRUCTURAL:sql_fragment",
+    "meaning": "A variable carries SQL clause text.",
+    "why": "The variable changes the statement itself, so it cannot be bound.",
+    "review": "Rebuild the clause logic by hand.",
+    "future": "Fragment templates (outside scope).",
+    "code_generated": "No: an unresolved-site stub that raises is emitted instead of SQL.",
+    "count": {
+     "value": 10,
+     "source": "<temp>/<app>/unresolved_queries.json (nine applications)"
+    },
+    "by_app": {
+     "fee_rainbow": {
+      "count": {
+       "value": 10,
+       "source": "<temp>/fee_rainbow/unresolved_queries.json"
+      },
+      "query_ids": [
+       "Q023",
+       "Q024",
+       "Q025",
+       "Q026",
+       "Q027",
+       "Q028",
+       "Q029",
+       "Q030",
+       "Q049",
+       "Q050"
+      ]
+     }
+    },
+    "ams_native": null
+   },
+   {
+    "stage": "recovery",
+    "code": "UNKNOWN_EXPR",
+    "key": "UNKNOWN_EXPR:no_assignment_chain",
+    "meaning": "No assignment that builds the SQL argument was found.",
+    "why": "The SQL variable is set somewhere the recovery does not follow. The recovery record has no code; the unresolved report assigns UNKNOWN_EXPR as its fallback.",
+    "review": "Find where the variable is set.",
+    "future": "Cross-file and parameter tracing.",
+    "code_generated": "No: an unresolved-site stub that raises is emitted instead of SQL.",
+    "count": {
+     "value": 2,
+     "source": "<temp>/<app>/unresolved_queries.json (nine applications)"
+    },
+    "by_app": {
+     "fee_rainbow": {
+      "count": {
+       "value": 2,
+       "source": "<temp>/fee_rainbow/unresolved_queries.json"
+      },
+      "query_ids": [
+       "Q021",
+       "Q022"
+      ]
+     }
+    },
+    "ams_native": null
+   },
+   {
+    "stage": "recovery",
+    "code": "UNKNOWN_EXPR",
+    "key": "UNKNOWN_EXPR:unsupported_expression",
+    "meaning": "The SQL is built with a PHP expression the recovery does not model.",
+    "why": "The value or text of the expression cannot be determined statically.",
+    "review": "Read the PHP and rewrite the call.",
+    "future": "Wider expression support.",
+    "code_generated": "No: an unresolved-site stub that raises is emitted instead of SQL.",
+    "count": {
+     "value": 1,
+     "source": "<temp>/<app>/unresolved_queries.json (nine applications)"
+    },
+    "by_app": {
+     "mixed_crud": {
+      "count": {
+       "value": 1,
+       "source": "<temp>/mixed_crud/unresolved_queries.json"
+      },
+      "query_ids": [
+       "Q006"
+      ]
+     }
+    },
+    "ams_native": null
+   },
+   {
+    "stage": "recovery",
+    "code": "UNSUPPORTED_SHAPE",
+    "key": "UNSUPPORTED_SHAPE",
+    "meaning": "The recovered text is not a recognised CRUD statement.",
+    "why": "For example SHOW, an empty string or a non-SQL value.",
+    "review": "Usually none: administrative or dead SQL.",
+    "future": "Classify as non-data-access.",
+    "code_generated": "No: an unresolved-site stub that raises is emitted instead of SQL.",
+    "count": {
+     "value": 1,
+     "source": "<temp>/<app>/unresolved_queries.json (nine applications)"
+    },
+    "by_app": {
+     "dignity_dev_hms": {
+      "count": {
+       "value": 1,
+       "source": "<temp>/dignity_dev_hms/unresolved_queries.json"
+      },
+      "query_ids": [
+       "Q010"
+      ]
+     }
+    },
+    "ams_native": {
+     "count": {
+      "value": 2,
+      "source": "evidence/final/2026-10-21/ams_native_post_t1.json",
+      "derivation": "post.unresolved; equal to the current outputs (evidence/final/2026-10-20/ams_native_post_t2.json output_files_identical_after_path_normalisation)"
+     },
+     "query_ids": [
+      "Q060",
+      "Q062"
+     ]
+    }
+   }
+  ],
+  "reason_catalogue": {
+   "defined": [
+    {
+     "code": "STRUCTURAL",
+     "stage": "recovery",
+     "in_use": true
+    },
+    {
+     "code": "BRANCHING",
+     "stage": "recovery",
+     "in_use": true
+    },
+    {
+     "code": "LOOP_OR_SWITCH_CONTROL_FLOW",
+     "stage": "recovery",
+     "in_use": true
+    },
+    {
+     "code": "UNKNOWN_EXPR",
+     "stage": "recovery",
+     "in_use": true
+    },
+    {
+     "code": "UNSUPPORTED_SHAPE",
+     "stage": "recovery",
+     "in_use": true
+    },
+    {
+     "code": "UNSUPPORTED_EXECUTOR",
+     "stage": "recovery",
+     "in_use": false
+    },
+    {
+     "code": "MISSING_SQL_ARGUMENT",
+     "stage": "recovery",
+     "in_use": false
+    },
+    {
+     "code": "MULTI_STATEMENT_EXECUTOR",
+     "stage": "recovery",
+     "in_use": false
+    },
+    {
+     "code": "CONVERSION_UNSUPPORTED",
+     "stage": "conversion",
+     "in_use": true
+    }
+   ],
+   "defined_recovery": {
+    "value": 8,
+    "source": "components/c3_data_layer/src/c3/mapping/sql_recovery.py, components/c3_data_layer/src/c3/analysis/unresolved_report.py",
+    "derivation": "distinct reason_code strings the recovery stage can emit"
+   },
+   "defined_conversion": {
+    "value": 1,
+    "source": "components/c3_data_layer/src/c3/analysis/unresolved_report.py"
+   },
+   "in_use_recovery": {
+    "value": 5,
+    "source": "unresolved entries of the nine apps and ams-native"
+   },
+   "in_use_conversion": {
+    "value": 1,
+    "source": "unresolved entries of the nine apps and ams-native"
+   }
+  },
+  "template_overrides": [
+   {
+    "code": "BRANCHING",
+    "key": "BRANCHING",
+    "query_ids": {
+     "clinic_inventory_legacy_hard": [
+      "Q014",
+      "Q016"
+     ]
+    },
+    "count": {
+     "value": 2,
+     "source": "<temp>/<app>/queries.json status != RECOVERED and converted_queries.json CONVERTED"
+    }
+   },
+   {
+    "code": "STRUCTURAL",
+    "key": "STRUCTURAL:dynamic_order_by",
+    "query_ids": {
+     "clinic_inventory_legacy_hard": [
+      "Q012"
+     ]
+    },
+    "count": {
+     "value": 1,
+     "source": "<temp>/<app>/queries.json status != RECOVERED and converted_queries.json CONVERTED"
+    }
+   },
+   {
+    "code": "STRUCTURAL",
+    "key": "STRUCTURAL:dynamic_table",
+    "query_ids": {
+     "clinic_inventory_legacy_hard": [
+      "Q013"
+     ]
+    },
+    "count": {
+     "value": 1,
+     "source": "<temp>/<app>/queries.json status != RECOVERED and converted_queries.json CONVERTED"
+    }
+   },
+   {
+    "code": "STRUCTURAL",
+    "key": "STRUCTURAL:in_list_fragment",
+    "query_ids": {
+     "clinic_inventory_legacy_hard": [
+      "Q011"
+     ]
+    },
+    "count": {
+     "value": 1,
+     "source": "<temp>/<app>/queries.json status != RECOVERED and converted_queries.json CONVERTED"
+    }
+   }
+  ],
+  "outcomes": [
+   {
+    "key": "recoverable_unsupported",
+    "label": "Recoverable but unsupported",
+    "text": "The ground truth says the site is recoverable, but C3 does not convert it.",
+    "apps": {
+     "hms_kishan0725": {
+      "count": {
+       "value": 0,
+       "source": "records.hms_kishan0725 (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "dignity_dev_hms": {
+      "count": {
+       "value": 0,
+       "source": "records.dignity_dev_hms (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "helpdesk_legacy_holdout": {
+      "count": {
+       "value": 0,
+       "source": "records.helpdesk_legacy_holdout (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "news_buzz": {
+      "count": {
+       "value": 0,
+       "source": "records.news_buzz (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "fee_rainbow": {
+      "count": {
+       "value": 1,
+       "source": "records.fee_rainbow (gt_label, conversion_status)"
+      },
+      "query_ids": [
+       "Q054"
+      ]
+     },
+     "clinic_inventory_legacy_hard": {
+      "count": {
+       "value": 0,
+       "source": "records.clinic_inventory_legacy_hard (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "simple_crud": {
+      "count": {
+       "value": 0,
+       "source": "records.simple_crud (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "mixed_crud": {
+      "count": {
+       "value": 0,
+       "source": "records.mixed_crud (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "hard_crud": {
+      "count": {
+       "value": 0,
+       "source": "records.hard_crud (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     }
+    }
+   },
+   {
+    "key": "non_recoverable",
+    "label": "Non-recoverable under the current ground truth",
+    "text": "The ground truth classifies the site as abstain; C3 abstaining is a correct abstention.",
+    "apps": {
+     "hms_kishan0725": {
+      "count": {
+       "value": 0,
+       "source": "records.hms_kishan0725 (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "dignity_dev_hms": {
+      "count": {
+       "value": 6,
+       "source": "records.dignity_dev_hms (gt_label, conversion_status)"
+      },
+      "query_ids": [
+       "Q001",
+       "Q002",
+       "Q003",
+       "Q006",
+       "Q013",
+       "Q014"
+      ]
+     },
+     "helpdesk_legacy_holdout": {
+      "count": {
+       "value": 0,
+       "source": "records.helpdesk_legacy_holdout (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "news_buzz": {
+      "count": {
+       "value": 2,
+       "source": "records.news_buzz (gt_label, conversion_status)"
+      },
+      "query_ids": [
+       "Q002",
+       "Q006"
+      ]
+     },
+     "fee_rainbow": {
+      "count": {
+       "value": 12,
+       "source": "records.fee_rainbow (gt_label, conversion_status)"
+      },
+      "query_ids": [
+       "Q021",
+       "Q022",
+       "Q023",
+       "Q024",
+       "Q025",
+       "Q026",
+       "Q027",
+       "Q028",
+       "Q029",
+       "Q030",
+       "Q049",
+       "Q050"
+      ]
+     },
+     "clinic_inventory_legacy_hard": {
+      "count": {
+       "value": 0,
+       "source": "records.clinic_inventory_legacy_hard (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "simple_crud": {
+      "count": {
+       "value": 0,
+       "source": "records.simple_crud (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "mixed_crud": {
+      "count": {
+       "value": 0,
+       "source": "records.mixed_crud (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "hard_crud": {
+      "count": {
+       "value": 0,
+       "source": "records.hard_crud (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     }
+    }
+   },
+   {
+    "key": "ambiguous",
+    "label": "Ambiguous",
+    "text": "The ground truth could not decide; such sites are excluded from precision and recall.",
+    "apps": {
+     "hms_kishan0725": {
+      "count": {
+       "value": 1,
+       "source": "records.hms_kishan0725 (gt_label, conversion_status)"
+      },
+      "query_ids": [
+       "Q036"
+      ]
+     },
+     "dignity_dev_hms": {
+      "count": {
+       "value": 0,
+       "source": "records.dignity_dev_hms (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "helpdesk_legacy_holdout": {
+      "count": {
+       "value": 0,
+       "source": "records.helpdesk_legacy_holdout (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "news_buzz": {
+      "count": {
+       "value": 0,
+       "source": "records.news_buzz (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "fee_rainbow": {
+      "count": {
+       "value": 2,
+       "source": "records.fee_rainbow (gt_label, conversion_status)"
+      },
+      "query_ids": [
+       "Q007",
+       "Q011"
+      ]
+     },
+     "clinic_inventory_legacy_hard": {
+      "count": {
+       "value": 0,
+       "source": "records.clinic_inventory_legacy_hard (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "simple_crud": {
+      "count": {
+       "value": 0,
+       "source": "records.simple_crud (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "mixed_crud": {
+      "count": {
+       "value": 0,
+       "source": "records.mixed_crud (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "hard_crud": {
+      "count": {
+       "value": 0,
+       "source": "records.hard_crud (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     }
+    }
+   },
+   {
+    "key": "non_live",
+    "label": "Non-live",
+    "text": "Commented-out or dead code; detected but excluded from live-site denominators.",
+    "apps": {
+     "hms_kishan0725": {
+      "count": {
+       "value": 0,
+       "source": "records.hms_kishan0725 (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "dignity_dev_hms": {
+      "count": {
+       "value": 1,
+       "source": "records.dignity_dev_hms (gt_label, conversion_status)"
+      },
+      "query_ids": [
+       "Q010"
+      ]
+     },
+     "helpdesk_legacy_holdout": {
+      "count": {
+       "value": 0,
+       "source": "records.helpdesk_legacy_holdout (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "news_buzz": {
+      "count": {
+       "value": 0,
+       "source": "records.news_buzz (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "fee_rainbow": {
+      "count": {
+       "value": 0,
+       "source": "records.fee_rainbow (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "clinic_inventory_legacy_hard": {
+      "count": {
+       "value": 0,
+       "source": "records.clinic_inventory_legacy_hard (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "simple_crud": {
+      "count": {
+       "value": 0,
+       "source": "records.simple_crud (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "mixed_crud": {
+      "count": {
+       "value": 0,
+       "source": "records.mixed_crud (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     },
+     "hard_crud": {
+      "count": {
+       "value": 0,
+       "source": "records.hard_crud (gt_label, conversion_status)"
+      },
+      "query_ids": []
+     }
+    }
+   },
+   {
+    "key": "unverified",
+    "label": "Unverified",
+    "text": "Generated but its behaviour or result shape has not been verified.",
+    "apps": {
+     "ams_native": {
+      "query_ids": [
+       "Q016",
+       "Q019"
+      ],
+      "count": {
+       "value": 2,
+       "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+      }
+     },
+     "fee_rainbow": {
+      "query_ids": [
+       "Q038",
+       "Q041"
+      ],
+      "count": {
+       "value": 2,
+       "source": "evidence/final/2026-10-20/result_shape_star_join_sites.json"
+      }
+     }
+    }
+   },
+   {
+    "key": "failed_verification",
+    "label": "Failed verification",
+    "text": "A verification ran and failed; none in the final evidence.",
+    "apps": {
+     "hms_kishan0725": {
+      "count": {
+       "value": 0,
+       "source": "evidence/mysql_runs/2026-10-15_195730/e1/php_vs_sqlalchemy_equivalence.json"
+      },
+      "query_ids": []
+     }
+    }
+   },
+   {
+    "key": "verification_inconclusive",
+    "label": "Verification inconclusive",
+    "text": "E1 could not decide (for example no differing data); inconclusive is not a pass.",
+    "apps": {
+     "hms_kishan0725": {
+      "count": {
+       "value": 17,
+       "source": "evidence/mysql_runs/2026-10-15_195730/e1/php_vs_sqlalchemy_equivalence.json"
+      },
+      "query_ids": []
+     }
+    }
+   },
+   {
+    "key": "schema_mismatch",
+    "label": "Schema mismatch",
+    "text": "The site references tables or columns that are not in the supplied schema file.",
+    "apps": {
+     "hms_kishan0725": {
+      "count": {
+       "value": 6,
+       "source": "evidence/evaluation/hms_kishan0725/evaluation.json",
+       "derivation": "schema_mismatch.sites"
+      },
+      "query_ids": []
+     },
+     "fee_rainbow": {
+      "count": {
+       "value": 36,
+       "source": "evidence/evaluation/fee_rainbow/evaluation_wrapper_support.json",
+       "derivation": "schema_mismatch.sites"
+      },
+      "query_ids": []
+     }
+    }
+   }
+  ],
+  "register": [
+   {
+    "app": "hms_kishan0725",
+    "label": "HMS (kishan0725)",
+    "role": "post-adaptation benchmark (third-party)",
+    "type": "Third-party application",
+    "purpose": "Unseen benchmark and the main E1 behavioural-equivalence application.",
+    "limitations": "No licence: source is never committed or shown.",
+    "repository": "github.com/kishan0725/Hospital-Management-System",
+    "commit": "777fda46b77a820977a5ba616283dbfbc40bf7e1",
+    "commit_date": "2024-10-07",
+    "origin": "third-party",
+    "licence_manifest": "NONE (no licence file; GitHub licence null). Analysed locally only; source not committed.",
+    "licence_generator": "No licence: source not committed; SQL text and values are never exported",
+    "licence_status": null,
+    "provenance_files": [
+     "benchmarks/benchmark_manifest.json",
+     "scripts/summarize_evidence.py APP_INFO"
+    ],
+    "ground_truth": "author-verified ground truth",
+    "ground_truth_entries": {
+     "value": 52,
+     "source": "benchmarks/ground truth/hms_kishan0725/queries.json"
+    },
+    "measurements": {
+     "sql_detected": "hms_kishan0725|current code|sql_detected",
+     "sql_recovered": "hms_kishan0725|current code|sql_recovered",
+     "converted_functions": "hms_kishan0725|current code|converted_functions",
+     "unresolved_total": "hms_kishan0725|current code|unresolved_total"
+    },
+    "evidence_applied": [
+     "S15",
+     "E1",
+     "E2",
+     "E3",
+     "E4",
+     "byte gate"
+    ],
+    "display": "Counts and query IDs only"
+   },
+   {
+    "app": "dignity_dev_hms",
+    "label": "Dignity-Dev",
+    "role": "fresh independent holdout",
+    "type": "Third-party application",
+    "purpose": "Fresh independent holdout, first run frozen.",
+    "limitations": "Several tables without a primary key; shown counts-only.",
+    "repository": "github.com/Dignity-Dev/Hospital-Management-System",
+    "commit": "b9e939d64e06ae5adedb51b91329784a645b74e9",
+    "commit_date": "2022-11-05",
+    "origin": "third-party",
+    "licence_manifest": "MIT (Copyright (c) 2022 DATA - Dignity Technology)",
+    "licence_generator": "MIT (evidence register row 35)",
+    "licence_status": null,
+    "provenance_files": [
+     "benchmarks/benchmark_manifest.json",
+     "scripts/summarize_evidence.py APP_INFO"
+    ],
+    "ground_truth": "author-verified ground truth",
+    "ground_truth_entries": {
+     "value": 14,
+     "source": "benchmarks/ground truth/dignity_dev_hms/queries.json"
+    },
+    "measurements": {
+     "sql_detected": "dignity_dev_hms|current code|sql_detected",
+     "sql_recovered": "dignity_dev_hms|current code|sql_recovered",
+     "converted_functions": "dignity_dev_hms|current code|converted_functions",
+     "unresolved_total": "dignity_dev_hms|current code|unresolved_total"
+    },
+    "evidence_applied": [
+     "S15",
+     "E2",
+     "E3",
+     "E4",
+     "byte gate"
+    ],
+    "display": "Counts and query IDs only"
+   },
+   {
+    "app": "helpdesk_legacy_holdout",
+    "label": "Helpdesk",
+    "role": "holdout baseline, post-adaptation after S13",
+    "type": "Project-authored application",
+    "purpose": "Holdout written independently of Clinic; frozen pre-adaptation baseline.",
+    "limitations": "Small and synthetic.",
+    "repository": null,
+    "commit": null,
+    "commit_date": null,
+    "origin": "original synthetic application, independent of Clinic; pre-adaptation baseline frozen at tag c3-helpdesk-baseline-6of9",
+    "licence_manifest": null,
+    "licence_generator": "Project-authored fixture",
+    "licence_status": null,
+    "provenance_files": [
+     "benchmarks/benchmark_manifest.json",
+     "scripts/summarize_evidence.py APP_INFO"
+    ],
+    "ground_truth": "author-verified ground truth",
+    "ground_truth_entries": {
+     "value": 9,
+     "source": "benchmarks/ground truth/helpdesk_legacy_holdout/queries.json"
+    },
+    "measurements": {
+     "sql_detected": "helpdesk_legacy_holdout|current code|sql_detected",
+     "sql_recovered": "helpdesk_legacy_holdout|current code|sql_recovered",
+     "converted_functions": "helpdesk_legacy_holdout|current code|converted_functions",
+     "unresolved_total": "helpdesk_legacy_holdout|current code|unresolved_total"
+    },
+    "evidence_applied": [
+     "S15",
+     "E2",
+     "E3",
+     "E4",
+     "byte gate"
+    ],
+    "display": "Code-level Before/After allowed"
+   },
+   {
+    "app": "news_buzz",
+    "label": "NEWS-BUZZ",
+    "role": "post-adaptation benchmark (third-party)",
+    "type": "Third-party application",
+    "purpose": "Unseen benchmark with heavy include and append patterns.",
+    "limitations": "Bundled validation library excluded from analysis.",
+    "repository": "github.com/anirbandutta9/NEWS-BUZZ",
+    "commit": "3bf43cfd024034ecbecc16f701966d88c931ff90",
+    "commit_date": "2020-05-10",
+    "origin": "third-party",
+    "licence_manifest": "MIT (Copyright (c) 2017 Anirban Dutta)",
+    "licence_generator": "MIT (its README)",
+    "licence_status": null,
+    "provenance_files": [
+     "benchmarks/benchmark_manifest.json",
+     "scripts/summarize_evidence.py APP_INFO"
+    ],
+    "ground_truth": "author-verified ground truth",
+    "ground_truth_entries": {
+     "value": 32,
+     "source": "benchmarks/ground truth/news_buzz/queries.json"
+    },
+    "measurements": {
+     "sql_detected": "news_buzz|current code|sql_detected",
+     "sql_recovered": "news_buzz|current code|sql_recovered",
+     "converted_functions": "news_buzz|current code|converted_functions",
+     "unresolved_total": "news_buzz|current code|unresolved_total"
+    },
+    "evidence_applied": [
+     "S15",
+     "E2",
+     "E3",
+     "E4",
+     "byte gate"
+    ],
+    "display": "Code-level Before/After allowed"
+   },
+   {
+    "app": "fee_rainbow",
+    "label": "Fee-Rainbow",
+    "role": "post-adaptation benchmark (third-party)",
+    "type": "Third-party application",
+    "purpose": "Unseen benchmark with wrappers, SQL fragments and PHP named arguments.",
+    "limitations": "The supplied schema file defines one table; licence records are inconsistent.",
+    "repository": "github.com/jimmyyrp/Fee-Rainbow",
+    "commit": "6285fb5375920af6a71569e8053147c77f7c1c11",
+    "commit_date": "2025-07-02",
+    "origin": "third-party",
+    "licence_manifest": "MIT (Copyright (c) 2025 Randa)",
+    "licence_generator": "LICENSE file present; licence type not verified",
+    "licence_status": "Licence information inconsistent across records - verification required.",
+    "provenance_files": [
+     "benchmarks/benchmark_manifest.json",
+     "scripts/summarize_evidence.py APP_INFO"
+    ],
+    "ground_truth": "author-verified ground truth",
+    "ground_truth_entries": {
+     "value": 58,
+     "source": "benchmarks/ground truth/fee_rainbow/queries.json"
+    },
+    "measurements": {
+     "sql_detected": "fee_rainbow|current code|sql_detected",
+     "sql_recovered": "fee_rainbow|current code|sql_recovered",
+     "converted_functions": "fee_rainbow|current code|converted_functions",
+     "unresolved_total": "fee_rainbow|current code|unresolved_total"
+    },
+    "evidence_applied": [
+     "S15",
+     "E2",
+     "E3",
+     "E4",
+     "byte gate"
+    ],
+    "display": "Counts and query IDs only"
+   },
+   {
+    "app": "clinic_inventory_legacy_hard",
+    "label": "Clinic",
+    "role": "development fixture",
+    "type": "Project-authored application",
+    "purpose": "Development benchmark; query-specific templates and the MySQL verification suite.",
+    "limitations": "Templates are query-specific and reported separately; no author-verified ground truth.",
+    "repository": null,
+    "commit": null,
+    "commit_date": null,
+    "origin": "original synthetic benchmark (README: 'not an external real-world GitHub application'); query-ID-specific guarded templates exist for 7 of its 22 sites",
+    "licence_manifest": null,
+    "licence_generator": "Project-authored fixture",
+    "licence_status": null,
+    "provenance_files": [
+     "benchmarks/benchmark_manifest.json",
+     "scripts/summarize_evidence.py APP_INFO"
+    ],
+    "ground_truth": "none",
+    "ground_truth_entries": null,
+    "measurements": {
+     "sql_detected": "clinic_inventory_legacy_hard|current code|sql_detected",
+     "sql_recovered": "clinic_inventory_legacy_hard|current code|sql_recovered",
+     "converted_functions": "clinic_inventory_legacy_hard|current code|converted_functions",
+     "unresolved_total": "clinic_inventory_legacy_hard|current code|unresolved_total"
+    },
+    "evidence_applied": [
+     "E2",
+     "E3",
+     "E4",
+     "byte gate",
+     "Clinic MySQL verification (incl. join-rule tests)"
+    ],
+    "display": "Code-level Before/After allowed"
+   },
+   {
+    "app": "simple_crud",
+    "label": "simple_crud",
+    "role": "development fixture",
+    "type": "Project-authored fixture",
+    "purpose": "Development fixture.",
+    "limitations": "Minimal.",
+    "repository": null,
+    "commit": null,
+    "commit_date": null,
+    "origin": "original synthetic fixture written for C3",
+    "licence_manifest": null,
+    "licence_generator": "Project-authored fixture",
+    "licence_status": null,
+    "provenance_files": [
+     "benchmarks/benchmark_manifest.json",
+     "scripts/summarize_evidence.py APP_INFO"
+    ],
+    "ground_truth": "fixture expectations",
+    "ground_truth_entries": null,
+    "measurements": {
+     "sql_detected": "simple_crud|current code|sql_detected",
+     "sql_recovered": "simple_crud|current code|sql_recovered",
+     "converted_functions": "simple_crud|current code|converted_functions",
+     "unresolved_total": "simple_crud|current code|unresolved_total"
+    },
+    "evidence_applied": [
+     "E2",
+     "E3",
+     "E4",
+     "byte gate"
+    ],
+    "display": "Counts and query IDs only"
+   },
+   {
+    "app": "mixed_crud",
+    "label": "mixed_crud",
+    "role": "development fixture",
+    "type": "Project-authored fixture",
+    "purpose": "Development fixture.",
+    "limitations": "Minimal.",
+    "repository": null,
+    "commit": null,
+    "commit_date": null,
+    "origin": "original synthetic fixture written for C3",
+    "licence_manifest": null,
+    "licence_generator": "Project-authored fixture",
+    "licence_status": null,
+    "provenance_files": [
+     "benchmarks/benchmark_manifest.json",
+     "scripts/summarize_evidence.py APP_INFO"
+    ],
+    "ground_truth": "fixture expectations",
+    "ground_truth_entries": null,
+    "measurements": {
+     "sql_detected": "mixed_crud|current code|sql_detected",
+     "sql_recovered": "mixed_crud|current code|sql_recovered",
+     "converted_functions": "mixed_crud|current code|converted_functions",
+     "unresolved_total": "mixed_crud|current code|unresolved_total"
+    },
+    "evidence_applied": [
+     "E2",
+     "E3",
+     "E4",
+     "byte gate"
+    ],
+    "display": "Counts and query IDs only"
+   },
+   {
+    "app": "hard_crud",
+    "label": "hard_crud",
+    "role": "development fixture",
+    "type": "Project-authored fixture",
+    "purpose": "Development fixture for structural and branch cases.",
+    "limitations": "Minimal.",
+    "repository": null,
+    "commit": null,
+    "commit_date": null,
+    "origin": "original synthetic fixture written for C3",
+    "licence_manifest": null,
+    "licence_generator": "Project-authored fixture",
+    "licence_status": null,
+    "provenance_files": [
+     "benchmarks/benchmark_manifest.json",
+     "scripts/summarize_evidence.py APP_INFO"
+    ],
+    "ground_truth": "fixture expectations",
+    "ground_truth_entries": null,
+    "measurements": {
+     "sql_detected": "hard_crud|current code|sql_detected",
+     "sql_recovered": "hard_crud|current code|sql_recovered",
+     "converted_functions": "hard_crud|current code|converted_functions",
+     "unresolved_total": "hard_crud|current code|unresolved_total"
+    },
+    "evidence_applied": [
+     "E2",
+     "E3",
+     "E4",
+     "byte gate"
+    ],
+    "display": "Counts and query IDs only"
+   }
+  ],
+  "ams_native": {
+   "app": "ams_native",
+   "label": "ams-native-3c4d475",
+   "type": "Third-party application",
+   "purpose": "Unseen application used once to check the value-position extension; no ground truth.",
+   "limitations": "Counts only; not part of the nine evaluated applications.",
+   "display": "Counts and query IDs only",
+   "licence_history": [
+    {
+     "when": "first run (baseline, commit 351be5b)",
+     "text": "Original ZIP hash not recorded; licence unknown.",
+     "source": "evidence/baseline_unseen/ams_native/2026-10-20/baseline.json"
+    },
+    {
+     "when": "later on 2026-10-20",
+     "text": "Original ZIP found; PHP and schema hashes match the baseline; LICENSE.txt is MIT. Source is still not exported.",
+     "source": "evidence/baseline_unseen/ams_native/2026-10-20/CORRECTION_2026-10-20.md"
+    }
+   ],
+   "runs": [
+    {
+     "label": "pre-improvement baseline (351be5b)",
+     "total_queries": {
+      "value": 112,
+      "source": "evidence/baseline_unseen/ams_native/2026-10-20/baseline.json",
+      "derivation": "counts.total_queries"
+     },
+     "recovered_queries": {
+      "value": 108,
+      "source": "evidence/baseline_unseen/ams_native/2026-10-20/baseline.json",
+      "derivation": "counts.recovered_queries"
+     },
+     "converted_queries": {
+      "value": 99,
+      "source": "evidence/baseline_unseen/ams_native/2026-10-20/baseline.json",
+      "derivation": "counts.converted_queries"
+     },
+     "unresolved_total": {
+      "value": 13,
+      "source": "evidence/baseline_unseen/ams_native/2026-10-20/baseline.json",
+      "derivation": "counts.unresolved_total"
+     }
+    },
+    {
+     "label": "after the value-position extension (d263cbb)",
+     "total_queries": {
+      "value": 112,
+      "source": "evidence/final/2026-10-21/ams_native_post_t1.json",
+      "derivation": "post.counts.total_queries"
+     },
+     "recovered_queries": {
+      "value": 108,
+      "source": "evidence/final/2026-10-21/ams_native_post_t1.json",
+      "derivation": "post.counts.recovered_queries"
+     },
+     "converted_queries": {
+      "value": 108,
+      "source": "evidence/final/2026-10-21/ams_native_post_t1.json",
+      "derivation": "post.counts.converted_queries"
+     },
+     "unresolved_total": {
+      "value": 4,
+      "source": "evidence/final/2026-10-21/ams_native_post_t1.json",
+      "derivation": "post.counts.unresolved_total"
+     }
+    },
+    {
+     "label": "after the FR6 join rule (4d62a90)",
+     "total_queries": {
+      "value": 112,
+      "source": "evidence/final/2026-10-20/ams_native_post_t2.json",
+      "derivation": "runs.4d62a90.total_queries"
+     },
+     "converted_queries": {
+      "value": 108,
+      "source": "evidence/final/2026-10-20/ams_native_post_t2.json",
+      "derivation": "runs.4d62a90.converted_queries"
+     },
+     "unresolved_total": {
+      "value": 4,
+      "source": "evidence/final/2026-10-20/ams_native_post_t2.json",
+      "derivation": "runs.4d62a90.unresolved_total"
+     }
+    }
+   ],
+   "evidence_applied": [
+    "E4-style check",
+    "SQLite Alembic round trip",
+    "output comparison"
+   ],
+   "ground_truth": "none"
+  },
+  "fee_rainbow_licence": {
+   "message": "Licence information inconsistent across records - verification required.",
+   "records": [
+    "benchmarks/benchmark_manifest.json records the licence as MIT with the author's copyright line (added in commit 63db48b).",
+    "scripts/summarize_evidence.py APP_INFO records LICENSE file present; licence type not verified (added in commit 354bd85)."
+   ],
+   "observed_locally": "The gitignored local clone at the recorded commit contains a LICENSE file whose text is the MIT licence; that file is not committed, so no committed record proves it.",
+   "to_resolve": "Commit a provenance record with the sha256 of the upstream LICENSE at the recorded commit and a check that its text is the MIT licence, then update APP_INFO to match. Until then the counts-only policy stays."
+  },
+  "measurement_definitions": [
+   {
+    "title": "Dignity-Dev: three denominators",
+    "text": "Migration Impact shows converted sites of all detected sites (the detected count includes the non-live Q010). Conversion coverage counts converted ground-truth recoverable sites of all recoverable sites. The manual-review proxy counts live sites not converted of all live sites.",
+    "refs": [
+     "dignity_dev_hms|current code|converted_functions",
+     "dignity_dev_hms|current code|sql_detected",
+     "dignity_dev_hms|current code|conversion_coverage_gt",
+     "dignity_dev_hms|current code|manual_review_rate"
+    ]
+   },
+   {
+    "title": "Fee-Rainbow: converted functions versus coverage",
+    "text": "Converted functions count every generated function, including an ambiguous ground-truth site. Coverage counts only recoverable sites.",
+    "refs": [
+     "fee_rainbow|current code|converted_functions",
+     "fee_rainbow|current code|conversion_coverage_gt"
+    ]
+   },
+   {
+    "title": "Clinic: templates and recovered counts",
+    "text": "Query-specific templates convert sites that general recovery leaves unresolved, so converted can exceed recovered. The general-rule share is reported separately.",
+    "refs": [
+     "clinic_inventory_legacy_hard|current code|sql_recovered",
+     "clinic_inventory_legacy_hard|current code|converted_functions",
+     "clinic_inventory_legacy_hard|current code|converted_template",
+     "clinic_inventory_legacy_hard|current code|general_rule_share"
+    ]
+   },
+   {
+    "title": "HMS E1 versus Clinic MySQL verification",
+    "text": "E1 compares the legacy PHP-built SQL with the generated function per site on MySQL, for HMS only; inconclusive is not a pass. The Clinic MySQL verification is a separate pytest suite: tests that run the Clinic application's own PHP against the generated functions, plus join-rule tests that run the same SQL directly through PHP mysqli against the generated function. Neither is the other.",
+    "refs": [
+     "hms_kishan0725|post-adaptation (E1 re-run)|e1_pass",
+     "hms_kishan0725|post-adaptation (E1 re-run)|e1_inconclusive",
+     "clinic_inventory_legacy_hard|saved log (2026-10-20, HEAD 84e97c0)|mysql_equivalence_tests_passed",
+     "clinic_inventory_legacy_hard|saved log (2026-10-20, HEAD 84e97c0)|join_rule_mysql_tests_passed"
+    ],
+    "metrics": [
+     "mysql_equivalence_tests_passed",
+     "join_rule_mysql_tests_passed"
+    ]
+   },
+   {
+    "title": "Regression totals",
+    "text": "The non-MySQL suite and the full suite with MySQL run the same test tree; the skipped non-MySQL tests are the tests that need MySQL, and the Clinic suite is counted inside the full suite. Older saved logs are shown as history.",
+    "refs": [
+     "all|saved log (2026-10-20, HEAD 4d62a90)|tests_passed",
+     "all|saved log (2026-10-20, HEAD 84e97c0)|tests_with_mysql_passed"
+    ],
+    "metrics": [
+     "tests_passed",
+     "tests_with_mysql_passed"
+    ]
+   },
+   {
+    "title": "E4 bounded check",
+    "text": "Every generated function is called with fixed hostile payloads in a recording session; SQL is compiled for MySQL but never executed. Functions that take no runtime value have no payload cases and pass trivially; they are counted separately below.",
+    "refs": [
+     "simple_crud|current code (E4, 2026-10-20)|e4_safe_functions",
+     "mixed_crud|current code (E4, 2026-10-20)|e4_safe_functions",
+     "hard_crud|current code (E4, 2026-10-20)|e4_safe_functions",
+     "clinic_inventory_legacy_hard|current code (E4, 2026-10-20)|e4_safe_functions",
+     "helpdesk_legacy_holdout|current code (E4, 2026-10-20)|e4_safe_functions",
+     "hms_kishan0725|current code (E4, 2026-10-20)|e4_safe_functions",
+     "news_buzz|current code (E4, 2026-10-20)|e4_safe_functions",
+     "fee_rainbow|current code (E4, 2026-10-20)|e4_safe_functions",
+     "dignity_dev_hms|current code (E4, 2026-10-20)|e4_safe_functions"
+    ],
+    "metrics": [
+     "e4_safe_functions"
+    ]
+   },
+   {
+    "title": "Schema completeness",
+    "text": "E2 compares the schema views; it cannot show that a schema file is complete. Fee-Rainbow's supplied schema defines one table, and sites referencing other tables are listed as schema mismatch.",
+    "refs": [
+     "all|post-adaptation (E2, 2026-10-15)|e2_schema_match"
+    ]
+   },
+   {
+    "title": "Verification not performed",
+    "text": "Applications with no E1 run are listed in the E1 card; conversion alone does not show behavioural equivalence.",
+    "refs": [
+     "dignity_dev_hms|not measured|e1_equivalence",
+     "helpdesk_legacy_holdout|not measured|e1_equivalence",
+     "news_buzz|not measured|e1_equivalence",
+     "fee_rainbow|not measured|e1_equivalence",
+     "clinic_inventory_legacy_hard|not measured|e1_equivalence",
+     "simple_crud|not measured|e1_equivalence",
+     "mixed_crud|not measured|e1_equivalence",
+     "hard_crud|not measured|e1_equivalence"
+    ],
+    "metrics": [
+     "e1_equivalence"
+    ]
+   }
+  ],
+  "e4_split": {
+   "simple_crud": {
+    "with_runtime_values": {
+     "value": 3,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.simple_crud.detail[*]: bound + rejected > 0"
+    },
+    "without_runtime_values": {
+     "value": 1,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.simple_crud.detail[*]: no payload case (no bound value)"
+    },
+    "functions": {
+     "value": 4,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.simple_crud.functions"
+    }
+   },
+   "mixed_crud": {
+    "with_runtime_values": {
+     "value": 3,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.mixed_crud.detail[*]: bound + rejected > 0"
+    },
+    "without_runtime_values": {
+     "value": 2,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.mixed_crud.detail[*]: no payload case (no bound value)"
+    },
+    "functions": {
+     "value": 5,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.mixed_crud.functions"
+    }
+   },
+   "hard_crud": {
+    "with_runtime_values": {
+     "value": 2,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.hard_crud.detail[*]: bound + rejected > 0"
+    },
+    "without_runtime_values": {
+     "value": 0,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.hard_crud.detail[*]: no payload case (no bound value)"
+    },
+    "functions": {
+     "value": 2,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.hard_crud.functions"
+    }
+   },
+   "clinic_inventory_legacy_hard": {
+    "with_runtime_values": {
+     "value": 16,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.clinic.detail[*]: bound + rejected > 0"
+    },
+    "without_runtime_values": {
+     "value": 6,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.clinic.detail[*]: no payload case (no bound value)"
+    },
+    "functions": {
+     "value": 22,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.clinic.functions"
+    }
+   },
+   "helpdesk_legacy_holdout": {
+    "with_runtime_values": {
+     "value": 6,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.helpdesk.detail[*]: bound + rejected > 0"
+    },
+    "without_runtime_values": {
+     "value": 3,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.helpdesk.detail[*]: no payload case (no bound value)"
+    },
+    "functions": {
+     "value": 9,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.helpdesk.functions"
+    }
+   },
+   "hms_kishan0725": {
+    "with_runtime_values": {
+     "value": 31,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.hms_kishan0725.detail[*]: bound + rejected > 0"
+    },
+    "without_runtime_values": {
+     "value": 13,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.hms_kishan0725.detail[*]: no payload case (no bound value)"
+    },
+    "functions": {
+     "value": 44,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.hms_kishan0725.functions"
+    }
+   },
+   "news_buzz": {
+    "with_runtime_values": {
+     "value": 24,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.news_buzz.detail[*]: bound + rejected > 0"
+    },
+    "without_runtime_values": {
+     "value": 6,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.news_buzz.detail[*]: no payload case (no bound value)"
+    },
+    "functions": {
+     "value": 30,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.news_buzz.functions"
+    }
+   },
+   "fee_rainbow": {
+    "with_runtime_values": {
+     "value": 27,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.fee_rainbow.detail[*]: bound + rejected > 0"
+    },
+    "without_runtime_values": {
+     "value": 13,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.fee_rainbow.detail[*]: no payload case (no bound value)"
+    },
+    "functions": {
+     "value": 40,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.fee_rainbow.functions"
+    }
+   },
+   "dignity_dev_hms": {
+    "with_runtime_values": {
+     "value": 5,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.dignity_dev_hms.detail[*]: bound + rejected > 0"
+    },
+    "without_runtime_values": {
+     "value": 2,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.dignity_dev_hms.detail[*]: no payload case (no bound value)"
+    },
+    "functions": {
+     "value": 7,
+     "source": "evidence/final/2026-10-20/e4/injection_report.json",
+     "derivation": "apps.dignity_dev_hms.functions"
+    }
+   }
+  },
+  "technologies": [
+   {
+    "name": "Python",
+    "role": "Pipeline language",
+    "area": "pipeline",
+    "version": null,
+    "version_source": null,
+    "imported_in": null
+   },
+   {
+    "name": "PHP and nikic/php-parser",
+    "role": "PHP abstract syntax tree for detection",
+    "area": "pipeline",
+    "package": "nikic/php-parser",
+    "version": "v5.9.0",
+    "version_source": "components/c3_data_layer/composer.lock",
+    "imported_in": null
+   },
+   {
+    "name": "SQLGlot",
+    "role": "SQL parsing for safety rules, join rules and column use",
+    "area": "pipeline",
+    "package": "sqlglot",
+    "module": "sqlglot",
+    "version": "30.21.0",
+    "version_source": "components/c3_data_layer/requirements.txt",
+    "imported_in": {
+     "src": [
+      "components/c3_data_layer/src/c3/analysis/column_analyzer.py",
+      "components/c3_data_layer/src/c3/conversion/branch_ir.py",
+      "components/c3_data_layer/src/c3/conversion/identifier_allowlist.py",
+      "components/c3_data_layer/src/c3/conversion/query_converter.py",
+      "components/c3_data_layer/src/c3/mapping/branch_recovery.py",
+      "components/c3_data_layer/src/c3/mapping/sql_parser.py"
+     ],
+     "scripts": [
+      "scripts/equivalence/compare.py",
+      "scripts/equivalence/input_table.py",
+      "scripts/make_handoff.py",
+      "scripts/schema_comparison.py"
+     ],
+     "dashboard": [
+      "components/c3_data_layer/dashboard/pp1_content.py"
+     ]
+    }
+   },
+   {
+    "name": "SQLAlchemy",
+    "role": "Generated models and text() functions; imported directly only by the Alembic emitter",
+    "area": "pipeline",
+    "package": "SQLAlchemy",
+    "module": "sqlalchemy",
+    "version": "2.1.3",
+    "version_source": "components/c3_data_layer/requirements.txt",
+    "imported_in": {
+     "src": [
+      "components/c3_data_layer/src/c3/generation/alembic_emitter.py"
+     ],
+     "tests": [
+      "components/c3_data_layer/tests/backend_verification/app.py",
+      "components/c3_data_layer/tests/backend_verification/test_app.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_behavioral_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_join_rule_mysql.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q010_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q011_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q012_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q013_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q014_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q016_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q020_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q020_rollback.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_write_equivalence.py",
+      "components/c3_data_layer/tests/fixtures/q014_generated.py",
+      "components/c3_data_layer/tests/mysql_validation/run_hard_migrated.py",
+      "components/c3_data_layer/tests/mysql_validation/run_migrated.py",
+      "components/c3_data_layer/tests/mysql_validation/run_mixed_migrated.py",
+      "components/c3_data_layer/tests/test_alembic_emitter.py",
+      "components/c3_data_layer/tests/test_alter_table_schema.py",
+      "components/c3_data_layer/tests/test_baseline_sqlacodegen.py",
+      "components/c3_data_layer/tests/test_behavioral_execution.py",
+      "components/c3_data_layer/tests/test_e1_harness.py",
+      "components/c3_data_layer/tests/test_e4_injection.py",
+      "components/c3_data_layer/tests/test_model_builder.py",
+      "components/c3_data_layer/tests/test_prepared_statements.py",
+      "components/c3_data_layer/tests/test_python_identifiers.py",
+      "components/c3_data_layer/tests/test_schema_fidelity.py",
+      "components/c3_data_layer/tests/test_schema_types_robustness.py",
+      "components/c3_data_layer/tests/test_security_report.py",
+      "components/c3_data_layer/tests/test_standalone_generated_code.py",
+      "components/c3_data_layer/tests/test_transaction_and_limit.py"
+     ],
+     "scripts": [
+      "scripts/alembic_roundtrip.py",
+      "scripts/baseline_sqlacodegen.py",
+      "scripts/check_models.py",
+      "scripts/e4_injection_check.py",
+      "scripts/equivalence/migrated_runner.py",
+      "scripts/equivalence/run_e1.py",
+      "scripts/make_handoff.py",
+      "scripts/schema_comparison.py"
+     ]
+    }
+   },
+   {
+    "name": "Alembic",
+    "role": "Generated migration environment and initial revision",
+    "area": "pipeline",
+    "package": "alembic",
+    "module": "alembic",
+    "version": "1.20.0",
+    "version_source": "components/c3_data_layer/requirements.txt",
+    "imported_in": {
+     "src": [
+      "components/c3_data_layer/src/c3/generation/alembic_emitter.py"
+     ],
+     "tests": [
+      "components/c3_data_layer/tests/test_alembic_emitter.py"
+     ],
+     "scripts": [
+      "scripts/alembic_roundtrip.py"
+     ]
+    }
+   },
+   {
+    "name": "MySQL",
+    "role": "Target database for E1, E2 live, E3 and the Clinic verification",
+    "area": "verification",
+    "version": null,
+    "version_source": null,
+    "imported_in": null
+   },
+   {
+    "name": "PyMySQL",
+    "role": "MySQL driver for experiments and MySQL tests, used through SQLAlchemy mysql+pymysql connection URLs (not imported directly)",
+    "area": "verification",
+    "package": "PyMySQL",
+    "module": "pymysql",
+    "version": "1.2.3",
+    "version_source": "components/c3_data_layer/requirements.txt",
+    "imported_in": {}
+   },
+   {
+    "name": "pytest",
+    "role": "Test runner",
+    "area": "tests",
+    "package": "pytest",
+    "module": "pytest",
+    "version": "9.1.1",
+    "version_source": "components/c3_data_layer/requirements.txt",
+    "imported_in": {
+     "tests": [
+      "components/c3_data_layer/tests/backend_verification/test_app.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_behavioral_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_join_rule_mysql.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q010_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q011_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q012_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q013_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q014_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q016_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q020_equivalence.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q020_rollback.py",
+      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_write_equivalence.py",
+      "components/c3_data_layer/tests/test_alembic_emitter.py",
+      "components/c3_data_layer/tests/test_array_element_recovery.py",
+      "components/c3_data_layer/tests/test_baseline_sqlacodegen.py",
+      "components/c3_data_layer/tests/test_behavioral_execution.py",
+      "components/c3_data_layer/tests/test_branch_binding.py",
+      "components/c3_data_layer/tests/test_dashboard_data.py",
+      "components/c3_data_layer/tests/test_e1_harness.py",
+      "components/c3_data_layer/tests/test_executor_coverage.py",
+      "components/c3_data_layer/tests/test_guarded_block_recovery.py",
+      "components/c3_data_layer/tests/test_handoff_site_labels.py",
+      "components/c3_data_layer/tests/test_hms_handoff_signatures.py",
+      "components/c3_data_layer/tests/test_input_binding.py",
+      "components/c3_data_layer/tests/test_integration_adapter.py",
+      "components/c3_data_layer/tests/test_loop_switch_soundness.py",
+      "components/c3_data_layer/tests/test_outer_join_rule.py",
+      "components/c3_data_layer/tests/test_php_string_decoding.py",
+      "components/c3_data_layer/tests/test_prepared_statements.py",
+      "components/c3_data_layer/tests/test_python_identifiers.py",
+      "components/c3_data_layer/tests/test_q010_subquery.py",
+      "components/c3_data_layer/tests/test_q011_in_list.py",
+      "components/c3_data_layer/tests/test_q012_order_by.py",
+      "components/c3_data_layer/tests/test_q013_dynamic_table.py",
+      "components/c3_data_layer/tests/test_q014_ast_mutations.py",
+      "components/c3_data_layer/tests/test_q014_branch_emitter.py",
+      "components/c3_data_layer/tests/test_q014_branch_ir.py",
+      "components/c3_data_layer/tests/test_q014_branch_recovery.py",
+      "components/c3_data_layer/tests/test_q014_pipeline_generation.py",
+      "components/c3_data_layer/tests/test_q014_source_gate.py",
+      "components/c3_data_layer/tests/test_q014_unsupported_ast.py",
+      "components/c3_data_layer/tests/test_q014_unsupported_operations.py",
+      "components/c3_data_layer/tests/test_q015_candidate_validation.py",
+      "components/c3_data_layer/tests/test_q015_converter_bindings.py",
+      "components/c3_data_layer/tests/test_q016_conditional_concat.py",
+      "components/c3_data_layer/tests/test_q020_join_update.py",
+      "components/c3_data_layer/tests/test_report_consistency.py",
+      "components/c3_data_layer/tests/test_schema_fidelity.py",
+      "components/c3_data_layer/tests/test_schema_types_robustness.py",
+      "components/c3_data_layer/tests/test_security_report.py",
+      "components/c3_data_layer/tests/test_sql_fragment_variables.py",
+      "components/c3_data_layer/tests/test_standalone_generated_code.py",
+      "components/c3_data_layer/tests/test_transaction_and_limit.py",
+      "components/c3_data_layer/tests/test_tryit_bridge.py",
+      "components/c3_data_layer/tests/test_type_map.py",
+      "components/c3_data_layer/tests/test_value_positions.py"
+     ]
+    }
+   },
+   {
+    "name": "sqlacodegen",
+    "role": "Schema-only comparison baseline, run as a command by scripts/baseline_sqlacodegen.py (not imported)",
+    "area": "research tooling",
+    "package": "sqlacodegen",
+    "module": "sqlacodegen",
+    "version": "4.0.4",
+    "version_source": "components/c3_data_layer/requirements.txt",
+    "imported_in": {}
+   },
+   {
+    "name": "HTML, CSS and JavaScript",
+    "role": "Migration Studio front end; Python standard-library http.server bridge for Try It",
+    "area": "dashboard",
+    "version": null,
+    "version_source": null,
+    "imported_in": null
+   }
+  ],
+  "artifacts": [
+   {
+    "file": "queries.json",
+    "stage": "recovery",
+    "purpose": "Recovery result per detected site.",
+    "present_in_current_run": true,
+    "in_integration_adapter_list": true
+   },
+   {
+    "file": "converted_queries.json",
+    "stage": "conversion",
+    "purpose": "Conversion result per site.",
+    "present_in_current_run": true,
+    "in_integration_adapter_list": true
+   },
+   {
+    "file": "schema.json",
+    "stage": "schema",
+    "purpose": "Parsed schema and unsupported objects.",
+    "present_in_current_run": true,
+    "in_integration_adapter_list": true
+   },
+   {
+    "file": "models.py",
+    "stage": "models",
+    "purpose": "SQLAlchemy ORM classes and Core tables (primary output).",
+    "present_in_current_run": true,
+    "in_integration_adapter_list": true
+   },
+   {
+    "file": "migration_notes.md",
+    "stage": "models",
+    "purpose": "Schema features that need manual review.",
+    "present_in_current_run": true,
+    "in_integration_adapter_list": false
+   },
+   {
+    "file": "data_access.py",
+    "stage": "generation",
+    "purpose": "Generated functions and unresolved-site stubs (primary output).",
+    "present_in_current_run": true,
+    "in_integration_adapter_list": true
+   },
+   {
+    "file": "column_usage.json",
+    "stage": "analysis",
+    "purpose": "Tables and column roles per site.",
+    "present_in_current_run": true,
+    "in_integration_adapter_list": true
+   },
+   {
+    "file": "traceability_report.json",
+    "stage": "reports",
+    "purpose": "PHP file and line to generated function.",
+    "present_in_current_run": true,
+    "in_integration_adapter_list": false
+   },
+   {
+    "file": "unresolved_queries.json",
+    "stage": "reports",
+    "purpose": "Flagged sites with stage and reason (primary output).",
+    "present_in_current_run": true,
+    "in_integration_adapter_list": true
+   },
+   {
+    "file": "security_report.json",
+    "stage": "reports",
+    "purpose": "Legacy injection sites, remediation and generated-code scan.",
+    "present_in_current_run": true,
+    "in_integration_adapter_list": false
+   },
+   {
+    "file": "alembic/",
+    "stage": "migration",
+    "purpose": "Alembic environment and initial revision; generating it is not running a migration.",
+    "present_in_current_run": true,
+    "in_integration_adapter_list": false
+   },
+   {
+    "file": "summary.json",
+    "stage": "summary",
+    "purpose": "Counts by stage and the output list.",
+    "present_in_current_run": true,
+    "in_integration_adapter_list": true
+   }
+  ],
+  "restricted_apps": [
+   "ams_native",
+   "dignity_dev_hms",
+   "fee_rainbow",
+   "hms_kishan0725"
   ]
  }
 }

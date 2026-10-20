@@ -42,7 +42,8 @@ function h(tag, attrs, ...children) {
 /* ===== EVIDENCE ===== */
 const Evidence = (() => {
   let DATA = null;
-  const state = { app: null, section: "functions", sqlFilter: "all", sqlSearch: "" };
+  const state = { app: null, section: "functions", sqlFilter: "all", sqlSearch: "", sqlView: "sites",
+    matrix: { status: "all", op: "all", stage: "all" } };
   const NOT_MEASURED = "Not yet measured";
   const NOT_APPLICABLE = "Not applicable";
   const SECTIONS = ["functions", "overview", "sql", "models", "impact", "evaluation", "reports"];
@@ -282,7 +283,71 @@ const Evidence = (() => {
       siteList ? h("p", {}, h("button", { type: "button", class: "button", onclick: () => showSites(siteList),
         text: `Unsupported join sites: ${joinCounts(siteList)} (show sites)` })) : null,
       experiments.length ? h("p", { class: "fr-limit muted" }, "Experiments: ",
-        experiments.flatMap((a, i) => (i ? [", ", a] : [a]))) : null);
+        experiments.flatMap((a, i) => (i ? [", ", a] : [a]))) : null,
+      frDetails(item));
+  }
+
+  // ---------- PP1 views (DATA.pp1, built by dashboard/pp1_content.py; text from docs/c3_pp1_dashboard_content.json) ----------
+  const pp1 = () => DATA.pp1;
+  const appName = (id) => (id === "ams_native" ? "ams-native" : appLabel(id));
+  const shown = (x) => (x === null || x === undefined ? "-" : (x.value === null || x.value === undefined ? "n/a" : String(x.value)));
+  // A computed number with its source: always a button that opens the source.
+  function sourced(x, label) {
+    if (!x) return "-";
+    return h("button", { type: "button", class: "linklike", title: x.source, text: shown(x),
+      onclick: () => openDrawer(label || "Computed value", definitionList([["Value", shown(x)], ["Evidence", h("code", { text: x.source })],
+        ["Derivation", x.derivation || null]])) });
+  }
+  function details(summary, ...children) {
+    return h("details", { class: "pp1-details" }, h("summary", { text: summary }), children);
+  }
+  const bullets = (items) => h("ul", { class: "pp1-list" }, items.map((t) => h("li", {}, t)));
+  function statusChip(key) {
+    const s = pp1().statuses[key];
+    return h("span", { class: `badge ${s ? s.tone : ""}`, text: s ? s.label : key });
+  }
+  const idsText = (list) => (list && list.length ? list.join(", ") : "-");
+  function measurementButton(id, prefix) {
+    const m = byId(id);
+    if (!m) return null;
+    return h("button", { type: "button", class: "fr-item", onclick: () => showMeasurement(m),
+      "aria-label": `${appLabel(m.app)}, ${m.label}: ${formatValue(m)} ${ratio(m)}. Open evidence.` },
+      h("span", { class: "what" }, h("span", { text: `${prefix || appLabel(m.app)} · ${m.label}` }), stageBadge(m)),
+      h("span", { class: "val" }, h("strong", { text: formatValue(m) }), ratio(m) ? h("span", { class: "muted", text: ` (${ratio(m)})` }) : null));
+  }
+  function latestTestIds() {
+    return DATA.experiments.tests.runs.filter((r) => r.latest).flatMap((r) =>
+      ["passed", "failed", "skipped"].map((k) => `all|${r.stage_label}|${r.metric_prefix}_${k}`));
+  }
+
+  function showSourceEvidence(item, c) {
+    openDrawer(`${item.fr}: source evidence`,
+      h("p", { class: "muted", text: "Repository files: open them in the repository (the dashboard does not serve source files). Function names are checked to exist when the data is generated." }),
+      h("h4", { text: "Implementation" }), bullets(c.code.map((r) => [h("code", { text: r.file }), " — ", r.functions.map((f, i) => [i ? ", " : "", h("code", { text: f })])])),
+      h("h4", { text: "Tests" }), bullets(c.tests.map((t) => h("code", { text: t }))),
+      h("h4", { text: "Commits" }), bullets(c.improvements.map((i) => [h("code", { text: i.commit }), " ", i.text])),
+      h("h4", { text: "Referenced measurements" }), h("ul", { class: "fr-list" }, item.measurements.map((id) => h("li", {}, measurementButton(id)))),
+      h("p", { class: "muted", text: `Status and limitation: ${DATA.functions.source}. Explanatory text: ${pp1().content_source}.` }));
+  }
+
+  function frDetails(item) {
+    const c = pp1().functions[item.fr];
+    if (!c) return null;
+    return h("div", { class: "fr-details" },
+      h("p", { class: "fr-limit" }, h("strong", { text: "Research purpose: " }), c.purpose),
+      c.partial_reason ? h("p", { class: "fr-limit" }, h("strong", { text: "Why the status is Partial: " }), c.partial_reason) : null,
+      details("Implementation and techniques", h("p", { text: c.implementation }), bullets(c.techniques)),
+      details("Key files and functions", bullets(c.code.map((r) => [h("code", { text: r.file }), ": ",
+        r.functions.map((f, i) => [i ? ", " : "", h("code", { text: f })])]))),
+      details("Demonstrable functionality", bullets(c.demonstration.map((d) => [h("strong", { text: appName(d.app) }),
+        d.query_ids.length ? ` (${d.query_ids.join(", ")})` : "", ": ", d.text]))),
+      details("Improvements completed", bullets(c.improvements.map((i) => [h("code", { text: i.commit }), " ", i.text]))),
+      details("Tests and their results",
+        bullets(c.tests.map((t) => h("code", { text: t }))),
+        h("p", { class: "muted", text: "Results are the saved suite totals (all tests, including the files above):" }),
+        h("ul", { class: "fr-list" }, latestTestIds().map((id) => h("li", {}, measurementButton(id, "Saved log"))))),
+      details("Remaining limitations and future work", h("p", { text: item.limitation }), bullets(c.future)),
+      h("p", {}, h("button", { type: "button", class: "button", onclick: () => showSourceEvidence(item, c), text: "View source evidence" })));
   }
 
   function renderFunctions(root) {
@@ -293,11 +358,74 @@ const Evidence = (() => {
     fill(root,
       h("div", { class: "section-head" }, h("div", {},
         h("h2", { text: "Functions: proposal requirements FR1 to FR10" }),
-        h("p", { text: `Requirement text is quoted from the proposal (as extracted in ${fn.requirements_source}). Status and limitation `
-          + `come from the reviewed file ${fn.source}; every number on a card is a referenced measurement. Select a measurement for its evidence.` }))),
+        h("p", { text: "What was proposed, what was implemented, how it was tested and what remains. Open a card's sections for detail." }))),
+      details("Evidence methodology", bullets(pp1().methodology),
+        h("p", { class: "muted", text: `Requirement text: ${fn.requirements_source}. Statuses and limitations: ${fn.source}. Explanations: ${pp1().content_source}.` })),
       h("p", { class: "fr-summary", id: "fr-summary" }, h("strong", { text: summary }),
         h("span", { class: "muted", text: `counted from ${fn.source}` })),
       h("div", { class: "grid cards" }, fn.items.map(frCard)));
+  }
+
+  function repoLink(r) {
+    return r.repository ? h("a", { href: `https://${r.repository}`, rel: "noopener", target: "_blank", text: r.repository }) : "Not recorded";
+  }
+  function feeLicenceNotice() {
+    const f = pp1().fee_rainbow_licence;
+    return h("div", { class: "notice" }, h("strong", { text: f.message }), bullets(f.records), h("p", { text: f.observed_locally }),
+      h("p", {}, h("strong", { text: "To resolve: " }), f.to_resolve));
+  }
+  function showRegisterRow(r) {
+    const value = (k) => { const m = byId(r.measurements[k]); return m ? measurementButton(m.id, m.label) : "-"; };
+    openDrawer(r.label, definitionList([
+      ["Type", r.type], ["Role", r.role], ["Evaluation purpose", r.purpose], ["Origin (manifest)", r.origin || "-"],
+      ["Repository (manifest)", repoLink(r)], ["Commit (manifest)", r.commit ? h("code", { text: `${r.commit} (${r.commit_date})` }) : "Not recorded"],
+      ["Licence (manifest)", r.licence_manifest || "Not recorded"], ["Licence / provenance (dashboard generator)", r.licence_generator],
+      ["Licence status", r.licence_status || null], ["Provenance records", bullets(r.provenance_files.map((f) => h("code", { text: f })))],
+      ["Ground truth", r.ground_truth], ["Ground-truth entries", r.ground_truth_entries ? sourced(r.ground_truth_entries) : null],
+      ["SQL detected", value("sql_detected")], ["SQL recovered", value("sql_recovered")], ["Converted functions", value("converted_functions")],
+      ["Unresolved sites", value("unresolved_total")], ["Evidence applied", r.evidence_applied.join(", ")],
+      ["Known limitations", r.limitations], ["Source display", r.display]]),
+      r.licence_status ? feeLicenceNotice() : null);
+  }
+  function registerCard() {
+    const reg = pp1().register;
+    const cell = (r, k) => formatValue(byId(r.measurements[k]));
+    return card("Applications & Licensing Register (nine evaluated applications)", "Licence and provenance as recorded; select a row for detail.",
+      table(["Application", "Type", "Repository", "Licence", "Ground truth", "Detected", "Recovered", "Converted", "Unresolved", "Source display"],
+        reg.map((r) => [r.label, r.type, repoLink(r),
+          r.licence_status ? h("span", { class: "badge warn", text: "Inconsistent - verification required" }) : (r.licence_manifest || r.licence_generator),
+          r.ground_truth, cell(r, "sql_detected"), cell(r, "sql_recovered"), cell(r, "converted_functions"), cell(r, "unresolved_total"), r.display]),
+        (i) => showRegisterRow(reg[i])),
+      reg.some((r) => r.licence_status) ? feeLicenceNotice() : null);
+  }
+  function amsCard() {
+    const a = pp1().ams_native;
+    const keys = [["total_queries", "Detected"], ["recovered_queries", "Recovered"], ["converted_queries", "Converted"], ["unresolved_total", "Unresolved"]];
+    return card("ams-native (unseen application, shown separately)", `${a.type}. ${a.purpose} ${a.limitations}`,
+      table(["Run", ...keys.map(([, t]) => t)], a.runs.map((run) => [run.label, ...keys.map(([k]) => (run[k] ? sourced(run[k], `${run.label}: ${k}`) : "-"))])),
+      h("h4", { text: "Licence history (both records kept)" }),
+      bullets(a.licence_history.map((x) => [h("strong", { text: `${x.when}: ` }), x.text, " ", h("code", { text: x.source })])),
+      h("p", { class: "muted", text: `Ground truth: ${a.ground_truth}. Evidence: ${a.evidence_applied.join(", ")}. ${a.display}.` }));
+  }
+
+  function definitionsCard() {
+    return card("How to read these numbers", "Each definition names its denominators; select a value for its evidence.",
+      pp1().measurement_definitions.map((d) => details(d.title, h("p", { text: d.text }),
+        d.refs.length ? h("ul", { class: "fr-list" }, d.refs.map((id) => h("li", {}, measurementButton(id)))) : null,
+        d.title.startsWith("E4") ? securityScope() : null)));
+  }
+
+  function inventoryCard() {
+    const p = pp1();
+    return card("Technology and output inventory", "Technologies verified by their import sites in the repository; outputs checked in the current-code run.",
+      table(["Technology", "Role", "Area", "Version", "Imported in"], p.technologies.map((t) => [t.name, t.role, t.area,
+        t.version ? [t.version, " ", h("span", { class: "muted", text: `(${t.version_source})` })] : "-",
+        t.imported_in ? (Object.keys(t.imported_in).length ? Object.entries(t.imported_in).map(([area, files]) => `${area} (${files.length} files)`).join(", ")
+          : "No direct import") : "-"])),
+      h("h4", { text: "Outputs written by the pipeline" }),
+      table(["Output", "Stage", "Purpose", "Present in every current-code run", "Listed by integration.py"], p.artifacts.map((a) => [
+        h("code", { text: a.file }), a.stage, a.purpose, a.present_in_current_run ? "yes" : "no", a.in_integration_adapter_list ? "yes" : "no"])),
+      h("p", { class: "muted", text: "Generating the Alembic files is not running a database migration; the round trip was run separately (E3)." }));
   }
 
   function renderOverview(root) {
@@ -337,10 +465,163 @@ const Evidence = (() => {
           formatValue(measurement(a.id, "converted_template", "current-code")),
           formatValue(measurement(a.id, "unresolved_total", "current-code"))]),
         (i) => selectApp(Object.keys(DATA.apps)[i]))),
+      registerCard(),
+      amsCard(),
     );
   }
 
+  const SQL_VIEWS = [["sites", "Per-site results (selected application)"], ["matrix", "SQL Support Matrix"],
+    ["explorer", "Failure & Limitation Explorer"]];
+  function sqlViewSwitch() {
+    return h("div", { class: "chip-row view-switch", role: "tablist", "aria-label": "SQL Results view" }, SQL_VIEWS.map(([key, text]) =>
+      h("button", { type: "button", class: `button${state.sqlView === key ? " primary" : ""}`, role: "tab",
+        "aria-selected": String(state.sqlView === key), text, onclick: () => { state.sqlView = key; render(); } })));
+  }
+
+  function starWarningCard() {
+    const s = pp1().star_join_sites;
+    return h("div", { class: "card warn-card" },
+      h("h3", { text: "Result-shape warning: converted INNER JOIN sites with a star projection" }),
+      h("div", { class: "notice", text: s.warning }),
+      h("p", { class: "sub", text: "These sites are converted and stay converted; the INNER JOIN rule does not check result shape. The finding per site "
+        + "uses the parsed schema of the same run. Source SQL stays private (counts only)." }),
+      table(["Application", "Query ID", "Projection", "Joined tables", "Tables missing from parsed schema", "Expanded output columns",
+        "Duplicate projected names", "Finding"],
+      s.sites.map((x) => [appName(x.app), x.query_id, x.projection.join(", "), sourced(x.join_tables), sourced(x.tables_missing_from_parsed_schema),
+        sourced(x.expanded_output_columns), sourced(x.duplicate_output_names), x.finding])),
+      h("p", { class: "muted" }, "Evidence: ", h("code", { text: s.source })));
+  }
+
+  function showMatrixRow(row) {
+    openDrawer(row.feature, definitionList([
+      ["Category", row.category], ["Status", statusChip(row.status)], ["Pipeline stage", row.stage],
+      ["Operations", row.operations.length ? row.operations.join(", ") : "-"], ["Technique", row.technique],
+      ["Source", row.source_files.length ? bullets(row.source_files.map((f) => h("code", { text: f }))) : "-"],
+      ["Benchmark examples", row.examples.length ? bullets(row.examples.map((e) => `${appName(e.app)}${e.query_ids.length ? `: ${e.query_ids.join(", ")}` : ""}`)) : "-"],
+      ["Tests", row.tests.length ? bullets(row.tests.map((t) => h("code", { text: t }))) : "None"],
+      ["Statements containing it (nine applications)", row.occurrences ? sourced(row.occurrences, "Occurrences") : "Not counted (not an SQL construct)"],
+      ["By application", Object.keys(row.occurrences_by_app).length ? bullets(Object.entries(row.occurrences_by_app).map(([a, v]) =>
+        [`${appName(a)}: `, sourced(v)])) : null],
+      ["Limitation", row.limitation], ["Future improvement", row.future],
+      ["Note", "Passing through the converter does not prove behavioural correctness."]]));
+  }
+
+  function renderMatrix(holder) {
+    const rows = pp1().sql_matrix;
+    const f = state.matrix;
+    const ops = [...new Set(rows.flatMap((r) => r.operations))];
+    const stages = [...new Set(rows.map((r) => r.stage))];
+    const select = (label, key, options) => h("label", { class: "field" }, label, h("select", { "aria-label": label,
+      onchange: (e) => { f[key] = e.target.value; render(); } },
+    [["all", "All"], ...options].map(([v, t]) => h("option", { value: v, selected: v === f[key], text: t }))));
+    const visible = rows.filter((r) => (f.status === "all" || r.status === f.status) && (f.stage === "all" || r.stage === f.stage)
+      && (f.op === "all" || r.operations.includes(f.op)));
+    const categories = [...new Set(visible.map((r) => r.category))];
+    fill(holder,
+      h("p", { class: "muted", text: "One status per SQL feature, from the implementation audit (docs/C3_PP1_audit_inventory.md) and checked against "
+        + "the source when the data is generated. Statement counts come from parsing the stored recovered SQL of the nine applications. "
+        + "Supported means C3 generates a function under its safety rules; it does not prove behavioural correctness." }),
+      h("div", { class: "chip-row" }, Object.keys(pp1().statuses).map((k) => statusChip(k))),
+      starWarningCard(),
+      h("div", { class: "controls", style: "margin-bottom:var(--space-3)" },
+        select("Support status", "status", Object.entries(pp1().statuses).map(([k, s]) => [k, s.label])),
+        select("SQL operation", "op", ops.map((o) => [o, o])),
+        select("Pipeline stage", "stage", stages.map((s) => [s, s]))),
+      visible.length ? categories.map((cat) => {
+        const inCat = visible.filter((r) => r.category === cat);
+        return h("div", { class: "card" }, h("h3", { text: cat }),
+          table(["SQL feature", "Status", "Stage", "Technique", "Example", "Statements (nine apps)", "Limitation"],
+            inCat.map((r) => [r.feature, statusChip(r.status), r.stage, r.technique,
+              r.examples.length ? r.examples.map((e) => `${appName(e.app)}${e.query_ids.length ? ` ${e.query_ids.join(", ")}` : ""}`).join("; ") : "-",
+              r.occurrences ? sourced(r.occurrences, r.feature) : "-", r.limitation]),
+            (i) => showMatrixRow(inCat[i])),
+          h("p", { class: "muted", text: "Select a row for the source file, tests and future improvement." }));
+      }) : h("p", { class: "empty", text: "No SQL feature matches these filters." }));
+  }
+
+  // Pipeline stages of the explorer; each reason or outcome is placed in exactly one.
+  const EXPLORER_STAGES = [
+    ["detection", "Detection", "Executor calls that cannot be analysed."],
+    ["recovery", "SQL recovery", "Sites whose SQL text cannot be rebuilt safely."],
+    ["parsing", "SQL parsing / representation", "Recovered text that is not a recognised CRUD statement or does not parse."],
+    ["schema", "Schema mapping", "Sites that reference tables or columns missing from the supplied schema."],
+    ["conversion", "Conversion", "Recovered SQL that no conversion rule accepts."],
+    ["generation", "Code generation", "Every unresolved site gets a stub that raises instead of generated SQL; some generated functions are unverified."],
+    ["security", "Security analysis", "Bounded injection check scope."],
+    ["runtime", "Runtime / equivalence verification", "Behaviour checked on MySQL, or not."],
+  ];
+  const DETECTION_CODES = new Set(["UNSUPPORTED_EXECUTOR", "MISSING_SQL_ARGUMENT", "MULTI_STATEMENT_EXECUTOR"]);
+  const reasonStage = (r) => (DETECTION_CODES.has(r.code) ? "detection" : r.code === "UNSUPPORTED_SHAPE" ? "parsing"
+    : r.key === "CONVERSION_UNSUPPORTED:join_schema" ? "schema" : r.stage === "conversion" ? "conversion" : "recovery");
+  const OUTCOME_STAGE = { schema_mismatch: "schema", unverified: "generation", verification_inconclusive: "runtime",
+    failed_verification: "runtime", recoverable_unsupported: "conversion", non_recoverable: "recovery", ambiguous: "recovery", non_live: "detection" };
+
+  function reasonCard(r) {
+    const apps = Object.entries(r.by_app);
+    return h("div", { class: "card reason-card" },
+      h("h3", {}, h("code", { text: r.code }), r.key !== r.code ? h("span", { class: "muted", text: ` · ${r.key.split(":")[1].replace(/_/g, " ")}` }) : null),
+      definitionList([
+        ["Meaning", r.meaning], ["Recorded at stage", r.stage],
+        ["Affected sites (nine applications)", sourced(r.count, `${r.code} sites`)],
+        ["Query IDs", apps.length ? bullets(apps.map(([a, v]) => `${appName(a)}: ${v.query_ids.join(", ")}`)) : "-"],
+        ["ams-native (separate)", r.ams_native ? [sourced(r.ams_native.count), ` · ${r.ams_native.query_ids.join(", ")}`] : null],
+        ["Why it occurs", r.why], ["Code generated", r.code_generated], ["Manual review", r.review], ["Possible future solution", r.future]]));
+  }
+
+  function outcomeBlock(o) {
+    const apps = Object.entries(o.apps).filter(([, v]) => v.count && v.count.value);
+    return h("div", { class: "card" }, h("h3", { text: o.label }), h("p", { class: "sub", text: o.text }),
+      apps.length ? table(["Application", "Sites", "Query IDs"], apps.map(([a, v]) => [appName(a), sourced(v.count, o.label),
+        v.query_ids.length ? v.query_ids.join(", ") : "-"])) : h("p", { class: "muted", text: "None in the current evidence." }));
+  }
+
+  function renderExplorer(holder) {
+    const p = pp1();
+    const cat = p.reason_catalogue;
+    fill(holder,
+      h("p", { class: "muted", text: "Why sites abstain, fail or remain unverified, by pipeline stage. Reason codes and counts come from the "
+        + "unresolved reports of the current-code run (nine applications); ams-native is listed separately from its committed record. "
+        + "Different causes are kept apart, including the distinct causes behind STRUCTURAL." }),
+      card("Reason codes in the source", null, definitionList([
+        ["Recovery-stage codes defined", sourced(cat.defined_recovery)], ["Recovery-stage codes in use", sourced(cat.in_use_recovery)],
+        ["Conversion-stage codes defined", sourced(cat.defined_conversion)], ["Conversion-stage codes in use", sourced(cat.in_use_conversion)],
+        ["Codes", h("div", { class: "chip-row" }, cat.defined.map((c) => h("span", { class: `badge ${c.in_use ? "warn" : "derived"}`,
+          text: `${c.code} (${c.stage}${c.in_use ? "" : ", not in use"})` })))]])),
+      EXPLORER_STAGES.map(([key, title, text]) => {
+        const reasons = p.reasons.filter((r) => reasonStage(r) === key);
+        const unused = cat.defined.filter((c) => !c.in_use && key === "detection" && DETECTION_CODES.has(c.code));
+        const outcomes = p.outcomes.filter((o) => OUTCOME_STAGE[o.key] === key);
+        return h("section", { class: "explorer-stage" }, h("h3", { class: "stage-title", text: title }), h("p", { class: "sub", text }),
+          reasons.map(reasonCard),
+          unused.length ? h("p", { class: "muted", text: `Defined but not encountered: ${unused.map((c) => c.code).join(", ")}.` }) : null,
+          key === "conversion" && p.template_overrides.length ? card("Converted despite a recovery code (query-specific templates)",
+            "General recovery flags these Clinic sites; guarded templates for those exact files convert them. Reported separately, never as general rules.",
+            table(["Recovery code", "Cause", "Sites", "Query IDs"], p.template_overrides.map((o) => [o.code, o.key.includes(":") ? o.key.split(":")[1].replace(/_/g, " ") : "-",
+              sourced(o.count), Object.entries(o.query_ids).map(([a, q]) => `${appName(a)}: ${q.join(", ")}`).join("; ")]))) : null,
+          key === "security" ? securityScope() : null,
+          outcomes.map(outcomeBlock),
+          !reasons.length && !outcomes.length && key !== "security" && !unused.length ? h("p", { class: "muted", text: "Nothing recorded at this stage in the current evidence." }) : null);
+      }));
+  }
+
+  function securityScope() {
+    const split = pp1().e4_split;
+    return card("E4 bounded check: functions with and without runtime values",
+      "Functions without a runtime value have no payload cases and pass trivially; they are not evidence of injection safety.",
+      table(["Application", "Functions", "With runtime values (payloads bound or rejected)", "Without runtime values"],
+        Object.entries(split).map(([a, v]) => [appName(a), sourced(v.functions), sourced(v.with_runtime_values), sourced(v.without_runtime_values)])));
+  }
+
   function renderSql(root) {
+    if (state.sqlView !== "sites") {
+      const holder = h("div");
+      fill(root,
+        h("div", { class: "section-head" }, h("div", {}, h("h2", { text: state.sqlView === "matrix" ? "SQL Support Matrix (all applications)"
+          : "Failure & Limitation Explorer (all applications)" }))),
+        sqlViewSwitch(), holder);
+      (state.sqlView === "matrix" ? renderMatrix : renderExplorer)(holder);
+      return;
+    }
     const records = DATA.records[state.app] || [];
     const filters = {
       all: () => true,
@@ -374,6 +655,7 @@ const Evidence = (() => {
         h("h2", { text: `SQL Results · ${DATA.apps[state.app].label}` }),
         h("p", { text: "One row per detected SQL execution site in the current-code run. Query IDs are C3's; ground-truth IDs come from "
           + "the author-verified ground truth, matched by file and line (they can differ). Recovered SQL text is not shown." }))),
+      sqlViewSwitch(),
       state.app === "hms_kishan0725" ? h("div", { class: "notice", text: "HMS has no licence: reason text is withheld (codes only) and no SQL is shown." }) : null,
       h("div", { class: "controls", style: "margin-bottom:var(--space-3)" }, h("label", { class: "field" }, "Show", filterSelect),
         h("label", { class: "field" }, "Search", searchBox)),
@@ -407,6 +689,7 @@ const Evidence = (() => {
           ["E3 round trip (upgrade, compare, check, downgrade)", verdict(e3.verdict)],
           ...Object.entries(e3.steps).map(([k, v]) => [`E3 step: ${k}`, verdict(v)]),
         ]))),
+      inventoryCard(),
     );
   }
 
@@ -472,6 +755,7 @@ const Evidence = (() => {
           + "chip opens its own evidence (numerator/denominator, source file, related sites)." }))),
       h("div", { class: "notice info", text: DATA.disclosures.no_overall_score.text }),
       h("div", { class: "notice", text: DATA.disclosures.ground_truth.text }),
+      definitionsCard(),
       card("Evaluation stages", null, stageLegend(), h("ul", {}, Object.entries(DATA.stage_definitions).map(([k, v]) =>
         h("li", {}, h("strong", { text: k }), ": ", v)))),
       card("SQL detection: detected live sites (not conversion)", "Ground-truth live sites that C3 detected (S15). This is detection only; conversion is a separate chart.",
@@ -574,7 +858,7 @@ const Evidence = (() => {
       const tab = document.querySelector(`.sub-tab[data-section="${id}"]`);
       tab.setAttribute("aria-selected", String(id === state.section));
     }
-    document.getElementById("app-controls").hidden = !APP_SCOPED.has(state.section);
+    document.getElementById("app-controls").hidden = !APP_SCOPED.has(state.section) || (state.section === "sql" && state.sqlView !== "sites");
     const root = document.getElementById(`section-${state.section}`);
     ({ functions: renderFunctions, overview: renderOverview, sql: renderSql, models: renderModels, impact: renderImpact,
       evaluation: renderEvaluation, reports: renderReports })[state.section](root);

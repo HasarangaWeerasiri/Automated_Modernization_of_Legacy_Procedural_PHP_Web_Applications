@@ -1117,6 +1117,15 @@ def _functions(measurements, experiments, limitations):
             "statuses": spec["statuses"], "items": spec["functions"]}
 
 
+def _pp1(base, data):
+    """PP1 views (FR detail, SQL support matrix, failure explorer, register, definitions, inventory).
+    Built by components/c3_data_layer/dashboard/pp1_content.py from docs/c3_pp1_dashboard_content.json."""
+    sys.dont_write_bytecode = True  # no dashboard/__pycache__ in the repository
+    sys.path.insert(0, str(COMPONENT / "dashboard"))
+    import pp1_content
+    return pp1_content.build(sys.modules[__name__], base, data)
+
+
 def _privacy_check(node, path="$"):
     if isinstance(node, dict):
         for key, value in node.items():
@@ -1209,6 +1218,7 @@ def write_dashboard_json(target: Path, base: Path, head: str) -> None:
         "reports": _reports(),
     }
     data["functions"] = _functions(measurements, data["experiments"], data["limitations"])
+    data["pp1"] = _pp1(base, data)
     _privacy_check(data)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
