@@ -47,3 +47,10 @@ def test_unsupported_type_is_not_guessed():
         match="Unsupported MySQL type",
     ):
         mysql_to_sqlalchemy("GEOGRAPHY")
+
+def test_tinyint_one_key_stays_an_integer():
+    # A TINYINT(1) key column is an identifier, not a flag.
+    assert mysql_to_sqlalchemy("TINYINT(1)", key=True) == "Integer().with_variant(mysql.TINYINT(), 'mysql')"
+    assert mysql_to_sqlalchemy("TINYINT(1) UNSIGNED", key=True) == "Integer().with_variant(mysql.TINYINT(unsigned=True), 'mysql')"
+    assert mysql_to_sqlalchemy("TINYINT(1)", key=False) == "Boolean"
+    assert mysql_to_sqlalchemy("TINYINT(2)", key=True) == mysql_to_sqlalchemy("TINYINT(2)")

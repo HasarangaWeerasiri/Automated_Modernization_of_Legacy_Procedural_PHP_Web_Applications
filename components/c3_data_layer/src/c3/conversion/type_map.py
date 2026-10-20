@@ -108,7 +108,7 @@ def _mysql_exact_type(base: str, numbers: list[str]) -> str | None:
     return None
 
 
-def mysql_to_sqlalchemy(mysql_type: str) -> str:
+def mysql_to_sqlalchemy(mysql_type: str, key: bool = False) -> str:
     """
     Convert a MySQL data type into a SQLAlchemy
     type expression.
@@ -119,7 +119,7 @@ def mysql_to_sqlalchemy(mysql_type: str) -> str:
         VARCHAR(100)            -> String(100)
         CHAR(10)                -> String(10)
         DECIMAL(10, 2)          -> Numeric(10, 2)
-        TINYINT(1)              -> Boolean
+        TINYINT(1)              -> Boolean (a flag; key=True keeps it an integer)
         ENUM('a','B')           -> Enum('a', 'B')
         SET('x','y')            -> SET('x', 'y')   (sqlalchemy.dialects.mysql)
         DATETIME(6)             -> DateTime
@@ -169,7 +169,9 @@ def mysql_to_sqlalchemy(mysql_type: str) -> str:
             return f"{generic}.with_variant({mysql_type}, 'mysql')"
         return generic if numbers else "Numeric"
 
-    if base == "TINYINT" and numbers == ["1"]:
+    # TINYINT(1) is MySQL's usual flag column. A key column (primary key, auto-increment,
+    # foreign key source or target) is an identifier, not a flag: it stays an integer.
+    if base == "TINYINT" and numbers == ["1"] and not key:
         return "Boolean"
 
     if base == "BIT" and numbers in ([], ["1"]):

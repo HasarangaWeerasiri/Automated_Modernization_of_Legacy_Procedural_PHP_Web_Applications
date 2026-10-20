@@ -150,9 +150,32 @@ def _server_default(column: dict) -> str | None:
     return f"server_default=text({raw!r})"
 
 
-def _column_type(column: dict) -> str:
+def key_columns(schema: dict) -> set[tuple[str, str]]:
+    """(table, column), lower case, of every primary-key, auto-increment and foreign-key (source or target) column."""
+
+    keys = set()
+    for table in schema.get("tables", []):
+        name = table["name"].lower()
+        for column in table.get("columns", []):
+            if column.get("primary_key") or column.get("auto_increment"):
+                keys.add((name, column["name"].lower()))
+        for foreign_key in table.get("foreign_keys", []):
+            keys.add((name, foreign_key["column"].lower()))
+            keys.add((foreign_key["referenced_table"].lower(), foreign_key["referenced_column"].lower()))
+    return keys
+
+
+def _is_key_column(table: dict, column: dict, keys: set | None) -> bool:
+    if column.get("primary_key") or column.get("auto_increment"):
+        return True
+    if any(fk["column"].lower() == column["name"].lower() for fk in table.get("foreign_keys", [])):
+        return True
+    return bool(keys) and (table["name"].lower(), column["name"].lower()) in keys
+
+
+def _column_type(column: dict, key: bool = False) -> str:
     try:
-        return mysql_to_sqlalchemy(column["data_type"])
+        return mysql_to_sqlalchemy(column["data_type"], key=key)
     except ValueError:
         # Never abort the whole run for one column: the original MySQL
         # type is kept verbatim (DDL passthrough) and listed in
@@ -175,10 +198,13 @@ def _foreign_key_expression(foreign_key: dict) -> str:
     return f"ForeignKey({', '.join(arguments)})"
 
 
-def _column_arguments(table: dict, column: dict) -> tuple[list[str], str]:
-    """Positional + keyword arguments of a column, and its type expression."""
+def _column_arguments(table: dict, column: dict, keys: set | None = None) -> tuple[list[str], str]:
+    """Positional + keyword arguments of a column, and its type expression.
 
-    sqlalchemy_type = _column_type(column)
+    keys: key_columns(schema), so that foreign-key targets in other tables are known.
+    """
+
+    sqlalchemy_type = _column_type(column, key=_is_key_column(table, column, keys))
     arguments = [sqlalchemy_type]
 
     for foreign_key in table.get("foreign_keys", []):
@@ -208,13 +234,14 @@ def _build_column(
     table: dict,
     column: dict,
     core: bool = False,
+    keys: set | None = None,
 ) -> str:
     """
     Generate one SQLAlchemy mapped_column declaration, or a Core
     Column(...) entry when core is True (tables without primary key).
     """
 
-    arguments, sqlalchemy_type = _column_arguments(table, column)
+    arguments, sqlalchemy_type = _column_arguments(table, column, keys)
     column_name = column["name"]
     attribute = column_attributes(table)[column_name]
 
@@ -434,6 +461,7 @@ def generate_models_source(
     lines = list(HEADER)
     tables = schema.get("tables", [])
     relationships = _build_relationships(schema)
+    keys = key_columns(schema)
     blocks = []
 
     for table in tables:
@@ -451,7 +479,7 @@ def generate_models_source(
                     "    Base.metadata,",
                 ]
             )
-            block.extend(_build_column(table, column, core=True) for column in table.get("columns", []))
+            block.extend(_build_column(table, column, core=True, keys=keys) for column in table.get("columns", []))
             block.extend(f"    {constraint}," for constraint in constraints)
             block.append(")")
             blocks.append(block)
@@ -466,7 +494,7 @@ def generate_models_source(
             block.append("    )")
 
         block.append("")
-        block.extend(_build_column(table, column) for column in table.get("columns", []))
+        block.extend(_build_column(table, column, keys=keys) for column in table.get("columns", []))
 
         if relationships.get(table_name):
             block.append("")

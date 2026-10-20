@@ -23,6 +23,7 @@ from pathlib import Path
 from c3.conversion.model_builder import (
     _column_arguments,
     _table_constraints,
+    key_columns,
     load_schema,
 )
 
@@ -306,6 +307,7 @@ def build_initial_revision(schema: dict) -> str:
     by_name = {table["name"]: table for table in tables}
     ordered, deferred = dependency_order(tables)
     deferred_ids = {(name, fk["column"]) for name, fk in deferred}
+    keys = key_columns(schema)  # computed from the full schema: plain tables below drop their FKs
 
     upgrade: list[str] = []
     downgrade: list[str] = []
@@ -318,7 +320,7 @@ def build_initial_revision(schema: dict) -> str:
         upgrade.append(f"        {name!r},")
 
         for column in table.get("columns", []):
-            arguments, _type = _column_arguments(plain, column)
+            arguments, _type = _column_arguments(plain, column, keys)
             upgrade.append(f"        Column({column['name']!r}, {', '.join(arguments)}),")
 
         for constraint in _table_constraints(table):
