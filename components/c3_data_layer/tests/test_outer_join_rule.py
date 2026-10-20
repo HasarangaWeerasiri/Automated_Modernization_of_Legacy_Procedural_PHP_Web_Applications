@@ -171,6 +171,10 @@ def test_join_reasons_say_what_the_rule_accepts():
         assert reason.startswith("Unsupported multi-table SQL structure. ")
         assert "INNER JOINs are supported" not in reason and "only INNER" not in reason.lower()
         assert "LEFT JOIN or comma join" in reason
+    # The reason for forms outside the rule names what is converted and what is not.
+    assert MULTI_TABLE_REASON.startswith("Unsupported multi-table SQL structure. ")
+    assert "INNER JOINs are supported" not in MULTI_TABLE_REASON
+    assert all(word in MULTI_TABLE_REASON for word in ("LEFT JOIN", "comma join", "RIGHT", "UPDATE/DELETE"))
 
 
 FEE = ROOT / "benchmarks" / "apps" / "_app_only" / "fee_rainbow"

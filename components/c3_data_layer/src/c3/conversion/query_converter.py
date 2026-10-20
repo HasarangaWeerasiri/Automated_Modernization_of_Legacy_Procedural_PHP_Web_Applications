@@ -623,7 +623,10 @@ def _is_supported_q010_subquery(tree, query: dict) -> bool:
 
 MULTI_TABLE_REASON = (
     "Unsupported multi-table SQL structure. "
-    "Only static SELECT INNER JOINs are supported."
+    "Only static SELECT joins are converted: INNER JOIN, and LEFT JOIN or "
+    "comma join under the result-shape rule; RIGHT, FULL, CROSS and NATURAL "
+    "joins, USING, subqueries, derived tables, unions and UPDATE/DELETE joins "
+    "are not."
 )
 
 # A LEFT JOIN or implicit comma join is converted only when the result row
