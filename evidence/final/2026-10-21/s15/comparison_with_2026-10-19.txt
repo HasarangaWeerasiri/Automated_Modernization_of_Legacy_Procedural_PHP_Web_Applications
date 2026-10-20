@@ -1,0 +1,7 @@
+S15 re-run (evidence/final/2026-10-21/s15, HEAD d263cbb) vs evidence/final/2026-10-19/s15
+
+hms_kishan0725: precision 100.0 recall 100.0 TP 43 FN 0 FP 0 TN 0 | differences vs 19 Oct: 0
+dignity_dev_hms: precision 100.0 recall 100.0 TP 7 FN 0 FP 0 TN 6 | differences vs 19 Oct: 0
+helpdesk_legacy_holdout: precision 100.0 recall 100.0 TP 9 FN 0 FP 0 TN 0 | differences vs 19 Oct: 0
+news_buzz: precision 100.0 recall 100.0 TP 30 FN 0 FP 0 TN 2 | differences vs 19 Oct: 0
+fee_rainbow: precision 100.0 recall 100.0 TP 40 FN 0 FP 0 TN 12 | differences vs 19 Oct: 0

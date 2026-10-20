@@ -1,0 +1,19 @@
+# 9-app byte-identity gate, improvement sprint (summary.json run-folder path normalised to <RUN>)
+# pre20261020 = run at tag c3-pre-improve-20261020 (351be5b); step2_tinyint = after the TINYINT(1) key fix (17eebc9);
+# step3_t1 = after the value-position extension (d263cbb). Record written at HEAD d263cbb48d68e0b098a885c7ef772591ca759d98.
+
+## pre20261020 vs step2_tinyint
+compared 135 files; only in pre20261020: []; only in step2_tinyint: []
+content differences: []
+raw-hash differences explained only by the run folder path: ['clinic_inventory_legacy_hard/summary.json', 'dignity_dev_hms/summary.json', 'fee_rainbow/summary.json', 'hard_crud/summary.json', 'helpdesk_legacy_holdout/summary.json', 'hms_kishan0725/summary.json', 'mixed_crud/summary.json', 'news_buzz/summary.json', 'simple_crud/summary.json']
+RESULT: BYTE-IDENTICAL (content)
+
+## pre20261020 vs step3_t1
+compared 135 files; only in pre20261020: []; only in step3_t1: []
+content differences: []
+raw-hash differences explained only by the run folder path: ['clinic_inventory_legacy_hard/summary.json', 'dignity_dev_hms/summary.json', 'fee_rainbow/summary.json', 'hard_crud/summary.json', 'helpdesk_legacy_holdout/summary.json', 'hms_kishan0725/summary.json', 'mixed_crud/summary.json', 'news_buzz/summary.json', 'simple_crud/summary.json']
+RESULT: BYTE-IDENTICAL (content)
+
+# Frozen HMS signatures (output/hms_kishan0725/signatures.json, working-tree bytes)
+# expected: FA8C1AFE46576D51A3939067B3699F488E2021B5B8F2A5CDEC2D7ED9D931DDC1
+# measured: FA8C1AFE46576D51A3939067B3699F488E2021B5B8F2A5CDEC2D7ED9D931DDC1  match: True

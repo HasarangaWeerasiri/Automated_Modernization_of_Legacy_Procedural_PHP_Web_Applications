@@ -1,0 +1,252 @@
+{
+  "app": "ams-native-3c4d475 (unseen, licence unknown, no ground truth)",
+  "contents_policy": "Counts and identifiers only: no SQL text, no PHP source, no schema data.",
+  "inputs": {
+    "schema_sha256": "c9d9a0f64eabe8d003018c977e9e2d8fd5ea0a44bd29d4a2a1011d3fd3b9e994",
+    "php_set_sha256": "372d476fdd74280a004ef17ccda9a316b88107d92d5f691a60953cf43206b088",
+    "php_files": 42,
+    "zip": "original ZIP not available; hash and LICENSE not checked"
+  },
+  "pre": {
+    "git_head": "351be5b192529fe293c194388e494b3aba0bb2a4",
+    "label": "pre-improvement baseline run on commit 351be5b",
+    "counts": {
+      "total_queries": 112,
+      "recovered_queries": 108,
+      "converted_queries": 99,
+      "unresolved_total": 13,
+      "unresolved_recovery_stage": 4,
+      "unresolved_conversion_stage": 9
+    },
+    "security": {
+      "legacy_injection_sites": 50,
+      "legacy_injection_sites_remediated": 42,
+      "user_controlled_values_in_converted_queries": 161,
+      "bound_or_allowlisted": 161,
+      "generated_code_violations": 0
+    },
+    "unresolved": [
+      {
+        "query_id": "Q006",
+        "site": "agenda_surat_keluar.php:75",
+        "stage": "conversion",
+        "reason_code": "CONVERSION_UNSUPPORTED",
+        "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+      },
+      {
+        "query_id": "Q010",
+        "site": "agenda_surat_masuk.php:75",
+        "stage": "conversion",
+        "reason_code": "CONVERSION_UNSUPPORTED",
+        "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+      },
+      {
+        "query_id": "Q039",
+        "site": "galeri_sk.php:62",
+        "stage": "conversion",
+        "reason_code": "CONVERSION_UNSUPPORTED",
+        "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+      },
+      {
+        "query_id": "Q042",
+        "site": "galeri_sm.php:62",
+        "stage": "conversion",
+        "reason_code": "CONVERSION_UNSUPPORTED",
+        "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+      },
+      {
+        "query_id": "Q060",
+        "site": "include/functions.php:83",
+        "stage": "recovery",
+        "reason_code": "UNSUPPORTED_SHAPE",
+        "reason": "Recovered expression is not a recognized CRUD SQL operation."
+      },
+      {
+        "query_id": "Q061",
+        "site": "include/functions.php:95",
+        "stage": "recovery",
+        "reason_code": "STRUCTURAL",
+        "reason": "Dynamic table identifier cannot be parameterized safely."
+      },
+      {
+        "query_id": "Q062",
+        "site": "include/functions.php:99",
+        "stage": "recovery",
+        "reason_code": "UNSUPPORTED_SHAPE",
+        "reason": "Recovered expression is not a recognized CRUD SQL operation."
+      },
+      {
+        "query_id": "Q063",
+        "site": "include/functions.php:160",
+        "stage": "conversion",
+        "reason_code": "CONVERSION_UNSUPPORTED",
+        "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+      },
+      {
+        "query_id": "Q064",
+        "site": "include/functions.php:186",
+        "stage": "recovery",
+        "reason_code": "LOOP_OR_SWITCH_CONTROL_FLOW",
+        "reason": "SQL construction depends on loop iterations or on which switch case ran."
+      },
+      {
+        "query_id": "Q070",
+        "site": "index.php:222",
+        "stage": "conversion",
+        "reason_code": "CONVERSION_UNSUPPORTED",
+        "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+      },
+      {
+        "query_id": "Q076",
+        "site": "profil.php:59",
+        "stage": "conversion",
+        "reason_code": "CONVERSION_UNSUPPORTED",
+        "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+      },
+      {
+        "query_id": "Q077",
+        "site": "profil.php:61",
+        "stage": "conversion",
+        "reason_code": "CONVERSION_UNSUPPORTED",
+        "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+      },
+      {
+        "query_id": "Q097",
+        "site": "tambah_user.php:62",
+        "stage": "conversion",
+        "reason_code": "CONVERSION_UNSUPPORTED",
+        "reason": "Dynamic placeholder occurs in an unsupported structural SQL position."
+      }
+    ]
+  },
+  "post": {
+    "git_head": "d263cbb48d68e0b098a885c7ef772591ca759d98",
+    "counts": {
+      "total_queries": 112,
+      "recovered_queries": 108,
+      "converted_queries": 108,
+      "unresolved_total": 4,
+      "unresolved_recovery_stage": 4,
+      "unresolved_conversion_stage": 0
+    },
+    "security": {
+      "legacy_injection_sites": 50,
+      "legacy_injection_sites_remediated": 50,
+      "user_controlled_values_in_converted_queries": 182,
+      "bound_or_allowlisted": 182,
+      "generated_code_violations": 0
+    },
+    "unresolved": [
+      {
+        "query_id": "Q060",
+        "site": "include/functions.php:83",
+        "stage": "recovery",
+        "reason_code": "UNSUPPORTED_SHAPE",
+        "reason": "Recovered expression is not a recognized CRUD SQL operation."
+      },
+      {
+        "query_id": "Q061",
+        "site": "include/functions.php:95",
+        "stage": "recovery",
+        "reason_code": "STRUCTURAL",
+        "reason": "Dynamic table identifier cannot be parameterized safely."
+      },
+      {
+        "query_id": "Q062",
+        "site": "include/functions.php:99",
+        "stage": "recovery",
+        "reason_code": "UNSUPPORTED_SHAPE",
+        "reason": "Recovered expression is not a recognized CRUD SQL operation."
+      },
+      {
+        "query_id": "Q064",
+        "site": "include/functions.php:186",
+        "stage": "recovery",
+        "reason_code": "LOOP_OR_SWITCH_CONTROL_FLOW",
+        "reason": "SQL construction depends on loop iterations or on which switch case ran."
+      }
+    ]
+  },
+  "newly_converted": [
+    "Q006",
+    "Q010",
+    "Q039",
+    "Q042",
+    "Q063",
+    "Q070",
+    "Q076",
+    "Q077",
+    "Q097"
+  ],
+  "previously_converted_unchanged": {
+    "count": 99,
+    "still_converted": 99,
+    "check": "converted_queries.json entries and data_access.py function source compared per query ID: identical"
+  },
+  "e4_style_check_post": {
+    "functions": 108,
+    "safe": 108,
+    "newly_converted_functions": {
+      "Q006": {
+        "verdict": "SAFE",
+        "bound": 12,
+        "rejected": 0
+      },
+      "Q010": {
+        "verdict": "SAFE",
+        "bound": 12,
+        "rejected": 0
+      },
+      "Q039": {
+        "verdict": "SAFE",
+        "bound": 12,
+        "rejected": 0
+      },
+      "Q042": {
+        "verdict": "SAFE",
+        "bound": 12,
+        "rejected": 0
+      },
+      "Q063": {
+        "verdict": "SAFE",
+        "bound": 12,
+        "rejected": 0
+      },
+      "Q070": {
+        "verdict": "SAFE",
+        "bound": 12,
+        "rejected": 0
+      },
+      "Q076": {
+        "verdict": "SAFE",
+        "bound": 12,
+        "rejected": 0
+      },
+      "Q077": {
+        "verdict": "SAFE",
+        "bound": 12,
+        "rejected": 0
+      },
+      "Q097": {
+        "verdict": "SAFE",
+        "bound": 12,
+        "rejected": 0
+      }
+    },
+    "payloads": 12,
+    "note": "recording session, MySQL dialect compilation, no database; not a proof of injection safety"
+  },
+  "alembic_roundtrip_sqlite": {
+    "verdict": "PASS",
+    "steps": {
+      "database_empty_before": "PASS",
+      "upgrade_head": "PASS",
+      "live_schema_matches_models": "PASS",
+      "alembic_check": "PASS",
+      "downgrade_base": "PASS"
+    },
+    "schema_diffs": 0,
+    "note": "scripts/alembic_roundtrip.py against a throwaway SQLite file; MySQL E2/E3 not run (needs the MySQL password)"
+  },
+  "models_change": "id_instansi and id_sett (TINYINT(1) primary keys) are now Integer with a MySQL TINYINT variant instead of Boolean (commit 17eebc9)"
+}
