@@ -18,6 +18,8 @@ from pathlib import Path
 from sqlglot import exp, parse_one
 from sqlglot.errors import ParseError
 
+from c3.conversion.identifier_allowlist import schema_columns
+
 
 PLACEHOLDER_PATTERN = re.compile(
     r"\{\{([A-Za-z_][A-Za-z0-9_]*)\}\}"
@@ -427,7 +429,13 @@ def _convert_query(query: dict, schema: dict | None = None) -> dict:
     conversion_rule = GENERAL_RULE
 
     if len(tables) != 1:
-        if len(tables) > 1 and _is_supported_join_select(tree):
+        join_problem = (
+            _join_select_problem(tree, schema)
+            if len(tables) > 1
+            else MULTI_TABLE_REASON
+        )
+
+        if join_problem is None:
             pass
         elif len(tables) > 1 and _is_supported_q010_subquery(tree, query):
             conversion_rule = TEMPLATE_RULE
@@ -435,10 +443,18 @@ def _convert_query(query: dict, schema: dict | None = None) -> dict:
             return {
                 **base_result,
                 "status": "UNRESOLVED",
-                "reason": (
-                    "Unsupported multi-table SQL structure. "
-                    "Only static SELECT INNER JOINs are supported."
-                ),
+                "reason": join_problem,
+            }
+    elif _is_outer_or_comma_join_select(tree):
+        # A LEFT or comma self-join names one table but still joins; the
+        # result-shape rule applies to it too.
+        join_problem = _outer_join_shape_problem(tree, schema)
+
+        if join_problem is not None:
+            return {
+                **base_result,
+                "status": "UNRESOLVED",
+                "reason": join_problem,
             }
 
     operation = (
@@ -603,6 +619,200 @@ def _is_supported_q010_subquery(tree, query: dict) -> bool:
         and not list(tree.find_all(exp.Join))
         and not list(tree.find_all(exp.Placeholder))
     )
+
+
+MULTI_TABLE_REASON = (
+    "Unsupported multi-table SQL structure. "
+    "Only static SELECT INNER JOINs are supported."
+)
+
+# A LEFT JOIN or implicit comma join is converted only when the result row
+# keys are known from the SQL and the parsed schema (FR6 join rule, 2026-10-20).
+# Each reason keeps the multi-table prefix the reports group by.
+OUTER_JOIN_PREFIX = (
+    "Unsupported multi-table SQL structure. A LEFT JOIN or comma join is "
+    "converted only when "
+)
+OUTER_JOIN_REASONS = {
+    "shape": OUTER_JOIN_PREFIX + (
+        "it is a single SELECT over schema tables joined by INNER or LEFT JOIN "
+        "with ON, or by commas alone; RIGHT, FULL, CROSS, NATURAL, USING, "
+        "STRAIGHT_JOIN, subqueries and derived tables are not."
+    ),
+    "schema": OUTER_JOIN_PREFIX + "every table is in the parsed schema.",
+    "star": OUTER_JOIN_PREFIX + (
+        "every output column is explicit (no * or table.*), so the result row "
+        "keys are known."
+    ),
+    "names": OUTER_JOIN_PREFIX + (
+        "every output column has a distinct name (a column or an alias), so "
+        "result.mappings() cannot drop a column."
+    ),
+    "columns": OUTER_JOIN_PREFIX + (
+        "every column resolves to exactly one joined table in the parsed schema."
+    ),
+}
+
+
+def _join_select_problem(tree, schema: dict | None) -> str | None:
+    """
+    None when a multi-table SELECT is accepted, otherwise the abstention reason.
+
+    Static INNER JOIN SELECTs keep the original rule unchanged. A SELECT with a
+    LEFT JOIN or an implicit comma join is accepted only under the result-shape
+    rule in _outer_join_shape_problem.
+    """
+
+    if _is_supported_join_select(tree):
+        return None
+
+    if not _is_outer_or_comma_join_select(tree):
+        return MULTI_TABLE_REASON
+
+    return _outer_join_shape_problem(tree, schema)
+
+
+def _is_comma_join(join) -> bool:
+    """FROM a, b: sqlglot 30 builds the comma form without the pivots slot that JOIN b has."""
+
+    return (
+        "pivots" not in join.args
+        and not any(join.args.get(key) for key in ("kind", "side", "method", "on", "using"))
+    )
+
+
+def _is_outer_or_comma_join_select(tree) -> bool:
+    """A SELECT whose joins include LEFT JOIN or comma joins (other forms are not this rule)."""
+
+    if not isinstance(tree, exp.Select):
+        return False
+
+    joins = tree.args.get("joins") or []
+
+    return any(
+        _is_comma_join(join) or (join.args.get("side") or "").upper() == "LEFT"
+        for join in joins
+    )
+
+
+def _outer_join_shape_problem(tree, schema: dict | None) -> str | None:
+    """
+    Result-shape rule for LEFT JOIN and comma-join SELECTs.
+
+    The SQL text is executed unchanged through text(), so MySQL computes the
+    same rows (NULL-extended rows included). What can differ is how a row is
+    read: PHP reads keys from the fetched row, the generated function returns
+    result.mappings(). That is the same only when every output key is known
+    and distinct, so the rule requires explicit, distinctly named outputs and
+    columns that resolve to exactly one table of the parsed schema.
+    """
+
+    # Shape: one plain SELECT over base tables, no nesting.
+    if any(tree.find_all(exp.Subquery, exp.Union, exp.Intersect, exp.Except)):
+        return OUTER_JOIN_REASONS["shape"]
+
+    from_clause = tree.args.get("from_")
+
+    if from_clause is None or not isinstance(from_clause.this, exp.Table):
+        return OUTER_JOIN_REASONS["shape"]
+
+    joins = tree.args.get("joins") or []
+    comma = [_is_comma_join(join) for join in joins]
+
+    # Comma joins bind more loosely than JOIN in MySQL; mixing them changes
+    # which tables an ON clause can see, so the forms are not mixed.
+    if any(comma) and not all(comma):
+        return OUTER_JOIN_REASONS["shape"]
+
+    for join, is_comma in zip(joins, comma):
+        if not isinstance(join.this, exp.Table) or join.args.get("using") or join.args.get("method"):
+            return OUTER_JOIN_REASONS["shape"]
+
+        if is_comma:
+            continue
+
+        side = (join.args.get("side") or "").upper()
+        kind = (join.args.get("kind") or "").upper()
+
+        if join.args.get("on") is None or side not in ("", "LEFT"):
+            return OUTER_JOIN_REASONS["shape"]
+
+        if kind not in ("", "INNER", "OUTER") or (kind == "OUTER" and side != "LEFT"):
+            return OUTER_JOIN_REASONS["shape"]
+
+    # Every table is in the parsed schema; table names and aliases are unique.
+    scope = {}
+
+    for table in tree.find_all(exp.Table):
+        columns = schema_columns(schema, table.name)
+
+        if columns is None or table.args.get("db") is not None:
+            return OUTER_JOIN_REASONS["schema"]
+
+        key = (table.alias or table.name).lower()
+
+        if key in scope:
+            return OUTER_JOIN_REASONS["columns"]
+
+        scope[key] = {column.lower() for column in columns}
+
+    # Explicit outputs with distinct names. An unaliased expression has no
+    # name predictable from the SQL, so it needs an alias.
+    names = []
+
+    for projection in tree.expressions:
+        if isinstance(projection, exp.Star) or any(projection.find_all(exp.Star)):
+            if not (isinstance(projection, exp.Alias) and isinstance(projection.this, exp.Count)):
+                return OUTER_JOIN_REASONS["star"]
+
+        if isinstance(projection, exp.Alias):
+            names.append(projection.alias)
+        elif isinstance(projection, exp.Column):
+            names.append(projection.name)
+        else:
+            return OUTER_JOIN_REASONS["names"]
+
+    if len({name.lower() for name in names}) != len(names):
+        return OUTER_JOIN_REASONS["names"]
+
+    output_aliases = {
+        projection.alias.lower()
+        for projection in tree.expressions
+        if isinstance(projection, exp.Alias)
+    }
+
+    # Every column resolves to exactly one table in scope. An unqualified name
+    # in GROUP BY, HAVING or ORDER BY may name an output alias instead, but
+    # only when no table has a column of that name.
+    for column in tree.find_all(exp.Column):
+        if isinstance(column.this, exp.Star):
+            continue
+
+        name = column.name.lower()
+
+        if column.table:
+            owner = scope.get(column.table.lower())
+
+            if owner is None or name not in owner:
+                return OUTER_JOIN_REASONS["columns"]
+
+            continue
+
+        owners = [key for key, columns in scope.items() if name in columns]
+
+        if len(owners) == 1:
+            continue
+
+        if (
+            not owners
+            and name in output_aliases
+            and column.find_ancestor(exp.Group, exp.Having, exp.Order) is not None
+        ):
+            continue
+
+        return OUTER_JOIN_REASONS["columns"]
+
+    return None
 
 
 def _is_supported_join_select(tree) -> bool:

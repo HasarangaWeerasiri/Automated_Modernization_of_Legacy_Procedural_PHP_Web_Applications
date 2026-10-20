@@ -157,7 +157,7 @@ def test_summary_unresolved_counts_match_the_unresolved_report(tmp_path):
     (php / "a.php").write_text(
         '<?php\n'
         'mysqli_query($c, "SELECT id FROM t WHERE id = 1");\n'                      # converted
-        'mysqli_query($c, "SELECT a.id FROM t a, u b WHERE a.id = b.id");\n'        # recovered, not converted
+        'mysqli_query($c, "SELECT a.id FROM t a RIGHT JOIN u b ON a.id = b.id");\n'  # recovered, not converted
         'mysqli_query($c, "SELECT id FROM " . $table);\n',                          # recovery-unresolved
         encoding="utf-8",
     )
