@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": {
   "by": "scripts/summarize_evidence.py --dashboard-json",
-  "date": "2026-10-20T14:10:43+05:30",
-  "git_head": "4f75e798375d7ce46be5597e0890567c983266be",
+  "date": "2026-10-20T14:42:34+05:30",
+  "git_head": "5923dc2e66bb76176c1291d895ca4559998d9390",
   "pipeline_unchanged_since_head": true,
   "current_code_run": "fresh C3 run of all 9 apps into a temp folder outside the repo (written <temp>)"
  },
@@ -4694,7 +4694,7 @@
    "stage_label": "saved log (2026-10-20, HEAD 84e97c0)",
    "category": "mysql_tests",
    "metric": "mysql_equivalence_tests_passed",
-   "label": "MySQL tests passed (Clinic suite, not the E1 harness)",
+   "label": "Clinic MySQL verification tests passed (not E1)",
    "numerator": 76,
    "denominator": 76,
    "value": 76,
@@ -4707,7 +4707,7 @@
      "denominator": "line 'collected 76 items'"
     }
    },
-   "note": "MySQL 8.0.39. Clinic's pytest MySQL suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. 63 tests compare the Clinic application's own PHP with the generated functions (they include test_q002_sql_injection_is_blocked). The other 13 are the FR6 join-rule tests (tests/benchmarks/clinic_hard/test_join_rule_mysql.py): they compare the same SQL run directly (PHP mysqli, read with mysqli_fetch_assoc) with the generated function on the Clinic schema, for a LEFT JOIN with NULL-extended rows, a comma join and an INNER JOIN; that is direct SQL vs generated function, not differential testing of application PHP."
+   "note": "MySQL 8.0.39. Clinic MySQL verification: Clinic's pytest MySQL suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. 63 tests compare the Clinic application's own PHP with the generated functions (they include test_q002_sql_injection_is_blocked). The other 13 are the FR6 join-rule tests (tests/benchmarks/clinic_hard/test_join_rule_mysql.py): they compare the same SQL run directly (PHP mysqli, read with mysqli_fetch_assoc) with the generated function on the Clinic schema, for a LEFT JOIN with NULL-extended rows, a comma join and an INNER JOIN; that is direct SQL vs generated function, not differential testing of application PHP."
   },
   {
    "id": "clinic_inventory_legacy_hard|saved log (2026-10-20, HEAD 84e97c0)|join_rule_mysql_tests_passed",
@@ -4819,7 +4819,7 @@
    "source": {
     "file": null
    },
-   "note": "No E1-harness run. Clinic has a separate MySQL equivalence test suite (see the E1 card)."
+   "note": "No E1-harness run. Clinic has the Clinic MySQL verification suite instead (see the E1 card)."
   },
   {
    "id": "simple_crud|not measured|e1_equivalence",
@@ -10476,7 +10476,7 @@
      "mysql_server": "8.0.39",
      "join_rule_tests": 13,
      "join_rule_passed": 13,
-     "note": "Clinic's pytest MySQL suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. 63 tests compare the Clinic application's own PHP with the generated functions (they include test_q002_sql_injection_is_blocked). The other 13 are the FR6 join-rule tests (tests/benchmarks/clinic_hard/test_join_rule_mysql.py): they compare the same SQL run directly (PHP mysqli, read with mysqli_fetch_assoc) with the generated function on the Clinic schema, for a LEFT JOIN with NULL-extended rows, a comma join and an INNER JOIN; that is direct SQL vs generated function, not differential testing of application PHP."
+     "note": "Clinic MySQL verification: Clinic's pytest MySQL suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. 63 tests compare the Clinic application's own PHP with the generated functions (they include test_q002_sql_injection_is_blocked). The other 13 are the FR6 join-rule tests (tests/benchmarks/clinic_hard/test_join_rule_mysql.py): they compare the same SQL run directly (PHP mysqli, read with mysqli_fetch_assoc) with the generated function on the Clinic schema, for a LEFT JOIN with NULL-extended rows, a comma join and an INNER JOIN; that is direct SQL vs generated function, not differential testing of application PHP."
     }
    ]
   },
@@ -10919,7 +10919,7 @@
      "warnings": 1
     }
    ],
-   "note": "Only saved (committed) logs are shown; a run without a saved log is not evidence. Counts are copied from each log's pytest summary line; pytest omits zero counts, so an absent count is 0. Skipped tests in the non-MySQL runs are the tests that need MySQL. The full suite with MySQL is the same test tree with MySQL available, so it already contains the Clinic MySQL equivalence tests."
+   "note": "Only saved (committed) logs are shown; a run without a saved log is not evidence. Counts are copied from each log's pytest summary line; pytest omits zero counts, so an absent count is 0. Skipped tests in the non-MySQL runs are the tests that need MySQL. The full suite with MySQL is the same test tree with MySQL available, so it already contains the Clinic MySQL verification tests."
   },
   "performance": {
    "file": "evidence/performance/2026-10-18/execution_time.json",
@@ -18048,7 +18048,7 @@
       "passed": 76,
       "collected": 76,
       "source": "evidence/mysql_runs/2026-10-20_135617/clinic_mysql_equivalence_log.txt",
-      "note": "Clinic's pytest MySQL suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. 63 tests compare the Clinic application's own PHP with the generated functions (they include test_q002_sql_injection_is_blocked). The other 13 are the FR6 join-rule tests (tests/benchmarks/clinic_hard/test_join_rule_mysql.py): they compare the same SQL run directly (PHP mysqli, read with mysqli_fetch_assoc) with the generated function on the Clinic schema, for a LEFT JOIN with NULL-extended rows, a comma join and an INNER JOIN; that is direct SQL vs generated function, not differential testing of application PHP."
+      "note": "Clinic MySQL verification: Clinic's pytest MySQL suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. 63 tests compare the Clinic application's own PHP with the generated functions (they include test_q002_sql_injection_is_blocked). The other 13 are the FR6 join-rule tests (tests/benchmarks/clinic_hard/test_join_rule_mysql.py): they compare the same SQL run directly (PHP mysqli, read with mysqli_fetch_assoc) with the generated function on the Clinic schema, for a LEFT JOIN with NULL-extended rows, a comma join and an INNER JOIN; that is direct SQL vs generated function, not differential testing of application PHP."
      }
     }
    },
@@ -18874,7 +18874,7 @@
    "note": "Repository file; open it in the repository (not served by the dashboard)."
   },
   {
-   "title": "Clinic MySQL equivalence test suite (saved log)",
+   "title": "Clinic MySQL verification suite (saved log)",
    "path": "evidence/mysql_runs/2026-10-20_135617/clinic_mysql_equivalence_log.txt",
    "exists": true,
    "downloadable": false,

@@ -561,7 +561,7 @@ start http://127.0.0.1:8765/
 | Current-code counts, Clinic split | `docs/C3_results_summary.md` |
 | Manual-review proxy, all measurements with sources | `components/c3_data_layer/dashboard/data/dashboard_data.json` |
 | E1 | `evidence/mysql_runs/2026-10-15_195730/e1/`; `evidence/hms/E1_triage/triage.md` |
-| Clinic MySQL equivalence | `evidence/mysql_runs/2026-10-20_135617/clinic_mysql_equivalence_log.txt` (current, includes the 13 join-rule tests); `evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt`, `evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt` (superseded) |
+| Clinic MySQL verification (63 PHP vs generated function + 13 direct SQL vs generated function; not E1) | `evidence/mysql_runs/2026-10-20_135617/clinic_mysql_equivalence_log.txt` (current, includes the 13 join-rule tests); `evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt`, `evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt` (superseded) |
 | E2 | `evidence/e2/2026-10-15/`; `evidence/mysql_runs/2026-10-15_173248/e2/` |
 | E3 | `evidence/mysql_runs/2026-10-15_173218/e3/`; `evidence/mysql_runs/2026-10-19_000500/e3/` |
 | E4 | `evidence/e4/2026-10-17/README.md`; `evidence/final/2026-10-19/e4/`; `evidence/final/2026-10-20/e4/` (current, 163 functions) |

@@ -499,7 +499,7 @@ const Evidence = (() => {
           h("button", { type: "button", class: "button", onclick: () => showMeasurement(m), text: formatValue(m) })]))),
       card("E1 behavioural equivalence on MySQL", "Legacy PHP vs generated function on real MySQL, per SQL site (E1 harness). INCONCLUSIVE is not PASS.",
         e1Chart(),
-        h("h4", { text: "Separate MySQL test suite (not the E1 harness)" }),
+        h("h4", { text: "Clinic MySQL verification (not E1)" }),
         table(["Application", "Tests passed", "Run", "Saved log"], DATA.experiments.e1.separate_suites.map((s) => {
           const m = measurement(s.app, "mysql_equivalence_tests_passed");
           return [appLabel(s.app), m ? h("button", { type: "button", class: "button", onclick: () => showMeasurement(m), text: `${s.passed} of ${s.collected}` })
@@ -804,7 +804,7 @@ const MigrationImpact = (() => {
     const f = p.facts;
     const v = verification || {};
     const e1 = v.e1 ? `E1: PASS ${v.e1.verdicts.PASS}, FAIL ${v.e1.verdicts.FAIL}, INCONCLUSIVE ${v.e1.verdicts.INCONCLUSIVE} of ${v.e1.sites} sites`
-      : v.mysql_suite ? `Separate MySQL test suite: ${v.mysql_suite.passed} of ${v.mysql_suite.collected} tests passed (not the E1 harness)` : "Not measured for this application";
+      : v.mysql_suite ? `Clinic MySQL verification (not E1): ${v.mysql_suite.passed} of ${v.mysql_suite.collected} tests passed` : "Not measured for this application";
     const security = v.e4 ? `Security report: ${f.generated_code_violations} generated-code violations; E4: ${v.e4.safe} of ${v.e4.functions} functions SAFE (bounded check)`
       : `Security report: ${f.generated_code_violations} generated-code violations; E4: not measured`;
     const rows = [
@@ -816,7 +816,7 @@ const MigrationImpact = (() => {
       ["Query source traceability", `${f.detected} sites at PHP file:line`, `${ofText(f.traceable_sites, f.trace_entries)} mapped; ${ofText(f.functions_citing_site, f.data_access_functions)} docstrings cite the site`, "traceability_report.json, data_access.py", chip("measured")],
       ["Unresolved-query visibility", "Not reported by the legacy code", `${f.unresolved} sites with reason codes and stage`, "unresolved_queries.json", chip("measured")],
       ["Security checks", `Confirmed legacy injection sites: ${ofText(f.legacy_injection_sites, null)}`, security, "security_report.json; E4 report", chip(v.e4 ? "measured" : "none")],
-      ["Behavioural equivalence", "-", e1, v.e1 ? v.e1.source : v.mysql_suite ? v.mysql_suite.source : "-", chip(v.e1 || v.mysql_suite ? "measured" : "none")],
+      [v.e1 ? "Behavioural equivalence" : "MySQL verification", "-", e1, v.e1 ? v.e1.source : v.mysql_suite ? v.mysql_suite.source : "-", chip(v.e1 || v.mysql_suite ? "measured" : "none")],
     ];
     return step("Structural Comparison & Maintainability", "Static structural counts only. No cyclomatic complexity, maintainability index, cognitive complexity or lines-of-code comparison is shown: the two codebases have not been measured with a comparable method.",
       "layers", grid(["Attribute", "Before: legacy PHP", "After: C3 SQLAlchemy", "Evidence / calculation", "Classification"], rows, "mi-matrix"));
@@ -827,7 +827,7 @@ const MigrationImpact = (() => {
     const f = p.facts;
     const v = verification || {};
     const verify = [v.e1 ? `E1 (this app): PASS ${v.e1.verdicts.PASS} / FAIL ${v.e1.verdicts.FAIL} / INCONCLUSIVE ${v.e1.verdicts.INCONCLUSIVE} of ${v.e1.sites}` : null,
-      v.mysql_suite ? `MySQL suite (this app): ${v.mysql_suite.passed} of ${v.mysql_suite.collected}` : null,
+      v.mysql_suite ? `Clinic MySQL verification (not E1): ${v.mysql_suite.passed} of ${v.mysql_suite.collected}` : null,
       v.e4 ? `E4 (this app): ${v.e4.safe} of ${v.e4.functions} SAFE with ${v.e4.payload_count} fixed payloads, MySQL SQL compilation, no database executed; not a general proof of injection safety` : null]
       .filter(Boolean).join(". ") || "Not measured for this run";
     const rows = [

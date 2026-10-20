@@ -166,7 +166,7 @@ def test_latest_saved_test_logs_are_the_post_sprint_runs(data):
     assert (suite["passed"], suite["collected"], suite["file"]) == (76, 76, summarize.CLINIC_MYSQL_LOG)
     assert suite["file"].startswith("evidence/mysql_runs/2026-10-20_135617/")
     assert (suite["join_rule_tests"], suite["join_rule_passed"]) == (13, 13)
-    assert "already contains the Clinic MySQL equivalence tests" in data["experiments"]["tests"]["note"]
+    assert "already contains the Clinic MySQL verification tests" in data["experiments"]["tests"]["note"]
 
 
 
@@ -441,7 +441,7 @@ def test_clinic_mysql_suite_is_separate_from_the_e1_harness(data):
     assert (m["app"], m["value"], m["denominator"], m["category"]) == (suite["app"], suite["passed"], suite["collected"], "mysql_tests")
     assert not any(x["category"] == "e1" and x["app"] == suite["app"] and x["status"] != "not_measured" for x in data["measurements"])
     code = (DASHBOARD / "app.js").read_text(encoding="utf-8")
-    assert "Separate MySQL test suite (not the E1 harness)" in code
+    assert "Clinic MySQL verification (not E1)" in code
 
 
 def test_sqlacodegen_baseline_is_measured_and_matches_its_summary(data):

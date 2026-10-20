@@ -828,7 +828,7 @@ def _experiments(measurements):
         "app": "clinic_inventory_legacy_hard", "file": CLINIC_MYSQL_LOG, "passed": clinic_suite["passed"], "collected": collected,
         "failed": clinic_suite["failed"], "head": clinic_suite["head"], "date": clinic_suite["date"],
         "mysql_server": clinic_suite["mysql_server"], "join_rule_tests": len(join_lines), "join_rule_passed": join_passed,
-        "note": f"Clinic's pytest MySQL suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, "
+        "note": f"Clinic MySQL verification: Clinic's pytest MySQL suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, "
                 f"there is no INCONCLUSIVE category. {collected - len(join_lines)} tests compare the Clinic application's own "
                 f"PHP with the generated functions (they include test_q002_sql_injection_is_blocked). The other "
                 f"{len(join_lines)} are the FR6 join-rule tests ({JOIN_RULE_TESTS}): they compare the same SQL run directly "
@@ -837,7 +837,7 @@ def _experiments(measurements):
                 "differential testing of application PHP."}]
     measurements.append(_measurement(
         "clinic_inventory_legacy_hard", "current-code", stage_label,
-        "mysql_tests", "mysql_equivalence_tests_passed", "MySQL tests passed (Clinic suite, not the E1 harness)",
+        "mysql_tests", "mysql_equivalence_tests_passed", "Clinic MySQL verification tests passed (not E1)",
         numerator=clinic_suite["passed"], denominator=collected, value=clinic_suite["passed"], unit="count", status="measured",
         file=CLINIC_MYSQL_LOG, fields={"value": f"summary line '{clinic_suite['summary_line']}'",
                                        "denominator": f"line 'collected {collected} items'"},
@@ -854,7 +854,7 @@ def _experiments(measurements):
                    "simple_crud", "mixed_crud", "hard_crud"):
         note = "No E1 run. Successful conversion is not behavioural equivalence."
         if folder == "clinic_inventory_legacy_hard":
-            note = "No E1-harness run. Clinic has a separate MySQL equivalence test suite (see the E1 card)."
+            note = "No E1-harness run. Clinic has the Clinic MySQL verification suite instead (see the E1 card)."
         measurements.append(_not_measured(folder, "e1", "e1_equivalence", "E1 behavioural equivalence on MySQL", note))
 
     e2_offline = json.loads((ROOT / E2_OFFLINE).read_text(encoding="utf-8"))
@@ -934,7 +934,7 @@ def _experiments(measurements):
     tests = {"runs": [], "note": "Only saved (committed) logs are shown; a run without a saved log is not evidence. Counts are "
                                  "copied from each log's pytest summary line; pytest omits zero counts, so an absent count is 0. "
                                  "Skipped tests in the non-MySQL runs are the tests that need MySQL. The full suite with MySQL is the same "
-                                 "test tree with MySQL available, so it already contains the Clinic MySQL equivalence tests."}
+                                 "test tree with MySQL available, so it already contains the Clinic MySQL verification tests."}
     for key, title, prefix, file, fixed_label in TEST_LOGS:
         log = _pytest_log(file)
         stage_label = fixed_label or f"saved log ({log['date']}, HEAD {log['head'][:7]})"
@@ -1072,7 +1072,7 @@ def _reports():
         ("E4 injection check, 17 Oct 2026", "evidence/e4/2026-10-17/README.md"),
         ("FR6 join sprint evidence, 20 Oct 2026", "evidence/final/2026-10-20/README.md"),
         *[(f"{title} ({file.split('/')[-1]})", file) for _, title, _, file, _ in TEST_LOGS],
-        ("Clinic MySQL equivalence test suite (saved log)", CLINIC_MYSQL_LOG),
+        ("Clinic MySQL verification suite (saved log)", CLINIC_MYSQL_LOG),
         *[(f"E3 Alembic round trip on MySQL, {label.split(', ')[-1].rstrip(')')}", f"{directory}/summary.txt")
           for _, label, directory in E3_RUNS],
         ("sqlacodegen schema-only baseline (method, version, commands)", BASELINE_README),
