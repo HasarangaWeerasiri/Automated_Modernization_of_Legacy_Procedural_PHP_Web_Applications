@@ -80,14 +80,18 @@
    "title": "Data Access Generation",
    "requirement": "SQL operations that can be safely recovered must be converted into parameterized SQLAlchemy data access functions.",
    "status": "Partial",
-   "limitation": "Only static INNER JOIN SELECTs are converted: LEFT JOIN and implicit comma-join sites are recovered but not converted. MySQL behavioural equivalence (E1) exists for HMS only. The sites newly converted on the unseen ams-native application have unit-test, injection-check (E4-style) and byte-gate evidence only; their MySQL behavioural equivalence is not confirmed.",
+   "limitation": "Static INNER JOIN SELECTs are converted, and LEFT JOIN or implicit comma-join SELECTs only under a result-shape rule: every table in the parsed schema, explicit and distinctly named output columns, and every column resolving to exactly one joined table. Other join forms stay unconverted. One ground-truth recoverable site (Fee-Rainbow Q054) and one ambiguous site (Fee-Rainbow Q007) still abstain because their tables are not in the supplied schema. The join rule has MySQL tests on the Clinic schema that compare direct SQL with the generated function; that is not differential testing of application PHP. MySQL behavioural equivalence (E1) exists for HMS only. The sites newly converted on the unseen ams-native application have unit-test, injection-check (E4-style) and byte-gate evidence only; their MySQL behavioural equivalence is not confirmed.",
    "measurements": [
     "hms_kishan0725|current code|conversion_coverage_gt",
     "dignity_dev_hms|current code|conversion_coverage_gt",
     "helpdesk_legacy_holdout|current code|conversion_coverage_gt",
     "news_buzz|current code|conversion_coverage_gt",
     "fee_rainbow|current code|conversion_coverage_gt",
+    "dignity_dev_hms|before the FR6 join rule (adeb1c8)|conversion_coverage_gt",
+    "helpdesk_legacy_holdout|before the FR6 join rule (adeb1c8)|conversion_coverage_gt",
+    "fee_rainbow|before the FR6 join rule (adeb1c8)|conversion_coverage_gt",
     "clinic_inventory_legacy_hard|current code|general_rule_share",
+    "clinic_inventory_legacy_hard|saved log (2026-10-20, HEAD 84e97c0)|join_rule_mysql_tests_passed",
     "hms_kishan0725|post-adaptation (E1 re-run)|e1_pass",
     "hms_kishan0725|post-adaptation (E1 re-run)|e1_fail",
     "hms_kishan0725|post-adaptation (E1 re-run)|e1_inconclusive"
@@ -100,17 +104,17 @@
    "title": "Safety Checking",
    "requirement": "It must be verified whether runtime values can be safely parameterized, and dynamic values used in structural positions such as table names or column names must be identified.",
    "status": "Implemented and measured",
-   "limitation": "E4 is a recording-session check with a fixed payload set (no database); runtime hostile testing on MySQL exists for HMS only. The accepted value positions were extended to BETWEEN bounds and the value argument of a few deterministic SQL functions; this was verified on one unseen application with no ground truth (evidence/final), and the outputs of the nine evaluated applications are unchanged.",
+   "limitation": "E4 is a recording-session check with a fixed payload set (no database); runtime hostile testing on MySQL exists for HMS through the E1 harness, plus one injection test in the Clinic suite and one bound hostile value in the FR6 join-rule tests (direct SQL vs generated function). The accepted value positions were extended to BETWEEN bounds and the value argument of a few deterministic SQL functions; this was verified on one unseen application with no ground truth (evidence/final), and the outputs of the nine evaluated applications are unchanged.",
    "measurements": [
-    "simple_crud|current code (E4, 2026-10-17)|e4_safe_functions",
-    "mixed_crud|current code (E4, 2026-10-17)|e4_safe_functions",
-    "hard_crud|current code (E4, 2026-10-17)|e4_safe_functions",
-    "clinic_inventory_legacy_hard|current code (E4, 2026-10-17)|e4_safe_functions",
-    "helpdesk_legacy_holdout|current code (E4, 2026-10-17)|e4_safe_functions",
-    "hms_kishan0725|current code (E4, 2026-10-17)|e4_safe_functions",
-    "news_buzz|current code (E4, 2026-10-17)|e4_safe_functions",
-    "fee_rainbow|current code (E4, 2026-10-17)|e4_safe_functions",
-    "dignity_dev_hms|current code (E4, 2026-10-17)|e4_safe_functions"
+    "simple_crud|current code (E4, 2026-10-20)|e4_safe_functions",
+    "mixed_crud|current code (E4, 2026-10-20)|e4_safe_functions",
+    "hard_crud|current code (E4, 2026-10-20)|e4_safe_functions",
+    "clinic_inventory_legacy_hard|current code (E4, 2026-10-20)|e4_safe_functions",
+    "helpdesk_legacy_holdout|current code (E4, 2026-10-20)|e4_safe_functions",
+    "hms_kishan0725|current code (E4, 2026-10-20)|e4_safe_functions",
+    "news_buzz|current code (E4, 2026-10-20)|e4_safe_functions",
+    "fee_rainbow|current code (E4, 2026-10-20)|e4_safe_functions",
+    "dignity_dev_hms|current code (E4, 2026-10-20)|e4_safe_functions"
    ],
    "experiments": ["e4"]
   },
@@ -119,7 +123,7 @@
    "title": "Safe Abstention",
    "requirement": "Queries that cannot be migrated confidently or safely must be flagged for human review rather than generating incorrect code.",
    "status": "Implemented and measured",
-   "limitation": "Correct abstention is measurable only where the ground truth has non-recoverable sites; flagged sites get a reason and a stub, never generated SQL.",
+   "limitation": "Correct abstention is measurable only where the ground truth has non-recoverable sites; flagged sites get a reason and a stub, never generated SQL. A join site outside the FR6 result-shape rule abstains with a reason naming the condition it fails; abstaining on a ground-truth recoverable join site (Fee-Rainbow Q054) is a conversion gap, not a correct abstention.",
    "measurements": [
     "dignity_dev_hms|fresh holdout (first run)|correct_abstention",
     "news_buzz|post-fix (escape decoder)|correct_abstention",
@@ -151,8 +155,8 @@
     "helpdesk_legacy_holdout|post-adaptation|recovery_recall",
     "news_buzz|post-fix (escape decoder)|recovery_recall",
     "fee_rainbow|post-fix (wrapper support + fragment rule)|recovery_recall",
-    "all|saved log (2026-10-20, HEAD d263cbb)|tests_passed",
-    "all|saved log (2026-10-20, HEAD 0939bc3)|tests_with_mysql_passed"
+    "all|saved log (2026-10-20, HEAD 4d62a90)|tests_passed",
+    "all|saved log (2026-10-20, HEAD 84e97c0)|tests_with_mysql_passed"
    ],
    "experiments": ["tests"]
   }

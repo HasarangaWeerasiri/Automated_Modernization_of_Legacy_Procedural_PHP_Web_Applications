@@ -22,12 +22,16 @@ Project J26-SE-329, component C3 (Data Layer Migration), branch `database-migrat
   - Three are partial: FR2, FR4 and FR6.
   - This matches `docs/c3_fr_status.json` and the dashboard Functions view.
 - **Evidence.** Every headline number was re-checked against its evidence file. Verified recovery accuracy exists only for the five applications with author-verified ground truth.
-- **Test counts** (updated 20 Oct after the improvement sprint, section 21; the dashboard regression card shows the same logs):
+- **Test counts** (updated 20 Oct after the FR6 join sprint, section 22; the dashboard regression card shows the same logs):
   - **Current evidence-backed totals: the latest committed logs**, all run 2026-10-20:
-    - non-MySQL suite: 940 passed, 61 skipped, HEAD `d263cbb` (`evidence/final/2026-10-21/test_run_non_mysql.txt`);
-    - full suite with MySQL: 1001 passed, 0 failed, 0 skipped, HEAD `0939bc3` (`evidence/mysql_runs/2026-10-20_123611/full_suite_with_mysql_log.txt`);
-    - Clinic MySQL equivalence suite: 63 of 63 passed, HEAD `0939bc3` (`evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt`). These 63 tests are part of the 1001, not additional to them: the full suite is the same test tree with MySQL available (940 + 61 = 1001), and the 61 skipped non-MySQL tests are the Clinic tests that need MySQL.
-    - `0939bc3` adds only documentation and evidence to `d263cbb`, so both runs test the same pipeline code.
+    - non-MySQL suite: 990 passed, 74 skipped, HEAD `4d62a90` (`evidence/final/2026-10-20/test_run_non_mysql.txt`);
+    - full suite with MySQL: 1064 passed, 0 failed, 0 skipped, HEAD `84e97c0` (`evidence/mysql_runs/2026-10-20_135617/full_suite_with_mysql_log.txt`);
+    - Clinic MySQL suite: 76 of 76 passed, HEAD `84e97c0` (`evidence/mysql_runs/2026-10-20_135617/clinic_mysql_equivalence_log.txt`).
+      - 63 of these compare the Clinic application's own PHP with the generated functions.
+      - 13 are the FR6 join-rule tests. They compare direct SQL (PHP mysqli, `mysqli_fetch_assoc`) with the generated function on the Clinic schema, which is not differential testing of application PHP.
+      - The 76 are part of the 1064, not additional to them: the full suite is the same test tree with MySQL available (990 + 74 = 1064), and the 74 skipped non-MySQL tests are the Clinic tests that need MySQL.
+    - `84e97c0` adds only evidence to `4d62a90`, so both runs test the same pipeline code. A later commit, `4f75e79`, changed only the generic multi-table reason text; it changes no output in the nine applications or ams-native (byte gate, section 22).
+  - **Superseded earlier the same day** (logs unchanged): non-MySQL 940 passed, 61 skipped at `d263cbb` (`evidence/final/2026-10-21/test_run_non_mysql.txt`); full suite with MySQL 1001 passed and Clinic 63 of 63 at `0939bc3` (`evidence/mysql_runs/2026-10-20_123611/`).
   - **Superseded, kept as dated history** (these were the review-time totals; their logs are unchanged): non-MySQL 873 passed, 61 skipped and full suite with MySQL 934 passed, 0 failed, both run 2026-10-18 at HEAD `1d93e93` (`evidence/final/2026-10-19/test_run_non_mysql.txt`; `evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt`). The 900 passed / 61 skipped figure from before the sprint's new tests was never saved as a log.
   - **Later runs without a saved log** at review time [this review]. These are not committed evidence and are not shown on the dashboard:
     - 885 passed / 61 skipped at HEAD `881e9b8` (873 plus the 12 sqlacodegen-baseline tests from `bae8e6b`);
@@ -43,7 +47,7 @@ Entry point: `python -m c3.cli run --php <app root> --schema <schema.sql> --outp
 | Stage | What it does | Main code |
 |---|---|---|
 | 1 Recover legacy SQL | PHP AST extraction of SQL calls (mysqli, mysql, PDO method names, single-parameter wrappers); reconstruction of literals, concatenation, interpolation, assignment chains and block-contained branches; abstention on loops/switch, structural placeholders and SQL fragments | `tools/php_ast/extract_sql_calls.php` (`SQL_FUNCTION_ARGUMENT_POSITIONS` :114, `SQL_METHOD_NAMES` :130, `findSqlWrappers` :481); `src/c3/mapping/sql_locator.py:146 analyze_php_ast`; `src/c3/mapping/sql_recovery.py:1436 recover_queries_from_ast` |
-| 2 Convert recovered queries | Parameterized conversion; static INNER JOIN SELECTs only; seven Clinic query-specific templates | `src/c3/conversion/query_converter.py:185 convert_query`, `:542 _is_supported_join_select` |
+| 2 Convert recovered queries | Parameterized conversion; static INNER JOIN SELECTs only (from 20 Oct also LEFT JOIN and comma-join SELECTs under the result-shape rule, section 22); seven Clinic query-specific templates | `src/c3/conversion/query_converter.py:185 convert_query`, `:542 _is_supported_join_select` |
 | 3 Schema + SQLAlchemy models | MySQL DDL parsing incl. ALTER TABLE; ORM classes (Core `Table` for tables without a primary key); Python-safe identifiers | `src/c3/mapping/schema_reader.py:565 read_schema`; `src/c3/conversion/model_builder.py:644 generate_models`; `src/c3/generation/identifiers.py:21 python_name`, `:42 assign_names` |
 | 4 Data-access functions | `text()` with named bind parameters; stubs for unresolved sites | `src/c3/generation/emitter.py:683 generate_data_access`, `:127 _build_function`, `:244 _build_unresolved_stub` |
 | 5 Column-use report | Tables/columns read, written and filtered per SQL statement | `src/c3/analysis/column_analyzer.py:343 analyze_sql_columns` |
@@ -73,7 +77,7 @@ All test counts are collected test cases [this review, `pytest --collect-only`].
 | FR3 | "Database tables, columns, data types, primary keys, foreign keys, and relationships must be identified from the MySQL schema." | `mapping/schema_reader.py` (`read_schema` :565, `parse_create_table` :371, `apply_alter_table_statements` :435); `conversion/model_builder.py:277 _build_relationships` | CREATE TABLE + ALTER TABLE parsing, types, PK, FK, unique, indexes | `test_schema_reader` (6), `test_schema_fidelity` (9), `test_alter_table_schema` (4), `test_type_map` (10), `test_schema_comparison` (5) | `evidence/e2/2026-10-15/schema_comparison.json`; `evidence/mysql_runs/2026-10-15_173248/e2/schema_comparison_mysql.json` | All 9 | PASS | Relationships come from declared foreign keys only |
 | FR4 | "The tables and columns used by each recovered query must be identified, as well as how those columns are subsequently used within the application logic." | `analysis/column_analyzer.py` (`column_roles` :256, `analyze_sql_columns` :343, `analyze_recovered_query` :416) | SQL-level tables and columns per statement: read, write, filter | `test_column_analyzer` (11), `test_column_roles` (7), `test_column_usage_generator` (2) | S15 `column_use_accuracy` | 5 verified-GT apps | PARTIAL | Downstream PHP use of result columns (`$row['col']`, output, conditions) is not traced |
 | FR5 | "The system must generate SQLAlchemy models with appropriate data types, keys, and relationships." | `conversion/model_builder.py` (`generate_models` :644, `generate_models_source` :426, `_build_column` :207, `_build_relationships` :277); `generation/identifiers.py` | ORM classes with types, PK, FK, relationships; Python-safe attribute names that keep database column names | `test_model_builder` (9), `test_standalone_generated_code` (5), `test_python_identifiers` (18), `test_baseline_sqlacodegen` (12) | E2 files above; `evidence/baseline/2026-10-19/summary.json` | All 9 | PASS | Tables without a primary key become SQLAlchemy Core `Table` objects, not ORM classes |
-| FR6 | "SQL operations that can be safely recovered must be converted into parameterized SQLAlchemy data access functions." | `conversion/query_converter.py:185`; `generation/emitter.py:683` | Parameterized `text()` functions with named binds; static INNER JOIN SELECTs; Clinic templates reported separately | `test_query_converter` (19), `test_emitter` (10), `test_behavioral_execution` (10), `tests/benchmarks/clinic_hard/*` (63, MySQL) | `docs/C3_results_summary.md` (current-code table); `evidence/mysql_runs/2026-10-15_195730/e1/php_vs_sqlalchemy_equivalence.json`; `evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt` | All 9 (conversion counts); HMS (E1); Clinic (MySQL tests) | PARTIAL | LEFT JOIN and implicit comma-join conversion unsupported (six evaluated sites, section 8.3) |
+| FR6 | "SQL operations that can be safely recovered must be converted into parameterized SQLAlchemy data access functions." | `conversion/query_converter.py:185`; `generation/emitter.py:683` | Parameterized `text()` functions with named binds; static INNER JOIN SELECTs; Clinic templates reported separately | `test_query_converter` (19), `test_emitter` (10), `test_behavioral_execution` (10), `tests/benchmarks/clinic_hard/*` (63, MySQL) | `docs/C3_results_summary.md` (current-code table); `evidence/mysql_runs/2026-10-15_195730/e1/php_vs_sqlalchemy_equivalence.json`; `evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt` | All 9 (conversion counts); HMS (E1); Clinic (MySQL tests) | PARTIAL | LEFT JOIN and implicit comma-join conversion unsupported (six evaluated sites, section 8.3). *20 Oct: four of the six now convert; FR6 stays PARTIAL (section 22).* |
 | FR7 | "It must be verified whether runtime values can be safely parameterized, and dynamic values used in structural positions such as table names or column names must be identified." | `mapping/sql_recovery.py:801`, `:976`; `analysis/security_report.py:329 build_security_report`, `:283 scan_generated_code` | Structural-position detection and abstention; bound-parameter check; generated-code scan | `test_security_report` (9), `test_e4_injection` (5), `test_sql_fragment_variables` (15) | `evidence/e4/2026-10-17/`; `evidence/final/2026-10-19/e4/` | All 9 | PASS (within tested scope) | E4 is a bounded check: MySQL-dialect compilation with a recording session, no database execution; not proof of complete runtime injection safety |
 | FR8 | "Queries that cannot be migrated confidently or safely must be flagged for human review rather than generating incorrect code." | `analysis/unresolved_report.py:16`; `generation/emitter.py:244` | Unresolved sites get stage, reason code, reason and a stub that raises; no SQL is generated for them | `test_unresolved_report` (6), `test_report_consistency` (15) | S15 files (TN outcomes) | Dignity-Dev, NEWS-BUZZ, Fee-Rainbow (apps whose GT has non-recoverable sites) | PASS | Correct-abstention accuracy measurable only where verified GT has non-recoverable sites |
 | FR9 | "Alembic migration information required for the modernized data layer must be generated." | `generation/alembic_emitter.py:381`, `:304` | `alembic/` environment with initial-schema revision `0001_initial_schema` | `test_alembic_emitter` (7) | `evidence/mysql_runs/2026-10-15_173218/e3/`; `evidence/mysql_runs/2026-10-19_000500/e3/` | All 9 | PASS | Initial-schema revision only; no data migration |
@@ -143,7 +147,7 @@ This run went through the same bridge, via HTTP, not the browser.
 **Inputs:** a ZIP of `benchmarks/apps/helpdesk_legacy_holdout/legacy` (9 `.php` files, 1 other file ignored) and its `database/schema.sql`.
 
 **Result:** 9 detected, 9 recovered, 8 converted, 1 unresolved:
-- the unresolved site is Q007 `helpdesk/report.php:5`, at the conversion stage, reason `CONVERSION_UNSUPPORTED` (the documented LEFT JOIN);
+- the unresolved site is Q007 `helpdesk/report.php:5`, at the conversion stage, reason `CONVERSION_UNSUPPORTED` (the documented LEFT JOIN); *(Superseded 20 Oct by the FR6 join rule; see section 22.)*
 - this equals the Helpdesk row of `docs/C3_results_summary.md`;
 - the run folder was deleted after the download.
 
@@ -250,9 +254,9 @@ From `docs/C3_results_summary.md` (current-code table; "no author-verified groun
   - Sources: `docs/C3_results_summary.md`; `dashboard_data.json` measurement `clinic_inventory_legacy_hard|current code|general_rule_share` (15/22 = 68.2%); `docs/C3_audit_2026-10-17.md` §1.
   - The templates are ID- and file-text-dependent and must always be reported separately.
 - **Fee-Rainbow:** 40 converted = 39 of 40 GT-recoverable sites (97.5%, `fee_rainbow|current code|conversion_coverage_gt`) + the ambiguous site G011. G007, also ambiguous, is not converted (`dashboard_data.json` `manual_review.apps.fee_rainbow.ambiguous`).
-- **Dignity-Dev:** 4 of 7 recoverable sites converted (57.1%, `dignity_dev_hms|current code|conversion_coverage_gt`).
-- **Other apps:** HMS 43/43, Helpdesk 8/9, NEWS-BUZZ 30/30 (same measurement family).
-- **Six unsupported join-conversion sites**, all reason `CONVERSION_UNSUPPORTED` (`dashboard_data.json` `limitations` FR6; `docs/C3_results_summary.md`):
+- **Dignity-Dev:** 4 of 7 recoverable sites converted (57.1%, `dignity_dev_hms|current code|conversion_coverage_gt`). *(Now 7 of 7; the 4 of 7 value is kept as `dignity_dev_hms|before the FR6 join rule (adeb1c8)|conversion_coverage_gt`. See section 22.)*
+- **Other apps:** HMS 43/43, Helpdesk 8/9, NEWS-BUZZ 30/30 (same measurement family). *(Helpdesk now 9/9; section 22.)*
+- **Six unsupported join-conversion sites** *(as of 19 Oct; after the FR6 join rule only the two Fee-Rainbow sites remain, section 22)*, all reason `CONVERSION_UNSUPPORTED` (`dashboard_data.json` `limitations` FR6; `docs/C3_results_summary.md`):
 
   | Join kind | App | Query / GT | Site |
   |---|---|---|---|
@@ -273,7 +277,7 @@ All read from existing evidence; nothing was re-run.
 - **HMS:** 44 sites, **27 PASS, 0 FAIL, 17 INCONCLUSIVE**. INCONCLUSIVE is not counted as a pass.
   - Source: `evidence/mysql_runs/2026-10-15_195730/e1/php_vs_sqlalchemy_equivalence.json`, `git_head` `01f427e`, a pre-rewrite hash mapped in `evidence/commit_hash_map_2026-10-15.md`.
   - The first run's 5 FAILs were a harness defect: `evidence/hms/E1_triage/triage.md`.
-- **Clinic:** 63 of 63 MySQL equivalence tests passed (MySQL 8.0.39, HEAD `1d93e93`). This is the Clinic test suite, not the E1 harness. Source: `evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt`.
+- **Clinic:** 63 of 63 MySQL equivalence tests passed (MySQL 8.0.39, HEAD `1d93e93`). This is the Clinic test suite, not the E1 harness. Source: `evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt`. *(Current: 76 of 76 at `84e97c0`, of which 13 are direct-SQL join-rule tests; section 22.)*
 - **simple/mixed/hard:** 18/18 checks on 2026-10-08, old code (`evidence/mysql_2026-10-08/`).
 - **Not measured:** Dignity-Dev, Helpdesk, NEWS-BUZZ, Fee-Rainbow. Successful conversion is not behavioural equivalence.
 
@@ -486,7 +490,7 @@ Observed in headless Edge on `http://127.0.0.1:8765/` with a fresh profile [this
 4. **FR4:** SQL-level column use only; downstream PHP use of result columns is not traced.
 5. **FR5:** tables without a primary key are Core `Table` objects (HMS: 4 tables, decision in `evidence/hms/H2_tables_without_pk/proposal.md`).
 6. **FR6:**
-   - LEFT JOIN and implicit comma-join conversion is unsupported (six evaluated sites).
+   - LEFT JOIN and implicit comma-join conversion is unsupported (six evaluated sites). *(20 Oct: supported under the result-shape rule; Fee-Rainbow Q054 (recoverable) and Q007 (ambiguous) still abstain because their tables are not in the supplied schema. Section 22.)*
    - The generated code is `text()` with bound parameters, not ORM query constructs.
    - The 7 Clinic templates are query-specific, not general rules.
 7. **FR7:** E4 is bounded (12 payloads, compile-only, no database); 44 functions trivially satisfy it; Clinic Q013 rejects benign values.
@@ -504,7 +508,7 @@ Observed in headless Edge on `http://127.0.0.1:8765/` with a fresh profile [this
 
 ## 15. Recommended future development
 
-1. Convert LEFT JOIN and implicit comma joins (the six documented sites are the test set).
+1. Convert LEFT JOIN and implicit comma joins (the six documented sites are the test set). *(Done 20 Oct for four of the six, section 22. Remaining: Fee-Rainbow, which needs a complete schema.)*
 2. Trace result-column use into PHP logic to complete FR4.
 3. General rules for branch-dependent SQL to replace the Clinic templates, or make the templates opt-in.
 4. E1 runs for Dignity-Dev, Helpdesk, NEWS-BUZZ and Fee-Rainbow, and a re-run of HMS on current code.
@@ -542,7 +546,7 @@ start http://127.0.0.1:8765/
 ## 17. Primary demo application and recorded fallback
 
 - **Primary live demo:** simple_crud, a project-authored fixture. 4 detected, 4 converted, 0 unresolved; about 0.5 s in the bridge [this review]. It shows the whole workflow, previews and the ZIP.
-- **Optional second live demo:** Helpdesk, also project-authored. 9 detected, 8 converted, 1 unresolved LEFT JOIN with `CONVERSION_UNSUPPORTED`. It shows safe abstention with file:line [this review, bridge API].
+- **Optional second live demo:** Helpdesk, also project-authored. 9 detected, 8 converted, 1 unresolved LEFT JOIN with `CONVERSION_UNSUPPORTED`. It shows safe abstention with file:line [this review, bridge API]. *(Since 20 Oct all 9 convert, so Helpdesk no longer shows an abstention; use Dignity-Dev or NEWS-BUZZ for that. Section 22.)*
 - **Recorded fallback:** "Load recorded sample run" (NEWS-BUZZ, recorded 2026-10-18; `components/c3_data_layer/dashboard/data/sample_run.json`). It is clearly badged as recorded, not live.
 - **Never demo HMS live:** the source has no licence and the dump is private.
 
@@ -557,11 +561,11 @@ start http://127.0.0.1:8765/
 | Current-code counts, Clinic split | `docs/C3_results_summary.md` |
 | Manual-review proxy, all measurements with sources | `components/c3_data_layer/dashboard/data/dashboard_data.json` |
 | E1 | `evidence/mysql_runs/2026-10-15_195730/e1/`; `evidence/hms/E1_triage/triage.md` |
-| Clinic MySQL equivalence | `evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt` (current); `evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt` (superseded) |
+| Clinic MySQL equivalence | `evidence/mysql_runs/2026-10-20_135617/clinic_mysql_equivalence_log.txt` (current, includes the 13 join-rule tests); `evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt`, `evidence/final/2026-10-19/mysql/clinic_mysql_equivalence_log.txt` (superseded) |
 | E2 | `evidence/e2/2026-10-15/`; `evidence/mysql_runs/2026-10-15_173248/e2/` |
 | E3 | `evidence/mysql_runs/2026-10-15_173218/e3/`; `evidence/mysql_runs/2026-10-19_000500/e3/` |
-| E4 | `evidence/e4/2026-10-17/README.md`; `evidence/final/2026-10-19/e4/` |
-| Tests | `evidence/final/2026-10-21/test_run_non_mysql.txt`; `evidence/mysql_runs/2026-10-20_123611/full_suite_with_mysql_log.txt` (current); `evidence/final/2026-10-19/test_run_non_mysql.txt`; `evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt` (superseded) |
+| E4 | `evidence/e4/2026-10-17/README.md`; `evidence/final/2026-10-19/e4/`; `evidence/final/2026-10-20/e4/` (current, 163 functions) |
+| Tests | `evidence/final/2026-10-20/test_run_non_mysql.txt`; `evidence/mysql_runs/2026-10-20_135617/full_suite_with_mysql_log.txt` (current); `evidence/final/2026-10-21/test_run_non_mysql.txt`; `evidence/mysql_runs/2026-10-20_123611/full_suite_with_mysql_log.txt`; `evidence/final/2026-10-19/test_run_non_mysql.txt`; `evidence/final/2026-10-19/mysql/full_suite_with_mysql_log.txt` (superseded) |
 | Byte identity and frozen HMS hash | `evidence/final/2026-10-19/gate/gate_result.txt` |
 | Timing | `evidence/performance/2026-10-18/` |
 | sqlacodegen baseline | `evidence/baseline/2026-10-19/` |
@@ -631,7 +635,7 @@ start http://127.0.0.1:8765/
 - The full workflow works live, and every reported number traces to committed evidence.
 - The requirement statuses are honest: three Partial.
 - The limitations are documented in the status file, the dashboard and this report.
-- Readiness does **not** mean every requirement is fully supported for every application: FR2, FR4 and FR6 are partial, and runtime equivalence exists for HMS (E1) and Clinic (MySQL tests) only.
+- Readiness does **not** mean every requirement is fully supported for every application: FR2, FR4 and FR6 are partial, and runtime equivalence exists for HMS (E1) and Clinic (MySQL tests) only. The 20 Oct join-rule MySQL tests are direct SQL vs generated function, not application equivalence (section 22).
 
 **Hard blockers:** none.
 
@@ -691,8 +695,67 @@ Stop here for approval before any commit, push, tag or component freeze.
 - any change to the S15 results.
 
 **Deferred to future work:**
-- **T2**, LEFT JOIN and comma-join conversion. It would change conversion coverage for three evaluated applications.
+- **T2**, LEFT JOIN and comma-join conversion. It would change conversion coverage for three evaluated applications. *(Done later on 20 Oct: section 22.)*
 - **The security-report tracer change.** It could change frozen HMS bytes.
 - Recovery of branch-dependent SQL, SQL fragment variables and dynamic identifiers. The ground truth classifies these sites as "abstain".
 
-**Pre-improvement ams-native baseline.** `evidence/baseline_unseen/ams_native/2026-10-20/` holds the counts-only baseline at `351be5b` (see its README). The original ZIP hash and the licence are unknown, so it is not a reproducible independent holdout.
+**Pre-improvement ams-native baseline.** `evidence/baseline_unseen/ams_native/2026-10-20/` holds the counts-only baseline at `351be5b` (see its README). The original ZIP hash and the licence are unknown, so it is not a reproducible independent holdout. *(Corrected later on 20 Oct: the ZIP was found, its PHP and schema hashes match the baseline, and its licence is MIT. See `CORRECTION_2026-10-20.md` in that folder. It is still not an independent holdout with ground truth.)*
+
+---
+
+## 22. Addendum: FR6 join sprint, 20 October 2026
+
+**Scope.** LEFT JOIN and implicit comma-join SELECTs, converted with the existing `text()` and named binds; the SQL text is unchanged. The local tag `c3-pre-joins-20261020` is on `adeb1c8`. Commits:
+- `cba45fc`: the result-shape rule and its unit tests.
+- `4d62a90`: the MySQL join-rule tests.
+- `84e97c0`: Part 1 evidence.
+- `f5a31c3`: the MySQL logs.
+- `4f75e79`: the generic multi-table reason text. It changes no output.
+
+**Rule.** A LEFT JOIN or comma-join SELECT is converted only when all of these hold:
+- every table is in the parsed schema;
+- every output column is explicit (no `*` or `table.*`) and distinctly named, so `result.mappings()` cannot drop a column;
+- every column resolves to exactly one joined table;
+- placeholders sit only in already accepted value positions.
+
+RIGHT, FULL, CROSS, NATURAL, USING, STRAIGHT_JOIN, subqueries, derived tables, unions, mixed comma/JOIN forms and UPDATE/DELETE joins keep abstaining, each with a reason that names what is converted. Static INNER JOIN SELECTs keep the earlier rule.
+
+**Conversion coverage of ground-truth recoverable sites** (current code, `evidence/final/2026-10-20/conversion_coverage_post_t2.json`). This is conversion coverage, not recovery accuracy and not behavioural equivalence.
+
+| Application | Before (`adeb1c8`) | After | Newly converted |
+|---|---|---|---|
+| Dignity-Dev | 4 of 7 | 7 of 7 | Q007, Q008, Q009 (comma joins) |
+| Helpdesk | 8 of 9 | 9 of 9 | Q007 (two LEFT JOINs, COUNT, GROUP BY) |
+| Fee-Rainbow | 39 of 40 | 39 of 40 | none |
+| HMS / NEWS-BUZZ | 43 of 43 / 30 of 30 | unchanged | none |
+
+- **Abstentions.** Fee-Rainbow Q054 (recoverable) and Q007 (ambiguous) still abstain: their tables are not in the supplied `db.sql`, which defines one table only. Their reason code and stage are unchanged; only the reason text changed, because the old text ("Only static SELECT INNER JOINs are supported") is no longer true.
+- **The Dignity-Dev fresh-holdout result is preserved.** `evidence/evaluation/dignity_dev_hms/evaluation.json` and every other historical evaluation file are unchanged. The improvement is a separate current-code measurement; it is not a holdout result.
+- **Derived manual-review proxy** (current code): Dignity-Dev 69.2% → 46.2%, Helpdesk 11.1% → 0.0%.
+
+**Gates** (`evidence/final/2026-10-20/`):
+- **Site-scoped byte gate:** all 92 differences are in the approved list (Dignity-Dev 61, Helpdesk 25, Fee-Rainbow 6 reason-text entries). Every other file of the nine applications is byte-identical, HMS included, and the frozen HMS signatures hash still matches.
+- **Reason-text commit:** after `4f75e79`, all 135 files are byte-identical to the `4d62a90` run, and so are the ams-native outputs.
+- **S15:** all five evaluation files are byte-identical to `evidence/final/2026-10-21/s15/`, so recovery is unchanged.
+- **E4:** 163 of 163 functions SAFE. Dignity Q007 and Q009 bind all 12 payloads; Dignity Q008 and Helpdesk Q007 take no value and pass trivially.
+- **ams-native:** identical outputs at `adeb1c8` and after (108 converted, 4 unresolved).
+
+**MySQL evidence and its scope** (`evidence/mysql_runs/2026-10-20_135617/`):
+- **Totals:** full suite 1064 passed, 0 failed, 0 skipped; Clinic suite 76 of 76.
+- **Join-rule tests:** 13 of the 76 are in `tests/benchmarks/clinic_hard/test_join_rule_mysql.py`. They cover a LEFT JOIN with NULL-extended rows, a comma join, an INNER JOIN regression and one bound hostile value.
+- **Method:** each test compares the same SQL run directly (built by raw interpolation as legacy code does, run with PHP `mysqli_query`, read with `mysqli_fetch_assoc`) with the generated SQLAlchemy function, on the Clinic schema and seed data. This is **direct SQL vs generated function**. It is **not** differential testing of the original application's PHP, and it is not E1.
+- **E1:** behavioural equivalence still exists for HMS only. The four newly converted Dignity-Dev and Helpdesk functions have no E1 or application-level PHP comparison.
+
+**FR6 stays PARTIAL**, for three reasons:
+- one ground-truth recoverable site (Fee-Rainbow Q054) is still not converted;
+- behavioural equivalence of converted functions is shown only for HMS (E1, with INCONCLUSIVE sites) and Clinic;
+- the new join conversions have direct-SQL evidence, not application equivalence.
+
+**ams-native correction.** The original ZIP was located later on 20 Oct. Its PHP set hash and schema hash match the committed baseline, and its `LICENSE.txt` is MIT. The baseline files are unchanged; the correction is in `evidence/baseline_unseen/ams_native/2026-10-20/CORRECTION_2026-10-20.md`.
+
+**Not done (out of scope):**
+- the security-report tracer change (FR4);
+- recovery of branch-dependent SQL (FR2);
+- the identifier allow-list extension;
+- UPDATE/DELETE joins;
+- a complete Fee-Rainbow schema.

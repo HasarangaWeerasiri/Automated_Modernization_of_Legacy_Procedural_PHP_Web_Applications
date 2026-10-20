@@ -357,16 +357,23 @@ E2_LIVE = "evidence/mysql_runs/2026-10-15_173248/e2/schema_comparison_mysql.json
 E3_RUNS = [("current-code", "current code (E3, 2026-10-19)", "evidence/mysql_runs/2026-10-19_000500/e3"),
            ("post-adaptation", "post-adaptation (E3, 2026-10-15)", "evidence/mysql_runs/2026-10-15_173218/e3")]
 E3_DIR = E3_RUNS[0][2]
-E4_REPORT = "evidence/e4/2026-10-17/injection_report.json"
+# Newest E4 run (all nine apps, 163 functions after the FR6 join rule); the method is described in the 17 Oct README.
+E4_REPORT = "evidence/final/2026-10-20/e4/injection_report.json"
+E4_LABEL = "current code (E4, 2026-10-20)"
 E4_SCRIPT = "scripts/e4_injection_check.py"
 # Saved (committed) pytest logs only, newest first: (key, title, metric prefix, file, fixed stage label or None).
 # A run without a saved log is never shown. docs/c3_fr_status.json FR10 cites the two newest logs (fixed label None);
 # superseded logs keep their original stage label (and measurement id) as dated history, not the latest run.
-# The 2026-10-20 MySQL logs ran at 0939bc3, which only adds docs and evidence to d263cbb (the non-MySQL run).
+# The 2026-10-20 13:56 MySQL logs ran at 84e97c0, which only adds evidence to 4d62a90 (the non-MySQL run); likewise
+# the 12:36 logs ran at 0939bc3, which only adds docs and evidence to d263cbb.
 TEST_LOGS = [
-    ("non_mysql", "Non-MySQL suite (saved log)", "tests", "evidence/final/2026-10-21/test_run_non_mysql.txt", None),
+    ("non_mysql", "Non-MySQL suite (saved log)", "tests", "evidence/final/2026-10-20/test_run_non_mysql.txt", None),
     ("with_mysql", "Full suite with MySQL (saved log)", "tests_with_mysql",
-     "evidence/mysql_runs/2026-10-20_123611/full_suite_with_mysql_log.txt", None),
+     "evidence/mysql_runs/2026-10-20_135617/full_suite_with_mysql_log.txt", None),
+    ("non_mysql_pre_joins", "Non-MySQL suite, earlier saved log", "tests", "evidence/final/2026-10-21/test_run_non_mysql.txt",
+     "saved log (2026-10-20, HEAD d263cbb)"),
+    ("with_mysql_pre_joins", "Full suite with MySQL, earlier saved log", "tests_with_mysql",
+     "evidence/mysql_runs/2026-10-20_123611/full_suite_with_mysql_log.txt", "saved log (2026-10-20, HEAD 0939bc3)"),
     ("non_mysql_2026_10_18", "Non-MySQL suite, earlier saved log", "tests", "evidence/final/2026-10-19/test_run_non_mysql.txt",
      "saved log (2026-10-18, HEAD 1d93e93)"),
     ("with_mysql_2026_10_18", "Full suite with MySQL, earlier saved log", "tests_with_mysql",
@@ -375,7 +382,12 @@ TEST_LOGS = [
      "current code (tests, 2026-10-17)"),
 ]
 TEST_LOG = TEST_LOGS[0][3]
-CLINIC_MYSQL_LOG = "evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt"
+CLINIC_MYSQL_LOG = "evidence/mysql_runs/2026-10-20_135617/clinic_mysql_equivalence_log.txt"
+# FR6 join rule: the MySQL tests in this file compare direct SQL with the generated function (not PHP differential).
+JOIN_RULE_TESTS = "tests/benchmarks/clinic_hard/test_join_rule_mysql.py"
+# Conversion coverage before (tag c3-pre-joins-20261020, adeb1c8) and after the FR6 join rule, same definition as
+# conversion_coverage_gt; the current-code value must equal its "t2_final" side.
+JOIN_COVERAGE = "evidence/final/2026-10-20/conversion_coverage_post_t2.json"
 BASELINE_SUMMARY = "evidence/baseline/2026-10-19/summary.json"
 BASELINE_README = "evidence/baseline/2026-10-19/README.md"
 BASELINE_DIMENSIONS = ("tables", "columns", "primary_keys", "nullability", "types", "foreign_keys")
@@ -624,6 +636,7 @@ def load_performance() -> dict:
 
 def _current(base, measurements):
     apps, records, artifacts, joins = {}, {}, {}, []
+    join_coverage = json.loads((ROOT / JOIN_COVERAGE).read_text(encoding="utf-8"))
     for app_label, folder, php, schema, has_gt in CURRENT_RUNS:
         out = base / folder
         summary = json.loads((out / "summary.json").read_text(encoding="utf-8"))
@@ -690,6 +703,20 @@ def _current(base, measurements):
                 derivation="CONVERTED records joined on file:line with ground-truth label 'recoverable'; "
                            "denominator recovery.TP + recovery.FN of the latest evaluation",
                 note="Conversion coverage, not recovery accuracy. Conversion is not behavioural equivalence."))
+            before = join_coverage["apps"].get(folder)
+            if before is not None:
+                if (before["t2_final"]["converted_recoverable"], before["denominator"]) != (converted_recoverable, recoverable):
+                    raise SystemExit(f"{folder}: current-code conversion coverage differs from {JOIN_COVERAGE} (t2_final)")
+                measurements.append(_measurement(
+                    folder, "current-code", "before the FR6 join rule (adeb1c8)", "conversion", "conversion_coverage_gt",
+                    "Ground-truth recoverable sites converted", numerator=before["prejoins"]["converted_recoverable"],
+                    denominator=before["denominator"], value=_pct(before["prejoins"]["converted_recoverable"], before["denominator"]),
+                    unit="percent", status="derived", file=JOIN_COVERAGE,
+                    fields={"numerator": f"apps.{folder}.prejoins.converted_recoverable", "denominator": f"apps.{folder}.denominator"},
+                    derivation="numerator / denominator from the committed post-T2 record (gate run at adeb1c8, same definition "
+                               "as conversion_coverage_gt)",
+                    note="Code at tag c3-pre-joins-20261020, before LEFT JOIN and comma-join SELECTs could convert. Conversion "
+                         "coverage, not recovery accuracy; the historical evaluation files are unchanged."))
 
         files = {name: (out / name).is_file() for name in
                  ("models.py", "data_access.py", "schema.json", "migration_notes.md", "queries.json", "converted_queries.json",
@@ -792,19 +819,37 @@ def _experiments(measurements):
     collected = int(re.search(r"collected (\d+) items", clinic_suite["text"]).group(1))
     if clinic_suite["passed"] != collected or clinic_suite["failed"]:
         raise SystemExit(f"{CLINIC_MYSQL_LOG}: not every collected test passed; update the dashboard text before showing it")
+    join_lines = re.findall(rf"^{re.escape(JOIN_RULE_TESTS)}::\S+ (\w+)", clinic_suite["text"], re.M)
+    join_passed = sum(r == "PASSED" for r in join_lines)
+    if not join_lines or join_passed != len(join_lines):
+        raise SystemExit(f"{CLINIC_MYSQL_LOG}: the FR6 join-rule tests are missing or did not all pass")
+    stage_label = f"saved log ({clinic_suite['date']}, HEAD {clinic_suite['head'][:7]})"
     e1["separate_suites"] = [{
         "app": "clinic_inventory_legacy_hard", "file": CLINIC_MYSQL_LOG, "passed": clinic_suite["passed"], "collected": collected,
         "failed": clinic_suite["failed"], "head": clinic_suite["head"], "date": clinic_suite["date"],
-        "mysql_server": clinic_suite["mysql_server"],
-        "note": "Clinic's own pytest MySQL equivalence suite (tests/benchmarks/clinic_hard), not the E1 harness: each test "
-                "passes or fails, there is no INCONCLUSIVE category. It includes test_q002_sql_injection_is_blocked."}]
+        "mysql_server": clinic_suite["mysql_server"], "join_rule_tests": len(join_lines), "join_rule_passed": join_passed,
+        "note": f"Clinic's pytest MySQL suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, "
+                f"there is no INCONCLUSIVE category. {collected - len(join_lines)} tests compare the Clinic application's own "
+                f"PHP with the generated functions (they include test_q002_sql_injection_is_blocked). The other "
+                f"{len(join_lines)} are the FR6 join-rule tests ({JOIN_RULE_TESTS}): they compare the same SQL run directly "
+                "(PHP mysqli, read with mysqli_fetch_assoc) with the generated function on the Clinic schema, for a LEFT JOIN "
+                "with NULL-extended rows, a comma join and an INNER JOIN; that is direct SQL vs generated function, not "
+                "differential testing of application PHP."}]
     measurements.append(_measurement(
-        "clinic_inventory_legacy_hard", "current-code", f"saved log ({clinic_suite['date']}, HEAD {clinic_suite['head'][:7]})",
-        "mysql_tests", "mysql_equivalence_tests_passed", "MySQL equivalence tests passed (Clinic suite, not the E1 harness)",
+        "clinic_inventory_legacy_hard", "current-code", stage_label,
+        "mysql_tests", "mysql_equivalence_tests_passed", "MySQL tests passed (Clinic suite, not the E1 harness)",
         numerator=clinic_suite["passed"], denominator=collected, value=clinic_suite["passed"], unit="count", status="measured",
         file=CLINIC_MYSQL_LOG, fields={"value": f"summary line '{clinic_suite['summary_line']}'",
                                        "denominator": f"line 'collected {collected} items'"},
         note=f"MySQL {clinic_suite['mysql_server']}. " + e1["separate_suites"][0]["note"]))
+    measurements.append(_measurement(
+        "clinic_inventory_legacy_hard", "current-code", stage_label, "mysql_tests", "join_rule_mysql_tests_passed",
+        "FR6 join-rule MySQL tests passed (direct SQL vs generated function, not PHP differential)",
+        numerator=join_passed, denominator=len(join_lines), value=join_passed, unit="count", status="measured",
+        file=CLINIC_MYSQL_LOG, fields={"value": f"lines '{JOIN_RULE_TESTS}::... PASSED'", "denominator": f"lines '{JOIN_RULE_TESTS}::...'"},
+        note=f"MySQL {clinic_suite['mysql_server']}. Clinic schema and seed data; LEFT JOIN with NULL-extended rows, comma join, "
+             "INNER JOIN regression and one bound hostile value. Counted inside the Clinic suite total. Not PHP application "
+             "differential testing and not E1."))
     for folder in ("dignity_dev_hms", "helpdesk_legacy_holdout", "news_buzz", "fee_rainbow", "clinic_inventory_legacy_hard",
                    "simple_crud", "mixed_crud", "hard_crud"):
         note = "No E1 run. Successful conversion is not behavioural equivalence."
@@ -862,7 +907,7 @@ def _experiments(measurements):
                               "hostile_cases": len(cases), "rejected": sum(c["outcome"] == "REJECTED" for c in cases),
                               "bound": sum(c["bound_as_parameter"] for c in cases),
                               "templates": sum(f["conversion_rule"] == "query_specific_template" for f in app["detail"].values())}
-        measurements.append(_measurement(folder, "current-code", "current code (E4, 2026-10-17)", "e4", "e4_safe_functions",
+        measurements.append(_measurement(folder, "current-code", E4_LABEL, "e4", "e4_safe_functions",
                                          "E4 functions SAFE (12-payload recording-session check)", numerator=app["safe"],
                                          denominator=app["functions"], value=app["safe"], unit="count", status="measured",
                                          file=E4_REPORT, fields={"value": f"apps.{key}.safe", "denominator": f"apps.{key}.functions"}))
@@ -879,9 +924,10 @@ def _experiments(measurements):
         "same-SQL comparison is vacuous and it passes by rejection only.",
         "Unresolved sites have no generated code and are not tested.",
         "Runtime hostile testing on MySQL: HMS through the E1 harness; Clinic has one MySQL test of an injection attempt "
-        "(test_q002_sql_injection_is_blocked) in its separate equivalence suite.",
+        "(test_q002_sql_injection_is_blocked) in its separate equivalence suite, and the FR6 join-rule tests bind one "
+        "hostile value in a comma-join function (direct SQL vs generated function, Clinic schema).",
     ]
-    measurements.append(_measurement("all", "current-code", "current code (E4, 2026-10-17)", "e4", "e4_benign_calls",
+    measurements.append(_measurement("all", "current-code", E4_LABEL, "e4", "e4_benign_calls",
                                      "E4 benign calls", value=e4["totals"]["benign_calls"], unit="count", status="derived",
                                      file=f"{E4_REPORT}; {E4_SCRIPT}", derivation="functions x len(BENIGN) in the script"))
 
@@ -1024,6 +1070,7 @@ def _reports():
         ("Fee-Rainbow S15 evaluation summary", "evidence/evaluation/fee_rainbow/summary.md"),
         ("HMS E1 triage", "evidence/hms/E1_triage/triage.md"),
         ("E4 injection check, 17 Oct 2026", "evidence/e4/2026-10-17/README.md"),
+        ("FR6 join sprint evidence, 20 Oct 2026", "evidence/final/2026-10-20/README.md"),
         *[(f"{title} ({file.split('/')[-1]})", file) for _, title, _, file, _ in TEST_LOGS],
         ("Clinic MySQL equivalence test suite (saved log)", CLINIC_MYSQL_LOG),
         *[(f"E3 Alembic round trip on MySQL, {label.split(', ')[-1].rstrip(')')}", f"{directory}/summary.txt")
@@ -1152,8 +1199,11 @@ def write_dashboard_json(target: Path, base: Path, head: str) -> None:
                      "not implemented.",
              "evidence": "components/c3_data_layer/src/c3/analysis/column_analyzer.py:256-414"},
             {"fr": "FR6", "title": "Unsupported join shapes",
-             "text": "The converter accepts static INNER JOIN SELECTs only. Recovered sites with other join forms stay unconverted "
-                     "and are flagged with CONVERSION_UNSUPPORTED.",
+             "text": "The converter accepts static INNER JOIN SELECTs, and LEFT JOIN or implicit comma-join SELECTs only under a "
+                     "result-shape rule: every table is in the parsed schema, every output column is explicit and distinctly "
+                     "named, and every column resolves to exactly one joined table. RIGHT, FULL, CROSS and NATURAL joins, "
+                     "USING, subqueries, derived tables, unions and UPDATE/DELETE joins are not converted. Sites that fail "
+                     "stay unconverted and are flagged with CONVERSION_UNSUPPORTED and a reason naming the failed condition.",
              "evidence": "unresolved_queries.json of the current-code run", "sites": joins},
         ],
         "reports": _reports(),
@@ -1297,8 +1347,10 @@ def write_markdown(base, head) -> None:
         sources.append(("HMS (kishan0725)", "post-adaptation (after H1)", "ambiguous sites excluded", str(len(amb)),
                         "evidence/evaluation/hms_kishan0725/evaluation.json", "ambiguous_sites[*]"))
 
-    lines.append("- **Join forms not converted:** the conversion-stage rejections for the current code are listed with IDs, "
-                 "file:line and reason in \"Unresolved at conversion stage (current code)\" above. The historical evaluation files do not record them.")
+    lines.append("- **Join forms not converted:** LEFT JOIN and comma-join SELECTs are converted only under the result-shape "
+                 "rule (FR6 join rule, 2026-10-20); the remaining conversion-stage rejections for the current code are listed "
+                 "with IDs, file:line and reason in \"Unresolved at conversion stage (current code)\" above. The historical "
+                 "evaluation files do not record them.")
     lines.append("- **Ground truth:** drafted blind by an LLM and verified by one human (the author). The drafting model "
                  "is from the same model family as the assistant used during development, so shared blind spots are possible.")
 

@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": {
   "by": "scripts/summarize_evidence.py --dashboard-json",
-  "date": "2026-10-20T12:45:05+05:30",
-  "git_head": "62a8509ad17410c8a9fe47c9437d63a47db8136d",
+  "date": "2026-10-20T14:10:43+05:30",
+  "git_head": "4f75e798375d7ce46be5597e0890567c983266be",
   "pipeline_unchanged_since_head": true,
   "current_code_run": "fresh C3 run of all 9 apps into a temp folder outside the repo (written <temp>)"
  },
@@ -2775,6 +2775,29 @@
    "note": "Conversion coverage, not recovery accuracy. Conversion is not behavioural equivalence."
   },
   {
+   "id": "hms_kishan0725|before the FR6 join rule (adeb1c8)|conversion_coverage_gt",
+   "app": "hms_kishan0725",
+   "stage": "current-code",
+   "stage_label": "before the FR6 join rule (adeb1c8)",
+   "category": "conversion",
+   "metric": "conversion_coverage_gt",
+   "label": "Ground-truth recoverable sites converted",
+   "numerator": 43,
+   "denominator": 43,
+   "value": 100.0,
+   "unit": "percent",
+   "status": "derived",
+   "source": {
+    "file": "evidence/final/2026-10-20/conversion_coverage_post_t2.json",
+    "fields": {
+     "numerator": "apps.hms_kishan0725.prejoins.converted_recoverable",
+     "denominator": "apps.hms_kishan0725.denominator"
+    },
+    "derivation": "numerator / denominator from the committed post-T2 record (gate run at adeb1c8, same definition as conversion_coverage_gt)"
+   },
+   "note": "Code at tag c3-pre-joins-20261020, before LEFT JOIN and comma-join SELECTs could convert. Conversion coverage, not recovery accuracy; the historical evaluation files are unchanged."
+  },
+  {
    "id": "dignity_dev_hms|current code|sql_detected",
    "app": "dignity_dev_hms",
    "stage": "current-code",
@@ -2824,7 +2847,7 @@
    "label": "Converted data-access functions",
    "numerator": null,
    "denominator": null,
-   "value": 4,
+   "value": 7,
    "unit": "count",
    "status": "measured",
    "source": {
@@ -2844,7 +2867,7 @@
    "label": "Converted by general rules",
    "numerator": null,
    "denominator": null,
-   "value": 4,
+   "value": 7,
    "unit": "count",
    "status": "measured",
    "source": {
@@ -2904,7 +2927,7 @@
    "label": "Unresolved at conversion stage",
    "numerator": null,
    "denominator": null,
-   "value": 3,
+   "value": 0,
    "unit": "count",
    "status": "measured",
    "source": {
@@ -2924,7 +2947,7 @@
    "label": "Unresolved sites (flagged for review)",
    "numerator": null,
    "denominator": null,
-   "value": 10,
+   "value": 7,
    "unit": "count",
    "status": "measured",
    "source": {
@@ -2942,9 +2965,9 @@
    "category": "conversion",
    "metric": "conversion_coverage_gt",
    "label": "Ground-truth recoverable sites converted",
-   "numerator": 4,
+   "numerator": 7,
    "denominator": 7,
-   "value": 57.1,
+   "value": 100.0,
    "unit": "percent",
    "status": "derived",
    "source": {
@@ -2952,6 +2975,29 @@
     "derivation": "CONVERTED records joined on file:line with ground-truth label 'recoverable'; denominator recovery.TP + recovery.FN of the latest evaluation"
    },
    "note": "Conversion coverage, not recovery accuracy. Conversion is not behavioural equivalence."
+  },
+  {
+   "id": "dignity_dev_hms|before the FR6 join rule (adeb1c8)|conversion_coverage_gt",
+   "app": "dignity_dev_hms",
+   "stage": "current-code",
+   "stage_label": "before the FR6 join rule (adeb1c8)",
+   "category": "conversion",
+   "metric": "conversion_coverage_gt",
+   "label": "Ground-truth recoverable sites converted",
+   "numerator": 4,
+   "denominator": 7,
+   "value": 57.1,
+   "unit": "percent",
+   "status": "derived",
+   "source": {
+    "file": "evidence/final/2026-10-20/conversion_coverage_post_t2.json",
+    "fields": {
+     "numerator": "apps.dignity_dev_hms.prejoins.converted_recoverable",
+     "denominator": "apps.dignity_dev_hms.denominator"
+    },
+    "derivation": "numerator / denominator from the committed post-T2 record (gate run at adeb1c8, same definition as conversion_coverage_gt)"
+   },
+   "note": "Code at tag c3-pre-joins-20261020, before LEFT JOIN and comma-join SELECTs could convert. Conversion coverage, not recovery accuracy; the historical evaluation files are unchanged."
   },
   {
    "id": "helpdesk_legacy_holdout|current code|sql_detected",
@@ -3003,7 +3049,7 @@
    "label": "Converted data-access functions",
    "numerator": null,
    "denominator": null,
-   "value": 8,
+   "value": 9,
    "unit": "count",
    "status": "measured",
    "source": {
@@ -3023,7 +3069,7 @@
    "label": "Converted by general rules",
    "numerator": null,
    "denominator": null,
-   "value": 8,
+   "value": 9,
    "unit": "count",
    "status": "measured",
    "source": {
@@ -3083,7 +3129,7 @@
    "label": "Unresolved at conversion stage",
    "numerator": null,
    "denominator": null,
-   "value": 1,
+   "value": 0,
    "unit": "count",
    "status": "measured",
    "source": {
@@ -3103,7 +3149,7 @@
    "label": "Unresolved sites (flagged for review)",
    "numerator": null,
    "denominator": null,
-   "value": 1,
+   "value": 0,
    "unit": "count",
    "status": "measured",
    "source": {
@@ -3121,9 +3167,9 @@
    "category": "conversion",
    "metric": "conversion_coverage_gt",
    "label": "Ground-truth recoverable sites converted",
-   "numerator": 8,
+   "numerator": 9,
    "denominator": 9,
-   "value": 88.9,
+   "value": 100.0,
    "unit": "percent",
    "status": "derived",
    "source": {
@@ -3131,6 +3177,29 @@
     "derivation": "CONVERTED records joined on file:line with ground-truth label 'recoverable'; denominator recovery.TP + recovery.FN of the latest evaluation"
    },
    "note": "Conversion coverage, not recovery accuracy. Conversion is not behavioural equivalence."
+  },
+  {
+   "id": "helpdesk_legacy_holdout|before the FR6 join rule (adeb1c8)|conversion_coverage_gt",
+   "app": "helpdesk_legacy_holdout",
+   "stage": "current-code",
+   "stage_label": "before the FR6 join rule (adeb1c8)",
+   "category": "conversion",
+   "metric": "conversion_coverage_gt",
+   "label": "Ground-truth recoverable sites converted",
+   "numerator": 8,
+   "denominator": 9,
+   "value": 88.9,
+   "unit": "percent",
+   "status": "derived",
+   "source": {
+    "file": "evidence/final/2026-10-20/conversion_coverage_post_t2.json",
+    "fields": {
+     "numerator": "apps.helpdesk_legacy_holdout.prejoins.converted_recoverable",
+     "denominator": "apps.helpdesk_legacy_holdout.denominator"
+    },
+    "derivation": "numerator / denominator from the committed post-T2 record (gate run at adeb1c8, same definition as conversion_coverage_gt)"
+   },
+   "note": "Code at tag c3-pre-joins-20261020, before LEFT JOIN and comma-join SELECTs could convert. Conversion coverage, not recovery accuracy; the historical evaluation files are unchanged."
   },
   {
    "id": "news_buzz|current code|sql_detected",
@@ -3312,6 +3381,29 @@
    "note": "Conversion coverage, not recovery accuracy. Conversion is not behavioural equivalence."
   },
   {
+   "id": "news_buzz|before the FR6 join rule (adeb1c8)|conversion_coverage_gt",
+   "app": "news_buzz",
+   "stage": "current-code",
+   "stage_label": "before the FR6 join rule (adeb1c8)",
+   "category": "conversion",
+   "metric": "conversion_coverage_gt",
+   "label": "Ground-truth recoverable sites converted",
+   "numerator": 30,
+   "denominator": 30,
+   "value": 100.0,
+   "unit": "percent",
+   "status": "derived",
+   "source": {
+    "file": "evidence/final/2026-10-20/conversion_coverage_post_t2.json",
+    "fields": {
+     "numerator": "apps.news_buzz.prejoins.converted_recoverable",
+     "denominator": "apps.news_buzz.denominator"
+    },
+    "derivation": "numerator / denominator from the committed post-T2 record (gate run at adeb1c8, same definition as conversion_coverage_gt)"
+   },
+   "note": "Code at tag c3-pre-joins-20261020, before LEFT JOIN and comma-join SELECTs could convert. Conversion coverage, not recovery accuracy; the historical evaluation files are unchanged."
+  },
+  {
    "id": "fee_rainbow|current code|sql_detected",
    "app": "fee_rainbow",
    "stage": "current-code",
@@ -3489,6 +3581,29 @@
     "derivation": "CONVERTED records joined on file:line with ground-truth label 'recoverable'; denominator recovery.TP + recovery.FN of the latest evaluation"
    },
    "note": "Conversion coverage, not recovery accuracy. Conversion is not behavioural equivalence."
+  },
+  {
+   "id": "fee_rainbow|before the FR6 join rule (adeb1c8)|conversion_coverage_gt",
+   "app": "fee_rainbow",
+   "stage": "current-code",
+   "stage_label": "before the FR6 join rule (adeb1c8)",
+   "category": "conversion",
+   "metric": "conversion_coverage_gt",
+   "label": "Ground-truth recoverable sites converted",
+   "numerator": 39,
+   "denominator": 40,
+   "value": 97.5,
+   "unit": "percent",
+   "status": "derived",
+   "source": {
+    "file": "evidence/final/2026-10-20/conversion_coverage_post_t2.json",
+    "fields": {
+     "numerator": "apps.fee_rainbow.prejoins.converted_recoverable",
+     "denominator": "apps.fee_rainbow.denominator"
+    },
+    "derivation": "numerator / denominator from the committed post-T2 record (gate run at adeb1c8, same definition as conversion_coverage_gt)"
+   },
+   "note": "Code at tag c3-pre-joins-20261020, before LEFT JOIN and comma-join SELECTs could convert. Conversion coverage, not recovery accuracy; the historical evaluation files are unchanged."
   },
   {
    "id": "clinic_inventory_legacy_hard|current code|sql_detected",
@@ -4157,9 +4272,9 @@
    "category": "review",
    "metric": "manual_review_rate",
    "label": "Manual-review rate (live sites not converted / live sites)",
-   "numerator": 9,
+   "numerator": 6,
    "denominator": 13,
-   "value": 69.2,
+   "value": 46.2,
    "unit": "percent",
    "status": "derived",
    "source": {
@@ -4176,9 +4291,9 @@
    "category": "review",
    "metric": "manual_review_rate",
    "label": "Manual-review rate (live sites not converted / live sites)",
-   "numerator": 1,
+   "numerator": 0,
    "denominator": 9,
-   "value": 11.1,
+   "value": 0.0,
    "unit": "percent",
    "status": "derived",
    "source": {
@@ -4573,26 +4688,48 @@
    }
   },
   {
-   "id": "clinic_inventory_legacy_hard|saved log (2026-10-20, HEAD 0939bc3)|mysql_equivalence_tests_passed",
+   "id": "clinic_inventory_legacy_hard|saved log (2026-10-20, HEAD 84e97c0)|mysql_equivalence_tests_passed",
    "app": "clinic_inventory_legacy_hard",
    "stage": "current-code",
-   "stage_label": "saved log (2026-10-20, HEAD 0939bc3)",
+   "stage_label": "saved log (2026-10-20, HEAD 84e97c0)",
    "category": "mysql_tests",
    "metric": "mysql_equivalence_tests_passed",
-   "label": "MySQL equivalence tests passed (Clinic suite, not the E1 harness)",
-   "numerator": 63,
-   "denominator": 63,
-   "value": 63,
+   "label": "MySQL tests passed (Clinic suite, not the E1 harness)",
+   "numerator": 76,
+   "denominator": 76,
+   "value": 76,
    "unit": "count",
    "status": "measured",
    "source": {
-    "file": "evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt",
+    "file": "evidence/mysql_runs/2026-10-20_135617/clinic_mysql_equivalence_log.txt",
     "fields": {
-     "value": "summary line '63 passed in 10.27s'",
-     "denominator": "line 'collected 63 items'"
+     "value": "summary line '76 passed in 15.12s'",
+     "denominator": "line 'collected 76 items'"
     }
    },
-   "note": "MySQL 8.0.39. Clinic's own pytest MySQL equivalence suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. It includes test_q002_sql_injection_is_blocked."
+   "note": "MySQL 8.0.39. Clinic's pytest MySQL suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. 63 tests compare the Clinic application's own PHP with the generated functions (they include test_q002_sql_injection_is_blocked). The other 13 are the FR6 join-rule tests (tests/benchmarks/clinic_hard/test_join_rule_mysql.py): they compare the same SQL run directly (PHP mysqli, read with mysqli_fetch_assoc) with the generated function on the Clinic schema, for a LEFT JOIN with NULL-extended rows, a comma join and an INNER JOIN; that is direct SQL vs generated function, not differential testing of application PHP."
+  },
+  {
+   "id": "clinic_inventory_legacy_hard|saved log (2026-10-20, HEAD 84e97c0)|join_rule_mysql_tests_passed",
+   "app": "clinic_inventory_legacy_hard",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-20, HEAD 84e97c0)",
+   "category": "mysql_tests",
+   "metric": "join_rule_mysql_tests_passed",
+   "label": "FR6 join-rule MySQL tests passed (direct SQL vs generated function, not PHP differential)",
+   "numerator": 13,
+   "denominator": 13,
+   "value": 13,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/mysql_runs/2026-10-20_135617/clinic_mysql_equivalence_log.txt",
+    "fields": {
+     "value": "lines 'tests/benchmarks/clinic_hard/test_join_rule_mysql.py::... PASSED'",
+     "denominator": "lines 'tests/benchmarks/clinic_hard/test_join_rule_mysql.py::...'"
+    }
+   },
+   "note": "MySQL 8.0.39. Clinic schema and seed data; LEFT JOIN with NULL-extended rows, comma join, INNER JOIN regression and one bound hostile value. Counted inside the Clinic suite total. Not PHP application differential testing and not E1."
   },
   {
    "id": "dignity_dev_hms|not measured|e1_equivalence",
@@ -4795,10 +4932,10 @@
    "note": "Run 2026-10-15, git HEAD a791cd8 (from evidence/mysql_runs/2026-10-15_173218/e3/summary.txt)."
   },
   {
-   "id": "simple_crud|current code (E4, 2026-10-17)|e4_safe_functions",
+   "id": "simple_crud|current code (E4, 2026-10-20)|e4_safe_functions",
    "app": "simple_crud",
    "stage": "current-code",
-   "stage_label": "current code (E4, 2026-10-17)",
+   "stage_label": "current code (E4, 2026-10-20)",
    "category": "e4",
    "metric": "e4_safe_functions",
    "label": "E4 functions SAFE (12-payload recording-session check)",
@@ -4808,7 +4945,7 @@
    "unit": "count",
    "status": "measured",
    "source": {
-    "file": "evidence/e4/2026-10-17/injection_report.json",
+    "file": "evidence/final/2026-10-20/e4/injection_report.json",
     "fields": {
      "value": "apps.simple_crud.safe",
      "denominator": "apps.simple_crud.functions"
@@ -4816,10 +4953,10 @@
    }
   },
   {
-   "id": "mixed_crud|current code (E4, 2026-10-17)|e4_safe_functions",
+   "id": "mixed_crud|current code (E4, 2026-10-20)|e4_safe_functions",
    "app": "mixed_crud",
    "stage": "current-code",
-   "stage_label": "current code (E4, 2026-10-17)",
+   "stage_label": "current code (E4, 2026-10-20)",
    "category": "e4",
    "metric": "e4_safe_functions",
    "label": "E4 functions SAFE (12-payload recording-session check)",
@@ -4829,7 +4966,7 @@
    "unit": "count",
    "status": "measured",
    "source": {
-    "file": "evidence/e4/2026-10-17/injection_report.json",
+    "file": "evidence/final/2026-10-20/e4/injection_report.json",
     "fields": {
      "value": "apps.mixed_crud.safe",
      "denominator": "apps.mixed_crud.functions"
@@ -4837,10 +4974,10 @@
    }
   },
   {
-   "id": "hard_crud|current code (E4, 2026-10-17)|e4_safe_functions",
+   "id": "hard_crud|current code (E4, 2026-10-20)|e4_safe_functions",
    "app": "hard_crud",
    "stage": "current-code",
-   "stage_label": "current code (E4, 2026-10-17)",
+   "stage_label": "current code (E4, 2026-10-20)",
    "category": "e4",
    "metric": "e4_safe_functions",
    "label": "E4 functions SAFE (12-payload recording-session check)",
@@ -4850,7 +4987,7 @@
    "unit": "count",
    "status": "measured",
    "source": {
-    "file": "evidence/e4/2026-10-17/injection_report.json",
+    "file": "evidence/final/2026-10-20/e4/injection_report.json",
     "fields": {
      "value": "apps.hard_crud.safe",
      "denominator": "apps.hard_crud.functions"
@@ -4858,10 +4995,10 @@
    }
   },
   {
-   "id": "clinic_inventory_legacy_hard|current code (E4, 2026-10-17)|e4_safe_functions",
+   "id": "clinic_inventory_legacy_hard|current code (E4, 2026-10-20)|e4_safe_functions",
    "app": "clinic_inventory_legacy_hard",
    "stage": "current-code",
-   "stage_label": "current code (E4, 2026-10-17)",
+   "stage_label": "current code (E4, 2026-10-20)",
    "category": "e4",
    "metric": "e4_safe_functions",
    "label": "E4 functions SAFE (12-payload recording-session check)",
@@ -4871,7 +5008,7 @@
    "unit": "count",
    "status": "measured",
    "source": {
-    "file": "evidence/e4/2026-10-17/injection_report.json",
+    "file": "evidence/final/2026-10-20/e4/injection_report.json",
     "fields": {
      "value": "apps.clinic.safe",
      "denominator": "apps.clinic.functions"
@@ -4879,20 +5016,20 @@
    }
   },
   {
-   "id": "helpdesk_legacy_holdout|current code (E4, 2026-10-17)|e4_safe_functions",
+   "id": "helpdesk_legacy_holdout|current code (E4, 2026-10-20)|e4_safe_functions",
    "app": "helpdesk_legacy_holdout",
    "stage": "current-code",
-   "stage_label": "current code (E4, 2026-10-17)",
+   "stage_label": "current code (E4, 2026-10-20)",
    "category": "e4",
    "metric": "e4_safe_functions",
    "label": "E4 functions SAFE (12-payload recording-session check)",
-   "numerator": 8,
-   "denominator": 8,
-   "value": 8,
+   "numerator": 9,
+   "denominator": 9,
+   "value": 9,
    "unit": "count",
    "status": "measured",
    "source": {
-    "file": "evidence/e4/2026-10-17/injection_report.json",
+    "file": "evidence/final/2026-10-20/e4/injection_report.json",
     "fields": {
      "value": "apps.helpdesk.safe",
      "denominator": "apps.helpdesk.functions"
@@ -4900,10 +5037,10 @@
    }
   },
   {
-   "id": "hms_kishan0725|current code (E4, 2026-10-17)|e4_safe_functions",
+   "id": "hms_kishan0725|current code (E4, 2026-10-20)|e4_safe_functions",
    "app": "hms_kishan0725",
    "stage": "current-code",
-   "stage_label": "current code (E4, 2026-10-17)",
+   "stage_label": "current code (E4, 2026-10-20)",
    "category": "e4",
    "metric": "e4_safe_functions",
    "label": "E4 functions SAFE (12-payload recording-session check)",
@@ -4913,7 +5050,7 @@
    "unit": "count",
    "status": "measured",
    "source": {
-    "file": "evidence/e4/2026-10-17/injection_report.json",
+    "file": "evidence/final/2026-10-20/e4/injection_report.json",
     "fields": {
      "value": "apps.hms_kishan0725.safe",
      "denominator": "apps.hms_kishan0725.functions"
@@ -4921,10 +5058,10 @@
    }
   },
   {
-   "id": "news_buzz|current code (E4, 2026-10-17)|e4_safe_functions",
+   "id": "news_buzz|current code (E4, 2026-10-20)|e4_safe_functions",
    "app": "news_buzz",
    "stage": "current-code",
-   "stage_label": "current code (E4, 2026-10-17)",
+   "stage_label": "current code (E4, 2026-10-20)",
    "category": "e4",
    "metric": "e4_safe_functions",
    "label": "E4 functions SAFE (12-payload recording-session check)",
@@ -4934,7 +5071,7 @@
    "unit": "count",
    "status": "measured",
    "source": {
-    "file": "evidence/e4/2026-10-17/injection_report.json",
+    "file": "evidence/final/2026-10-20/e4/injection_report.json",
     "fields": {
      "value": "apps.news_buzz.safe",
      "denominator": "apps.news_buzz.functions"
@@ -4942,10 +5079,10 @@
    }
   },
   {
-   "id": "fee_rainbow|current code (E4, 2026-10-17)|e4_safe_functions",
+   "id": "fee_rainbow|current code (E4, 2026-10-20)|e4_safe_functions",
    "app": "fee_rainbow",
    "stage": "current-code",
-   "stage_label": "current code (E4, 2026-10-17)",
+   "stage_label": "current code (E4, 2026-10-20)",
    "category": "e4",
    "metric": "e4_safe_functions",
    "label": "E4 functions SAFE (12-payload recording-session check)",
@@ -4955,7 +5092,7 @@
    "unit": "count",
    "status": "measured",
    "source": {
-    "file": "evidence/e4/2026-10-17/injection_report.json",
+    "file": "evidence/final/2026-10-20/e4/injection_report.json",
     "fields": {
      "value": "apps.fee_rainbow.safe",
      "denominator": "apps.fee_rainbow.functions"
@@ -4963,20 +5100,20 @@
    }
   },
   {
-   "id": "dignity_dev_hms|current code (E4, 2026-10-17)|e4_safe_functions",
+   "id": "dignity_dev_hms|current code (E4, 2026-10-20)|e4_safe_functions",
    "app": "dignity_dev_hms",
    "stage": "current-code",
-   "stage_label": "current code (E4, 2026-10-17)",
+   "stage_label": "current code (E4, 2026-10-20)",
    "category": "e4",
    "metric": "e4_safe_functions",
    "label": "E4 functions SAFE (12-payload recording-session check)",
-   "numerator": 4,
-   "denominator": 4,
-   "value": 4,
+   "numerator": 7,
+   "denominator": 7,
+   "value": 7,
    "unit": "count",
    "status": "measured",
    "source": {
-    "file": "evidence/e4/2026-10-17/injection_report.json",
+    "file": "evidence/final/2026-10-20/e4/injection_report.json",
     "fields": {
      "value": "apps.dignity_dev_hms.safe",
      "denominator": "apps.dignity_dev_hms.functions"
@@ -4984,22 +5121,145 @@
    }
   },
   {
-   "id": "all|current code (E4, 2026-10-17)|e4_benign_calls",
+   "id": "all|current code (E4, 2026-10-20)|e4_benign_calls",
    "app": "all",
    "stage": "current-code",
-   "stage_label": "current code (E4, 2026-10-17)",
+   "stage_label": "current code (E4, 2026-10-20)",
    "category": "e4",
    "metric": "e4_benign_calls",
    "label": "E4 benign calls",
    "numerator": null,
    "denominator": null,
-   "value": 636,
+   "value": 652,
    "unit": "count",
    "status": "derived",
    "source": {
-    "file": "evidence/e4/2026-10-17/injection_report.json; scripts/e4_injection_check.py",
+    "file": "evidence/final/2026-10-20/e4/injection_report.json; scripts/e4_injection_check.py",
     "derivation": "functions x len(BENIGN) in the script"
    }
+  },
+  {
+   "id": "all|saved log (2026-10-20, HEAD 4d62a90)|tests_passed",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-20, HEAD 4d62a90)",
+   "category": "tests",
+   "metric": "tests_passed",
+   "label": "Non-MySQL tests passed",
+   "numerator": null,
+   "denominator": null,
+   "value": 990,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/final/2026-10-20/test_run_non_mysql.txt",
+    "fields": {
+     "value": "summary line '990 passed, 74 skipped, 1 warning in 76.19s (0:01:16)'"
+    }
+   }
+  },
+  {
+   "id": "all|saved log (2026-10-20, HEAD 4d62a90)|tests_failed",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-20, HEAD 4d62a90)",
+   "category": "tests",
+   "metric": "tests_failed",
+   "label": "Non-MySQL tests failed",
+   "numerator": null,
+   "denominator": null,
+   "value": 0,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/final/2026-10-20/test_run_non_mysql.txt",
+    "fields": {
+     "value": "summary line '990 passed, 74 skipped, 1 warning in 76.19s (0:01:16)'"
+    }
+   },
+   "note": "pytest omits zero counts; absent means 0."
+  },
+  {
+   "id": "all|saved log (2026-10-20, HEAD 4d62a90)|tests_skipped",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-20, HEAD 4d62a90)",
+   "category": "tests",
+   "metric": "tests_skipped",
+   "label": "Non-MySQL tests skipped",
+   "numerator": null,
+   "denominator": null,
+   "value": 74,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/final/2026-10-20/test_run_non_mysql.txt",
+    "fields": {
+     "value": "summary line '990 passed, 74 skipped, 1 warning in 76.19s (0:01:16)'"
+    }
+   }
+  },
+  {
+   "id": "all|saved log (2026-10-20, HEAD 84e97c0)|tests_with_mysql_passed",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-20, HEAD 84e97c0)",
+   "category": "tests",
+   "metric": "tests_with_mysql_passed",
+   "label": "Full suite with MySQL passed",
+   "numerator": null,
+   "denominator": null,
+   "value": 1064,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/mysql_runs/2026-10-20_135617/full_suite_with_mysql_log.txt",
+    "fields": {
+     "value": "summary line '1064 passed, 1 warning in 79.24s (0:01:19)'"
+    }
+   }
+  },
+  {
+   "id": "all|saved log (2026-10-20, HEAD 84e97c0)|tests_with_mysql_failed",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-20, HEAD 84e97c0)",
+   "category": "tests",
+   "metric": "tests_with_mysql_failed",
+   "label": "Full suite with MySQL failed",
+   "numerator": null,
+   "denominator": null,
+   "value": 0,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/mysql_runs/2026-10-20_135617/full_suite_with_mysql_log.txt",
+    "fields": {
+     "value": "summary line '1064 passed, 1 warning in 79.24s (0:01:19)'"
+    }
+   },
+   "note": "pytest omits zero counts; absent means 0."
+  },
+  {
+   "id": "all|saved log (2026-10-20, HEAD 84e97c0)|tests_with_mysql_skipped",
+   "app": "all",
+   "stage": "current-code",
+   "stage_label": "saved log (2026-10-20, HEAD 84e97c0)",
+   "category": "tests",
+   "metric": "tests_with_mysql_skipped",
+   "label": "Full suite with MySQL skipped",
+   "numerator": null,
+   "denominator": null,
+   "value": 0,
+   "unit": "count",
+   "status": "measured",
+   "source": {
+    "file": "evidence/mysql_runs/2026-10-20_135617/full_suite_with_mysql_log.txt",
+    "fields": {
+     "value": "summary line '1064 passed, 1 warning in 79.24s (0:01:19)'"
+    }
+   },
+   "note": "pytest omits zero counts; absent means 0."
   },
   {
    "id": "all|saved log (2026-10-20, HEAD d263cbb)|tests_passed",
@@ -7700,13 +7960,12 @@
     "operation": "SELECT",
     "recovery_status": "RECOVERED",
     "recovery_reason_code": null,
-    "conversion_status": "NOT_CONVERTED",
-    "conversion_rule": null,
-    "unresolved_stage": "conversion",
-    "unresolved_reason_code": "CONVERSION_UNSUPPORTED",
-    "unresolved_reason": "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported.",
-    "gt_label": "recoverable",
-    "join_kind": "implicit comma join"
+    "conversion_status": "CONVERTED",
+    "conversion_rule": "general",
+    "unresolved_stage": null,
+    "unresolved_reason_code": null,
+    "unresolved_reason": null,
+    "gt_label": "recoverable"
    },
    {
     "query_id": "Q008",
@@ -7717,13 +7976,12 @@
     "operation": "SELECT",
     "recovery_status": "RECOVERED",
     "recovery_reason_code": null,
-    "conversion_status": "NOT_CONVERTED",
-    "conversion_rule": null,
-    "unresolved_stage": "conversion",
-    "unresolved_reason_code": "CONVERSION_UNSUPPORTED",
-    "unresolved_reason": "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported.",
-    "gt_label": "recoverable",
-    "join_kind": "implicit comma join"
+    "conversion_status": "CONVERTED",
+    "conversion_rule": "general",
+    "unresolved_stage": null,
+    "unresolved_reason_code": null,
+    "unresolved_reason": null,
+    "gt_label": "recoverable"
    },
    {
     "query_id": "Q009",
@@ -7734,13 +7992,12 @@
     "operation": "SELECT",
     "recovery_status": "RECOVERED",
     "recovery_reason_code": null,
-    "conversion_status": "NOT_CONVERTED",
-    "conversion_rule": null,
-    "unresolved_stage": "conversion",
-    "unresolved_reason_code": "CONVERSION_UNSUPPORTED",
-    "unresolved_reason": "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported.",
-    "gt_label": "recoverable",
-    "join_kind": "implicit comma join"
+    "conversion_status": "CONVERTED",
+    "conversion_rule": "general",
+    "unresolved_stage": null,
+    "unresolved_reason_code": null,
+    "unresolved_reason": null,
+    "gt_label": "recoverable"
    },
    {
     "query_id": "Q010",
@@ -7929,13 +8186,12 @@
     "operation": "SELECT",
     "recovery_status": "RECOVERED",
     "recovery_reason_code": null,
-    "conversion_status": "NOT_CONVERTED",
-    "conversion_rule": null,
-    "unresolved_stage": "conversion",
-    "unresolved_reason_code": "CONVERSION_UNSUPPORTED",
-    "unresolved_reason": "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported.",
-    "gt_label": "recoverable",
-    "join_kind": "LEFT JOIN"
+    "conversion_status": "CONVERTED",
+    "conversion_rule": "general",
+    "unresolved_stage": null,
+    "unresolved_reason_code": null,
+    "unresolved_reason": null,
+    "gt_label": "recoverable"
    },
    {
     "query_id": "Q008",
@@ -8594,7 +8850,7 @@
     "conversion_rule": null,
     "unresolved_stage": "conversion",
     "unresolved_reason_code": "CONVERSION_UNSUPPORTED",
-    "unresolved_reason": "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported.",
+    "unresolved_reason": "Unsupported multi-table SQL structure. A LEFT JOIN or comma join is converted only when every table is in the parsed schema.",
     "gt_label": "ambiguous",
     "join_kind": "LEFT JOIN"
    },
@@ -9347,7 +9603,7 @@
     "conversion_rule": null,
     "unresolved_stage": "conversion",
     "unresolved_reason_code": "CONVERSION_UNSUPPORTED",
-    "unresolved_reason": "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported.",
+    "unresolved_reason": "Unsupported multi-table SQL structure. A LEFT JOIN or comma join is converted only when every table is in the parsed schema.",
     "gt_label": "recoverable",
     "join_kind": "LEFT JOIN"
    }
@@ -9998,8 +10254,8 @@
    "counts": {
     "orm_classes": 2,
     "core_tables": 4,
-    "data_access_functions": 4,
-    "unresolved_stubs": 10,
+    "data_access_functions": 7,
+    "unresolved_stubs": 7,
     "alembic_revisions": 1
    },
    "derivation": "counted from the generated files of the current-code run (regex over models.py / data_access.py; files in alembic/versions); file contents are not exported"
@@ -10023,8 +10279,8 @@
    "counts": {
     "orm_classes": 3,
     "core_tables": 0,
-    "data_access_functions": 8,
-    "unresolved_stubs": 1,
+    "data_access_functions": 9,
+    "unresolved_stubs": 0,
     "alembic_revisions": 1
    },
    "derivation": "counted from the generated files of the current-code run (regex over models.py / data_access.py; files in alembic/versions); file contents are not exported"
@@ -10211,14 +10467,16 @@
    "separate_suites": [
     {
      "app": "clinic_inventory_legacy_hard",
-     "file": "evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt",
-     "passed": 63,
-     "collected": 63,
+     "file": "evidence/mysql_runs/2026-10-20_135617/clinic_mysql_equivalence_log.txt",
+     "passed": 76,
+     "collected": 76,
      "failed": 0,
-     "head": "0939bc3172ccea66d4f15e6d8d5c893063d4ead9",
+     "head": "84e97c096f8a8555fea47e059978a7a122e9ef69",
      "date": "2026-10-20",
      "mysql_server": "8.0.39",
-     "note": "Clinic's own pytest MySQL equivalence suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. It includes test_q002_sql_injection_is_blocked."
+     "join_rule_tests": 13,
+     "join_rule_passed": 13,
+     "note": "Clinic's pytest MySQL suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. 63 tests compare the Clinic application's own PHP with the generated functions (they include test_q002_sql_injection_is_blocked). The other 13 are the FR6 join-rule tests (tests/benchmarks/clinic_hard/test_join_rule_mysql.py): they compare the same SQL run directly (PHP mysqli, read with mysqli_fetch_assoc) with the generated function on the Clinic schema, for a LEFT JOIN with NULL-extended rows, a comma join and an INNER JOIN; that is direct SQL vs generated function, not differential testing of application PHP."
     }
    ]
   },
@@ -10435,8 +10693,8 @@
    }
   ],
   "e4": {
-   "git_head": "6e927117e42893a734a93bd9c2c0e0eb5276cb70",
-   "date_utc": "2026-10-17T09:50:25.593906+00:00",
+   "git_head": "4d62a90c077ee2574433802f7b1f71208362bbaf",
+   "date_utc": "2026-10-20T08:19:06.596513+00:00",
    "payload_count": 12,
    "benign_value_count": 4,
    "apps": {
@@ -10477,10 +10735,10 @@
      "templates": 7
     },
     "helpdesk_legacy_holdout": {
-     "functions": 8,
-     "safe": 8,
+     "functions": 9,
+     "safe": 9,
      "unsafe": 0,
-     "hostile_cases": 96,
+     "hostile_cases": 108,
      "rejected": 0,
      "bound": 72,
      "templates": 0
@@ -10513,21 +10771,21 @@
      "templates": 0
     },
     "dignity_dev_hms": {
-     "functions": 4,
-     "safe": 4,
+     "functions": 7,
+     "safe": 7,
      "unsafe": 0,
-     "hostile_cases": 48,
+     "hostile_cases": 84,
      "rejected": 0,
-     "bound": 36,
+     "bound": 60,
      "templates": 0
     }
    },
    "totals": {
-    "functions": 159,
-    "safe": 159,
+    "functions": 163,
+    "safe": 163,
     "unsafe": 0,
-    "hostile_cases": 1908,
-    "benign_calls": 636,
+    "hostile_cases": 1956,
+    "benign_calls": 652,
     "rejected": 120
    },
    "limitations": [
@@ -10536,7 +10794,7 @@
     "Only the 12 listed payloads and 4 benign values; not exhaustive.",
     "Functions whose SQL takes no user value pass trivially; Clinic Q013 rejects every benign value too, so its same-SQL comparison is vacuous and it passes by rejection only.",
     "Unresolved sites have no generated code and are not tested.",
-    "Runtime hostile testing on MySQL: HMS through the E1 harness; Clinic has one MySQL test of an injection attempt (test_q002_sql_injection_is_blocked) in its separate equivalence suite."
+    "Runtime hostile testing on MySQL: HMS through the E1 harness; Clinic has one MySQL test of an injection attempt (test_q002_sql_injection_is_blocked) in its separate equivalence suite, and the FR6 join-rule tests bind one hostile value in a comma-join function (direct SQL vs generated function, Clinic schema)."
    ]
   },
   "tests": {
@@ -10544,6 +10802,40 @@
     {
      "key": "non_mysql",
      "title": "Non-MySQL suite (saved log)",
+     "file": "evidence/final/2026-10-20/test_run_non_mysql.txt",
+     "stage_label": "saved log (2026-10-20, HEAD 4d62a90)",
+     "metric_prefix": "tests",
+     "summary_line": "990 passed, 74 skipped, 1 warning in 76.19s (0:01:16)",
+     "date": "2026-10-20",
+     "head": "4d62a90c077ee2574433802f7b1f71208362bbaf",
+     "head_short": "4d62a90",
+     "mysql_server": null,
+     "latest": true,
+     "passed": 990,
+     "failed": 0,
+     "skipped": 74,
+     "warnings": 1
+    },
+    {
+     "key": "with_mysql",
+     "title": "Full suite with MySQL (saved log)",
+     "file": "evidence/mysql_runs/2026-10-20_135617/full_suite_with_mysql_log.txt",
+     "stage_label": "saved log (2026-10-20, HEAD 84e97c0)",
+     "metric_prefix": "tests_with_mysql",
+     "summary_line": "1064 passed, 1 warning in 79.24s (0:01:19)",
+     "date": "2026-10-20",
+     "head": "84e97c096f8a8555fea47e059978a7a122e9ef69",
+     "head_short": "84e97c0",
+     "mysql_server": "8.0.39",
+     "latest": true,
+     "passed": 1064,
+     "failed": 0,
+     "skipped": 0,
+     "warnings": 1
+    },
+    {
+     "key": "non_mysql_pre_joins",
+     "title": "Non-MySQL suite, earlier saved log",
      "file": "evidence/final/2026-10-21/test_run_non_mysql.txt",
      "stage_label": "saved log (2026-10-20, HEAD d263cbb)",
      "metric_prefix": "tests",
@@ -10552,15 +10844,15 @@
      "head": "d263cbb48d68e0b098a885c7ef772591ca759d98",
      "head_short": "d263cbb",
      "mysql_server": null,
-     "latest": true,
+     "latest": false,
      "passed": 940,
      "failed": 0,
      "skipped": 61,
      "warnings": 1
     },
     {
-     "key": "with_mysql",
-     "title": "Full suite with MySQL (saved log)",
+     "key": "with_mysql_pre_joins",
+     "title": "Full suite with MySQL, earlier saved log",
      "file": "evidence/mysql_runs/2026-10-20_123611/full_suite_with_mysql_log.txt",
      "stage_label": "saved log (2026-10-20, HEAD 0939bc3)",
      "metric_prefix": "tests_with_mysql",
@@ -10569,7 +10861,7 @@
      "head": "0939bc3172ccea66d4f15e6d8d5c893063d4ead9",
      "head_short": "0939bc3",
      "mysql_server": "8.0.39",
-     "latest": true,
+     "latest": false,
      "passed": 1001,
      "failed": 0,
      "skipped": 0,
@@ -10900,9 +11192,9 @@
     "live_sites": 13,
     "live_sites_source": "evidence/evaluation/dignity_dev_hms/evaluation.json gt_live_sites",
     "unresolved_recovery_live": 6,
-    "unresolved_conversion_live": 3,
-    "not_converted_live": 9,
-    "value": 69.2,
+    "unresolved_conversion_live": 0,
+    "not_converted_live": 6,
+    "value": 46.2,
     "sites": [
      {
       "query_id": "Q001",
@@ -10937,30 +11229,6 @@
       "gt_label": "non-recoverable"
      },
      {
-      "query_id": "Q007",
-      "gt_id": "G007",
-      "site": "library.php:219",
-      "stage": "conversion",
-      "reason_code": "CONVERSION_UNSUPPORTED",
-      "gt_label": "recoverable"
-     },
-     {
-      "query_id": "Q008",
-      "gt_id": "G008",
-      "site": "library.php:226",
-      "stage": "conversion",
-      "reason_code": "CONVERSION_UNSUPPORTED",
-      "gt_label": "recoverable"
-     },
-     {
-      "query_id": "Q009",
-      "gt_id": "G009",
-      "site": "library.php:233",
-      "stage": "conversion",
-      "reason_code": "CONVERSION_UNSUPPORTED",
-      "gt_label": "recoverable"
-     },
-     {
       "query_id": "Q013",
       "gt_id": "G013",
       "site": "library.php:313",
@@ -10990,9 +11258,9 @@
     ],
     "summary_counts": {
      "total_queries": 14,
-     "unresolved_total": 10,
+     "unresolved_total": 7,
      "unresolved_recovery_stage": 7,
-     "unresolved_conversion_stage": 3
+     "unresolved_conversion_stage": 0
     }
    },
    "helpdesk_legacy_holdout": {
@@ -11002,26 +11270,17 @@
     "live_sites": 9,
     "live_sites_source": "evidence/evaluation/helpdesk_legacy_holdout/evaluation.json gt_live_sites",
     "unresolved_recovery_live": 0,
-    "unresolved_conversion_live": 1,
-    "not_converted_live": 1,
-    "value": 11.1,
-    "sites": [
-     {
-      "query_id": "Q007",
-      "gt_id": "G007",
-      "site": "report.php:5",
-      "stage": "conversion",
-      "reason_code": "CONVERSION_UNSUPPORTED",
-      "gt_label": "recoverable"
-     }
-    ],
+    "unresolved_conversion_live": 0,
+    "not_converted_live": 0,
+    "value": 0.0,
+    "sites": [],
     "ambiguous": [],
     "excluded_non_live": [],
     "summary_counts": {
      "total_queries": 9,
-     "unresolved_total": 1,
+     "unresolved_total": 0,
      "unresolved_recovery_stage": 0,
-     "unresolved_conversion_stage": 1
+     "unresolved_conversion_stage": 0
     }
    },
    "news_buzz": {
@@ -11342,9 +11601,9 @@
     "label": "Dignity-Dev",
     "detail": false,
     "detected": 14,
-    "converted": 4,
+    "converted": 7,
     "unresolved_recovery": 7,
-    "unresolved_conversion": 3,
+    "unresolved_conversion": 0,
     "templates": 0
    },
    {
@@ -11352,9 +11611,9 @@
     "label": "Helpdesk",
     "detail": true,
     "detected": 9,
-    "converted": 8,
+    "converted": 9,
     "unresolved_recovery": 0,
-    "unresolved_conversion": 1,
+    "unresolved_conversion": 0,
     "templates": 0
    },
    {
@@ -11531,7 +11790,7 @@
       "value": 44,
       "of": 44,
       "source": {
-       "file": "evidence/e4/2026-10-17/injection_report.json",
+       "file": "evidence/final/2026-10-20/e4/injection_report.json",
        "field": "apps.hms_kishan0725.safe (of apps.hms_kishan0725.functions)"
       },
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
@@ -11606,7 +11865,7 @@
       "safe": 44,
       "functions": 44,
       "payload_count": 12,
-      "source": "evidence/e4/2026-10-17/injection_report.json",
+      "source": "evidence/final/2026-10-20/e4/injection_report.json",
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
      },
      "e1": {
@@ -11629,17 +11888,17 @@
     "facts": {
      "detected": 14,
      "recovered": 7,
-     "converted": 4,
-     "general_rules": 4,
+     "converted": 7,
+     "general_rules": 7,
      "templates": 0,
-     "unresolved": 10,
+     "unresolved": 7,
      "unresolved_recovery": 7,
-     "unresolved_conversion": 3,
+     "unresolved_conversion": 0,
      "php_files": 1,
      "dynamic_value_sites": 11,
-     "data_access_functions": 4,
-     "functions_with_bind_parameters": 3,
-     "bind_parameters": 9,
+     "data_access_functions": 7,
+     "functions_with_bind_parameters": 5,
+     "bind_parameters": 11,
      "legacy_injection_sites": 0,
      "legacy_injection_sites_remediated": 0,
      "user_controlled_values": 0,
@@ -11654,7 +11913,7 @@
      "relationships": 0,
      "traceable_sites": 14,
      "trace_entries": 14,
-     "functions_citing_site": 4,
+     "functions_citing_site": 7,
      "sources": {
       "detected / recovered / converted / unresolved": "<temp>/dignity_dev_hms/summary.json",
       "php_files, dynamic_value_sites": "<temp>/dignity_dev_hms/queries.json (distinct source_file; dynamic_variables not empty)",
@@ -11678,21 +11937,6 @@
        "Dynamic table identifier cannot be parameterized safely."
       ],
       "future_work": "General schema-derived allowlists for identifiers and expanding parameters for IN-lists (only the Clinic templates Q011-Q013 do this today, for those exact files).",
-      "future_work_status": "Proposed future work, not implemented"
-     },
-     {
-      "code": "CONVERSION_UNSUPPORTED",
-      "family": "multi_table",
-      "count": 3,
-      "stages": {
-       "conversion": 3
-      },
-      "category": "Unsupported multi-table SQL structure",
-      "why": "The SQL was recovered, but it combines tables in a form the converter does not accept: only static SELECT statements with INNER JOINs are converted (LEFT, RIGHT and comma joins, for example, are not).",
-      "reasons": [
-       "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported."
-      ],
-      "future_work": "Conversion rules for LEFT JOIN and implicit comma joins.",
       "future_work_status": "Proposed future work, not implemented"
      },
      {
@@ -11743,26 +11987,26 @@
     ],
     "explanations": [
      "The security report counts a value as user-controlled only when it traces it, within the same file and in order, to $_GET, $_POST, $_REQUEST or $_COOKIE. Function parameters and values from other files are not traced (its stated scope).",
-     "3 generated function(s) take bound runtime parameters, but the security report traced none of those values to a request superglobal, so it reports 0 of 0 user-controlled values. The two counts have different definitions; 0 of 0 does not show that the application has no user input.",
+     "5 generated function(s) take bound runtime parameters, but the security report traced none of those values to a request superglobal, so it reports 0 of 0 user-controlled values. The two counts have different definitions; 0 of 0 does not show that the application has no user input.",
      "Verified in the source: the bound values come from parameters of PHP functions in library.php (passed through a sanitising helper before the SQL is built). The security report does not follow function parameters to their call sites, so it classifies none of them as user-controlled."
     ],
     "benefits": [
      {
       "key": "functions_generated",
       "label": "Data-access functions generated",
-      "value": 4,
+      "value": 7,
       "of": 14,
       "source": {
        "file": "<temp>/dignity_dev_hms/summary.json",
        "field": "converted_queries (of total_queries)"
       },
-      "note": "general rules 4, query-specific templates 0"
+      "note": "general rules 7, query-specific templates 0"
      },
      {
       "key": "queries_with_bound_parameters",
       "label": "Converted queries that take bound parameters",
-      "value": 3,
-      "of": 4,
+      "value": 5,
+      "of": 7,
       "source": {
        "file": "<temp>/dignity_dev_hms/converted_queries.json",
        "derivation": "status == CONVERTED and parameters not empty (of all CONVERTED)"
@@ -11802,10 +12046,10 @@
      {
       "key": "e4",
       "label": "E4 injection check (functions SAFE)",
-      "value": 4,
-      "of": 4,
+      "value": 7,
+      "of": 7,
       "source": {
-       "file": "evidence/e4/2026-10-17/injection_report.json",
+       "file": "evidence/final/2026-10-20/e4/injection_report.json",
        "field": "apps.dignity_dev_hms.safe (of apps.dignity_dev_hms.functions)"
       },
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
@@ -11854,8 +12098,8 @@
      {
       "key": "functions_citing_site",
       "label": "Generated functions that cite their PHP file:line in the docstring",
-      "value": 4,
-      "of": 4,
+      "value": 7,
+      "of": 7,
       "source": {
        "file": "<temp>/dignity_dev_hms/data_access.py",
        "derivation": "docstring 'Migrated from <file>:<line>' (of data-access functions in traceability_report.json)"
@@ -11864,7 +12108,7 @@
      {
       "key": "flagged_for_review",
       "label": "Sites flagged for manual review (no code generated)",
-      "value": 10,
+      "value": 7,
       "of": 14,
       "source": {
        "file": "<temp>/dignity_dev_hms/summary.json",
@@ -11877,10 +12121,10 @@
     "verified_ground_truth": true,
     "verification": {
      "e4": {
-      "safe": 4,
-      "functions": 4,
+      "safe": 7,
+      "functions": 7,
       "payload_count": 12,
-      "source": "evidence/e4/2026-10-17/injection_report.json",
+      "source": "evidence/final/2026-10-20/e4/injection_report.json",
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
      },
      "e1": null,
@@ -11894,15 +12138,15 @@
     "facts": {
      "detected": 9,
      "recovered": 9,
-     "converted": 8,
-     "general_rules": 8,
+     "converted": 9,
+     "general_rules": 9,
      "templates": 0,
-     "unresolved": 1,
+     "unresolved": 0,
      "unresolved_recovery": 0,
-     "unresolved_conversion": 1,
+     "unresolved_conversion": 0,
      "php_files": 8,
      "dynamic_value_sites": 6,
-     "data_access_functions": 8,
+     "data_access_functions": 9,
      "functions_with_bind_parameters": 6,
      "bind_parameters": 11,
      "legacy_injection_sites": 1,
@@ -11919,7 +12163,7 @@
      "relationships": 4,
      "traceable_sites": 9,
      "trace_entries": 9,
-     "functions_citing_site": 8,
+     "functions_citing_site": 9,
      "sources": {
       "detected / recovered / converted / unresolved": "<temp>/helpdesk_legacy_holdout/summary.json",
       "php_files, dynamic_value_sites": "<temp>/helpdesk_legacy_holdout/queries.json (distinct source_file; dynamic_variables not empty)",
@@ -11929,23 +12173,7 @@
       "ORM / Core / relationships": "<temp>/helpdesk_legacy_holdout/models.py (ast)"
      }
     },
-    "limitations": [
-     {
-      "code": "CONVERSION_UNSUPPORTED",
-      "family": "multi_table",
-      "count": 1,
-      "stages": {
-       "conversion": 1
-      },
-      "category": "Unsupported multi-table SQL structure",
-      "why": "The SQL was recovered, but it combines tables in a form the converter does not accept: only static SELECT statements with INNER JOINs are converted (LEFT, RIGHT and comma joins, for example, are not).",
-      "reasons": [
-       "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported."
-      ],
-      "future_work": "Conversion rules for LEFT JOIN and implicit comma joins.",
-      "future_work_status": "Proposed future work, not implemented"
-     }
-    ],
+    "limitations": [],
     "explanations": [
      "The security report counts a value as user-controlled only when it traces it, within the same file and in order, to $_GET, $_POST, $_REQUEST or $_COOKIE. Function parameters and values from other files are not traced (its stated scope)."
     ],
@@ -11953,19 +12181,19 @@
      {
       "key": "functions_generated",
       "label": "Data-access functions generated",
-      "value": 8,
+      "value": 9,
       "of": 9,
       "source": {
        "file": "<temp>/helpdesk_legacy_holdout/summary.json",
        "field": "converted_queries (of total_queries)"
       },
-      "note": "general rules 8, query-specific templates 0"
+      "note": "general rules 9, query-specific templates 0"
      },
      {
       "key": "queries_with_bound_parameters",
       "label": "Converted queries that take bound parameters",
       "value": 6,
-      "of": 8,
+      "of": 9,
       "source": {
        "file": "<temp>/helpdesk_legacy_holdout/converted_queries.json",
        "derivation": "status == CONVERTED and parameters not empty (of all CONVERTED)"
@@ -12005,10 +12233,10 @@
      {
       "key": "e4",
       "label": "E4 injection check (functions SAFE)",
-      "value": 8,
-      "of": 8,
+      "value": 9,
+      "of": 9,
       "source": {
-       "file": "evidence/e4/2026-10-17/injection_report.json",
+       "file": "evidence/final/2026-10-20/e4/injection_report.json",
        "field": "apps.helpdesk.safe (of apps.helpdesk.functions)"
       },
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
@@ -12057,8 +12285,8 @@
      {
       "key": "functions_citing_site",
       "label": "Generated functions that cite their PHP file:line in the docstring",
-      "value": 8,
-      "of": 8,
+      "value": 9,
+      "of": 9,
       "source": {
        "file": "<temp>/helpdesk_legacy_holdout/data_access.py",
        "derivation": "docstring 'Migrated from <file>:<line>' (of data-access functions in traceability_report.json)"
@@ -12067,7 +12295,7 @@
      {
       "key": "flagged_for_review",
       "label": "Sites flagged for manual review (no code generated)",
-      "value": 1,
+      "value": 0,
       "of": 9,
       "source": {
        "file": "<temp>/helpdesk_legacy_holdout/summary.json",
@@ -12526,30 +12754,34 @@
       "legacy_sql": "SELECT m.team_name, COUNT(t.id) AS ticket_count FROM teams m LEFT JOIN agents a ON a.team_id = m.id LEFT JOIN tickets t ON t.agent_id = a.id GROUP BY m.id, m.team_name ORDER BY m.id",
       "dynamic_values": [],
       "recovery_status": "RECOVERED",
-      "status": "flagged",
-      "conversion_rule": null,
-      "generated_sql": null,
-      "flag": {
-       "stage": "conversion",
-       "reason_code": "CONVERSION_UNSUPPORTED",
-       "reason": "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported.",
-       "action": "manual_review_required"
-      },
+      "status": "converted",
+      "conversion_rule": "general",
+      "generated_sql": "SELECT m.team_name, COUNT(t.id) AS ticket_count FROM teams m LEFT JOIN agents a ON a.team_id = m.id LEFT JOIN tickets t ON t.agent_id = a.id GROUP BY m.id, m.team_name ORDER BY m.id",
+      "flag": null,
       "function": {
-       "name": "unresolved_query_q007",
+       "name": "select_teams_q007",
        "parameters": [],
        "keyword_only": [],
        "bind_keys": [],
        "parameter_mapping": [],
-       "returns": "nothing (raises NotImplementedError: flagged for manual review)",
-       "raises_not_implemented": true,
-       "cited_site": null,
-       "cited_query_id": null,
-       "code": "def unresolved_query_q007(session, **kwargs):\n    \"\"\"Unresolved query Q007; report.php:5.\"\"\"\n    raise NotImplementedError('manual review: report.php:5')"
+       "returns": "list of row mappings",
+       "raises_not_implemented": false,
+       "cited_site": "report.php:5",
+       "cited_query_id": "Q007",
+       "code": "def select_teams_q007(session):\n    \"\"\"\n    Migrated from report.php:5.\n    Original query ID: Q007.\n    \"\"\"\n\n    statement = text('SELECT m.team_name, COUNT(t.id) AS ticket_count FROM teams m LEFT JOIN agents a ON a.team_id = m.id LEFT JOIN tickets t ON t.agent_id = a.id GROUP BY m.id, m.team_name ORDER BY m.id')\n\n    result = session.execute(statement)\n\n    return result.mappings().all()"
       },
-      "function_kind": "unresolved_stub",
-      "table": null,
-      "model": null,
+      "function_kind": "data_access",
+      "table": "teams",
+      "model": {
+       "name": "Team",
+       "kind": "ORM class",
+       "relationships": [
+        {
+         "name": "agents",
+         "target": "Agent"
+        }
+       ]
+      },
       "security": {
        "legacy_injection_site": false,
        "remediated": false,
@@ -12874,10 +13106,10 @@
     "verified_ground_truth": true,
     "verification": {
      "e4": {
-      "safe": 8,
-      "functions": 8,
+      "safe": 9,
+      "functions": 9,
       "payload_count": 12,
-      "source": "evidence/e4/2026-10-17/injection_report.json",
+      "source": "evidence/final/2026-10-20/e4/injection_report.json",
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
      },
      "e1": null,
@@ -13005,7 +13237,7 @@
       "value": 30,
       "of": 30,
       "source": {
-       "file": "evidence/e4/2026-10-17/injection_report.json",
+       "file": "evidence/final/2026-10-20/e4/injection_report.json",
        "field": "apps.news_buzz.safe (of apps.news_buzz.functions)"
       },
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
@@ -15552,7 +15784,7 @@
       "safe": 30,
       "functions": 30,
       "payload_count": 12,
-      "source": "evidence/e4/2026-10-17/injection_report.json",
+      "source": "evidence/final/2026-10-20/e4/injection_report.json",
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
      },
      "e1": null,
@@ -15632,7 +15864,7 @@
       "category": "Unsupported multi-table SQL structure",
       "why": "The SQL was recovered, but it combines tables in a form the converter does not accept: only static SELECT statements with INNER JOINs are converted (LEFT, RIGHT and comma joins, for example, are not).",
       "reasons": [
-       "Unsupported multi-table SQL structure. Only static SELECT INNER JOINs are supported."
+       "Unsupported multi-table SQL structure. A LEFT JOIN or comma join is converted only when every table is in the parsed schema."
       ],
       "future_work": "Conversion rules for LEFT JOIN and implicit comma joins.",
       "future_work_status": "Proposed future work, not implemented"
@@ -15715,7 +15947,7 @@
       "value": 40,
       "of": 40,
       "source": {
-       "file": "evidence/e4/2026-10-17/injection_report.json",
+       "file": "evidence/final/2026-10-20/e4/injection_report.json",
        "field": "apps.fee_rainbow.safe (of apps.fee_rainbow.functions)"
       },
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
@@ -15790,7 +16022,7 @@
       "safe": 40,
       "functions": 40,
       "payload_count": 12,
-      "source": "evidence/e4/2026-10-17/injection_report.json",
+      "source": "evidence/final/2026-10-20/e4/injection_report.json",
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
      },
      "e1": null,
@@ -15902,7 +16134,7 @@
       "value": 22,
       "of": 22,
       "source": {
-       "file": "evidence/e4/2026-10-17/injection_report.json",
+       "file": "evidence/final/2026-10-20/e4/injection_report.json",
        "field": "apps.clinic.safe (of apps.clinic.functions)"
       },
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
@@ -17808,15 +18040,15 @@
       "safe": 22,
       "functions": 22,
       "payload_count": 12,
-      "source": "evidence/e4/2026-10-17/injection_report.json",
+      "source": "evidence/final/2026-10-20/e4/injection_report.json",
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
      },
      "e1": null,
      "mysql_suite": {
-      "passed": 63,
-      "collected": 63,
-      "source": "evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt",
-      "note": "Clinic's own pytest MySQL equivalence suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. It includes test_q002_sql_injection_is_blocked."
+      "passed": 76,
+      "collected": 76,
+      "source": "evidence/mysql_runs/2026-10-20_135617/clinic_mysql_equivalence_log.txt",
+      "note": "Clinic's pytest MySQL suite (tests/benchmarks/clinic_hard), not the E1 harness: each test passes or fails, there is no INCONCLUSIVE category. 63 tests compare the Clinic application's own PHP with the generated functions (they include test_q002_sql_injection_is_blocked). The other 13 are the FR6 join-rule tests (tests/benchmarks/clinic_hard/test_join_rule_mysql.py): they compare the same SQL run directly (PHP mysqli, read with mysqli_fetch_assoc) with the generated function on the Clinic schema, for a LEFT JOIN with NULL-extended rows, a comma join and an INNER JOIN; that is direct SQL vs generated function, not differential testing of application PHP."
      }
     }
    },
@@ -17925,7 +18157,7 @@
       "value": 4,
       "of": 4,
       "source": {
-       "file": "evidence/e4/2026-10-17/injection_report.json",
+       "file": "evidence/final/2026-10-20/e4/injection_report.json",
        "field": "apps.simple_crud.safe (of apps.simple_crud.functions)"
       },
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
@@ -18000,7 +18232,7 @@
       "safe": 4,
       "functions": 4,
       "payload_count": 12,
-      "source": "evidence/e4/2026-10-17/injection_report.json",
+      "source": "evidence/final/2026-10-20/e4/injection_report.json",
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
      },
      "e1": null,
@@ -18128,7 +18360,7 @@
       "value": 5,
       "of": 5,
       "source": {
-       "file": "evidence/e4/2026-10-17/injection_report.json",
+       "file": "evidence/final/2026-10-20/e4/injection_report.json",
        "field": "apps.mixed_crud.safe (of apps.mixed_crud.functions)"
       },
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
@@ -18203,7 +18435,7 @@
       "safe": 5,
       "functions": 5,
       "payload_count": 12,
-      "source": "evidence/e4/2026-10-17/injection_report.json",
+      "source": "evidence/final/2026-10-20/e4/injection_report.json",
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
      },
      "e1": null,
@@ -18347,7 +18579,7 @@
       "value": 2,
       "of": 2,
       "source": {
-       "file": "evidence/e4/2026-10-17/injection_report.json",
+       "file": "evidence/final/2026-10-20/e4/injection_report.json",
        "field": "apps.hard_crud.safe (of apps.hard_crud.functions)"
       },
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
@@ -18422,7 +18654,7 @@
       "safe": 2,
       "functions": 2,
       "payload_count": 12,
-      "source": "evidence/e4/2026-10-17/injection_report.json",
+      "source": "evidence/final/2026-10-20/e4/injection_report.json",
       "note": "Bounded check (12 fixed payloads, SQL compiled for MySQL, no database); not a proof of general injection safety."
      },
      "e1": null,
@@ -18490,45 +18722,9 @@
   {
    "fr": "FR6",
    "title": "Unsupported join shapes",
-   "text": "The converter accepts static INNER JOIN SELECTs only. Recovered sites with other join forms stay unconverted and are flagged with CONVERSION_UNSUPPORTED.",
+   "text": "The converter accepts static INNER JOIN SELECTs, and LEFT JOIN or implicit comma-join SELECTs only under a result-shape rule: every table is in the parsed schema, every output column is explicit and distinctly named, and every column resolves to exactly one joined table. RIGHT, FULL, CROSS and NATURAL joins, USING, subqueries, derived tables, unions and UPDATE/DELETE joins are not converted. Sites that fail stay unconverted and are flagged with CONVERSION_UNSUPPORTED and a reason naming the failed condition.",
    "evidence": "unresolved_queries.json of the current-code run",
    "sites": [
-    {
-     "app": "dignity_dev_hms",
-     "query_id": "Q007",
-     "gt_id": "G007",
-     "site": "library.php:219",
-     "join_kind": "implicit comma join",
-     "reason_code": "CONVERSION_UNSUPPORTED",
-     "gt_label": "recoverable"
-    },
-    {
-     "app": "dignity_dev_hms",
-     "query_id": "Q008",
-     "gt_id": "G008",
-     "site": "library.php:226",
-     "join_kind": "implicit comma join",
-     "reason_code": "CONVERSION_UNSUPPORTED",
-     "gt_label": "recoverable"
-    },
-    {
-     "app": "dignity_dev_hms",
-     "query_id": "Q009",
-     "gt_id": "G009",
-     "site": "library.php:233",
-     "join_kind": "implicit comma join",
-     "reason_code": "CONVERSION_UNSUPPORTED",
-     "gt_label": "recoverable"
-    },
-    {
-     "app": "helpdesk_legacy_holdout",
-     "query_id": "Q007",
-     "gt_id": "G007",
-     "site": "report.php:5",
-     "join_kind": "LEFT JOIN",
-     "reason_code": "CONVERSION_UNSUPPORTED",
-     "gt_label": "recoverable"
-    },
     {
      "app": "fee_rainbow",
      "query_id": "Q007",
@@ -18622,14 +18818,35 @@
    "note": "Repository file; open it in the repository (not served by the dashboard)."
   },
   {
+   "title": "FR6 join sprint evidence, 20 Oct 2026",
+   "path": "evidence/final/2026-10-20/README.md",
+   "exists": true,
+   "downloadable": false,
+   "note": "Repository file; open it in the repository (not served by the dashboard)."
+  },
+  {
    "title": "Non-MySQL suite (saved log) (test_run_non_mysql.txt)",
-   "path": "evidence/final/2026-10-21/test_run_non_mysql.txt",
+   "path": "evidence/final/2026-10-20/test_run_non_mysql.txt",
    "exists": true,
    "downloadable": false,
    "note": "Repository file; open it in the repository (not served by the dashboard)."
   },
   {
    "title": "Full suite with MySQL (saved log) (full_suite_with_mysql_log.txt)",
+   "path": "evidence/mysql_runs/2026-10-20_135617/full_suite_with_mysql_log.txt",
+   "exists": true,
+   "downloadable": false,
+   "note": "Repository file; open it in the repository (not served by the dashboard)."
+  },
+  {
+   "title": "Non-MySQL suite, earlier saved log (test_run_non_mysql.txt)",
+   "path": "evidence/final/2026-10-21/test_run_non_mysql.txt",
+   "exists": true,
+   "downloadable": false,
+   "note": "Repository file; open it in the repository (not served by the dashboard)."
+  },
+  {
+   "title": "Full suite with MySQL, earlier saved log (full_suite_with_mysql_log.txt)",
    "path": "evidence/mysql_runs/2026-10-20_123611/full_suite_with_mysql_log.txt",
    "exists": true,
    "downloadable": false,
@@ -18658,7 +18875,7 @@
   },
   {
    "title": "Clinic MySQL equivalence test suite (saved log)",
-   "path": "evidence/mysql_runs/2026-10-20_123611/clinic_mysql_equivalence_log.txt",
+   "path": "evidence/mysql_runs/2026-10-20_135617/clinic_mysql_equivalence_log.txt",
    "exists": true,
    "downloadable": false,
    "note": "Repository file; open it in the repository (not served by the dashboard)."
@@ -18808,14 +19025,18 @@
     "title": "Data Access Generation",
     "requirement": "SQL operations that can be safely recovered must be converted into parameterized SQLAlchemy data access functions.",
     "status": "Partial",
-    "limitation": "Only static INNER JOIN SELECTs are converted: LEFT JOIN and implicit comma-join sites are recovered but not converted. MySQL behavioural equivalence (E1) exists for HMS only. The sites newly converted on the unseen ams-native application have unit-test, injection-check (E4-style) and byte-gate evidence only; their MySQL behavioural equivalence is not confirmed.",
+    "limitation": "Static INNER JOIN SELECTs are converted, and LEFT JOIN or implicit comma-join SELECTs only under a result-shape rule: every table in the parsed schema, explicit and distinctly named output columns, and every column resolving to exactly one joined table. Other join forms stay unconverted. One ground-truth recoverable site (Fee-Rainbow Q054) and one ambiguous site (Fee-Rainbow Q007) still abstain because their tables are not in the supplied schema. The join rule has MySQL tests on the Clinic schema that compare direct SQL with the generated function; that is not differential testing of application PHP. MySQL behavioural equivalence (E1) exists for HMS only. The sites newly converted on the unseen ams-native application have unit-test, injection-check (E4-style) and byte-gate evidence only; their MySQL behavioural equivalence is not confirmed.",
     "measurements": [
      "hms_kishan0725|current code|conversion_coverage_gt",
      "dignity_dev_hms|current code|conversion_coverage_gt",
      "helpdesk_legacy_holdout|current code|conversion_coverage_gt",
      "news_buzz|current code|conversion_coverage_gt",
      "fee_rainbow|current code|conversion_coverage_gt",
+     "dignity_dev_hms|before the FR6 join rule (adeb1c8)|conversion_coverage_gt",
+     "helpdesk_legacy_holdout|before the FR6 join rule (adeb1c8)|conversion_coverage_gt",
+     "fee_rainbow|before the FR6 join rule (adeb1c8)|conversion_coverage_gt",
      "clinic_inventory_legacy_hard|current code|general_rule_share",
+     "clinic_inventory_legacy_hard|saved log (2026-10-20, HEAD 84e97c0)|join_rule_mysql_tests_passed",
      "hms_kishan0725|post-adaptation (E1 re-run)|e1_pass",
      "hms_kishan0725|post-adaptation (E1 re-run)|e1_fail",
      "hms_kishan0725|post-adaptation (E1 re-run)|e1_inconclusive"
@@ -18830,17 +19051,17 @@
     "title": "Safety Checking",
     "requirement": "It must be verified whether runtime values can be safely parameterized, and dynamic values used in structural positions such as table names or column names must be identified.",
     "status": "Implemented and measured",
-    "limitation": "E4 is a recording-session check with a fixed payload set (no database); runtime hostile testing on MySQL exists for HMS only. The accepted value positions were extended to BETWEEN bounds and the value argument of a few deterministic SQL functions; this was verified on one unseen application with no ground truth (evidence/final), and the outputs of the nine evaluated applications are unchanged.",
+    "limitation": "E4 is a recording-session check with a fixed payload set (no database); runtime hostile testing on MySQL exists for HMS through the E1 harness, plus one injection test in the Clinic suite and one bound hostile value in the FR6 join-rule tests (direct SQL vs generated function). The accepted value positions were extended to BETWEEN bounds and the value argument of a few deterministic SQL functions; this was verified on one unseen application with no ground truth (evidence/final), and the outputs of the nine evaluated applications are unchanged.",
     "measurements": [
-     "simple_crud|current code (E4, 2026-10-17)|e4_safe_functions",
-     "mixed_crud|current code (E4, 2026-10-17)|e4_safe_functions",
-     "hard_crud|current code (E4, 2026-10-17)|e4_safe_functions",
-     "clinic_inventory_legacy_hard|current code (E4, 2026-10-17)|e4_safe_functions",
-     "helpdesk_legacy_holdout|current code (E4, 2026-10-17)|e4_safe_functions",
-     "hms_kishan0725|current code (E4, 2026-10-17)|e4_safe_functions",
-     "news_buzz|current code (E4, 2026-10-17)|e4_safe_functions",
-     "fee_rainbow|current code (E4, 2026-10-17)|e4_safe_functions",
-     "dignity_dev_hms|current code (E4, 2026-10-17)|e4_safe_functions"
+     "simple_crud|current code (E4, 2026-10-20)|e4_safe_functions",
+     "mixed_crud|current code (E4, 2026-10-20)|e4_safe_functions",
+     "hard_crud|current code (E4, 2026-10-20)|e4_safe_functions",
+     "clinic_inventory_legacy_hard|current code (E4, 2026-10-20)|e4_safe_functions",
+     "helpdesk_legacy_holdout|current code (E4, 2026-10-20)|e4_safe_functions",
+     "hms_kishan0725|current code (E4, 2026-10-20)|e4_safe_functions",
+     "news_buzz|current code (E4, 2026-10-20)|e4_safe_functions",
+     "fee_rainbow|current code (E4, 2026-10-20)|e4_safe_functions",
+     "dignity_dev_hms|current code (E4, 2026-10-20)|e4_safe_functions"
     ],
     "experiments": [
      "e4"
@@ -18851,7 +19072,7 @@
     "title": "Safe Abstention",
     "requirement": "Queries that cannot be migrated confidently or safely must be flagged for human review rather than generating incorrect code.",
     "status": "Implemented and measured",
-    "limitation": "Correct abstention is measurable only where the ground truth has non-recoverable sites; flagged sites get a reason and a stub, never generated SQL.",
+    "limitation": "Correct abstention is measurable only where the ground truth has non-recoverable sites; flagged sites get a reason and a stub, never generated SQL. A join site outside the FR6 result-shape rule abstains with a reason naming the condition it fails; abstaining on a ground-truth recoverable join site (Fee-Rainbow Q054) is a conversion gap, not a correct abstention.",
     "measurements": [
      "dignity_dev_hms|fresh holdout (first run)|correct_abstention",
      "news_buzz|post-fix (escape decoder)|correct_abstention",
@@ -18887,8 +19108,8 @@
      "helpdesk_legacy_holdout|post-adaptation|recovery_recall",
      "news_buzz|post-fix (escape decoder)|recovery_recall",
      "fee_rainbow|post-fix (wrapper support + fragment rule)|recovery_recall",
-     "all|saved log (2026-10-20, HEAD d263cbb)|tests_passed",
-     "all|saved log (2026-10-20, HEAD 0939bc3)|tests_with_mysql_passed"
+     "all|saved log (2026-10-20, HEAD 4d62a90)|tests_passed",
+     "all|saved log (2026-10-20, HEAD 84e97c0)|tests_with_mysql_passed"
     ],
     "experiments": [
      "tests"

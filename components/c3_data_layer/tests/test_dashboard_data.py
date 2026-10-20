@@ -132,7 +132,7 @@ def test_e1_e4_and_tests_match_their_evidence(data):
     assert e4["totals"]["functions"] == sum(a["functions"] for a in report["apps"].values())
     assert e4["totals"]["hostile_cases"] == sum(len(f["cases"]) for a in report["apps"].values() for f in a["detail"].values())
     assert e4["totals"]["unsafe"] == 0 and e4["totals"]["safe"] == e4["totals"]["functions"]
-    assert (e4["totals"]["functions"], e4["totals"]["hostile_cases"], e4["totals"]["benign_calls"]) == (159, 1908, 636)
+    assert (e4["totals"]["functions"], e4["totals"]["hostile_cases"], e4["totals"]["benign_calls"]) == (163, 1956, 652)
 
 
 def test_test_counts_come_only_from_saved_committed_logs(data):
@@ -150,7 +150,7 @@ def test_test_counts_come_only_from_saved_committed_logs(data):
             m = next(x for x in data["measurements"] if x["stage_label"] == run["stage_label"] and x["metric"] == f"{run['metric_prefix']}_{metric}")
             assert m["value"] == run[metric] and m["source"]["file"] == run["file"] and m["status"] == "measured"
     # Superseded logs keep their original measurement ids as dated history, not the latest run.
-    assert [r["latest"] for r in runs] == [True, True, False, False, False]
+    assert [r["latest"] for r in runs] == [True, True, False, False, False, False, False]
     ids = {m["id"] for m in data["measurements"]}
     assert {"all|current code (tests, 2026-10-17)|tests_passed", "all|saved log (2026-10-18, HEAD 1d93e93)|tests_passed",
             "all|saved log (2026-10-18, HEAD 1d93e93)|tests_with_mysql_passed"} <= ids
@@ -158,15 +158,43 @@ def test_test_counts_come_only_from_saved_committed_logs(data):
 
 def test_latest_saved_test_logs_are_the_post_sprint_runs(data):
     latest = {r["key"]: r for r in data["experiments"]["tests"]["runs"] if r["latest"]}
-    assert (latest["non_mysql"]["passed"], latest["non_mysql"]["failed"], latest["non_mysql"]["skipped"]) == (940, 0, 61)
-    assert (latest["with_mysql"]["passed"], latest["with_mysql"]["failed"], latest["with_mysql"]["skipped"]) == (1001, 0, 0)
+    assert (latest["non_mysql"]["passed"], latest["non_mysql"]["failed"], latest["non_mysql"]["skipped"]) == (990, 0, 74)
+    assert (latest["with_mysql"]["passed"], latest["with_mysql"]["failed"], latest["with_mysql"]["skipped"]) == (1064, 0, 0)
     # The full suite with MySQL is the non-MySQL tree with MySQL available: same test count, no extra suites.
     assert latest["with_mysql"]["passed"] == latest["non_mysql"]["passed"] + latest["non_mysql"]["skipped"]
     suite = data["experiments"]["e1"]["separate_suites"][0]
-    assert (suite["passed"], suite["collected"], suite["file"]) == (63, 63, summarize.CLINIC_MYSQL_LOG)
-    assert suite["file"].startswith("evidence/mysql_runs/2026-10-20_123611/")
+    assert (suite["passed"], suite["collected"], suite["file"]) == (76, 76, summarize.CLINIC_MYSQL_LOG)
+    assert suite["file"].startswith("evidence/mysql_runs/2026-10-20_135617/")
+    assert (suite["join_rule_tests"], suite["join_rule_passed"]) == (13, 13)
     assert "already contains the Clinic MySQL equivalence tests" in data["experiments"]["tests"]["note"]
 
+
+
+def test_join_rule_evidence_is_scoped_and_coverage_is_shown_before_and_after(data):
+    # The 13 FR6 join-rule MySQL tests are direct SQL vs generated function, counted inside the Clinic suite total.
+    suite = data["experiments"]["e1"]["separate_suites"][0]
+    join = next(m for m in data["measurements"] if m["metric"] == "join_rule_mysql_tests_passed")
+    assert (join["value"], join["denominator"], join["source"]["file"]) == (13, 13, summarize.CLINIC_MYSQL_LOG)
+    for text in (join["label"], suite["note"]):
+        assert "direct SQL vs generated function" in text and "not" in text and "PHP" in text
+    log = (ROOT / suite["file"]).read_text(encoding="utf-8-sig")
+    assert len(re.findall(rf"^{re.escape(summarize.JOIN_RULE_TESTS)}::\S+ PASSED", log, re.M)) == 13
+    # Conversion coverage before (adeb1c8) and after the join rule, from the committed post-T2 record.
+    coverage = json.loads((ROOT / summarize.JOIN_COVERAGE).read_text(encoding="utf-8"))["apps"]
+    expected = {"dignity_dev_hms": ((4, 7), (7, 7)), "helpdesk_legacy_holdout": ((8, 9), (9, 9)), "fee_rainbow": ((39, 40), (39, 40))}
+    for app, (before, after) in expected.items():
+        cur = next(m for m in data["measurements"] if m["id"] == f"{app}|current code|conversion_coverage_gt")
+        pre = next(m for m in data["measurements"] if m["id"] == f"{app}|before the FR6 join rule (adeb1c8)|conversion_coverage_gt")
+        assert (pre["numerator"], pre["denominator"]) == before == (coverage[app]["prejoins"]["converted_recoverable"], coverage[app]["denominator"])
+        assert (cur["numerator"], cur["denominator"]) == after
+    # The historical Dignity-Dev fresh-holdout evaluation is not replaced.
+    assert data["apps"]["dignity_dev_hms"]["latest_evaluation"] == "evidence/evaluation/dignity_dev_hms/evaluation.json"
+    fr6 = next(l for l in data["limitations"] if l["fr"] == "FR6")
+    assert "INNER JOIN SELECTs only" not in fr6["text"] and "result-shape rule" in fr6["text"]
+    assert {(s["app"], s["query_id"]) for s in fr6["sites"]} == {("fee_rainbow", "Q007"), ("fee_rainbow", "Q054")}
+    items = {item["fr"]: item for item in data["functions"]["items"]}
+    assert items["FR6"]["status"] == "Partial"
+    assert "not differential testing of application PHP" in items["FR6"]["limitation"]
 
 def test_e3_runs_match_their_evidence_and_the_newest_is_shown_per_app(data):
     runs = data["experiments"]["e3_runs"]
@@ -548,7 +576,7 @@ def test_manual_review_denominator_is_live_sites(data):
 def test_manual_review_values_and_wording(data):
     review = data["manual_review"]
     values = {app: (r["not_converted_live"], r["live_sites"]) for app, r in review["apps"].items()}
-    assert values["hms_kishan0725"][0] == 0 and values["dignity_dev_hms"] == (9, 13)
+    assert values["hms_kishan0725"][0] == 0 and values["dignity_dev_hms"] == (6, 13)  # 9 of 13 before the FR6 join rule
     assert {e["query_id"] for e in review["apps"]["dignity_dev_hms"]["excluded_non_live"]} == {"Q010"}
     assert "not a measurement of developer effort" in review["limits"] and "counted once" in review["formula"]
 
