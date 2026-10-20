@@ -647,3 +647,44 @@ start http://127.0.0.1:8765/
    - It stays disclosed under FR10. The frozen handoff is not regenerated.
 
 Stop here for approval before any commit, push, tag or component freeze.
+
+---
+
+## 21. Addendum: improvement sprint, 20-21 October 2026
+
+**Scope.** Two pipeline changes and two dashboard reporting fixes, each committed separately after the local tag `c3-pre-improve-20261020` (on `351be5b`):
+- `a392a8e`: the dashboard groups limitations by reason family, and callout A labels traced sources as possibly passing through a query result. Dashboard only.
+- `17eebc9`: `TINYINT(1)` maps to `Boolean` only for non-key columns. Primary-key, auto-increment and foreign-key columns (either side) stay integer.
+- `d263cbb`: the converter accepts a bound value as a BETWEEN bound and as the whole value argument of allow-listed scalar functions (MD5, SHA1, SHA2, LOWER, UPPER, TRIM, DATE, CAST), only where the call itself is in a value position. It now also abstains on placeholders embedded inside string literals.
+
+**Nine evaluated applications: unchanged.**
+- **Byte gate:** all 135 generated files are byte-identical before and after both pipeline changes, and the HMS signatures hash still matches (`evidence/final/2026-10-21/gate/gate_result.txt`).
+- **S15:** precision and recall are identical, with 0 differences from 19 Oct for all five ground-truth applications (`evidence/final/2026-10-21/s15/comparison_with_2026-10-19.txt`).
+- **E4:** 159 of 159 functions SAFE, 0 changed cases (`evidence/final/2026-10-21/e4/injection_report.json`).
+- **Non-MySQL suite:** 940 passed, 61 skipped (`evidence/final/2026-10-21/test_run_non_mysql.txt`).
+
+**One unseen application, ams-native** (licence unknown, no ground truth; counts only, from `evidence/final/2026-10-21/ams_native_post_t1.json`):
+
+| | Pre (commit `351be5b`) | Post (commit `d263cbb`) |
+|---|---|---|
+| Detected SQL sites | 112 | 112 |
+| Converted | 99 | 108 |
+| Unresolved (recovery / conversion) | 13 (4 / 9) | 4 (4 / 0) |
+| Legacy injection sites remediated | 42 of 50 | 50 of 50 |
+| Generated-code violations | 0 | 0 |
+
+- **What changed:** the 9 newly converted sites are the 4 BETWEEN-bound and 5 function-argument sites. The 99 previously converted sites are unchanged (converted entries and function source compared per query ID).
+- **Checks on the new functions:** the E4-style check (recording session, no database) found all 108 functions SAFE. A SQLite Alembic round trip passed.
+- **Still unresolved:** two SHOW statements, one dynamic table name and one loop/switch site, all at recovery.
+
+**Claimed:** a wider set of provably scalar value positions, verified on one unseen application, with the nine evaluated applications unchanged.
+
+**Not claimed:**
+- any accuracy figure for ams-native (it has no ground truth);
+- MySQL behavioural equivalence for the new functions (no E1 run);
+- any change to the S15 results.
+
+**Deferred to future work:**
+- **T2**, LEFT JOIN and comma-join conversion. It would change conversion coverage for three evaluated applications.
+- **The security-report tracer change.** It could change frozen HMS bytes.
+- Recovery of branch-dependent SQL, SQL fragment variables and dynamic identifiers. The ground truth classifies these sites as "abstain".

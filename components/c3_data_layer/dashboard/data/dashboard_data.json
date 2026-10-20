@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": {
   "by": "scripts/summarize_evidence.py --dashboard-json",
-  "date": "2026-10-20T12:10:38+05:30",
-  "git_head": "351be5b192529fe293c194388e494b3aba0bb2a4",
+  "date": "2026-10-20T12:20:48+05:30",
+  "git_head": "b1491b3b37196bb58080e045a9e413239e478920",
   "pipeline_unchanged_since_head": true,
   "current_code_run": "fresh C3 run of all 9 apps into a temp folder outside the repo (written <temp>)"
  },
@@ -18659,7 +18659,7 @@
     "title": "Safety Checking",
     "requirement": "It must be verified whether runtime values can be safely parameterized, and dynamic values used in structural positions such as table names or column names must be identified.",
     "status": "Implemented and measured",
-    "limitation": "E4 is a recording-session check with a fixed payload set (no database); runtime hostile testing on MySQL exists for HMS only.",
+    "limitation": "E4 is a recording-session check with a fixed payload set (no database); runtime hostile testing on MySQL exists for HMS only. The accepted value positions were extended to BETWEEN bounds and the value argument of a few deterministic SQL functions; this was verified on one unseen application with no ground truth (evidence/final), and the outputs of the nine evaluated applications are unchanged.",
     "measurements": [
      "simple_crud|current code (E4, 2026-10-17)|e4_safe_functions",
      "mixed_crud|current code (E4, 2026-10-17)|e4_safe_functions",
