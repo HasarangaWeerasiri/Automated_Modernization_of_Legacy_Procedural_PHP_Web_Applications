@@ -205,7 +205,7 @@
   "dignity_dev_hms": {"type": "Third-party application", "purpose": "Fresh independent holdout, first run frozen.", "limitations": "Several tables without a primary key; shown counts-only."},
   "helpdesk_legacy_holdout": {"type": "Project-authored application", "purpose": "Holdout written independently of Clinic; frozen pre-adaptation baseline.", "limitations": "Small and synthetic."},
   "news_buzz": {"type": "Third-party application", "purpose": "Unseen benchmark with heavy include and append patterns.", "limitations": "Bundled validation library excluded from analysis."},
-  "fee_rainbow": {"type": "Third-party application", "purpose": "Unseen benchmark with wrappers, SQL fragments and PHP named arguments.", "limitations": "The supplied schema file defines one table; licence records are inconsistent."},
+  "fee_rainbow": {"type": "Third-party application", "purpose": "Unseen benchmark with wrappers, SQL fragments and PHP named arguments.", "limitations": "The supplied schema file defines one table; source not committed, shown counts only."},
   "clinic_inventory_legacy_hard": {"type": "Project-authored application", "purpose": "Development benchmark; query-specific templates and the MySQL verification suite.", "limitations": "Templates are query-specific and reported separately; no author-verified ground truth."},
   "simple_crud": {"type": "Project-authored fixture", "purpose": "Development fixture.", "limitations": "Minimal."},
   "mixed_crud": {"type": "Project-authored fixture", "purpose": "Development fixture.", "limitations": "Minimal."},
@@ -213,10 +213,10 @@
   "ams_native": {"type": "Third-party application", "purpose": "Unseen application used once to check the value-position extension; no ground truth.", "limitations": "Counts only; not part of the nine evaluated applications."}
  },
  "fee_rainbow_licence": {
-  "message": "Licence information inconsistent across records - verification required.",
-  "records": ["benchmarks/benchmark_manifest.json records the licence as MIT with the author's copyright line (added in commit 63db48b).", "scripts/summarize_evidence.py APP_INFO records LICENSE file present; licence type not verified (added in commit 354bd85)."],
-  "observed_locally": "The gitignored local clone at the recorded commit contains a LICENSE file whose text is the MIT licence; that file is not committed, so no committed record proves it.",
-  "to_resolve": "Commit a provenance record with the sha256 of the upstream LICENSE at the recorded commit and a check that its text is the MIT licence, then update APP_INFO to match. Until then the counts-only policy stays."
+  "message": "Licence verified as MIT from the LICENSE file at the recorded commit.",
+  "history": "The records were inconsistent: benchmarks/benchmark_manifest.json recorded MIT (commit 63db48b) while scripts/summarize_evidence.py APP_INFO recorded the licence type as not verified (commit 354bd85).",
+  "resolution": "evidence/provenance/fee_rainbow_licence.json records the recorded commit, the LICENSE file hash and git blob, and an exact comparison of its text with the standard MIT text and an independent MIT copy; APP_INFO now cites it.",
+  "policy": "Display stays counts and query IDs only; verifying the licence does not approve exporting the source."
  },
  "measurement_definitions": [
   {"title": "Dignity-Dev: three denominators", "text": "Migration Impact shows converted sites of all detected sites (the detected count includes the non-live Q010). Conversion coverage counts converted ground-truth recoverable sites of all recoverable sites. The manual-review proxy counts live sites not converted of all live sites.", "refs": ["dignity_dev_hms|current code|converted_functions", "dignity_dev_hms|current code|sql_detected", "dignity_dev_hms|current code|conversion_coverage_gt", "dignity_dev_hms|current code|manual_review_rate"]},

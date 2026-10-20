@@ -371,8 +371,8 @@ const Evidence = (() => {
   }
   function feeLicenceNotice() {
     const f = pp1().fee_rainbow_licence;
-    return h("div", { class: "notice" }, h("strong", { text: f.message }), bullets(f.records), h("p", { text: f.observed_locally }),
-      h("p", {}, h("strong", { text: "To resolve: " }), f.to_resolve));
+    return h("div", { class: "notice" }, h("strong", { text: f.message }), h("p", { text: f.history }),
+      h("p", {}, h("strong", { text: "Resolution: " }), f.resolution), h("p", { class: "muted", text: f.policy }));
   }
   function showRegisterRow(r) {
     const value = (k) => { const m = byId(r.measurements[k]); return m ? measurementButton(m.id, m.label) : "-"; };
@@ -380,12 +380,14 @@ const Evidence = (() => {
       ["Type", r.type], ["Role", r.role], ["Evaluation purpose", r.purpose], ["Origin (manifest)", r.origin || "-"],
       ["Repository (manifest)", repoLink(r)], ["Commit (manifest)", r.commit ? h("code", { text: `${r.commit} (${r.commit_date})` }) : "Not recorded"],
       ["Licence (manifest)", r.licence_manifest || "Not recorded"], ["Licence / provenance (dashboard generator)", r.licence_generator],
-      ["Licence status", r.licence_status || null], ["Provenance records", bullets(r.provenance_files.map((f) => h("code", { text: f })))],
+      ["Licence status", r.licence_status || null],
+      ["Licence evidence", r.licence_evidence ? [h("code", { text: r.licence_evidence.file }), ` (${r.licence_evidence.conclusion}, ${r.licence_evidence.date})`] : null],
+      ["Provenance records", bullets(r.provenance_files.map((f) => h("code", { text: f })))],
       ["Ground truth", r.ground_truth], ["Ground-truth entries", r.ground_truth_entries ? sourced(r.ground_truth_entries) : null],
       ["SQL detected", value("sql_detected")], ["SQL recovered", value("sql_recovered")], ["Converted functions", value("converted_functions")],
       ["Unresolved sites", value("unresolved_total")], ["Evidence applied", r.evidence_applied.join(", ")],
       ["Known limitations", r.limitations], ["Source display", r.display]]),
-      r.licence_status ? feeLicenceNotice() : null);
+      r.licence_evidence ? feeLicenceNotice() : null);
   }
   function registerCard() {
     const reg = pp1().register;
@@ -393,10 +395,12 @@ const Evidence = (() => {
     return card("Applications & Licensing Register (nine evaluated applications)", "Licence and provenance as recorded; select a row for detail.",
       table(["Application", "Type", "Repository", "Licence", "Ground truth", "Detected", "Recovered", "Converted", "Unresolved", "Source display"],
         reg.map((r) => [r.label, r.type, repoLink(r),
-          r.licence_status ? h("span", { class: "badge warn", text: "Inconsistent - verification required" }) : (r.licence_manifest || r.licence_generator),
+          r.licence_status ? h("span", { class: "badge warn", text: "Inconsistent - verification required" })
+            : r.licence_evidence ? [h("span", { class: "badge good", text: `${r.licence_evidence.conclusion} (verified)` }), " ", h("code", { text: r.licence_evidence.file })]
+              : (r.licence_manifest || r.licence_generator),
           r.ground_truth, cell(r, "sql_detected"), cell(r, "sql_recovered"), cell(r, "converted_functions"), cell(r, "unresolved_total"), r.display]),
         (i) => showRegisterRow(reg[i])),
-      reg.some((r) => r.licence_status) ? feeLicenceNotice() : null);
+      reg.some((r) => r.licence_status || r.licence_evidence) ? feeLicenceNotice() : null);
   }
   function amsCard() {
     const a = pp1().ams_native;

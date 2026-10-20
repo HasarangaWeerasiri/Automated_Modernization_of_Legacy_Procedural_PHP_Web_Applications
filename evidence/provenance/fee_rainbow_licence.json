@@ -1,0 +1,33 @@
+{
+ "title": "Fee-Rainbow licence provenance record",
+ "date": "2026-10-20",
+ "application": "fee_rainbow",
+ "repository": "github.com/jimmyyrp/Fee-Rainbow (as recorded in benchmarks/benchmark_manifest.json)",
+ "recorded_commit": "6285fb5375920af6a71569e8053147c77f7c1c11",
+ "clone": {
+  "head": "6285fb5375920af6a71569e8053147c77f7c1c11",
+  "head_matches_recorded_commit": true,
+  "uncommitted_changes": 0,
+  "note": "local clone under benchmarks/apps/fee_rainbow (gitignored; source not committed)"
+ },
+ "licence_file": {
+  "path_in_application": "LICENSE",
+  "bytes": 1083,
+  "sha256": "580c68d44e70ebe0c9a58af93de49cee2c4ee6cde4358a6f63f34ea9b758b6c5",
+  "git_blob_at_recorded_commit": "6c3ca7eb2ac0c801df82c9f54459c65e57e3abf2",
+  "git_blob_of_working_file": "6c3ca7eb2ac0c801df82c9f54459c65e57e3abf2",
+  "copyright_lines": 1,
+  "copyright_holder": "as recorded in benchmarks/benchmark_manifest.json (not repeated here)"
+ },
+ "comparison": {
+  "method": "Title and copyright lines removed from both texts; whitespace collapsed; exact string comparison of the remaining licence body.",
+  "reference_1": "SPDX licence identifier MIT, standard text (embedded in the comparison script)",
+  "body_identical_to_reference_1": true,
+  "reference_2": "MIT licence file shipped with sqlglot 30.21.0 (components/c3_data_layer/.venv/Lib/site-packages/sqlglot-30.21.0.dist-info/licenses/LICENSE)",
+  "body_identical_to_reference_2": true,
+  "body_sha256_normalised": "fe2a9817987f862eaced948f0468c7f51d2fedfc48c5c505b246a49a3870e9a5"
+ },
+ "conclusion": "MIT",
+ "policy": "Display stays counts and query IDs only for Fee-Rainbow; this record does not approve exporting its source.",
+ "contents_policy": "No licence text, source or copyright line beyond the manifest is stored here."
+}

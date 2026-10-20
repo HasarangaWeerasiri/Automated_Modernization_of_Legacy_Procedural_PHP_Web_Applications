@@ -426,7 +426,8 @@ APP_INFO = {  # run folder -> label, role, latest S15 evaluation, licence / prov
     "news_buzz": ("NEWS-BUZZ", "post-adaptation benchmark (third-party)", "news_buzz/evaluation_post_escape_fix.json",
                   "MIT (its README)"),
     "fee_rainbow": ("Fee-Rainbow", "post-adaptation benchmark (third-party)", "fee_rainbow/evaluation_wrapper_support.json",
-                    "LICENSE file present; licence type not verified"),
+                    "MIT (LICENSE text verified against the standard MIT text at the recorded commit: "
+                    "evidence/provenance/fee_rainbow_licence.json); source not committed, shown counts only"),
     "clinic_inventory_legacy_hard": ("Clinic", "development fixture", None, "Project-authored fixture"),
     "simple_crud": ("simple_crud", "development fixture", None, "Project-authored fixture"),
     "mixed_crud": ("mixed_crud", "development fixture", None, "Project-authored fixture"),

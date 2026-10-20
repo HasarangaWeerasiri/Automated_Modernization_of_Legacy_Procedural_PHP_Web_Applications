@@ -22,6 +22,8 @@ AMS = {"baseline": "evidence/baseline_unseen/ams_native/2026-10-20/baseline.json
        "post_t1": "evidence/final/2026-10-21/ams_native_post_t1.json",
        "post_t2": "evidence/final/2026-10-20/ams_native_post_t2.json"}
 RESTRICTED = {"hms_kishan0725", "dignity_dev_hms", "fee_rainbow", "ams_native"}
+# Licence provenance records (each must conclude MIT, match the recorded commit and both reference texts).
+PROVENANCE = {"fee_rainbow": "evidence/provenance/fee_rainbow_licence.json"}
 # Reason codes the source can emit, by stage (each is checked to occur in the source).
 RECOVERY_CODES = ["STRUCTURAL", "BRANCHING", "LOOP_OR_SWITCH_CONTROL_FLOW", "UNKNOWN_EXPR", "UNSUPPORTED_SHAPE",
                   "UNSUPPORTED_EXECUTOR", "MISSING_SQL_ARGUMENT", "MULTI_STATEMENT_EXECUTOR"]
@@ -285,12 +287,23 @@ def build(se, base, data):
         fix_file = se.ROOT / "benchmarks" / "ground_truth" / folder / "queries.json"
         manifest_licence = m.get("licence")
         inconsistent = bool(manifest_licence and "not verified" in licence and manifest_licence.upper().startswith("MIT"))
+        evidence = None
+        if folder in PROVENANCE:
+            rec = json.loads((se.ROOT / PROVENANCE[folder]).read_text(encoding="utf-8"))
+            ok = (rec["conclusion"] == "MIT" and rec["clone"]["head_matches_recorded_commit"] and rec["recorded_commit"] == m.get("commit")
+                  and rec["comparison"]["body_identical_to_reference_1"] and rec["comparison"]["body_identical_to_reference_2"]
+                  and rec["licence_file"]["git_blob_at_recorded_commit"] == rec["licence_file"]["git_blob_of_working_file"])
+            if not ok or PROVENANCE[folder] not in licence:
+                raise SystemExit(f"{PROVENANCE[folder]}: licence not verified, or APP_INFO does not cite it")
+            evidence = {"file": PROVENANCE[folder], "conclusion": rec["conclusion"], "date": rec["date"],
+                        "licence_sha256": rec["licence_file"]["sha256"], "method": rec["comparison"]["method"]}
         register.append({
             "app": folder, "label": label, "role": role, **content["apps"][folder],
             "repository": url.split("://", 1)[1] if url else None, "commit": m.get("commit"), "commit_date": m.get("commit_date"),
             "origin": m.get("origin"), "licence_manifest": manifest_licence, "licence_generator": licence,
             "licence_status": content["fee_rainbow_licence"]["message"] if inconsistent else None,
-            "provenance_files": [MANIFEST, "scripts/summarize_evidence.py APP_INFO"],
+            "licence_evidence": evidence,
+            "provenance_files": [MANIFEST, "scripts/summarize_evidence.py APP_INFO"] + ([PROVENANCE[folder]] if folder in PROVENANCE else []),
             "ground_truth": ("author-verified ground truth" if gt_file.is_file() else "fixture expectations" if fix_file.is_file() else "none"),
             "ground_truth_entries": _v(len(json.loads(gt_file.read_text(encoding="utf-8"))), gt_file.relative_to(se.ROOT).as_posix()) if gt_file.is_file() else None,
             "measurements": {k: f"{folder}|current code|{k}" for k in ("sql_detected", "sql_recovered", "converted_functions", "unresolved_total")},

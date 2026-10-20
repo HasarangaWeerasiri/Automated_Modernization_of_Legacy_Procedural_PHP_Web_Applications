@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": {
   "by": "scripts/summarize_evidence.py --dashboard-json",
-  "date": "2026-10-20T17:19:12+05:30",
-  "git_head": "25b458c0ac90ee60850bf243134f005dd37fd042",
+  "date": "2026-10-20T17:51:30+05:30",
+  "git_head": "1e575bac4910516826eeff02b2847eb4649bbcda",
   "pipeline_unchanged_since_head": true,
   "current_code_run": "fresh C3 run of all 9 apps into a temp folder outside the repo (written <temp>)"
  },
@@ -65,7 +65,7 @@
    "role": "post-adaptation benchmark (third-party)",
    "has_author_verified_ground_truth": true,
    "latest_evaluation": "evidence/evaluation/fee_rainbow/evaluation_wrapper_support.json",
-   "provenance": "LICENSE file present; licence type not verified",
+   "provenance": "MIT (LICENSE text verified against the standard MIT text at the recorded commit: evidence/provenance/fee_rainbow_licence.json); source not committed, shown counts only",
    "php_root": "benchmarks/apps/_app_only/fee_rainbow",
    "schema": "benchmarks/apps/fee_rainbow/database/db.sql",
    "note": null
@@ -16014,7 +16014,7 @@
       }
      }
     ],
-    "licence": "LICENSE file present; licence type not verified",
+    "licence": "MIT (LICENSE text verified against the standard MIT text at the recorded commit: evidence/provenance/fee_rainbow_licence.json); source not committed, shown counts only",
     "role": "post-adaptation benchmark (third-party)",
     "verified_ground_truth": true,
     "verification": {
@@ -22301,6 +22301,7 @@
     "licence_manifest": "NONE (no licence file; GitHub licence null). Analysed locally only; source not committed.",
     "licence_generator": "No licence: source not committed; SQL text and values are never exported",
     "licence_status": null,
+    "licence_evidence": null,
     "provenance_files": [
      "benchmarks/benchmark_manifest.json",
      "scripts/summarize_evidence.py APP_INFO"
@@ -22340,6 +22341,7 @@
     "licence_manifest": "MIT (Copyright (c) 2022 DATA - Dignity Technology)",
     "licence_generator": "MIT (evidence register row 35)",
     "licence_status": null,
+    "licence_evidence": null,
     "provenance_files": [
      "benchmarks/benchmark_manifest.json",
      "scripts/summarize_evidence.py APP_INFO"
@@ -22378,6 +22380,7 @@
     "licence_manifest": null,
     "licence_generator": "Project-authored fixture",
     "licence_status": null,
+    "licence_evidence": null,
     "provenance_files": [
      "benchmarks/benchmark_manifest.json",
      "scripts/summarize_evidence.py APP_INFO"
@@ -22416,6 +22419,7 @@
     "licence_manifest": "MIT (Copyright (c) 2017 Anirban Dutta)",
     "licence_generator": "MIT (its README)",
     "licence_status": null,
+    "licence_evidence": null,
     "provenance_files": [
      "benchmarks/benchmark_manifest.json",
      "scripts/summarize_evidence.py APP_INFO"
@@ -22446,17 +22450,25 @@
     "role": "post-adaptation benchmark (third-party)",
     "type": "Third-party application",
     "purpose": "Unseen benchmark with wrappers, SQL fragments and PHP named arguments.",
-    "limitations": "The supplied schema file defines one table; licence records are inconsistent.",
+    "limitations": "The supplied schema file defines one table; source not committed, shown counts only.",
     "repository": "github.com/jimmyyrp/Fee-Rainbow",
     "commit": "6285fb5375920af6a71569e8053147c77f7c1c11",
     "commit_date": "2025-07-02",
     "origin": "third-party",
     "licence_manifest": "MIT (Copyright (c) 2025 Randa)",
-    "licence_generator": "LICENSE file present; licence type not verified",
-    "licence_status": "Licence information inconsistent across records - verification required.",
+    "licence_generator": "MIT (LICENSE text verified against the standard MIT text at the recorded commit: evidence/provenance/fee_rainbow_licence.json); source not committed, shown counts only",
+    "licence_status": null,
+    "licence_evidence": {
+     "file": "evidence/provenance/fee_rainbow_licence.json",
+     "conclusion": "MIT",
+     "date": "2026-10-20",
+     "licence_sha256": "580c68d44e70ebe0c9a58af93de49cee2c4ee6cde4358a6f63f34ea9b758b6c5",
+     "method": "Title and copyright lines removed from both texts; whitespace collapsed; exact string comparison of the remaining licence body."
+    },
     "provenance_files": [
      "benchmarks/benchmark_manifest.json",
-     "scripts/summarize_evidence.py APP_INFO"
+     "scripts/summarize_evidence.py APP_INFO",
+     "evidence/provenance/fee_rainbow_licence.json"
     ],
     "ground_truth": "author-verified ground truth",
     "ground_truth_entries": {
@@ -22492,6 +22504,7 @@
     "licence_manifest": null,
     "licence_generator": "Project-authored fixture",
     "licence_status": null,
+    "licence_evidence": null,
     "provenance_files": [
      "benchmarks/benchmark_manifest.json",
      "scripts/summarize_evidence.py APP_INFO"
@@ -22527,6 +22540,7 @@
     "licence_manifest": null,
     "licence_generator": "Project-authored fixture",
     "licence_status": null,
+    "licence_evidence": null,
     "provenance_files": [
      "benchmarks/benchmark_manifest.json",
      "scripts/summarize_evidence.py APP_INFO"
@@ -22561,6 +22575,7 @@
     "licence_manifest": null,
     "licence_generator": "Project-authored fixture",
     "licence_status": null,
+    "licence_evidence": null,
     "provenance_files": [
      "benchmarks/benchmark_manifest.json",
      "scripts/summarize_evidence.py APP_INFO"
@@ -22595,6 +22610,7 @@
     "licence_manifest": null,
     "licence_generator": "Project-authored fixture",
     "licence_status": null,
+    "licence_evidence": null,
     "provenance_files": [
      "benchmarks/benchmark_manifest.json",
      "scripts/summarize_evidence.py APP_INFO"
@@ -22709,13 +22725,10 @@
    "ground_truth": "none"
   },
   "fee_rainbow_licence": {
-   "message": "Licence information inconsistent across records - verification required.",
-   "records": [
-    "benchmarks/benchmark_manifest.json records the licence as MIT with the author's copyright line (added in commit 63db48b).",
-    "scripts/summarize_evidence.py APP_INFO records LICENSE file present; licence type not verified (added in commit 354bd85)."
-   ],
-   "observed_locally": "The gitignored local clone at the recorded commit contains a LICENSE file whose text is the MIT licence; that file is not committed, so no committed record proves it.",
-   "to_resolve": "Commit a provenance record with the sha256 of the upstream LICENSE at the recorded commit and a check that its text is the MIT licence, then update APP_INFO to match. Until then the counts-only policy stays."
+   "message": "Licence verified as MIT from the LICENSE file at the recorded commit.",
+   "history": "The records were inconsistent: benchmarks/benchmark_manifest.json recorded MIT (commit 63db48b) while scripts/summarize_evidence.py APP_INFO recorded the licence type as not verified (commit 354bd85).",
+   "resolution": "evidence/provenance/fee_rainbow_licence.json records the recorded commit, the LICENSE file hash and git blob, and an exact comparison of its text with the standard MIT text and an independent MIT copy; APP_INFO now cites it.",
+   "policy": "Display stays counts and query IDs only; verifying the licence does not approve exporting the source."
   },
   "measurement_definitions": [
    {

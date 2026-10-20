@@ -795,10 +795,16 @@ def test_reason_catalogue_is_counted_from_the_source_and_keeps_causes_apart(data
     assert {"recoverable_unsupported", "non_recoverable", "ambiguous", "non_live", "unverified", "failed_verification"} <= keys
 
 
-def test_fee_rainbow_licence_is_flagged_not_resolved_and_stays_counts_only(data):
+def test_fee_rainbow_licence_is_verified_by_its_provenance_record_and_stays_counts_only(data):
     fee = next(r for r in data["pp1"]["register"] if r["app"] == "fee_rainbow")
-    assert fee["licence_status"] == "Licence information inconsistent across records - verification required."
-    assert fee["licence_manifest"].startswith("MIT") and "not verified" in fee["licence_generator"]
+    record = json.loads((ROOT / "evidence/provenance/fee_rainbow_licence.json").read_text(encoding="utf-8"))
+    assert record["conclusion"] == "MIT" and record["clone"]["head_matches_recorded_commit"]
+    assert record["comparison"]["body_identical_to_reference_1"] and record["comparison"]["body_identical_to_reference_2"]
+    assert record["recorded_commit"] == fee["commit"] and record["licence_file"]["sha256"] == fee["licence_evidence"]["licence_sha256"]
+    assert fee["licence_status"] is None and fee["licence_evidence"]["conclusion"] == "MIT"
+    assert fee["licence_manifest"].startswith("MIT") and "evidence/provenance/fee_rainbow_licence.json" in fee["licence_generator"]
+    assert "not verified" not in fee["licence_generator"] and "evidence/provenance/fee_rainbow_licence.json" in fee["provenance_files"]
+    assert "Copyright" not in json.dumps(record)  # no copyright line beyond the manifest
     assert fee["display"] == "Counts and query IDs only" and "fee_rainbow" not in summarize.BEFORE_AFTER_DETAIL
     ams = data["pp1"]["ams_native"]
     assert ams["display"] == "Counts and query IDs only" and len(ams["licence_history"]) == 2
