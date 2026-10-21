@@ -22,11 +22,12 @@ jobs:
         with:
           python-version: "3.12"
       - run: composer install --no-interaction --prefer-dist
-      - run: pip install -r requirements.txt
+      - run: pip install -r requirements.txt fastapi "python-jose[cryptography]" httpx
       - run: python -m pytest -q
-      - name: Determinism (diff -r across two runs)
+      - name: Determinism of the whole pipeline (diff -r across two runs)
         run: |
           export PYTHONPATH=src
-          python -m c1.extract tests/fixtures/php --out /tmp/run1
-          python -m c1.extract tests/fixtures/php --out /tmp/run2
+          python -m c1 run tests/fixtures/php --out /tmp/run1 --title CI
+          cp -r tests/fixtures/php /tmp/elsewhere
+          python -m c1 run /tmp/elsewhere --out /tmp/run2 --title CI
           diff -r /tmp/run1 /tmp/run2

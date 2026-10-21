@@ -1,12 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "c1-static-analysis"
 version = "0.1.0"
-description = "J26-SE-329 Component 1: Static Analysis Core (AST extraction, schema 1.0)"
-requires-python = ">=3.11"
+description = "J26-SE-329 Component 1: static analysis core + backend & auth migration (AST, CFG, DFG, labels, auth, endpoints, OpenAPI)"
+requires-python = ">=3.10"
 dependencies = []
+
+[project.scripts]
+# after `pip install -e .` in this folder: run from any folder with `c1-migrate run <app> ...`
+# (or `python -m c1 run <app> ...` if the Scripts folder is not on PATH)
+c1-migrate = "c1.__main__:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+# to run the generated FastAPI backend (and tests/test_contract.py, which boots it)
+backend = ["fastapi>=0.115", "python-jose[cryptography]>=3.3", "httpx>=0.27", "uvicorn>=0.30"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

@@ -1,98 +1,111 @@
-# C1 Static Analysis Core (J26-SE-329)
+# C1: Static Analysis Core + Backend & Authentication Migration (J26-SE-329)
 
-Turns a legacy PHP app into JSON that the other components can read. This first slice does one job: **parse every file into a stable, deterministic AST** and describe the run in `manifest.json`.
+Turns a legacy procedural PHP app into JSON analyses, an OpenAPI 3.1 contract and a FastAPI backend skeleton. Every stage is deterministic and sound-or-abstain: what it cannot decide it **flags**, it never guesses.
 
-Place this folder at `components/c1_static_analysis/` (the same pattern as `c3_data_layer` and `c4_validation`).
+Place this folder at `components/c1_static_analysis/`.
 
 ## Setup
 
 ```bash
-composer install            # installs nikic/php-parser ^5.9 (same version range as C3). Commit composer.lock.
-pip install -r requirements.txt
+composer install                 # nikic/php-parser ^5.9 (only the extract stage needs PHP)
+pip install -r requirements.txt  # pytest; add fastapi "python-jose[cryptography]" httpx for the backend boot test
 python -m pytest -q
 ```
 
-Needs PHP 8.0 or newer on the machine (8.3 recommended) and Python 3.11 or newer.
+Needs PHP 8.0+ (8.3 recommended) for extract, and Python 3.10+.
 
 ## Run
 
+Once: double-click `install.bat` (Windows) or run `./install.sh` (macOS/Linux). It checks Python/PHP/Composer, installs the PHP parser and the tool, and puts `c1-migrate` on your PATH. (By hand: `pip install -e ".[backend,dev]"`.) After that the commands below work from any folder (no `PYTHONPATH` needed), and `c1-migrate` is a short name for `python -m c1`. The legacy app is only read; re-running into the same `--out` folder replaces the old results.
+
 ```bash
-PYTHONPATH=src python -m c1.extract /path/to/legacy-app --out analysis-out
-# vendored libraries: skip them, and the run records that it did
-PYTHONPATH=src python -m c1.extract /path/to/hms --out analysis-out --exclude-dir TCPDF
+PYTHONPATH=src python -m c1 run /path/to/hms --out analysis-out --exclude-dir TCPDF --title HMS
+# add --plain for no colours (the console is plain automatically in pipes/CI)
+# or stage by stage (all but the first need no PHP):
+PYTHONPATH=src python -m c1.extract  /path/to/hms --out analysis-out --exclude-dir TCPDF
+PYTHONPATH=src python -m c1.cfg       analysis-out
+PYTHONPATH=src python -m c1.includes  analysis-out
+PYTHONPATH=src python -m c1.dfg       analysis-out
+PYTHONPATH=src python -m c1.concerns  analysis-out
+PYTHONPATH=src python -m c1.auth      analysis-out --src /path/to/hms
+PYTHONPATH=src python -m c1.endpoints analysis-out --src /path/to/hms
+PYTHONPATH=src python -m c1.contract  analysis-out --title HMS
+PYTHONPATH=src python -m c1.timeline  analysis-out --src /path/to/hms
 ```
 
-Output:
+## Stages and outputs
 
-```
-analysis-out/
-  manifest.json          run description, parser version, file list with hashes, excluded folders
-  ast/f000.json ...      one file per PHP file
-```
+| Stage | Output | What it is | Design note |
+|---|---|---|---|
+| extract | `manifest.json`, `ast/<fileId>.json` | AST per file (schema 1.0, stable node ids) | this file, below |
+| cfg | `cfg/<fileId>.json` | control-flow graph per function/page, dominators | `docs/DESIGN_CFG.md` |
+| includes | `index/includes.json` | include/require resolution, per entry page | `docs/DESIGN_INCLUDES_DFG.md` |
+| dfg | `dfg/<fileId>.json` | reaching definitions, use-def chains, value origins | `docs/DESIGN_INCLUDES_DFG.md` |
+| concerns | `labels.json` | presentation / business_logic / data_access per statement (C2 format) | `docs/DESIGN_CONCERNS_AUTH.md` |
+| auth | `auth.json` | session checks, guards, page protection, redirect-without-exit | `docs/DESIGN_CONCERNS_AUTH.md` |
+| endpoints | `endpoints.json`, `endpoint-map.json` | REST endpoints, params, used-column response shapes (C4 format) | `docs/DESIGN_ENDPOINTS_CONTRACT.md` |
+| contract | `contract/openapi.json`, `backend/app/`, `flags.json` | OpenAPI 3.1, FastAPI + Pydantic + JWT skeleton, review list | `docs/DESIGN_ENDPOINTS_CONTRACT.md` |
+| timeline | `timeline/<fileId>.json` | output timeline for C2 (enclosures, typed reads) | `docs/DESIGN_TIMELINE.md` |
+| metrics | `metrics.json` | before/after: attack surface (CWE-862/698/89), concern tangling, V(G) | `docs/DESIGN_METRICS_ARCHITECTURE.md` |
+| architecture | `architecture.json` | scores layered / modular monolith / microservices, with reasons and module plan | `docs/DESIGN_METRICS_ARCHITECTURE.md` |
+| report | `report.html` | one readable page: what changed, target architecture, guards, endpoints, items to review | `src/c1/report.py` |
 
-The run prints a warning when one folder holds half or more of all nodes (usually a vendored library).
+Every JSON output carries `generatedFor` = `manifest.contentHash`, so outputs from different runs are never mixed.
 
-## Guarantees (tested)
+## Results on the benchmark apps
 
-- Same input gives byte-identical output (`tests/test_determinism.py`).
-- Output does not depend on where the app sits on disk, and holds no timestamps or absolute paths.
-- File ids come from the sorted relative path: `f000`, `f001`, ... Adding a file shifts later ids, so ids are only comparable within one `manifest.contentHash`.
-- Node ids are `<fileId>#<5-digit pre-order ordinal>`, root is `#00000`.
-- A file with a syntax error is **reported** (`parseOk: false`, `parseErrors`) and the run continues. It is never dropped silently.
-- A skipped folder is **recorded** in `manifest.excluded` with its file count.
+More apps and the screening greps are in `docs/BENCHMARKS.md`. Evaluation: `docs/eval/` (`python -m c1.evaluate`).
 
-## AST file shape (schema 1.0)
+| | HMS (777fda4, TCPDF excluded) | WackoPicko |
+|---|---|---|
+| Files / AST nodes | 33 / 9,639 | 49 / 6,850 |
+| CFG units, structural problems | 107, 0 | 106, 0 |
+| Includes resolved | 12/13 (1 excluded lib) | 116/117 (1 `$_GET` front controller, flagged) |
+| Echo reads traced to a DB column | 122/139 | 70/87 |
+| Pages guarded / unguarded with data | 0 / **13** | 17 / 16 |
+| Endpoints | 19 | 25 |
+| Generated backend boots, served = contract | yes | yes |
+| Timeline leaf reads traced to a DB column | 122/189 | 69/133 |
+
+## AST schema 1.0 (extract stage)
 
 ```json
 {"schemaVersion":"1.0","fileId":"f012","path":"admin/panel.php","sha256":"...","bytes":4210,
  "parseOk":true,"parseErrors":[],"rootId":"f012#00000","nodeCount":311,"nodes":[ ... ]}
 ```
 
-Each node:
+Node: `{"id":"f012#00004","kind":"Stmt_If","parent":"f012#00000","loc":{...},"children":[...],"fields":{"cond":...},"attrs":{}}`
 
-```json
-{"id":"f012#00004","kind":"Stmt_If","parent":"f012#00000",
- "loc":{"startLine":3,"endLine":6,"startCol":0,"endCol":1,"startByte":38,"endByte":120},
- "children":["f012#00005","f012#00010"],
- "fields":{"cond":"f012#00005","stmts":["f012#00010"],"elseifs":[],"else":null},
- "attrs":{}}
-```
-
-| Field | Meaning |
-|---|---|
-| `kind` | nikic/PHP-Parser type name (`Stmt_Echo`, `Stmt_InlineHTML`, `Expr_ArrayDimFetch`...). The root is `File`. |
-| `loc` | Lines are 1-based. Columns and bytes are 0-based **byte** offsets, end exclusive. `source_bytes[startByte:endByte]` is the node text. |
-| `children` | Child ids in pre-order. |
-| `fields` | Which child plays which role (`cond`, `stmts`, `else`...). A `null` inside a list is a hole such as `list(, $b)`. |
-| `attrs` | Plain values (`name`, `value`...). Keys starting with `_` are parser attributes: `_kind` (quote style or number base), `_rawValue` (number source text), `_parenthesized`. |
-
-Special encodings:
-
-- A string that is not valid UTF-8 is `{"__b64": "<base64>"}` (legacy Latin-1 pages exist).
-- A non-finite float is `{"__float": "INF"}`.
-- `Stmt_InlineHTML.attrs.value` is the text exactly as PHP outputs it, CRLF kept. PHP itself drops **one** newline directly after `?>`, so that newline is not in `value`. Use `loc` bytes for an exact source slice.
-- Comments are not emitted in 1.0.
-
-## Compared with what C2 was told earlier
-
-Two additions, both extra fields (nothing removed):
-
-1. `fields` names the role of each child. Without it `cond` and `then` cannot be told apart from `children` alone.
-2. `loc` also carries `startByte` / `endByte`, and columns are defined as 0-based bytes.
-
-The `File` root node and the `_`-prefixed attrs are new too. C2's `output-timeline.json` (`id`, `kind`, `raw`, `enclosedBy`, `reads`) is a **later stage** built from these ASTs. Its `raw` for `Stmt_InlineHTML` equals `attrs.value`.
-
-## Known limits (v0.1)
-
-- **Host PHP must support the syntax it lexes.** The parser is set to PHP 8.3 syntax (`TARGET_PHP_VERSION`), so CI should run PHP 8.3.
-- **No CFG, DFG, includes, reads or labels yet.** Those are the next stages.
-- Vendored libraries are not excluded by default. Excluding is a choice you make with `--exclude-dir`, and it is logged.
+- **Ids:** `<fileId>#<5-digit pre-order ordinal>`. The root is `File` (`#00000`).
+- **File ids:** taken from the sorted relative path. They are only comparable within one `contentHash`.
+- **`loc`:** lines are 1-based; columns and bytes are 0-based **bytes**, end exclusive (`source[startByte:endByte]`).
+- **`fields`:** the role of each child (`cond`, `stmts`, `else` …).
+- **`attrs`:** plain values; `_kind`, `_rawValue`, `_parenthesized` are parser attributes.
+- **Encodings:** non-UTF-8 strings are `{"__b64": …}`; non-finite floats are `{"__float": …}`.
+- **Inline HTML:** `Stmt_InlineHTML.attrs.value` is the text as PHP outputs it (CRLF kept).
+- **Comments** are not emitted.
+- **Errors:** a file with syntax errors is reported (`parseOk: false`), never dropped.
+- **Exclusions:** a skipped folder is recorded in `manifest.excluded`.
 
 ## Layout
 
 ```
-tools/php_ast/extract_ast.php   one file in, one JSON document out
-src/c1/extract.py               walks a tree, assigns ids, writes analysis-out/
-tests/                          pytest, fixtures in tests/fixtures/php (CRLF and Latin-1 files are made at test time)
+tools/php_ast/extract_ast.php   PHP: one file in, one AST JSON out
+src/c1/extract.py               walks the app, ids, manifest
+src/c1/astdoc.py                shared AST reader
+src/c1/cfg.py, dominance.py     CFG + Cooper-Harvey-Kennedy dominators
+src/c1/includes.py              include resolver
+src/c1/dfg.py                   reaching definitions, use-def, origins, call summaries
+src/c1/concerns.py              concern labels
+src/c1/auth.py                  authorization analysis
+src/c1/sqlshape.py              SQL template + shape, schema dump reader
+src/c1/endpoints.py             endpoints, response shape, endpoint map
+src/c1/contract.py              OpenAPI 3.1, FastAPI backend, flags
+src/c1/timeline.py              output timeline for C2
+src/c1/evaluate.py              labelling sheet + scoring against a hand-labelled corpus
+src/c1/report.py                HTML review report
+src/c1/__main__.py              python -m c1 run / analyse
+tests/                          pytest (fixtures/ast_cache lets stage tests run without PHP)
+docs/                           design notes per stage, DEVLOG.md, COMMIT_GROUPS.md
 ci/c1-determinism.yml           copy to .github/workflows/
 ```
