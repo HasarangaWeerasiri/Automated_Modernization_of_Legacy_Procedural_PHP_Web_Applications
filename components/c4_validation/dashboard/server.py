@@ -23,6 +23,7 @@ leaves the engine exactly as it was; the engine never imports anything from here
 from __future__ import annotations
 
 import asyncio
+import io
 import json
 import os
 import re
@@ -32,12 +33,13 @@ import sys
 import threading
 import urllib.error
 import urllib.request
+import zipfile
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -84,8 +86,22 @@ def migrated_url() -> str:
 # ------------------------------------------------------------------ benchmarks
 
 
+def _descriptor(path: Path) -> dict[str, str]:
+    """A benchmark descriptor's settings (KEY=value lines)."""
+    found: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        key, sep, value = line.partition("=")
+        if sep and not key.strip().startswith("#"):
+            found[key.strip()] = value.strip()
+    return found
+
+
 def benchmarks() -> list[dict[str, Any]]:
-    """Every benchmark that has a descriptor and an endpoint map."""
+    """Every benchmark that has a descriptor and an endpoint map.
+
+    `migrated` says whether its descriptor names a migrated system. One that names
+    none has nothing to be replayed against, so its runs stop after capture.
+    """
     found = []
     for descriptor in sorted((ROOT / "benchmarks").glob("*.env")):
         name = descriptor.stem
@@ -103,6 +119,9 @@ def benchmarks() -> list[dict[str, Any]]:
             "scenarios": len(list((inputs / "scenarios").glob("*.json"))),
             "oracle_records": len(list((ROOT / "oracles" / name).glob("*.json"))),
             "has_results": (ROOT / "reports" / name / "verdicts.json").is_file(),
+            "migrated": bool(_descriptor(descriptor).get("C4_MIGRATED_APP")),
+            # The benchmark this machine's .env selects, as the engine's own default.
+            "default": name == _settings().get("C4_BENCHMARK"),
         })
     return found
 
@@ -115,6 +134,20 @@ def _known(benchmark: str) -> None:
 @app.get("/api/benchmarks")
 def list_benchmarks() -> list[dict[str, Any]]:
     return benchmarks()
+
+
+@app.get("/api/benchmarks/{benchmark}/scenarios")
+def scenario_counts(benchmark: str) -> dict[str, Any]:
+    """How many scenarios of each kind the engine generated, page by page."""
+    _known(benchmark)
+    pages: dict[str, dict[str, int]] = {}
+    for file in sorted((ROOT / "inputs" / benchmark / "scenarios").glob("*.json")):
+        scenario = json.loads(file.read_text(encoding="utf-8"))
+        kind = "not_found" if scenario.get("case") == "not_found" else scenario.get("scenario_type", "other")
+        page = pages.setdefault(scenario.get("source_id", "?"), {"typical": 0, "not_found": 0, "boundary": 0, "injection": 0})
+        page[kind] = page.get(kind, 0) + 1
+    rows = [{"source_id": source, **counts, "total": sum(counts.values())} for source, counts in pages.items()]
+    return {"total": sum(row["total"] for row in rows), "pages": rows}
 
 
 @app.get("/api/benchmarks/{benchmark}/endpoint-map")
@@ -177,6 +210,10 @@ class RunRequest(BaseModel):
     benchmark: str
     fault: str | None = None
     recapture: bool = False
+    # Generate the scenarios again (and so capture everything again).
+    regenerate: bool = False
+    # Stop after capture; always so for a benchmark with no migrated system.
+    capture_only: bool = False
 
 
 class Run:
@@ -202,6 +239,7 @@ class Run:
     def summary(self) -> dict[str, Any]:
         return {
             "id": self.id, "benchmark": self.request.benchmark, "fault": self.request.fault,
+            "capture_only": self.request.capture_only, "regenerate": self.request.regenerate,
             "started": self.started, "finished": self.finished, "exit_code": self.exit_code,
         }
 
@@ -223,6 +261,10 @@ def _drive(run: Run) -> None:
     command = [*engine_command(), "-m", "c4", "run", "--benchmark", benchmark, "--progress", "json"]
     if run.request.recapture:
         command.append("--recapture")
+    if run.request.regenerate:
+        command.append("--regenerate")
+    if run.request.capture_only:
+        command += ["--until", "capture"]
     environment = {**os.environ, "C4_OUTPUT_DIR": str(run.folder), "PYTHONUNBUFFERED": "1"}
     planted = False
     try:
@@ -261,14 +303,20 @@ def _drive(run: Run) -> None:
 def start_run(request: RunRequest) -> dict[str, Any]:
     global current
     _known(request.benchmark)
+    if not next(item for item in benchmarks() if item["id"] == request.benchmark)["migrated"]:
+        request.capture_only, request.fault = True, None  # nothing to replay against
+    if request.capture_only:
+        request.fault = None  # a fault in the migrated system cannot show without a replay
     with current_lock:
         if current is not None and not current.finished:
             raise HTTPException(409, "A run is in progress; one run at a time.")
         run_id = datetime.now().strftime("%Y%m%d-%H%M%S") + f"-{request.benchmark}"
+        if (RUNS / run_id).exists():  # another run started in the same second
+            run_id += f"-{next(n for n in range(2, 1000) if not (RUNS / f'{run_id}-{n}').exists())}"
         run = Run(run_id, request)
         run.folder.mkdir(parents=True, exist_ok=True)
         committed = ROOT / "oracles" / request.benchmark
-        if committed.is_dir() and not request.recapture:
+        if committed.is_dir() and not (request.recapture or request.regenerate):
             shutil.copytree(committed, run.folder / "oracles" / request.benchmark)
         _write_summary(run)
         current = run
@@ -350,6 +398,20 @@ def result_file(source: str, path: str) -> FileResponse:
         raise HTTPException(404, "No such file.")
     media = "application/json" if target.suffix == ".json" else "text/plain; charset=utf-8"
     return FileResponse(target, media_type=media)
+
+
+@app.get("/api/results/{source}/{benchmark}/oracles.zip")
+def oracle_archive(source: str, benchmark: str) -> Response:
+    """Every oracle record of these results, in one zip file."""
+    _known(benchmark)
+    folder = _folder(source) / "oracles" / benchmark
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        for record in sorted(folder.glob("*.json")):
+            archive.write(record, f"oracles/{benchmark}/{record.name}")
+    name = f"{benchmark}-oracle-records-{source}.zip"
+    return Response(buffer.getvalue(), media_type="application/zip",
+                    headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
 
 @app.get("/api/results/{source}/{benchmark}")

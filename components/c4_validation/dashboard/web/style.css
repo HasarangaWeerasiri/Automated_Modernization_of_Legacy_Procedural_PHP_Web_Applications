@@ -916,3 +916,22 @@ tbody tr.clickable { cursor: pointer; }
 .step-icon.failed { background: var(--flagged); }
 .step.failed .step-name, .step.failed .step-detail { color: var(--flagged); }
 .check-item input { margin-top: 3px; }
+.step-icon.skipped { background: var(--paper); border: 1.5px solid var(--rule); color: var(--muted); }
+.step.skipped .step-name, .step.skipped .step-detail { color: var(--muted); }
+
+/* The readable report, rendered from Markdown. */
+.markdown h2.md-h1 { font-size: 20px; margin: 0 0 12px; }
+.markdown h3.md-h2 { font-size: 16px; margin: 26px 0 10px; padding-top: 14px; border-top: 1px solid var(--rule); }
+.markdown h4.md-h3 { font-size: 14px; margin: 18px 0 8px; }
+.markdown p { margin: 8px 0; font-size: 13.5px; max-width: 90ch; }
+.markdown ul { margin: 6px 0 10px; padding-left: 20px; font-size: 13.5px; }
+.markdown code { font-family: var(--font-mono); font-size: 12px; background: var(--accent-tint); padding: 1px 5px; border-radius: 3px; }
+.markdown table { min-width: 0; }
+.markdown tbody td { height: auto; padding: 7px 14px; }
+
+/* Oracle records, one folded group per page. */
+details.group { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; margin-bottom: 8px; }
+details.group > summary { cursor: pointer; padding: 11px 16px; display: flex; gap: 14px; align-items: center; font-size: 13.5px; }
+details.group[open] > summary { border-bottom: 1px solid var(--rule); }
+details.group .table-wrap { border: 0; border-radius: 0; }
+details.group table { min-width: 0; }

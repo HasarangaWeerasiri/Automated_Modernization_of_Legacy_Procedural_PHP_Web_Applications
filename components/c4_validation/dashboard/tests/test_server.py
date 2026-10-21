@@ -23,7 +23,7 @@ benchmark = args[args.index("--benchmark") + 1]
 out = os.environ["C4_OUTPUT_DIR"]
 def emit(**event):
     print(json.dumps(event), flush=True)
-emit(stage="run", event="start", benchmark=benchmark)
+emit(stage="run", event="start", benchmark=benchmark, args=args)
 emit(stage="environment", event="done", action="already running", network="blocked")
 time.sleep(float(os.environ.get("FAKE_DELAY", "0")))
 emit(stage="capture", event="done", kept=1, captured=0, refused=[], output_dir=out)
@@ -87,7 +87,8 @@ def wait_for(client, run_id):
 def test_only_benchmarks_with_an_endpoint_map_are_offered(client):
     (benchmark,) = client.get("/api/benchmarks").json()
 
-    assert benchmark == {"id": "demo", "title": "Demo Shop", "scenarios": 1, "oracle_records": 1, "has_results": True}
+    assert benchmark == {"id": "demo", "title": "Demo Shop", "scenarios": 1, "oracle_records": 1, "has_results": True,
+                         "migrated": False, "default": False}
 
 
 def test_the_evidence_kept_in_git_is_shown_without_a_run(client):
@@ -124,7 +125,9 @@ def test_one_run_at_a_time(client, monkeypatch):
     wait_for(client, first["id"])
 
 
-def test_a_planted_fault_goes_on_after_the_environment_is_up_and_off_at_the_end(client, server):
+def test_a_planted_fault_goes_on_after_the_environment_is_up_and_off_at_the_end(client, server, root):
+    with (root / "benchmarks" / "demo.env").open("a") as descriptor:
+        descriptor.write("C4_MIGRATED_APP=./stubs/demo\n")  # a fault needs a migrated system to plant it in
     run = client.post("/api/runs", json={"benchmark": "demo", "fault": "drops_last_record"}).json()
     finished = wait_for(client, run["id"])
 
@@ -152,3 +155,79 @@ def test_an_unknown_benchmark_or_run_is_refused(client):
 def test_the_page_is_served(client):
     assert "<title>Validation</title>" in client.get("/").text
     assert client.get("/static/app.js").status_code == 200
+
+
+def started_with(client, **request):
+    run = client.post("/api/runs", json={"benchmark": "demo", **request}).json()
+    finished = wait_for(client, run["id"])
+    return finished, next(e for e in finished["events"] if e["stage"] == "run" and e["event"] == "start")["args"]
+
+
+def test_a_benchmark_without_a_migrated_system_runs_capture_only(client):
+    finished, args = started_with(client, fault="drops_last_record")
+
+    assert finished["capture_only"] is True and finished["fault"] is None
+    assert args[-2:] == ["--until", "capture"]
+
+
+def test_a_benchmark_with_a_migrated_system_runs_the_whole_pipeline_unless_asked(client, root):
+    with (root / "benchmarks" / "demo.env").open("a") as descriptor:
+        descriptor.write("C4_MIGRATED_APP=./stubs/demo\n")
+
+    whole, whole_args = started_with(client)
+    only, only_args = started_with(client, capture_only=True)
+
+    assert whole["capture_only"] is False and "--until" not in whole_args
+    assert only["capture_only"] is True and only_args[-2:] == ["--until", "capture"]
+
+
+def test_generating_again_is_passed_to_the_engine(client):
+    _, args = started_with(client, regenerate=True)
+
+    assert "--regenerate" in args
+
+
+def test_the_scenarios_are_counted_page_by_page(client, root):
+    folder = root / "inputs" / "demo" / "scenarios"
+    for name, kind, case in (("a_typical_01", "typical", "typical"), ("a_not_found_01", "typical", "not_found"),
+                             ("a_injection_q_01", "injection", "probe")):
+        (folder / f"{name}.json").write_text(json.dumps({"source_id": "a", "scenario_type": kind, "case": case}))
+
+    counts = client.get("/api/benchmarks/demo/scenarios").json()
+
+    page = next(p for p in counts["pages"] if p["source_id"] == "a")
+    assert (page["typical"], page["not_found"], page["injection"], page["total"]) == (1, 1, 1, 3)
+
+
+def test_two_runs_started_in_the_same_second_get_folders_of_their_own(client, server, monkeypatch):
+    class Frozen:
+        @staticmethod
+        def now():
+            from datetime import datetime as real
+            return real(2026, 10, 20, 12, 0, 0)
+
+    monkeypatch.setattr(server, "datetime", Frozen)
+    first = client.post("/api/runs", json={"benchmark": "demo"}).json()
+    wait_for(client, first["id"])
+    second = client.post("/api/runs", json={"benchmark": "demo"}).json()
+    wait_for(client, second["id"])
+
+    assert (first["id"], second["id"]) == ("20261020-120000-demo", "20261020-120000-demo-2")
+
+
+def test_every_oracle_record_can_be_downloaded_in_one_zip(client):
+    import io
+    import zipfile
+
+    response = client.get("/api/results/committed/demo/oracles.zip")
+
+    assert response.headers["content-type"] == "application/zip"
+    assert zipfile.ZipFile(io.BytesIO(response.content)).namelist() == ["oracles/demo/s_01.json"]
+
+
+def test_the_benchmark_this_machine_selects_is_marked_as_the_default(client, root):
+    (root / ".env").write_text("C4_BENCHMARK=demo\n")
+
+    (benchmark,) = client.get("/api/benchmarks").json()
+
+    assert benchmark["default"] is True

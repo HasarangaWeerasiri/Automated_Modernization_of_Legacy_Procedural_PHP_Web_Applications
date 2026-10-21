@@ -352,3 +352,23 @@ def test_a_table_cell_cannot_be_broken_by_a_value_containing_a_bar():
 
 def test_the_report_is_identical_for_identical_findings():
     assert differential_report(_report(), INJECTION) == differential_report(_report(), INJECTION)
+
+
+def test_the_report_opens_with_what_it_means_in_plain_words():
+    text = differential_report(_report(), INJECTION)
+
+    meaning = text.split("## What this means", 1)[1].split("## Summary", 1)[0]
+    assert "endpoints" in meaning and "scenarios were judged" in meaning and "Injection probes" in meaning
+
+
+def test_the_report_ends_with_how_to_read_it():
+    glossary = differential_report(_report(), INJECTION).split("## How to read this report", 1)[1]
+
+    for term in ("**PASS**", "**FAIL**", "**INCONCLUSIVE**", "oracle record", "vulnerability introduced"):
+        assert term in glossary
+
+
+def test_a_report_with_nothing_judged_says_so():
+    nothing = differential_report({"benchmark": "demo", "endpoints": {}}, {"summary": {}, "probes": []})
+
+    assert "No scenario has been judged yet." in nothing
