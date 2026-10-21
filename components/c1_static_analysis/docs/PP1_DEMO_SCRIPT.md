@@ -8,7 +8,7 @@
    ```cmd
    python -m c1 run "C:\Users\amindu\Desktop\Research\legacy systems\HMS" --out "C:\Users\amindu\Desktop\Research\HMS_migrated" --exclude-dir TCPDF --schema "C:\Users\amindu\Desktop\Research\legacy systems\HMS\myhmsdb.sql" --title HMS
    ```
-2. **Run it once now**, so the backend folder exists. Write down the fingerprint. *(It should be `FB4F 4367 86F3 95D2` if your files match the cloud run. If it differs, just use the one you see.)*
+2. **Run it once now**, so the backend folder exists. Write down the fingerprint. *(It should be `D012 91EA 3AC8 A46E` if your files match the cloud run. If it differs, just use the one you see.)*
 3. **cmd window 2:** start the backend and leave it running:
    ```cmd
    cd "C:\Users\amindu\Desktop\Research\HMS_migrated\backend"
@@ -43,4 +43,4 @@
 - **"Does the backend behave the same as the old one?"**
   - Every endpoint keeps the legacy SQL and its source line, and the served schema equals the contract (tested).
   - Full behaviour comparison is Component 4's job.
-- **"What if the tool is unsure?"** It flags the case for a person (45 items on HMS, mostly one question: which pages need login). It never guesses a security rule.
+- **"What if the tool is unsure?"** It flags the case for a person (46 items on HMS, mostly one question: which pages need login). It never guesses a security rule.

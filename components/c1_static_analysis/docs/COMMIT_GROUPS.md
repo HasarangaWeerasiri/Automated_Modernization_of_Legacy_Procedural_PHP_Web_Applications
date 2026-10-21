@@ -113,5 +113,15 @@ git commit -m "feat(contract): redirect / to /docs in the generated backend" -m 
 - The route is hidden from the OpenAPI schema, so the contract is unchanged"
 ```
 
+## Group 13 — feat(endpoints): endpoint map fields for C4
+```
+git add src/c1/endpoints.py tests/test_endpoints.py tests/fixtures/ast_cache docs/DESIGN_ENDPOINTS_CONTRACT.md
+git commit -m "feat(endpoints): add search result tables, same_as fields, login user types and response columns to the endpoint map" -m "- Search handlers report records only/unknown instead of none (C4 item 6)
+- Confirmation fields (cpassword == password) carry same_as (item 9)
+- Login forms: user type, fields, session keys, redirects; endpoints: user types; token location (item 8)
+- response_fields map each field to table.column, joins resolved (item 10)
+- Endpoints on tables missing from the schema are flagged table-not-in-schema"
+```
+
 ---
 Checked on 2026-10-17: committing groups 1→11 in order on top of your last push, the tests pass after **every** group (20, 55, 68, 90, 101, 115, 127, 131, 147, 150, 150 tests; console added 2026-10-19). On 2026-10-21 metrics + architecture were added to group 9; the full suite is now 155 (the per-group counts for 9–12 were not re-checked after that). So any prefix of the groups is safe to push.

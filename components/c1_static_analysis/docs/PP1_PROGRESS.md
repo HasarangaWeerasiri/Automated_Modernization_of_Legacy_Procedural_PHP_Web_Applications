@@ -16,7 +16,7 @@ Owner: R D A P Rajamuni (IT23265738). State on 17 Oct 2026. The numbers come fro
 | 8 | Map to HTTP method + path | **done** | Master-reference CRUD table, `/api/me/…` for session filters, `/api/auth/login` |
 | 9 | Session → JWT | **done** | Generated `auth.py`: `Depends(get_current_user)`, token claims, `require_claim` |
 | 10 | Pydantic models | **done** | Generated `models.py` |
-| 11 | Abstain and flag | **done** | `flags.json`: HMS 45 items, WackoPicko 62 |
+| 11 | Abstain and flag | **done** | `flags.json`: HMS 46 items, WackoPicko 53 (21 Oct) |
 | 12 | FastAPI route files | **done (skeleton)** | Generated app boots and serves the contract. Data access is a C3 interface |
 | 13 | Pydantic = contract → OpenAPI 3.1 | **done** | `contract/openapi.json` matches what FastAPI serves (tested) |
 | 14 | Auth module | **done** | See 9 |

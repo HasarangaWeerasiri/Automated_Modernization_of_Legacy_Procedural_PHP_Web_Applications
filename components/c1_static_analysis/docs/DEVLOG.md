@@ -129,3 +129,17 @@ Short notes per task: what, how, result. Newest at the bottom.
 - **Results:** HMS -> modular monolith (80 vs layered 75). WackoPicko -> modular (90). crud -> layered (95). core-php-admin-panel -> "not enough evidence".
 - **Not done:** only the layered monolith is generated (the rest is PP2).
 - **Tests:** 5 new; 155 pass.
+
+## 2026-10-22 — Task 16: Endpoint map fixes asked by C4
+C4 checked `endpoint-map.json` against their 11 needs: 7 were fully met, 3 partly and 1 missing. All 4 gaps are fixed:
+- **Item 6, search pages said `records: "none"`.** A read handler whose rows the page uses now says `"only"` when it is the page's only results table, and `"unknown"` when the page has other tables too. It is never `"none"`. The 5 HMS search pages are now `"only"`.
+- **Item 9, a field must repeat another.** `if ($password == $cpassword)` is found from the DFG (both sides are request input). The source gets `constraints: [{field: cpassword, same_as: password, line: 12}]` and the parameter gets `same_as`.
+- **Item 8, login details.**
+  - Each login form gets `login: {userType, fields, sets, redirects}`. The user type is the table its password is checked against. `sets` lists the session keys and cookies it writes, including inside called functions.
+  - Each endpoint gets `auth: {required, userTypes, sessionKeys}`. The user types are the logins that set every key the endpoint needs, from session bindings, role checks and guard helpers.
+  - The top level gives the token location: `access_token`, sent as `Authorization: Bearer`.
+  - HMS: patient = patreg (pid...), doctor = doctb (dname), admin = admintb. WackoPicko: users (userid), admin (cookie session).
+- **Item 10, the column behind each response field.** `response_fields: {field: table.column}`. Joins are resolved from `alias.column` in the select list, otherwise from the schema; ambiguous columns are flagged. This also fixed the type of `docFees` in the HMS bill query (it comes from appointmenttb).
+- **Not blocking.** `GET /api/me/users` (include/header.php, table `users`) is now flagged `table-not-in-schema` instead of being dropped, so the endpoint counts stay the same.
+- **Effect:** HMS still has 19 endpoints, with 46 review items (+table-not-in-schema, +user-type-unknown, -1 type-unknown). The fingerprint is now `D012 91EA 3AC8 A46E`.
+- **Tests:** 4 new; 159 pass.
