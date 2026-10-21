@@ -16,6 +16,13 @@ counts in seconds cannot come out the same twice by chance. A value that changes
 more slowly, such as today's date, is not caught this way: a date the request wrote
 that equals the day of the capture is excluded instead, as the date of the run.
 
+The database's clock is read just before and just after every request. A changing
+column whose every value, in every capture, falls inside its own request's time on
+that clock was written from the clock, as the time of the request; a date of the run
+was written as the date of the request. Neither is excluded then: the migrated value
+is checked against the time of its own request instead (see compare.py). A column
+that changes in any other way, as a salt does, stays excluded.
+
 A column whose values occur nowhere in the database was computed by the page, as
 "Cancelled by Doctor" is computed from two status flags. A migrated API may well
 return the inputs instead and leave the wording to its frontend, so such a column is
@@ -91,6 +98,8 @@ class Observation:
     sent_at: float = 0.0
     # The rows of every table after the request, when the database was read.
     tables: Any = None
+    # The database's clock just before and just after the request (see dbstate.window).
+    window: Any = None
 
 
 def _observe(
@@ -112,6 +121,7 @@ def _observe(
             # scenario's change is measured from after it.
             before = dbstate.snapshot(config.legacy)
         time.sleep(max(0.0, not_before - time.monotonic()))
+        started = dbstate.clock(config.legacy)
         sent_at = time.monotonic()
         response = session.request(
             request["method"],
@@ -121,6 +131,7 @@ def _observe(
             timeout=config.request_timeout,
             allow_redirects=False,
         )
+        ended = dbstate.clock(config.legacy)
     finally:
         session.close()
 
@@ -186,6 +197,7 @@ def _observe(
         shown=shown,
         sent_at=sent_at,
         tables=after_rows,
+        window=dbstate.window(started, ended),
     )
 
 
@@ -427,6 +439,36 @@ def _dated_today(delta: dict[str, Any], days: set[str], inputs: dict[str, Any]) 
     return sorted(found)
 
 
+def _written(delta: dict[str, Any], column: str) -> list[Any]:
+    """Every value a delta wrote to one column, "table.column"."""
+    table, _, name = column.partition(".")
+    changes = delta.get(table, {})
+    return [row[name] for row in changes.get("inserted", ()) if name in row] + [
+        item["changes"][name]["after"] for item in changes.get("updated", ()) if name in item["changes"]
+    ]
+
+
+def _clocks(column: str, written: str, observations: list[Observation]) -> list[str]:
+    """The clocks, "local" or "utc", on which every capture wrote `column` as `written`.
+
+    Every value the column was given, in every capture, must be the time (or the
+    date) of that capture's own request. Empty when that is not so on any one clock,
+    or when the database's clock was not read.
+    """
+    from c4.compare import _fits_clock  # here, not at the top: compare imports this module's users
+
+    found = {"local", "utc"}
+    for observation in observations:
+        values = _written(observation.delta, column)
+        if observation.window is None or not values:
+            return []
+        found = {
+            name for name in found
+            if all(_fits_clock(value, written, [name], observation.window) for value in values)
+        }
+    return sorted(found)
+
+
 def capture(
     config: Config, scenario: dict[str, Any], baselines: dict[str, dbstate.Snapshot]
 ) -> dict[str, Any]:
@@ -443,6 +485,17 @@ def capture(
         column for column in _dated_today(observed.delta, days, scenario.get("values", {}))
         if column not in volatile_columns
     ]
+    # A changing column, or a date of the run, written from the database's clock is
+    # checked against the clock instead of being excluded. One that is not stays
+    # excluded: a salt or a hash differs on every run and cannot be checked at all.
+    clocked = [
+        {"scope": "database", "field": column, "written": written, "clocks": clocks}
+        for written, columns in (("time_of_request", volatile_columns), ("current_date", dated))
+        for column in columns
+        if (clocks := _clocks(column, written, observations))
+    ]
+    volatile_columns = [c for c in volatile_columns if c not in {e["field"] for e in clocked}]
+    dated = [c for c in dated if c not in {e["field"] for e in clocked}]
     computed = _computed_labels(observed, baselines["legacy"], volatile)
     columns = _field_columns(observed.records, observed.tables, [*volatile, *computed])
     request = scenario["legacy_request"]
@@ -486,6 +539,8 @@ def capture(
             {"scope": "database", "field": column, "reason": "current_date"}
             for column in dated
         ],
+        # Listed only where there are any, so a record without them reads as before.
+        **({"clock_fields": clocked} if clocked else {}),
         "capture_runs": CAPTURE_RUNS,
         "captured_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }

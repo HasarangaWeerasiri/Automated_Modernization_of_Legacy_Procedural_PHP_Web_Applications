@@ -168,7 +168,7 @@
       ]
     },
     "POST /api/guestbook": {
-      "verdict": "INCONCLUSIVE",
+      "verdict": "PASS",
       "fields_compared": {
         "by_label": [],
         "by_value": []
@@ -195,7 +195,7 @@
         {
           "scenario_id": "guestbook_sign_boundary_comment_longest",
           "scenario_type": "boundary",
-          "verdict": "INCONCLUSIVE",
+          "verdict": "PASS",
           "request": {
             "method": "POST",
             "path": "/api/guestbook",
@@ -208,20 +208,7 @@
           "legacy_request": "POST /guestbook.php",
           "oracle_record": "oracles/wackopicko/guestbook_sign_boundary_comment_longest.json",
           "differences": [],
-          "abstentions": [
-            {
-              "where": "database",
-              "kind": "excluded_field_differs",
-              "detail": {
-                "values_changed": {
-                  "root['guestbook']['inserted'][0]['created_on']": {
-                    "old_value": "2026-10-18 16:10:51",
-                    "new_value": "different on every run"
-                  }
-                }
-              }
-            }
-          ]
+          "abstentions": []
         },
         {
           "scenario_id": "guestbook_sign_boundary_comment_missing",
@@ -279,7 +266,7 @@
         {
           "scenario_id": "guestbook_sign_boundary_name_longest",
           "scenario_type": "boundary",
-          "verdict": "INCONCLUSIVE",
+          "verdict": "PASS",
           "request": {
             "method": "POST",
             "path": "/api/guestbook",
@@ -292,20 +279,7 @@
           "legacy_request": "POST /guestbook.php",
           "oracle_record": "oracles/wackopicko/guestbook_sign_boundary_name_longest.json",
           "differences": [],
-          "abstentions": [
-            {
-              "where": "database",
-              "kind": "excluded_field_differs",
-              "detail": {
-                "values_changed": {
-                  "root['guestbook']['inserted'][0]['created_on']": {
-                    "old_value": "2026-10-18 16:11:01",
-                    "new_value": "different on every run"
-                  }
-                }
-              }
-            }
-          ]
+          "abstentions": []
         },
         {
           "scenario_id": "guestbook_sign_boundary_name_missing",
@@ -345,7 +319,7 @@
         {
           "scenario_id": "guestbook_sign_typical_01",
           "scenario_type": "typical",
-          "verdict": "INCONCLUSIVE",
+          "verdict": "PASS",
           "request": {
             "method": "POST",
             "path": "/api/guestbook",
@@ -358,25 +332,12 @@
           "legacy_request": "POST /guestbook.php",
           "oracle_record": "oracles/wackopicko/guestbook_sign_typical_01.json",
           "differences": [],
-          "abstentions": [
-            {
-              "where": "database",
-              "kind": "excluded_field_differs",
-              "detail": {
-                "values_changed": {
-                  "root['guestbook']['inserted'][0]['created_on']": {
-                    "old_value": "2026-10-18 16:11:25",
-                    "new_value": "different on every run"
-                  }
-                }
-              }
-            }
-          ]
+          "abstentions": []
         },
         {
           "scenario_id": "guestbook_sign_typical_02",
           "scenario_type": "typical",
-          "verdict": "INCONCLUSIVE",
+          "verdict": "PASS",
           "request": {
             "method": "POST",
             "path": "/api/guestbook",
@@ -389,25 +350,12 @@
           "legacy_request": "POST /guestbook.php",
           "oracle_record": "oracles/wackopicko/guestbook_sign_typical_02.json",
           "differences": [],
-          "abstentions": [
-            {
-              "where": "database",
-              "kind": "excluded_field_differs",
-              "detail": {
-                "values_changed": {
-                  "root['guestbook']['inserted'][0]['created_on']": {
-                    "old_value": "2026-10-18 16:11:27",
-                    "new_value": "different on every run"
-                  }
-                }
-              }
-            }
-          ]
+          "abstentions": []
         },
         {
           "scenario_id": "guestbook_sign_typical_03",
           "scenario_type": "typical",
-          "verdict": "INCONCLUSIVE",
+          "verdict": "PASS",
           "request": {
             "method": "POST",
             "path": "/api/guestbook",
@@ -420,20 +368,7 @@
           "legacy_request": "POST /guestbook.php",
           "oracle_record": "oracles/wackopicko/guestbook_sign_typical_03.json",
           "differences": [],
-          "abstentions": [
-            {
-              "where": "database",
-              "kind": "excluded_field_differs",
-              "detail": {
-                "values_changed": {
-                  "root['guestbook']['inserted'][0]['created_on']": {
-                    "old_value": "2026-10-18 16:11:30",
-                    "new_value": "different on every run"
-                  }
-                }
-              }
-            }
-          ]
+          "abstentions": []
         }
       ]
     },
@@ -532,19 +467,11 @@
               "detail": {
                 "values_changed": {
                   "root['users']['inserted'][0]['password']": {
-                    "old_value": "b799fc49bd1aa1c0f0bcb52448d631b3a170f834",
+                    "old_value": "c42d8308324d24b8ee165cf43c6907b376b16631",
                     "new_value": "different on every run"
                   },
                   "root['users']['inserted'][0]['salt']": {
-                    "old_value": "NTU=",
-                    "new_value": "different on every run"
-                  },
-                  "root['users']['inserted'][0]['created_on']": {
-                    "old_value": "2026-10-18 16:12:06",
-                    "new_value": "different on every run"
-                  },
-                  "root['users']['inserted'][0]['last_login_on']": {
-                    "old_value": "2026-10-18 16:12:06",
+                    "old_value": "ODU1",
                     "new_value": "different on every run"
                   }
                 }
@@ -640,19 +567,11 @@
               "detail": {
                 "values_changed": {
                   "root['users']['inserted'][0]['password']": {
-                    "old_value": "ec2e39a1299600775e0efd8a614d28c23a7a6570",
+                    "old_value": "7b7811543ab9a6b9fe9216341e5970597a6fc8c2",
                     "new_value": "different on every run"
                   },
                   "root['users']['inserted'][0]['salt']": {
-                    "old_value": "NjQz",
-                    "new_value": "different on every run"
-                  },
-                  "root['users']['inserted'][0]['created_on']": {
-                    "old_value": "2026-10-18 16:12:15",
-                    "new_value": "different on every run"
-                  },
-                  "root['users']['inserted'][0]['last_login_on']": {
-                    "old_value": "2026-10-18 16:12:15",
+                    "old_value": "ODE2",
                     "new_value": "different on every run"
                   }
                 }
@@ -788,19 +707,11 @@
               "detail": {
                 "values_changed": {
                   "root['users']['inserted'][0]['password']": {
-                    "old_value": "09ce6683fb9bda043fc7ac2d8dfa6d903f00167d",
+                    "old_value": "eddfcfab46f99f460ba77f9b015897c982a6fb50",
                     "new_value": "different on every run"
                   },
                   "root['users']['inserted'][0]['salt']": {
-                    "old_value": "NjE4",
-                    "new_value": "different on every run"
-                  },
-                  "root['users']['inserted'][0]['created_on']": {
-                    "old_value": "2026-10-18 16:12:30",
-                    "new_value": "different on every run"
-                  },
-                  "root['users']['inserted'][0]['last_login_on']": {
-                    "old_value": "2026-10-18 16:12:30",
+                    "old_value": "NTM2",
                     "new_value": "different on every run"
                   }
                 }
@@ -875,19 +786,11 @@
               "detail": {
                 "values_changed": {
                   "root['users']['inserted'][0]['password']": {
-                    "old_value": "43ce44e97f9922e6c10e8fe385b55e04a1ff58ce",
+                    "old_value": "3802ad8b0164d046c3022e3f29a9bcfdfe6a1323",
                     "new_value": "different on every run"
                   },
                   "root['users']['inserted'][0]['salt']": {
-                    "old_value": "MzU1",
-                    "new_value": "different on every run"
-                  },
-                  "root['users']['inserted'][0]['created_on']": {
-                    "old_value": "2026-10-18 16:13:09",
-                    "new_value": "different on every run"
-                  },
-                  "root['users']['inserted'][0]['last_login_on']": {
-                    "old_value": "2026-10-18 16:13:09",
+                    "old_value": "NjM0",
                     "new_value": "different on every run"
                   }
                 }
@@ -921,19 +824,11 @@
               "detail": {
                 "values_changed": {
                   "root['users']['inserted'][0]['password']": {
-                    "old_value": "11db4e4d5f63269dd60bb6bd10544b30d6788a21",
+                    "old_value": "dfee49cd73c17058f5065b4455e178e0d7b4d22b",
                     "new_value": "different on every run"
                   },
                   "root['users']['inserted'][0]['salt']": {
-                    "old_value": "MTEz",
-                    "new_value": "different on every run"
-                  },
-                  "root['users']['inserted'][0]['created_on']": {
-                    "old_value": "2026-10-18 16:13:12",
-                    "new_value": "different on every run"
-                  },
-                  "root['users']['inserted'][0]['last_login_on']": {
-                    "old_value": "2026-10-18 16:13:12",
+                    "old_value": "NzM2",
                     "new_value": "different on every run"
                   }
                 }
@@ -967,19 +862,11 @@
               "detail": {
                 "values_changed": {
                   "root['users']['inserted'][0]['password']": {
-                    "old_value": "c883933ded1f7e7d8da0ff7a6012bed188094732",
+                    "old_value": "59686d55496ffffe26af5808163015213531ab66",
                     "new_value": "different on every run"
                   },
                   "root['users']['inserted'][0]['salt']": {
-                    "old_value": "NTQ0",
-                    "new_value": "different on every run"
-                  },
-                  "root['users']['inserted'][0]['created_on']": {
-                    "old_value": "2026-10-18 16:13:15",
-                    "new_value": "different on every run"
-                  },
-                  "root['users']['inserted'][0]['last_login_on']": {
-                    "old_value": "2026-10-18 16:13:15",
+                    "old_value": "ODI1",
                     "new_value": "different on every run"
                   }
                 }

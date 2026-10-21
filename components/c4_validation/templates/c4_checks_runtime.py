@@ -35,6 +35,22 @@ def start(engine):
     return snapshot(engine) if engine is not None else None
 
 
+_CLOCK_QUERIES = {
+    "mysql": "SELECT NOW(), UTC_TIMESTAMP()",
+    "mariadb": "SELECT NOW(), UTC_TIMESTAMP()",
+}
+
+
+def clock(engine) -> dict[str, str] | None:
+    """The database's time now, by its own time zone and in UTC; None when it cannot be read."""
+    query = _CLOCK_QUERIES.get(engine.dialect.name) if engine is not None else None
+    if query is None:
+        return None
+    with engine.connect() as connection:
+        local, utc = connection.execute(text(query)).one()
+    return {"local": _plain(local), "utc": _plain(utc)}
+
+
 def _key(values: dict[str, Any]) -> str:
     return json.dumps(values, sort_keys=True, ensure_ascii=False)
 
@@ -188,11 +204,25 @@ def expect_records(
                 pytest.skip(f"Only the excluded field '{label}' differs, which cannot be judged.")
 
 
-def expect_database_change(engine, before, expected: dict[str, Any], excluded: tuple[str, ...] = ()) -> None:
-    """The request changed the database exactly as the legacy page did."""
+def expect_database_change(
+    engine, before, expected: dict[str, Any], excluded: tuple[str, ...] = (),
+    clocked: list[dict[str, Any]] = (), sent: dict[str, str] | None = None,
+) -> None:
+    """The request changed the database exactly as the legacy page did.
+
+    A column in `clocked` was written from the clock: it must hold the time, or the
+    date, of this request, read from `sent` (the clock just before it) to now.
+    """
     if engine is None:
         return  # no database given: database checks are off
+    ended = clock(engine)
     actual = delta(before, snapshot(engine))
+    fields = {entry["field"]: entry for entry in clocked}
+    window = {name: [sent[name], ended[name]] for name in sent} if fields and sent and ended else None
+    if fields and window is None:
+        excluded, fields = (*excluded, *fields), {}  # the clock could not be read: not judged
+    expected = _on_the_clock(expected, fields, None, oracle=True)
+    actual = _on_the_clock(actual, fields, window)
     kept = DeepDiff(
         _plain_delta(expected, set(excluded)), _plain_delta(actual, set(excluded)),
         ignore_order=True, report_repetition=True,

@@ -229,6 +229,35 @@ def snapshot(system: System) -> Snapshot:
     return Snapshot(tables)
 
 
+# ---------------------------------------------------------------------------- clock
+#
+# A value a system writes from its own clock, as the time a row was created, cannot
+# equal the one the other system wrote. What can be expected is that it is the time
+# of the request. The database's clock is read just before and just after a request:
+# it is the clock such a value is taken from, where the machine running the engine
+# may be seconds apart from it.
+
+_CLOCK_QUERIES = {
+    "mysql": "SELECT NOW(), UTC_TIMESTAMP()",
+    "mariadb": "SELECT NOW(), UTC_TIMESTAMP()",
+}
+
+
+def clock(system: System) -> dict[str, str]:
+    """The database's time now, by its own time zone ("local") and in UTC."""
+    query = _for_engine(_CLOCK_QUERIES, system, "clock query")
+    with _engine(system.db_url).connect() as connection:
+        local, utc = connection.execute(text(query)).one()
+    return {"local": _plain(local), "utc": _plain(utc)}
+
+
+def window(before: dict[str, str] | None, after: dict[str, str] | None) -> dict[str, list[str]] | None:
+    """The time a request took, on each clock: from just before to just after it."""
+    if before is None or after is None:
+        return None
+    return {name: [before[name], after[name]] for name in before}
+
+
 # ---------------------------------------------------------------------------- reset
 
 

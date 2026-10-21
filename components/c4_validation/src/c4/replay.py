@@ -40,6 +40,9 @@ class Replay:
     # The database column each response field holds, by field path, as the endpoint
     # map gives it; empty when the map says nothing.
     columns: Mapping[str, str] = field(default_factory=dict)
+    # The migrated database's clock just before and just after the request (see
+    # dbstate.window); None when it was not read.
+    window: Mapping[str, list[str]] | None = None
 
 
 def _records(response: requests.Response, records_at: str) -> tuple[tuple | None, str | None]:
@@ -105,6 +108,7 @@ def replay(
             session.headers["Authorization"] = _token(config, session, scenario, scenario["migrated_login"])
             # Measured from after the login, as on the legacy side.
             before = dbstate.snapshot(config.migrated)
+        started = dbstate.clock(config.migrated)
         response = session.request(
             request["method"],
             config.migrated.base_url + request["path"],
@@ -113,6 +117,7 @@ def replay(
             timeout=config.request_timeout,
             allow_redirects=False,
         )
+        ended = dbstate.clock(config.migrated)
     finally:
         session.close()
 
@@ -130,4 +135,5 @@ def replay(
         problem=problem,
         delta=dbstate.delta(before, after),
         columns=request.get("fields") or {},
+        window=dbstate.window(started, ended),
     )

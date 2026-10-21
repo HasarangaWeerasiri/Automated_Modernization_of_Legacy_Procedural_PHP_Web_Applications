@@ -235,3 +235,79 @@ def test_the_suite_on_its_own_catches_a_suppressed_database_row(at_baseline, bas
     assert result.returncode != 0
     assert "3 failed" in result.stdout
     assert "The database change differs from the legacy page's." in result.stdout
+
+
+# ------------------------------------------------------- written from the clock
+
+CLOCKED = [{"scope": "database", "field": "guestbook.created_on", "written": "time_of_request", "clocks": ["local", "utc"]}]
+LEGACY_ENTRY = {"guestbook": {"inserted": [{"id": 1, "name": "Anu", "created_on": "2026-10-18 16:11:25"}], "updated": [], "deleted": []}}
+SENT = {"local": "2026-10-18 18:41:10", "utc": "2026-10-18 18:41:10"}
+ENDED = {"local": "2026-10-18 18:41:11", "utc": "2026-10-18 18:41:11"}
+
+
+def test_a_test_with_a_clock_column_reads_the_clock_around_its_request(benchmark):
+    _add(benchmark, "list_typical_01", "list", {}, records=[{"Name": "Ram"}])
+    _add(benchmark, "search_typical_01", "search", {"q": "Ram"}, records=[{"Name": "Ram"}])
+    record = benchmark.oracle_dir / "search_typical_01.json"
+    record.write_text(json.dumps({**json.loads(record.read_text()), "clock_fields": CLOCKED}))
+
+    tests = (build(benchmark, BASELINE) / "test_equivalence.py").read_text(encoding="utf-8")
+
+    compile(tests, "test_equivalence.py", "exec")
+    assert tests.count("    sent = clock(db)\n    response = api.request(") == 1
+    assert tests.count("        sent=sent,\n") == 1
+    assert "'written': 'time_of_request'" in tests
+
+
+def test_the_helper_file_holds_the_clock_rule_word_for_word(checks):
+    from c4.compare import ON_THE_CLOCK, _CLOCK_SLACK, _on_the_clock
+
+    window = {name: [SENT[name], ENDED[name]] for name in SENT}
+    fields = {entry["field"]: entry for entry in CLOCKED}
+    for at in ("2026-10-18 18:41:10", "2000-01-01 00:00:00"):
+        written = {"guestbook": {"inserted": [{"id": 1, "name": "Anu", "created_on": at}], "updated": [], "deleted": []}}
+        assert checks._on_the_clock(written, fields, window) == _on_the_clock(written, fields, window)
+    assert (checks.ON_THE_CLOCK, checks._CLOCK_SLACK) == (ON_THE_CLOCK, _CLOCK_SLACK)
+
+
+@pytest.fixture
+def guestbook_db(tmp_path):
+    from sqlalchemy import create_engine, text
+
+    engine = create_engine(f"sqlite:///{tmp_path / 'guestbook.db'}")
+    with engine.begin() as connection:
+        connection.execute(text("CREATE TABLE guestbook (id INTEGER PRIMARY KEY, name TEXT, created_on TEXT)"))
+
+    def write(at):
+        with engine.begin() as connection:
+            connection.execute(text("INSERT INTO guestbook VALUES (1, 'Anu', :at)"), {"at": at})
+
+    return engine, write
+
+
+def test_the_suite_passes_a_time_written_at_the_time_of_its_request(checks, guestbook_db, monkeypatch):
+    engine, write = guestbook_db
+    monkeypatch.setattr(checks, "clock", lambda engine: ENDED)
+    before = checks.start(engine)
+    write("2026-10-18 18:41:10")
+
+    checks.expect_database_change(engine, before, LEGACY_ENTRY, clocked=CLOCKED, sent=SENT)
+
+
+def test_the_suite_fails_a_fixed_time(checks, guestbook_db, monkeypatch):
+    engine, write = guestbook_db
+    monkeypatch.setattr(checks, "clock", lambda engine: ENDED)
+    before = checks.start(engine)
+    write("2000-01-01 00:00:00")
+
+    with pytest.raises(AssertionError, match="the time of the request"):
+        checks.expect_database_change(engine, before, LEGACY_ENTRY, clocked=CLOCKED, sent=SENT)
+
+
+def test_the_suite_does_not_judge_a_time_when_the_clock_cannot_be_read(checks, guestbook_db):
+    engine, write = guestbook_db  # SQLite: the suite has no clock query for it
+    before = checks.start(engine)
+    write("2000-01-01 00:00:00")
+
+    with pytest.raises(pytest.skip.Exception, match="Only excluded columns differ"):
+        checks.expect_database_change(engine, before, LEGACY_ENTRY, clocked=CLOCKED, sent=checks.clock(engine))

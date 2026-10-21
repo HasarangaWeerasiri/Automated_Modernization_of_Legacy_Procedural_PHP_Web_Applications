@@ -17,6 +17,8 @@ from deepdiff import DeepDiff
 from sqlalchemy import MetaData, select, text
 
 _NUMBER = re.compile('-?(0|[1-9]\\d*)(\\.\\d+)?')
+ON_THE_CLOCK = {'time_of_request': 'the time of the request', 'current_date': 'the date of the request'}
+_CLOCK_SLACK = timedelta(seconds=1.0)
 
 def _plain(value: Any) -> Any:
     """Reduce a database value to a JSON type, the same way on every engine."""
@@ -156,6 +158,62 @@ def _plain_delta(delta: dict[str, Any], excluded: set[str]) -> dict[str, Any]:
         for table, changes in delta.items()
     }
 
+def _fits_clock(value: Any, written: str, clocks: Iterable[str], window: dict[str, list[str]] | None) -> bool:
+    """Whether a value is the time, or the date, of the request on one of `clocks`."""
+    if not isinstance(value, str) or not window:
+        return False
+    try:
+        moment = datetime.fromisoformat(value)
+        for name in clocks:
+            if name not in window:
+                continue
+            start, end = (datetime.fromisoformat(edge) for edge in window[name])
+            if written == "current_date":
+                if value in (start.date().isoformat(), end.date().isoformat()):
+                    return True
+            elif written == "time_of_request" and start - _CLOCK_SLACK <= moment <= end + _CLOCK_SLACK:
+                return True
+    except (TypeError, ValueError):
+        return False  # not a date or a time, or one with a time zone the window lacks
+    return False
+
+def _on_the_clock(
+    delta: dict[str, Any], fields: dict[str, dict[str, Any]], window: dict[str, list[str]] | None,
+    oracle: bool = False,
+) -> dict[str, Any]:
+    """A delta with each value written from the clock replaced by what it stands for.
+
+    `fields` maps "table.column" to its clock entry. On the migrated side only a value
+    that fits its request's `window` is replaced; one that does not stays as it is and
+    so differs. The oracle's own values were checked against their window at capture.
+    """
+    if not fields:
+        return delta
+
+    def value(table: str, column: str, written: Any) -> Any:
+        entry = fields.get(f"{table}.{column}")
+        if entry is None or not (oracle or _fits_clock(written, entry["written"], entry["clocks"], window)):
+            return written
+        return ON_THE_CLOCK[entry["written"]]
+
+    return {
+        table: {
+            "inserted": [{c: value(table, c, v) for c, v in row.items()} for row in changes["inserted"]],
+            "deleted": changes["deleted"],
+            "updated": [
+                {
+                    "key": item["key"],
+                    "changes": {
+                        c: {"before": change["before"], "after": value(table, c, change["after"])}
+                        for c, change in item["changes"].items()
+                    },
+                }
+                for item in changes["updated"]
+            ],
+        }
+        for table, changes in delta.items()
+    }
+
 def injection_effects(
     probe: Any, records: Iterable[dict[str, Any]], delta: dict[str, Any], placed: bool = True
 ) -> list[dict[str, Any]]:
@@ -227,6 +285,22 @@ def snapshot(engine) -> dict[str, dict[str, Any]]:
 def start(engine):
     """The database as it is just before the request under test, or None without one."""
     return snapshot(engine) if engine is not None else None
+
+
+_CLOCK_QUERIES = {
+    "mysql": "SELECT NOW(), UTC_TIMESTAMP()",
+    "mariadb": "SELECT NOW(), UTC_TIMESTAMP()",
+}
+
+
+def clock(engine) -> dict[str, str] | None:
+    """The database's time now, by its own time zone and in UTC; None when it cannot be read."""
+    query = _CLOCK_QUERIES.get(engine.dialect.name) if engine is not None else None
+    if query is None:
+        return None
+    with engine.connect() as connection:
+        local, utc = connection.execute(text(query)).one()
+    return {"local": _plain(local), "utc": _plain(utc)}
 
 
 def _key(values: dict[str, Any]) -> str:
@@ -382,11 +456,25 @@ def expect_records(
                 pytest.skip(f"Only the excluded field '{label}' differs, which cannot be judged.")
 
 
-def expect_database_change(engine, before, expected: dict[str, Any], excluded: tuple[str, ...] = ()) -> None:
-    """The request changed the database exactly as the legacy page did."""
+def expect_database_change(
+    engine, before, expected: dict[str, Any], excluded: tuple[str, ...] = (),
+    clocked: list[dict[str, Any]] = (), sent: dict[str, str] | None = None,
+) -> None:
+    """The request changed the database exactly as the legacy page did.
+
+    A column in `clocked` was written from the clock: it must hold the time, or the
+    date, of this request, read from `sent` (the clock just before it) to now.
+    """
     if engine is None:
         return  # no database given: database checks are off
+    ended = clock(engine)
     actual = delta(before, snapshot(engine))
+    fields = {entry["field"]: entry for entry in clocked}
+    window = {name: [sent[name], ended[name]] for name in sent} if fields and sent and ended else None
+    if fields and window is None:
+        excluded, fields = (*excluded, *fields), {}  # the clock could not be read: not judged
+    expected = _on_the_clock(expected, fields, None, oracle=True)
+    actual = _on_the_clock(actual, fields, window)
     kept = DeepDiff(
         _plain_delta(expected, set(excluded)), _plain_delta(actual, set(excluded)),
         ignore_order=True, report_repetition=True,

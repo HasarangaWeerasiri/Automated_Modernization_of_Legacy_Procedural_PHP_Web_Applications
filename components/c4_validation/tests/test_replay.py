@@ -65,6 +65,7 @@ def api(monkeypatch):
             lambda system, baseline: ensured.append(system.name) or baseline,
         )
         monkeypatch.setattr(replay_module.dbstate, "snapshot", lambda system: BASELINE)
+        monkeypatch.setattr(replay_module.dbstate, "clock", lambda system: None)  # the clock is not read
         monkeypatch.setattr(replay_module.dbstate, "delta", lambda before, after: delta or {})
         session.ensured = ensured
         return session

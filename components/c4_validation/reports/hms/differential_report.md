@@ -51,6 +51,7 @@ Judged for safe handling, not for equivalence; they never change a verdict above
 - **PASS**: everything compared agrees with what the legacy system was observed to do for this request.
 - **FAIL**: a compared value, record, outcome or database change differs from it.
 - **INCONCLUSIVE**: the only differences are in fields that cannot be judged (a value the legacy page computes, one that is different in every capture, or the date of the run), or nothing was left to compare. The engine says so rather than guess.
+- A **time written from the clock**, as the time a row was created, is not expected to equal the legacy one: it must be the time (or the date) of the migrated system's own request, on the clock the legacy system used. Shown as *the time of the request*; a fixed or wrong time differs.
 - An **endpoint** takes the worst verdict of its scenarios: FAIL, then INCONCLUSIVE, then PASS.
 - An **oracle record** is what the legacy system was observed to do for one scenario. Every finding links to the record it rests on.
 - **Injection probes** are judged for safe handling, not for equivalence: *security improvement* (the legacy page was affected, the migrated system is not), *safe, as before* (neither was), *vulnerability kept* (both were), *vulnerability introduced* (only the migrated system is), *unhandled input* (the migrated system failed with a server error), *not judged* (no evidence either way, with the reason).

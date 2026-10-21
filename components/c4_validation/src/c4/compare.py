@@ -24,6 +24,10 @@ takes it from the endpoint map (`fields`). This is what tells two swapped fields
 apart. A field that only one side, or neither, links to a column is compared by value
 alone, as before: it can never cause a difference on its own, and the comparison says
 which fields were compared each way.
+
+A database column the legacy system wrote from its clock (`clock_fields`) is held to
+the time, or the date, of the migrated system's own request on the same clock: inside
+it, the column agrees; outside it, as a fixed time would be, it differs.
 """
 
 from __future__ import annotations
@@ -32,6 +36,7 @@ import json
 import re
 from collections import Counter
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Any, Iterable
 
@@ -292,6 +297,73 @@ def _plain_delta(delta: dict[str, Any], excluded: set[str]) -> dict[str, Any]:
     }
 
 
+# A value a system writes from its clock, as the time a row was created, is held to
+# what it stands for, never to the value the legacy system wrote. Capture found the
+# legacy value inside its request's time window on the clocks it lists ("local" or
+# "utc"); the migrated value must be inside the window of its own request on one of
+# those clocks. MySQL keeps whole seconds and rounds, hence the slack at each end.
+ON_THE_CLOCK = {"time_of_request": "the time of the request", "current_date": "the date of the request"}
+_CLOCK_SLACK = timedelta(seconds=1)
+
+
+def _fits_clock(value: Any, written: str, clocks: Iterable[str], window: dict[str, list[str]] | None) -> bool:
+    """Whether a value is the time, or the date, of the request on one of `clocks`."""
+    if not isinstance(value, str) or not window:
+        return False
+    try:
+        moment = datetime.fromisoformat(value)
+        for name in clocks:
+            if name not in window:
+                continue
+            start, end = (datetime.fromisoformat(edge) for edge in window[name])
+            if written == "current_date":
+                if value in (start.date().isoformat(), end.date().isoformat()):
+                    return True
+            elif written == "time_of_request" and start - _CLOCK_SLACK <= moment <= end + _CLOCK_SLACK:
+                return True
+    except (TypeError, ValueError):
+        return False  # not a date or a time, or one with a time zone the window lacks
+    return False
+
+
+def _on_the_clock(
+    delta: dict[str, Any], fields: dict[str, dict[str, Any]], window: dict[str, list[str]] | None,
+    oracle: bool = False,
+) -> dict[str, Any]:
+    """A delta with each value written from the clock replaced by what it stands for.
+
+    `fields` maps "table.column" to its clock entry. On the migrated side only a value
+    that fits its request's `window` is replaced; one that does not stays as it is and
+    so differs. The oracle's own values were checked against their window at capture.
+    """
+    if not fields:
+        return delta
+
+    def value(table: str, column: str, written: Any) -> Any:
+        entry = fields.get(f"{table}.{column}")
+        if entry is None or not (oracle or _fits_clock(written, entry["written"], entry["clocks"], window)):
+            return written
+        return ON_THE_CLOCK[entry["written"]]
+
+    return {
+        table: {
+            "inserted": [{c: value(table, c, v) for c, v in row.items()} for row in changes["inserted"]],
+            "deleted": changes["deleted"],
+            "updated": [
+                {
+                    "key": item["key"],
+                    "changes": {
+                        c: {"before": change["before"], "after": value(table, c, change["after"])}
+                        for c, change in item["changes"].items()
+                    },
+                }
+                for item in changes["updated"]
+            ],
+        }
+        for table, changes in delta.items()
+    }
+
+
 # A value a system writes differently on every run, as the current time: it is not
 # evidence, and printing it would make identical runs give different reports.
 VARIES = "different on every run"
@@ -347,7 +419,15 @@ def _compare_database(record: dict[str, Any], replayed: Replay) -> tuple[list, l
         entry["field"] for entry in record["excluded_fields"]
         if entry["scope"] == "database" and entry["reason"] in ("observed_nondeterministic", "current_date")
     }
-    legacy, migrated = record["db_state"]["delta"], replayed.delta
+    clocked = {entry["field"]: entry for entry in record.get("clock_fields", ()) if entry["scope"] == "database"}
+    if clocked and replayed.window is None:
+        # The migrated database's clock was not read, so these cannot be checked:
+        # they are not judged, as before the clock was read at all.
+        excluded |= set(clocked)
+        varying |= set(clocked)
+        clocked = {}
+    legacy = _on_the_clock(record["db_state"]["delta"], clocked, None, oracle=True)
+    migrated = _on_the_clock(replayed.delta, clocked, replayed.window)
 
     def diff(expected: dict[str, Any], actual: dict[str, Any]) -> DeepDiff:
         # Row order carries no meaning, but how many times a row was written does:

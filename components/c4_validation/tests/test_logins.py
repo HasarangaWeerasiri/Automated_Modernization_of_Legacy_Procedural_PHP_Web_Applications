@@ -150,6 +150,7 @@ def legacy(monkeypatch):
         session.snapshots = []
         monkeypatch.setattr(capture_module.requests, "Session", lambda: session)
         monkeypatch.setattr(capture_module.dbstate, "ensure_baseline", lambda system, baseline: baseline)
+        monkeypatch.setattr(capture_module.dbstate, "clock", lambda system: None)  # the clock is not read
         monkeypatch.setattr(
             capture_module.dbstate, "snapshot",
             lambda system: session.snapshots.append(len(session.requests)) or BASELINE,
@@ -224,6 +225,7 @@ def migrated(monkeypatch):
         session = MigratedSession(Answer(token_status, token_body))
         monkeypatch.setattr(replay_module.requests, "Session", lambda: session)
         monkeypatch.setattr(replay_module.dbstate, "ensure_baseline", lambda system, baseline: baseline)
+        monkeypatch.setattr(replay_module.dbstate, "clock", lambda system: None)  # the clock is not read
         monkeypatch.setattr(replay_module.dbstate, "snapshot", lambda system: BASELINE)
         monkeypatch.setattr(replay_module.dbstate, "delta", lambda before, after: {})
         return session

@@ -13,7 +13,7 @@ Do not edit: generate it again instead.
 
 import pytest
 
-from c4_checks import expect_database_change, expect_outcome, expect_records, expect_safe_handling, start
+from c4_checks import clock, expect_database_change, expect_outcome, expect_records, expect_safe_handling, start
 {% for test in tests %}
 
 {% if test.skip %}@pytest.mark.skip(reason={{ test.skip | py(0) }})
@@ -26,7 +26,8 @@ from c4_checks import expect_database_change, expect_outcome, expect_records, ex
 {% if test.login %}    headers = api.login({{ test.login.method | py(4) }}, {{ test.login.path | py(4) }}, {{ test.login.get("body") | py(4) }}, token_at={{ test.login.token_at | py(4) }})
 {% else %}    headers = {}
 {% endif %}    before = start(db)
-    response = api.request(
+{% if test.get("clocked") %}    sent = clock(db)
+{% endif %}    response = api.request(
         {{ test.method | py(8) }},
         {{ test.path | py(8) }},
         params={{ test.params | py(8) }},
@@ -49,6 +50,8 @@ from c4_checks import expect_database_change, expect_outcome, expect_records, ex
         db,
         before,
         excluded={{ test.excluded_database | py(8) }},
-        expected={{ test.delta | py(8) }},
+{% if test.get("clocked") %}        clocked={{ test.clocked | py(8) }},
+        sent=sent,
+{% endif %}        expected={{ test.delta | py(8) }},
     )
 {% endif %}{% endfor %}

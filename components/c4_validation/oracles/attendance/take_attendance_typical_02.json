@@ -29,7 +29,7 @@
             "stat_id": 2446,
             "course": "swe",
             "st_status": "Present",
-            "stat_date": "2026-10-20"
+            "stat_date": "2026-10-21"
           }
         ],
         "updated": [],
@@ -37,13 +37,18 @@
       }
     }
   },
-  "excluded_fields": [
+  "excluded_fields": [],
+  "clock_fields": [
     {
       "scope": "database",
       "field": "attendance.stat_date",
-      "reason": "current_date"
+      "written": "current_date",
+      "clocks": [
+        "local",
+        "utc"
+      ]
     }
   ],
   "capture_runs": 2,
-  "captured_at": "2026-10-20T07:40:41+00:00"
+  "captured_at": "2026-10-21T15:36:03+00:00"
 }

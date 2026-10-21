@@ -13,7 +13,7 @@ Do not edit: generate it again instead.
 
 import pytest
 
-from c4_checks import expect_database_change, expect_outcome, expect_records, expect_safe_handling, start
+from c4_checks import clock, expect_database_change, expect_outcome, expect_records, expect_safe_handling, start
 
 
 def test_guestbook_list_typical_01(api, db):
@@ -92,6 +92,7 @@ def test_guestbook_sign_boundary_comment_longest(api, db):
     """
     headers = {}
     before = start(db)
+    sent = clock(db)
     response = api.request(
         'POST',
         '/api/guestbook',
@@ -111,11 +112,16 @@ def test_guestbook_sign_boundary_comment_longest(api, db):
     expect_database_change(
         db,
         before,
-        excluded=('guestbook.created_on',),
+        excluded=(),
+        clocked=[{'scope': 'database',
+          'field': 'guestbook.created_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']}],
+        sent=sent,
         expected={'guestbook': {'inserted': [{'id': 20,
                                      'name': 'Erica Nichols',
                                      'comment': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                                     'created_on': '2026-10-18 16:10:51'}],
+                                     'created_on': '2026-10-21 15:09:24'}],
                        'updated': [],
                        'deleted': []}},
     )
@@ -223,6 +229,7 @@ def test_guestbook_sign_boundary_name_longest(api, db):
     """
     headers = {}
     before = start(db)
+    sent = clock(db)
     response = api.request(
         'POST',
         '/api/guestbook',
@@ -242,11 +249,16 @@ def test_guestbook_sign_boundary_name_longest(api, db):
     expect_database_change(
         db,
         before,
-        excluded=('guestbook.created_on',),
+        excluded=(),
+        clocked=[{'scope': 'database',
+          'field': 'guestbook.created_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']}],
+        sent=sent,
         expected={'guestbook': {'inserted': [{'id': 20,
                                      'name': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
                                      'comment': 'Partner even floor should',
-                                     'created_on': '2026-10-18 16:11:01'}],
+                                     'created_on': '2026-10-21 15:09:34'}],
                        'updated': [],
                        'deleted': []}},
     )
@@ -437,6 +449,7 @@ def test_guestbook_sign_typical_01(api, db):
     """
     headers = {}
     before = start(db)
+    sent = clock(db)
     response = api.request(
         'POST',
         '/api/guestbook',
@@ -455,11 +468,16 @@ def test_guestbook_sign_typical_01(api, db):
     expect_database_change(
         db,
         before,
-        excluded=('guestbook.created_on',),
+        excluded=(),
+        clocked=[{'scope': 'database',
+          'field': 'guestbook.created_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']}],
+        sent=sent,
         expected={'guestbook': {'inserted': [{'id': 20,
                                      'name': 'Erica Nichols',
                                      'comment': 'Partner even floor should',
-                                     'created_on': '2026-10-18 16:11:25'}],
+                                     'created_on': '2026-10-21 15:10:00'}],
                        'updated': [],
                        'deleted': []}},
     )
@@ -473,6 +491,7 @@ def test_guestbook_sign_typical_02(api, db):
     """
     headers = {}
     before = start(db)
+    sent = clock(db)
     response = api.request(
         'POST',
         '/api/guestbook',
@@ -491,11 +510,16 @@ def test_guestbook_sign_typical_02(api, db):
     expect_database_change(
         db,
         before,
-        excluded=('guestbook.created_on',),
+        excluded=(),
+        clocked=[{'scope': 'database',
+          'field': 'guestbook.created_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']}],
+        sent=sent,
         expected={'guestbook': {'inserted': [{'id': 20,
                                      'name': 'Jonathan Henry',
                                      'comment': 'Inside group according door arm high',
-                                     'created_on': '2026-10-18 16:11:27'}],
+                                     'created_on': '2026-10-21 15:10:04'}],
                        'updated': [],
                        'deleted': []}},
     )
@@ -509,6 +533,7 @@ def test_guestbook_sign_typical_03(api, db):
     """
     headers = {}
     before = start(db)
+    sent = clock(db)
     response = api.request(
         'POST',
         '/api/guestbook',
@@ -527,11 +552,16 @@ def test_guestbook_sign_typical_03(api, db):
     expect_database_change(
         db,
         before,
-        excluded=('guestbook.created_on',),
+        excluded=(),
+        clocked=[{'scope': 'database',
+          'field': 'guestbook.created_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']}],
+        sent=sent,
         expected={'guestbook': {'inserted': [{'id': 20,
                                      'name': 'Cynthia Martin',
                                      'comment': 'Letter list human',
-                                     'created_on': '2026-10-18 16:11:30'}],
+                                     'created_on': '2026-10-21 15:10:07'}],
                        'updated': [],
                        'deleted': []}},
     )
@@ -913,6 +943,7 @@ def test_user_register_boundary_firstname_longest(api, db):
     """
     headers = {}
     before = start(db)
+    sent = clock(db)
     response = api.request(
         'POST',
         '/api/users',
@@ -935,16 +966,25 @@ def test_user_register_boundary_firstname_longest(api, db):
     expect_database_change(
         db,
         before,
-        excluded=('users.created_on', 'users.last_login_on', 'users.password', 'users.salt'),
+        excluded=('users.password', 'users.salt'),
+        clocked=[{'scope': 'database',
+          'field': 'users.created_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']},
+         {'scope': 'database',
+          'field': 'users.last_login_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']}],
+        sent=sent,
         expected={'users': {'inserted': [{'id': 12,
                                  'login': 'Crystal Newton',
                                  'firstname': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
                                  'lastname': 'Christian Wilkinson',
-                                 'password': 'b799fc49bd1aa1c0f0bcb52448d631b3a170f834',
-                                 'salt': 'NTU=',
+                                 'password': 'c42d8308324d24b8ee165cf43c6907b376b16631',
+                                 'salt': 'ODU1',
                                  'tradebux': 100,
-                                 'created_on': '2026-10-18 16:12:06',
-                                 'last_login_on': '2026-10-18 16:12:06'}],
+                                 'created_on': '2026-10-21 15:10:46',
+                                 'last_login_on': '2026-10-21 15:10:46'}],
                    'updated': [],
                    'deleted': []}},
     )
@@ -1062,6 +1102,7 @@ def test_user_register_boundary_lastname_longest(api, db):
     """
     headers = {}
     before = start(db)
+    sent = clock(db)
     response = api.request(
         'POST',
         '/api/users',
@@ -1084,16 +1125,25 @@ def test_user_register_boundary_lastname_longest(api, db):
     expect_database_change(
         db,
         before,
-        excluded=('users.created_on', 'users.last_login_on', 'users.password', 'users.salt'),
+        excluded=('users.password', 'users.salt'),
+        clocked=[{'scope': 'database',
+          'field': 'users.created_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']},
+         {'scope': 'database',
+          'field': 'users.last_login_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']}],
+        sent=sent,
         expected={'users': {'inserted': [{'id': 12,
                                  'login': 'Crystal Newton',
                                  'firstname': 'David Horton',
                                  'lastname': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                                 'password': 'ec2e39a1299600775e0efd8a614d28c23a7a6570',
-                                 'salt': 'NjQz',
+                                 'password': '7b7811543ab9a6b9fe9216341e5970597a6fc8c2',
+                                 'salt': 'ODE2',
                                  'tradebux': 100,
-                                 'created_on': '2026-10-18 16:12:15',
-                                 'last_login_on': '2026-10-18 16:12:15'}],
+                                 'created_on': '2026-10-21 15:10:56',
+                                 'last_login_on': '2026-10-21 15:10:56'}],
                    'updated': [],
                    'deleted': []}},
     )
@@ -1279,6 +1329,7 @@ def test_user_register_boundary_username_longest(api, db):
     """
     headers = {}
     before = start(db)
+    sent = clock(db)
     response = api.request(
         'POST',
         '/api/users',
@@ -1301,16 +1352,25 @@ def test_user_register_boundary_username_longest(api, db):
     expect_database_change(
         db,
         before,
-        excluded=('users.created_on', 'users.last_login_on', 'users.password', 'users.salt'),
+        excluded=('users.password', 'users.salt'),
+        clocked=[{'scope': 'database',
+          'field': 'users.created_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']},
+         {'scope': 'database',
+          'field': 'users.last_login_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']}],
+        sent=sent,
         expected={'users': {'inserted': [{'id': 12,
                                  'login': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
                                  'firstname': 'David Horton',
                                  'lastname': 'Christian Wilkinson',
-                                 'password': '09ce6683fb9bda043fc7ac2d8dfa6d903f00167d',
-                                 'salt': 'NjE4',
+                                 'password': 'eddfcfab46f99f460ba77f9b015897c982a6fb50',
+                                 'salt': 'NTM2',
                                  'tradebux': 100,
-                                 'created_on': '2026-10-18 16:12:30',
-                                 'last_login_on': '2026-10-18 16:12:30'}],
+                                 'created_on': '2026-10-21 15:11:11',
+                                 'last_login_on': '2026-10-21 15:11:11'}],
                    'updated': [],
                    'deleted': []}},
     )
@@ -1675,6 +1735,7 @@ def test_user_register_typical_01(api, db):
     """
     headers = {}
     before = start(db)
+    sent = clock(db)
     response = api.request(
         'POST',
         '/api/users',
@@ -1697,16 +1758,25 @@ def test_user_register_typical_01(api, db):
     expect_database_change(
         db,
         before,
-        excluded=('users.created_on', 'users.last_login_on', 'users.password', 'users.salt'),
+        excluded=('users.password', 'users.salt'),
+        clocked=[{'scope': 'database',
+          'field': 'users.created_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']},
+         {'scope': 'database',
+          'field': 'users.last_login_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']}],
+        sent=sent,
         expected={'users': {'inserted': [{'id': 12,
                                  'login': 'Crystal Newton',
                                  'firstname': 'David Horton',
                                  'lastname': 'Christian Wilkinson',
-                                 'password': '43ce44e97f9922e6c10e8fe385b55e04a1ff58ce',
-                                 'salt': 'MzU1',
+                                 'password': '3802ad8b0164d046c3022e3f29a9bcfdfe6a1323',
+                                 'salt': 'NjM0',
                                  'tradebux': 100,
-                                 'created_on': '2026-10-18 16:13:09',
-                                 'last_login_on': '2026-10-18 16:13:09'}],
+                                 'created_on': '2026-10-21 15:11:53',
+                                 'last_login_on': '2026-10-21 15:11:53'}],
                    'updated': [],
                    'deleted': []}},
     )
@@ -1720,6 +1790,7 @@ def test_user_register_typical_02(api, db):
     """
     headers = {}
     before = start(db)
+    sent = clock(db)
     response = api.request(
         'POST',
         '/api/users',
@@ -1742,16 +1813,25 @@ def test_user_register_typical_02(api, db):
     expect_database_change(
         db,
         before,
-        excluded=('users.created_on', 'users.last_login_on', 'users.password', 'users.salt'),
+        excluded=('users.password', 'users.salt'),
+        clocked=[{'scope': 'database',
+          'field': 'users.created_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']},
+         {'scope': 'database',
+          'field': 'users.last_login_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']}],
+        sent=sent,
         expected={'users': {'inserted': [{'id': 12,
                                  'login': 'Dr. Anne Boyd',
                                  'firstname': 'Maureen Lewis',
                                  'lastname': 'Jacob Ramos',
-                                 'password': '11db4e4d5f63269dd60bb6bd10544b30d6788a21',
-                                 'salt': 'MTEz',
+                                 'password': 'dfee49cd73c17058f5065b4455e178e0d7b4d22b',
+                                 'salt': 'NzM2',
                                  'tradebux': 100,
-                                 'created_on': '2026-10-18 16:13:12',
-                                 'last_login_on': '2026-10-18 16:13:12'}],
+                                 'created_on': '2026-10-21 15:11:56',
+                                 'last_login_on': '2026-10-21 15:11:56'}],
                    'updated': [],
                    'deleted': []}},
     )
@@ -1765,6 +1845,7 @@ def test_user_register_typical_03(api, db):
     """
     headers = {}
     before = start(db)
+    sent = clock(db)
     response = api.request(
         'POST',
         '/api/users',
@@ -1787,16 +1868,25 @@ def test_user_register_typical_03(api, db):
     expect_database_change(
         db,
         before,
-        excluded=('users.created_on', 'users.last_login_on', 'users.password', 'users.salt'),
+        excluded=('users.password', 'users.salt'),
+        clocked=[{'scope': 'database',
+          'field': 'users.created_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']},
+         {'scope': 'database',
+          'field': 'users.last_login_on',
+          'written': 'time_of_request',
+          'clocks': ['local', 'utc']}],
+        sent=sent,
         expected={'users': {'inserted': [{'id': 12,
                                  'login': 'Erica Mitchell',
                                  'firstname': 'Justin Smith',
                                  'lastname': 'Craig Gutierrez',
-                                 'password': 'c883933ded1f7e7d8da0ff7a6012bed188094732',
-                                 'salt': 'NTQ0',
+                                 'password': '59686d55496ffffe26af5808163015213531ab66',
+                                 'salt': 'ODI1',
                                  'tradebux': 100,
-                                 'created_on': '2026-10-18 16:13:15',
-                                 'last_login_on': '2026-10-18 16:13:15'}],
+                                 'created_on': '2026-10-21 15:11:59',
+                                 'last_login_on': '2026-10-21 15:11:59'}],
                    'updated': [],
                    'deleted': []}},
     )

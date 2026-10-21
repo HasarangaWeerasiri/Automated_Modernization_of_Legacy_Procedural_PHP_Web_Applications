@@ -7,7 +7,7 @@
 const state = {
   benchmarks: [],
   benchmark: null,
-  source: "committed", // "committed" (the evidence kept in git) or a run id
+  source: "committed", // "committed" (the Saved evidence) or a run id
   results: null,
   runs: [],
   status: null,
@@ -93,7 +93,7 @@ function pageHead(eyebrow, title, sub, right = "") {
 
 function sourceLabel() {
   return state.source === "committed"
-    ? "evidence kept in git"
+    ? "Saved evidence"
     : `run ${state.source}`;
 }
 
@@ -242,7 +242,7 @@ async function loadRuns() {
     (run) => run.benchmark === state.benchmark && run.finished,
   );
   select.innerHTML =
-    `<option value="committed">Evidence kept in git</option>` +
+    `<option value="committed">Saved evidence</option>` +
     runs
       .map(
         (run) =>
@@ -500,7 +500,7 @@ async function renderRun() {
       "Pipeline Run",
       run
         ? `${esc(run.benchmark)} · started ${esc(run.started)}${run.fault ? " · fault planted: " + esc(run.fault) : ""}`
-        : 'One command runs every stage: <span class="mono">python -m c4 run</span>. Each run writes to its own folder; the evidence kept in git is never touched.',
+        : 'One command runs every stage: <span class="mono">python -m c4 run</span>. Each run writes to its own folder; the Saved evidence is never touched.',
       pill,
     ) +
     `
@@ -1114,7 +1114,6 @@ function renderOutputs() {
       `The four outputs of the validation engine · ${esc(sourceLabel())}`,
     ) +
     `
-    <div class="export-grid">
       <div class="panel">
         ${outputRow(
           "Verdicts",
@@ -1158,11 +1157,7 @@ function renderOutputs() {
               "test_equivalence.py",
             ),
         )}
-      </div>
-      <div class="export-list"><div class="panel" style="padding:16px;"><div class="section-title" style="font-size:13px;">From a terminal</div>
-        <div class="code-block">python -m c4 run --benchmark ${esc(r.benchmark)}</div>
-        <div class="note-line">The same command this dashboard runs. Exit status 0: no endpoint failed; 1: one did; 2: the pipeline could not run.</div></div></div>
-    </div>`;
+      </div>`;
   bindViews();
 }
 
@@ -1315,7 +1310,7 @@ function renderCaptureOnlyOutputs() {
     <section class="block"><div class="panel">This app has no migrated system yet, so the run stopped after capture.
       Its output is the <b>oracle</b>: what the legacy system was observed to do for each scenario, one record per scenario.
       Verdicts, the injection-safety report, the readable report and the test suite follow once a migrated system exists.</div></section>
-    <div class="export-grid"><div class="panel">
+    <div class="panel">
       ${outputRow(
         `Oracle records · ${r.oracle_records.length} of ${r.scenarios.length} scenarios`,
         `${base}oracles/${r.benchmark}/`,
@@ -1323,7 +1318,7 @@ function renderCaptureOnlyOutputs() {
         viewButton("oracles") +
           `<a href="${archiveUrl()}" style="align-self:center;">Download all</a>`,
       )}
-    </div></div>`;
+    </div>`;
   bindViews();
 }
 

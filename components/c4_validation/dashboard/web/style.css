@@ -864,9 +864,7 @@
 
   /* ---------- Export ---------- */
 
-  .export-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
   .export-tree { background: var(--ink); color: #E4E7EC; border-radius: 4px; padding: 18px; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7; white-space: pre; }
-  .export-list { display: flex; flex-direction: column; gap: 8px; }
 
   .flagged-banner {
     display: flex;

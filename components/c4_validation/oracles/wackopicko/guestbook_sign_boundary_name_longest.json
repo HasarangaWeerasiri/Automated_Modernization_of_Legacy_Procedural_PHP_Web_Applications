@@ -27,7 +27,7 @@
             "id": 20,
             "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
             "comment": "Partner even floor should",
-            "created_on": "2026-10-18 16:11:01"
+            "created_on": "2026-10-21 15:09:34"
           }
         ],
         "updated": [],
@@ -35,13 +35,18 @@
       }
     }
   },
-  "excluded_fields": [
+  "excluded_fields": [],
+  "clock_fields": [
     {
       "scope": "database",
       "field": "guestbook.created_on",
-      "reason": "observed_nondeterministic"
+      "written": "time_of_request",
+      "clocks": [
+        "local",
+        "utc"
+      ]
     }
   ],
   "capture_runs": 2,
-  "captured_at": "2026-10-18T16:11:03+00:00"
+  "captured_at": "2026-10-21T15:09:37+00:00"
 }

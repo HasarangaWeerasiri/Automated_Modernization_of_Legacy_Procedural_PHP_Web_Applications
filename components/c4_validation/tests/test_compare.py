@@ -609,3 +609,100 @@ def test_a_real_difference_still_shows_the_migrated_value():
 
     assert result.verdict == FAIL
     assert "Anux" in str(result.differences)
+
+
+# ------------------------------------------------------- written from the clock
+
+# The request took from 18:41:10 to 18:41:11 on the migrated database's clock, which
+# runs in UTC here: both clocks read the same.
+WINDOW = {"local": ["2026-10-18 18:41:10", "2026-10-18 18:41:11"], "utc": ["2026-10-18 18:41:10", "2026-10-18 18:41:11"]}
+
+
+def clocked(record, field, written="time_of_request", clocks=("local", "utc")):
+    record["clock_fields"] = [{"scope": "database", "field": field, "written": written, "clocks": list(clocks)}]
+    return record
+
+
+def guestbook_entry(at):
+    return inserted("guestbook", {"name": "Anu", "created_on": at})
+
+
+def written_at(at, window=WINDOW):
+    return Replay(200, "success", (), None, guestbook_entry(at), window=window)
+
+
+LEGACY_ENTRY = clocked(oracle(delta=guestbook_entry("2026-10-18 16:11:25")), "guestbook.created_on")
+
+
+@pytest.mark.parametrize("at", ["2026-10-18 18:41:10", "2026-10-18 18:41:11", "2026-10-18 18:41:12"])
+def test_a_time_written_at_the_time_of_the_request_agrees(at):
+    # The last is a second past the window: MySQL rounds to whole seconds.
+    assert compare(LEGACY_ENTRY, written_at(at)).verdict == PASS
+
+
+@pytest.mark.parametrize("at", ["2000-01-01 00:00:00", "2026-10-18 18:41:14", "2026-10-18 13:11:10", None, "soon"])
+def test_a_time_that_is_not_the_time_of_the_request_differs(at):
+    # A fixed time, one a few seconds off, one in another time zone, none, and no time at all.
+    result = compare(LEGACY_ENTRY, written_at(at))
+
+    assert result.verdict == FAIL
+    assert "the time of the request" in str(result.differences)
+
+
+def test_a_fixed_time_is_reported_as_it_was_written():
+    from c4.verdict import _delta_lines
+
+    (difference,) = compare(LEGACY_ENTRY, written_at("2000-01-01 00:00:00")).differences
+    (line,) = _delta_lines(difference["detail"])
+
+    assert line == (
+        "guestbook.inserted[0].created_on: value differs "
+        "(legacy 'the time of the request', migrated '2000-01-01 00:00:00')"
+    )
+
+
+def test_the_rest_of_a_row_with_a_clock_column_is_still_compared():
+    row = {"name": "Anux", "created_on": "2026-10-18 18:41:10"}
+
+    result = compare(LEGACY_ENTRY, Replay(200, "success", (), None, inserted("guestbook", row), window=WINDOW))
+
+    assert result.verdict == FAIL
+    assert "Anux" in str(result.differences)
+
+
+def test_without_the_migrated_clock_a_clock_column_is_not_judged_as_before():
+    result = compare(LEGACY_ENTRY, written_at("2026-10-18 18:41:10", window=None))
+
+    assert result.verdict == INCONCLUSIVE
+    assert result.differences == ()
+
+
+def test_a_time_must_be_on_the_clock_the_legacy_system_used():
+    # The migrated database runs five and a half hours ahead of UTC. The legacy system
+    # wrote local time; a migrated system that writes UTC instead changes what users see.
+    window = {"local": ["2026-10-19 00:11:10", "2026-10-19 00:11:11"], "utc": ["2026-10-18 18:41:10", "2026-10-18 18:41:11"]}
+    local_only = clocked(oracle(delta=guestbook_entry("2026-10-18 21:41:25")), "guestbook.created_on", clocks=["local"])
+
+    assert compare(local_only, written_at("2026-10-19 00:11:10", window)).verdict == PASS
+    assert compare(local_only, written_at("2026-10-18 18:41:10", window)).verdict == FAIL
+
+
+def test_an_updated_time_is_held_to_the_time_of_the_request_too():
+    def seen(at):
+        return {"users": {"inserted": [], "deleted": [], "updated": [
+            {"key": {"id": 11}, "changes": {"last_login_on": {"before": "2009-02-18 10:00:00", "after": at}}}]}}
+
+    record = clocked(oracle(delta=seen("2026-10-18 16:12:06")), "users.last_login_on")
+
+    assert compare(record, Replay(200, "success", (), None, seen("2026-10-18 18:41:11"), window=WINDOW)).verdict == PASS
+    assert compare(record, Replay(200, "success", (), None, seen("2009-02-18 10:00:00"), window=WINDOW)).verdict == FAIL
+
+
+def test_a_date_of_the_run_must_be_the_date_of_the_request():
+    def marked(day):
+        return {"attendance": {"inserted": [{"stat_id": 1121, "stat_date": day}], "updated": [], "deleted": []}}
+
+    record = clocked(oracle(delta=marked("2026-10-12")), "attendance.stat_date", written="current_date")
+
+    assert compare(record, Replay(200, "success", (), None, marked("2026-10-18"), window=WINDOW)).verdict == PASS
+    assert compare(record, Replay(200, "success", (), None, marked("2026-10-17"), window=WINDOW)).verdict == FAIL

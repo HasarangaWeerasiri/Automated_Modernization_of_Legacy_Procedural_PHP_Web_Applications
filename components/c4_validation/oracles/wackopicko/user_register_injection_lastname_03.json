@@ -31,11 +31,11 @@
             "login": "Crystal Newton",
             "firstname": "David Horton",
             "lastname": "' OR 1=1 -- ",
-            "password": "2df7ceb442b3a993acf8400d8f6c11835e215f01",
-            "salt": "OTQ=",
+            "password": "685580c4e14e70ca8486f660412710a11476180c",
+            "salt": "NDQ=",
             "tradebux": 100,
-            "created_on": "2026-10-18 16:12:51",
-            "last_login_on": "2026-10-18 16:12:51"
+            "created_on": "2026-10-21 15:11:33",
+            "last_login_on": "2026-10-21 15:11:33"
           }
         ],
         "updated": [],
@@ -44,16 +44,6 @@
     }
   },
   "excluded_fields": [
-    {
-      "scope": "database",
-      "field": "users.created_on",
-      "reason": "observed_nondeterministic"
-    },
-    {
-      "scope": "database",
-      "field": "users.last_login_on",
-      "reason": "observed_nondeterministic"
-    },
     {
       "scope": "database",
       "field": "users.password",
@@ -65,6 +55,26 @@
       "reason": "observed_nondeterministic"
     }
   ],
+  "clock_fields": [
+    {
+      "scope": "database",
+      "field": "users.created_on",
+      "written": "time_of_request",
+      "clocks": [
+        "local",
+        "utc"
+      ]
+    },
+    {
+      "scope": "database",
+      "field": "users.last_login_on",
+      "written": "time_of_request",
+      "clocks": [
+        "local",
+        "utc"
+      ]
+    }
+  ],
   "capture_runs": 2,
-  "captured_at": "2026-10-18T16:12:53+00:00"
+  "captured_at": "2026-10-21T15:11:36+00:00"
 }

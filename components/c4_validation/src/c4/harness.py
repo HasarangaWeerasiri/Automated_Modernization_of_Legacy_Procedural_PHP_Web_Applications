@@ -47,6 +47,8 @@ _COPIED = (
     compare._by_column,
     compare._match,
     compare._plain_delta,
+    compare._fits_clock,
+    compare._on_the_clock,
     compare.injection_effects,
     capture.outcome_of,
 )
@@ -70,6 +72,8 @@ from deepdiff import DeepDiff
 from sqlalchemy import MetaData, select, text
 
 _NUMBER = re.compile({number!r})
+ON_THE_CLOCK = {on_the_clock!r}
+_CLOCK_SLACK = timedelta(seconds={slack!r})
 
 '''
 
@@ -97,7 +101,12 @@ def checks_source() -> str:
     """The suite's c4_checks.py: the engine's rules, then the suite's own runtime."""
     copied = "\n\n".join(inspect.getsource(function).rstrip() for function in _COPIED)
     runtime = (TEMPLATES / "c4_checks_runtime.py").read_text(encoding="utf-8")
-    return _CHECKS_HEADER.format(number=compare._NUMBER.pattern) + copied + "\n\n\n" + runtime
+    header = _CHECKS_HEADER.format(
+        number=compare._NUMBER.pattern,
+        on_the_clock=compare.ON_THE_CLOCK,
+        slack=compare._CLOCK_SLACK.total_seconds(),
+    )
+    return header + copied + "\n\n\n" + runtime
 
 
 def _test_for(scenario: dict[str, Any], record: dict[str, Any], oracle: str, skip: str | None) -> dict[str, Any]:
@@ -136,6 +145,8 @@ def _test_for(scenario: dict[str, Any], record: dict[str, Any], oracle: str, ski
         "delta": record["db_state"]["delta"],
         "excluded_response": tuple(e["field"] for e in excluded if e["scope"] == "response"),
         "excluded_database": tuple(e["field"] for e in excluded if e["scope"] == "database"),
+        # Columns written from the clock: checked against the time of the request.
+        "clocked": [e for e in record.get("clock_fields", ()) if e["scope"] == "database"],
         # Labelled comparison, written into a test only where both sides link a column.
         "columns": record["legacy_response"].get("columns", {}),
         "fields": request.get("fields") or {},

@@ -30,8 +30,48 @@ def sample(scenarios):
     return list(first.values()) or scenarios[:1]
 
 
+CHANGES = "(changes on every capture)"
+
+
 def _without_timestamp(record):
-    return {key: value for key, value in record.items() if key != "captured_at"}
+    """A record without what it says itself differs on every capture.
+
+    That is the time it was captured, and the values of the fields and columns it
+    marks as changing: a row's creation time is stored as observed, so two captures
+    can never hold the same one.
+    """
+    changing = {
+        (entry["scope"], entry["field"]) for entry in record["excluded_fields"]
+        if entry["reason"] in ("observed_nondeterministic", "current_date")
+    } | {(entry["scope"], entry["field"]) for entry in record.get("clock_fields", ())}
+
+    def row(table, values):
+        return {c: CHANGES if ("database", f"{table}.{c}") in changing else v for c, v in values.items()}
+
+    delta = {
+        table: {
+            "inserted": [row(table, item) for item in changes["inserted"]],
+            "deleted": changes["deleted"],
+            "updated": [
+                {**item, "changes": {
+                    c: {**change, "after": CHANGES} if ("database", f"{table}.{c}") in changing else change
+                    for c, change in item["changes"].items()
+                }}
+                for item in changes["updated"]
+            ],
+        }
+        for table, changes in record["db_state"]["delta"].items()
+    }
+    records = [
+        {label: CHANGES if ("response", label) in changing else value for label, value in item.items()}
+        for item in record["legacy_response"]["records"]
+    ]
+    kept = {key: value for key, value in record.items() if key != "captured_at"}
+    return {
+        **kept,
+        "legacy_response": {**record["legacy_response"], "records": records},
+        "db_state": {**record["db_state"], "delta": delta},
+    }
 
 
 def test_capture_is_repeatable(at_baseline, baselines, sample):

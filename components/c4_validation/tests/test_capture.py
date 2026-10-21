@@ -241,6 +241,7 @@ def page(monkeypatch):
         session = FakeSession(body)
         monkeypatch.setattr(capture_module.requests, "Session", lambda: session)
         monkeypatch.setattr(capture_module.dbstate, "ensure_baseline", lambda system, baseline: baseline)
+        monkeypatch.setattr(capture_module.dbstate, "clock", lambda system: None)  # the clock is not read
         monkeypatch.setattr(capture_module.dbstate, "snapshot", lambda system: BASELINE)
         monkeypatch.setattr(capture_module.dbstate, "delta", lambda before, after: {})
         monkeypatch.setattr(capture_module.time, "sleep", lambda seconds: None)  # no real wait between captures
@@ -591,3 +592,105 @@ def test_forgetting_a_refused_scenario_removes_only_its_record(config):
     assert forget(config, "a") is True
     assert forget(config, "a") is False  # nothing left to remove
     assert sorted(p.stem for p in config.oracle_dir.glob("*.json")) == ["b"]
+
+
+# ------------------------------------------------------- written from the clock
+
+
+def at_window(start, end, delta, offset_hours=0):
+    """An observation whose database clock read `start` to `end` in UTC, local time `offset_hours` ahead."""
+    from datetime import datetime, timedelta
+
+    def shifted(text):
+        return (datetime.fromisoformat(text) + timedelta(hours=offset_hours)).isoformat(sep=" ")
+
+    window = {"local": [shifted(start), shifted(end)], "utc": [start, end]}
+    return Observation(200, (), delta, window=window)
+
+
+def entry(at, salt="MzU1"):
+    return guestbook({"id": 20, "name": "Anu", "created_on": at, "salt": salt})
+
+
+def test_a_column_written_at_the_time_of_each_request_is_checked_against_the_clock(config, monkeypatch):
+    replay_observations(
+        monkeypatch,
+        at_window("2026-10-18 04:42:15", "2026-10-18 04:42:15", entry("2026-10-18 04:42:15")),
+        at_window("2026-10-18 04:42:17", "2026-10-18 04:42:18", entry("2026-10-18 04:42:17")),
+    )
+
+    record = capture(config, SCENARIO, BASELINES)
+
+    assert record["excluded_fields"] == []
+    assert record["clock_fields"] == [
+        {"scope": "database", "field": "guestbook.created_on", "written": "time_of_request", "clocks": ["local", "utc"]}
+    ]
+
+
+def test_the_clock_a_time_was_taken_from_is_recorded(config, monkeypatch):
+    # Local time runs ahead of UTC; the page wrote local time.
+    replay_observations(
+        monkeypatch,
+        at_window("2026-10-18 04:42:15", "2026-10-18 04:42:15", entry("2026-10-18 10:12:15"), offset_hours=5.5),
+        at_window("2026-10-18 04:42:17", "2026-10-18 04:42:17", entry("2026-10-18 10:12:17"), offset_hours=5.5),
+    )
+
+    assert capture(config, SCENARIO, BASELINES)["clock_fields"][0]["clocks"] == ["local"]
+
+
+def test_a_value_that_changes_but_is_not_the_time_stays_excluded(config, monkeypatch):
+    # A salt differs on every capture, but it is not a time.
+    replay_observations(
+        monkeypatch,
+        at_window("2026-10-18 04:42:15", "2026-10-18 04:42:15", entry("2026-10-18 04:42:15", salt="MzU1")),
+        at_window("2026-10-18 04:42:17", "2026-10-18 04:42:17", entry("2026-10-18 04:42:17", salt="OTQy")),
+    )
+
+    record = capture(config, SCENARIO, BASELINES)
+
+    assert record["excluded_fields"] == [{"scope": "database", "field": "guestbook.salt", "reason": "observed_nondeterministic"}]
+    assert [e["field"] for e in record["clock_fields"]] == ["guestbook.created_on"]
+
+
+def test_a_time_outside_one_request_stays_excluded(config, monkeypatch):
+    # The second capture wrote a time from before its request was sent.
+    replay_observations(
+        monkeypatch,
+        at_window("2026-10-18 04:42:15", "2026-10-18 04:42:15", entry("2026-10-18 04:42:15")),
+        at_window("2026-10-18 04:42:17", "2026-10-18 04:42:17", entry("2026-10-18 04:40:00")),
+    )
+
+    record = capture(config, SCENARIO, BASELINES)
+
+    assert "clock_fields" not in record
+    assert [e["reason"] for e in record["excluded_fields"]] == ["observed_nondeterministic"]
+
+
+def test_without_the_database_clock_a_changing_column_stays_excluded(config, monkeypatch):
+    replay_observations(
+        monkeypatch,
+        observed(delta=entry("2026-10-18 04:42:15")),
+        observed(delta=entry("2026-10-18 04:42:17")),
+    )
+
+    record = capture(config, SCENARIO, BASELINES)
+
+    assert "clock_fields" not in record  # a record without clock columns reads as before
+    assert [e["field"] for e in record["excluded_fields"]] == ["guestbook.created_on"]
+
+
+def test_a_date_of_the_run_on_the_database_clock_is_checked_against_it(config, monkeypatch):
+    from datetime import date
+
+    today = date.today().isoformat()
+    marked = {"attendance": {"inserted": [{"stat_id": 1121, "stat_date": today}], "updated": [], "deleted": []}}
+    replay_observations(
+        monkeypatch,
+        at_window(f"{today} 04:42:15", f"{today} 04:42:15", marked),
+        at_window(f"{today} 04:42:17", f"{today} 04:42:17", marked),
+    )
+
+    record = capture(config, SCENARIO, BASELINES)
+
+    assert record["excluded_fields"] == []
+    assert record["clock_fields"][0]["written"] == "current_date"

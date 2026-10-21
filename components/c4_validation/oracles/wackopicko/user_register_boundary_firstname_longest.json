@@ -31,11 +31,11 @@
             "login": "Crystal Newton",
             "firstname": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
             "lastname": "Christian Wilkinson",
-            "password": "b799fc49bd1aa1c0f0bcb52448d631b3a170f834",
-            "salt": "NTU=",
+            "password": "c42d8308324d24b8ee165cf43c6907b376b16631",
+            "salt": "ODU1",
             "tradebux": 100,
-            "created_on": "2026-10-18 16:12:06",
-            "last_login_on": "2026-10-18 16:12:06"
+            "created_on": "2026-10-21 15:10:46",
+            "last_login_on": "2026-10-21 15:10:46"
           }
         ],
         "updated": [],
@@ -44,16 +44,6 @@
     }
   },
   "excluded_fields": [
-    {
-      "scope": "database",
-      "field": "users.created_on",
-      "reason": "observed_nondeterministic"
-    },
-    {
-      "scope": "database",
-      "field": "users.last_login_on",
-      "reason": "observed_nondeterministic"
-    },
     {
       "scope": "database",
       "field": "users.password",
@@ -65,6 +55,26 @@
       "reason": "observed_nondeterministic"
     }
   ],
+  "clock_fields": [
+    {
+      "scope": "database",
+      "field": "users.created_on",
+      "written": "time_of_request",
+      "clocks": [
+        "local",
+        "utc"
+      ]
+    },
+    {
+      "scope": "database",
+      "field": "users.last_login_on",
+      "written": "time_of_request",
+      "clocks": [
+        "local",
+        "utc"
+      ]
+    }
+  ],
   "capture_runs": 2,
-  "captured_at": "2026-10-18T16:12:08+00:00"
+  "captured_at": "2026-10-21T15:10:48+00:00"
 }

@@ -13,7 +13,7 @@ Do not edit: generate it again instead.
 
 import pytest
 
-from c4_checks import expect_database_change, expect_outcome, expect_records, expect_safe_handling, start
+from c4_checks import clock, expect_database_change, expect_outcome, expect_records, expect_safe_handling, start
 
 
 def test_contact_form_boundary_contact_empty(api, db):
