@@ -48,6 +48,18 @@ python -m c1 run <app> --out analysis-out --exclude-dir TCPDF --title HMS   # ev
 
 C4 only needs to register the new format name for the same reader. For C2: `pages` (page → endpoint ids) and `queries` (query node id → endpoint id).
 
+Fields added on 2026-10-22, after C4 checked the map against its 11 needs:
+
+| C4 item | Field | Meaning |
+|---|---|---|
+| 6 | `sources[].legacy.records` | `"only"`, a table number, `"unknown"` (the page has other tables too) or `"none"` (the handler only writes). A search form that prints its rows is never `"none"`. |
+| 9 | `sources[].constraints[]` and `parameters[].same_as` | A field the handler requires to equal another one (`if ($password == $cpassword)`). A generated request must send the same value in both. |
+| 8 | `sources[].login` | For a login form: `userType` (the table its password is checked against), `fields`, `sets` (session keys and cookies written, including in called functions) and `redirects`. |
+| 8 | `endpoints[].auth` | `required`, `userTypes` (the logins that set every key this endpoint needs) and `sessionKeys`. |
+| 8 | top-level `login` | `endpoint`, `tokenAt: "access_token"`, `sendAs: "Authorization: Bearer <access_token>"`, and `userTypes` (pages, fields, keys, redirects). |
+| 10 | `endpoints[].response_fields` | Field → `table.column`. Joins are resolved from `alias.column` in the select list, then from the schema; `null` when several joined tables have the column (flagged `column-ambiguous`). |
+| — | `endpoints[].flags`, `sources[].code` | Flag names (e.g. `table-not-in-schema` for dead template code), and the source file and line. |
+
 ## Contract and backend
 
 - `contract/openapi.json`: OpenAPI 3.1.

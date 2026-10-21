@@ -156,7 +156,7 @@ def test_endpoint_map_has_the_c4_structure():
     [e] = em["endpoints"]
     assert set(e) >= {"endpoint_id", "method", "path", "records_at", "sources"}
     [s] = e["sources"]
-    assert set(s) == {"source_id", "legacy", "parameters"}
+    assert set(s) == {"source_id", "legacy", "parameters", "code", "constraints"}
     assert set(s["legacy"]) == {"method", "path", "fixed", "records"}
     assert s["parameters"] == [{"name": "name", "in": "body", "legacy_name": "txtName", "legacy_in": "body",
                                 "column": "contact.name"}]
@@ -166,3 +166,71 @@ def test_endpoint_map_has_the_c4_structure():
 def test_endpoints_are_deterministic():
     src = "<?php\n$r = mysqli_query($c, 'select fname from patreg');\nwhile ($row = mysqli_fetch_array($r)) { echo $row['fname']; }\n"
     assert endpoints({"p.php": src}) == endpoints({"p.php": src})
+
+
+# -- fields C4 asked for (2026-10-21) --------------------------------------------------------
+def test_search_form_rows_are_the_pages_only_results_table():
+    # HMS patientsearch.php: a POST search handler that prints the rows it finds
+    src = """<?php
+if (isset($_POST['patient_search_submit'])) {
+  $contact = $_POST['patient_contact'];
+  $r = mysqli_query($con, "select * from patreg where contact='$contact'");
+  while ($row = mysqli_fetch_array($r)) { echo $row['fname']; }
+}
+"""
+    em = endpoint_map(endpoints({"patientsearch.php": src}))
+    [e] = em["endpoints"]
+    assert e["sources"][0]["legacy"]["records"] == "only"  # was "none": C4 would never check the results
+
+
+def test_confirmation_field_must_repeat_the_password():
+    # HMS func2.php:12 `if($password==$cpassword)`
+    src = """<?php
+if (isset($_POST['patsub1'])) {
+  $fname = $_POST['fname']; $password = $_POST['password']; $cpassword = $_POST['cpassword'];
+  if ($password == $cpassword) {
+    mysqli_query($con, "insert into patreg(fname,password,contact) values('$fname','$password','$cpassword')");
+  }
+}
+"""
+    em = endpoint_map(endpoints({"func2.php": src}))
+    [s] = em["endpoints"][0]["sources"]
+    assert s["constraints"] == [{"field": "cpassword", "same_as": "password", "line": 4}]
+
+
+def test_response_fields_name_their_table_even_through_a_join():
+    # HMS bill query: docFees comes from appointmenttb, the rest from prestb (here: patreg)
+    src = """<?php
+$r = mysqli_query($con, "select p.fname, a.appdate from patreg p inner join appointmenttb a on p.pid=a.pid");
+while ($row = mysqli_fetch_array($r)) { echo $row['fname'] . $row['appdate']; }
+"""
+    em = endpoint_map(endpoints({"bill.php": src}))
+    [e] = em["endpoints"]
+    assert e["response_fields"] == {"appdate": "appointmenttb.appdate", "fname": "patreg.fname"}
+
+
+def test_each_endpoint_names_the_user_type_whose_login_sets_its_session_keys():
+    files = {
+        "login.php": """<?php
+session_start();
+if (isset($_POST['patsub'])) {
+  $email = $_POST['email']; $password = $_POST['password2'];
+  $r = mysqli_query($con, "select * from patreg where contact='$email' and password='$password'");
+  if (mysqli_num_rows($r) == 1) { $row = mysqli_fetch_array($r); $_SESSION['pid'] = $row['pid'];
+    header("Location: panel.php"); }
+}
+""",
+        "panel.php": """<?php
+session_start();
+$pid = $_SESSION['pid'];
+$r = mysqli_query($con, "select appdate from appointmenttb where pid='$pid'");
+while ($row = mysqli_fetch_array($r)) { echo $row['appdate']; }
+""",
+    }
+    em = endpoint_map(endpoints(files))
+    me = next(e for e in em["endpoints"] if e["endpoint_id"].startswith("GET /api/me/"))
+    assert me["auth"] == {"required": True, "userTypes": ["patreg"], "sessionKeys": ["pid"]}
+    login = em["login"]
+    assert login["tokenAt"] == "access_token" and login["sendAs"].startswith("Authorization: Bearer")
+    assert login["userTypes"]["patreg"]["sets"] == ["pid"]
+    assert login["userTypes"]["patreg"]["redirects"] == [{"to": "panel.php", "line": 7}]

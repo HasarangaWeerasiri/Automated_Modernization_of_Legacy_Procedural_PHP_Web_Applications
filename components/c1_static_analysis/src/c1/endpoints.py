@@ -34,7 +34,7 @@ from pathlib import Path
 from typing import Any
 
 from . import __version__
-from .astdoc import AstDoc
+from .astdoc import SCOPE_KINDS, AstDoc
 from .auth import AuthAnalysis
 from .dfg import QUERY_CALLS, QUERY_METHODS
 from .extract import canonical_json
@@ -204,6 +204,29 @@ class EndpointRecovery:
                     regions.append({"stmt": nid, "cond": cond, "body": body, "trigger": t, "line": a.line(nid)})
         return regions
 
+    def repeated_fields(self, fid: str, region: dict) -> list[dict[str, Any]]:
+        """Request fields the handler requires to be equal, e.g. `if ($password == $cpassword)`:
+        a generated request must send the same value in both, or the legacy page rejects it."""
+        a = self.A[fid]
+        uid = a.root_id
+        out = []
+        for st in region["body"]:
+            for x in a.walk(st):
+                if a.kind(x) not in ("Expr_BinaryOp_Equal", "Expr_BinaryOp_Identical"):
+                    continue
+                sides = []
+                for side in (a.field(x, "left"), a.field(x, "right")):
+                    o = {v for v in self.p.origins.of_expr(fid, uid, side) if not v.startswith("via:")}
+                    ins = {v for v in o if v.startswith("input:")}
+                    sides.append(next(iter(ins)) if len(ins) == 1 and o == ins else None)
+                if None in sides or sides[0] == sides[1] or sides[0].split(":")[1] != sides[1].split(":")[1]:
+                    continue
+                k1, k2 = sides[0].split(":", 2)[2], sides[1].split(":", 2)[2]
+                # the confirmation field is the one named after the other (cpassword, password_confirm, ...)
+                rep, orig = (k1, k2) if _repeats(k1, k2) and not _repeats(k2, k1) else (k2, k1)
+                out.append({"field": rep, "same_as": orig, "line": a.line(x)})
+        return sorted({(d["field"], d["same_as"]): d for d in out}.values(), key=lambda d: (d["field"], d["same_as"]))
+
     @staticmethod
     def inside(a: AstDoc, node: str, roots: list[str]) -> bool:
         if node in roots:
@@ -310,6 +333,7 @@ class EndpointRecovery:
                         groups.setdefault(reg["cond"] if reg else "render", []).append((dom_item, q, reg, code_fid, item))
             page_eps: list[str] = []
             render_selects = [g for g in groups.get("render", []) if self.shape_of(*g[1][:3])["kind"] == "select"]
+            read_handlers = [k for k, ms in groups.items() if k != "render" and self.reads_records([m[1] for m in ms])]
             side_effects = []
             for gkey, members in groups.items():
                 if gkey == "render":
@@ -333,7 +357,9 @@ class EndpointRecovery:
                 else:
                     reg = members[0][2]
                     qs = [m[1] for m in members]
-                    ep = self.endpoint_for(fid, members[0][0], qs, reg, pts, unit, "none", page_reports.get(fid), members[0])
+                    ep = self.endpoint_for(fid, members[0][0], qs, reg, pts, unit,
+                                           self.handler_records(qs, render_selects, read_handlers),
+                                           page_reports.get(fid), members[0])
                     self.merge(eps, ep)
                     page_eps.append(ep["id"])
                     for q in qs:
@@ -358,8 +384,113 @@ class EndpointRecovery:
                         eps[eid]["flags"] = _dedupe_flags(eps[eid]["flags"] + [{
                             "flag": "write-during-render",
                             "reason": "rendering the legacy page also writes data through a helper"}])
+        self.annotate_logins(eps)
         return {"endpoints": [eps[k] for k in sorted(eps)], "pages": dict(sorted(pages.items())),
                 "queries": dict(sorted(query_ep.items()))}
+
+    # -- login details for test clients (C4): which user type each endpoint needs -------------
+    def login_facts(self, src: dict) -> dict[str, Any]:
+        """For one legacy login form: the user type (the table its password is checked against),
+        the session keys it sets, and where it redirects."""
+        code_path = src["code"]["path"]
+        fid = next(f for f, a in self.A.items() if a.path == code_path)
+        a = self.A[fid]
+        # the outermost request-triggered branch around the login query is the login handler
+        regions = [r for r in self.handler_regions(fid) if r["stmt"] == src["stmt"] or self.inside(a, src["stmt"], r["body"])]
+        region = next((r for r in regions if not any(o is not r and self.inside(a, r["stmt"], o["body"]) for o in regions)), None)
+        body = region["body"] if region else []
+        tables = sorted({p["column"].split(".")[0] for p in src["parameters"]
+                         if p.get("column") and SENSITIVE.search(p["column"].split(".")[-1])})
+        sets = sorted(self.identity_written(fid, a.root_id, body))
+        redirects = []
+        for st in body:
+            for x in a.walk(st):
+                if a.kind(x) == "Expr_FuncCall" and a.call_name(x) == "header":
+                    lits = [a.attr(y, "value") for y in a.walk(x) if a.kind(y) in ("Scalar_String", "InterpolatedStringPart")]
+                    loc = next((v.split(":", 1)[1].strip() for v in lits if isinstance(v, str) and v.lower().startswith("location")), None)
+                    if loc:
+                        redirects.append({"to": loc, "line": a.line(x)})
+        return {"userType": tables[0] if len(tables) == 1 else (tables or None), "sets": sets,
+                "fields": sorted(p["legacy_name"] for p in src["parameters"] if p.get("legacy_name")),
+                "redirects": redirects}
+
+    CALLS = ("Expr_FuncCall", "Expr_StaticCall", "Expr_MethodCall")
+
+    def identity_written(self, fid: str, uid: str, stmts: list[str], depth: int = 0) -> set[str]:
+        """Session keys ($_SESSION['k'] = ...) and cookies (setcookie('k', ...)) written by these
+        statements, including inside the functions they call (Users::login_user, ...)."""
+        a = self.A[fid]
+        out: set[str] = set()
+        for st in stmts:
+            for x in a.walk(st):
+                src = self.auth.sources.get(x)
+                if src and src.get("write") and src["superglobal"] == "SESSION" and src["dims"]:
+                    out.add(str(src["dims"][0]))
+                if a.kind(x) == "Expr_FuncCall" and a.call_name(x) == "setcookie":
+                    lits = [a.attr(y, "value") for y in a.walk(x) if a.kind(y) == "Scalar_String"]
+                    if lits:
+                        out.add(f"cookie:{lits[0]}")
+                if a.kind(x) in self.CALLS and depth < 3:
+                    c = self.auth.callee_of(fid, uid, x)
+                    if c:
+                        out |= self.identity_written(c[0], c[1], [c[1]], depth + 1)
+        return out
+
+    def guard_keys(self, gid: str) -> set[str]:
+        """Session keys a guard checks: a direct check, or a guard helper it calls (require_login)."""
+        checks = {c["id"]: c for c in self.auth_result["checks"]}
+        if gid in checks:
+            return set(checks[gid].get("sessionKeys", []))
+        helpers = {h["unit"]: h for h in self.auth_result.get("guardHelpers", [])}
+        fid = gid.split("#")[0]
+        a = self.A.get(fid)
+        if a is None or gid not in a.nodes:
+            return set()
+        uid = next((x for x in a.ancestors(gid) if a.kind(x) in SCOPE_KINDS), a.root_id)
+        keys: set[str] = set()
+        for x in a.walk(gid):
+            if a.kind(x) in self.CALLS:
+                c = self.auth.callee_of(fid, uid, x)
+                if c and c[1] in helpers:
+                    keys |= set(helpers[c[1]].get("sessionKeys", []))
+        return keys
+
+    def annotate_logins(self, eps: dict[str, dict]) -> None:
+        types: dict[str, set[str]] = {}
+        for ep in eps.values():
+            if ep["kind"] != "login":
+                continue
+            for src in ep["sources"]:
+                src["login"] = self.login_facts(src)
+                t = src["login"]["userType"]
+                if isinstance(t, str):
+                    types.setdefault(t, set()).update(src["login"]["sets"])
+        for ep in eps.values():
+            if ep["kind"] == "login" or not ep["auth"].get("required"):
+                continue
+            need = {b["sessionKey"] for b in ep.get("sessionBindings", [])}
+            need |= {k for r in ep["auth"].get("roles", []) for k in r.get("sessionKeys", [])}
+            need |= {k for g in ep["auth"].get("guards", []) for k in self.guard_keys(g)}
+            fit = sorted(t for t, keys in types.items() if need <= keys) if need else sorted(types)
+            ep["auth"]["userTypes"] = fit
+            ep["auth"]["sessionKeys"] = sorted(need)
+            if need and not fit and types:
+                ep["flags"] = _dedupe_flags(ep["flags"] + [{"flag": "user-type-unknown", "reason":
+                    f"no legacy login sets all of {', '.join(sorted(need))}"}])
+
+    def reads_records(self, qs: list) -> bool:
+        """A handler that only SELECTs and whose rows the page then uses (a search form)."""
+        shapes = [self.shape_of(q[0], q[1], q[2]) for q in qs]
+        return (not any(sh["kind"] in ("insert", "replace", "update", "delete") for sh in shapes)
+                and any(sh["kind"] == "select" and self.used_columns.get(q[2]) for q, sh in zip(qs, shapes)))
+
+    def handler_records(self, qs: list, render_selects: list, read_handlers: list) -> str | int:
+        """Where a handler's rows appear on the page: "only" when it is the page's single result
+        table, "unknown" when the page has other tables too (C4 then must not assume one), "none"
+        when the handler only writes."""
+        if not self.reads_records(qs):
+            return "none"
+        return "only" if not render_selects and len(read_handlers) == 1 else "unknown"
 
     def region_logs_out(self, fid: str, r: dict) -> bool:
         a = self.A[fid]
@@ -459,6 +590,10 @@ class EndpointRecovery:
         else:
             method, path = "POST", f"/api/{res}/{kind}"
             flags.append({"flag": "unknown-sql-kind", "reason": main_sh.get("reason", kind)})
+        if self.schema and table and table_real not in self.schema:
+            flags.append({"flag": "table-not-in-schema", "table": table,
+                          "reason": "the database dump has no such table: probably dead template code; a test "
+                                    "client should skip this endpoint"})
         if main_sh.get("confidence") not in ("resolved", None):
             flags.append({"flag": f"sql-{main_sh.get('confidence')}", "reason": main_sh.get("reason", "")})
         if legacy_method == "GET" and kind in ("insert", "update", "delete", "replace"):
@@ -486,18 +621,25 @@ class EndpointRecovery:
                 flags.append({"flag": "no-column-reads-found", "reason": "no read of this query's columns was traced; "
                               "response lists the selected columns"})
                 cols = [c for c in selected if c != "*"] or []
-            fields = {}
+            fields, field_cols = {}, {}
+            q_tables = [self.schema_lower.get(t.lower(), t) for t in (main_sh.get("tables") or [])]
+            qualified = self.qualified_select(main_sh.get("sql") or "")
             for c in cols:
-                t = self.schema.get(table_real or "", {}).get(c)
+                owner = qualified.get(c) or self.column_owner(c, q_tables, table_real)
+                t = self.schema.get(owner or "", {}).get(c)
                 fields[c] = json_type(t["sqlType"]) if t else {"type": "string"}
-                if not t:
-                    flags.append({"flag": "type-unknown", "column": f"{table_real}.{c}"})
+                field_cols[c] = f"{owner}.{c}" if owner else None
+                if owner is None:
+                    flags.append({"flag": "column-ambiguous", "column": c,
+                                  "reason": f"more than one joined table has this column: {', '.join(q_tables)}"})
+                elif not t:
+                    flags.append({"flag": "type-unknown", "column": f"{owner}.{c}"})
                 if SENSITIVE.search(c):
-                    flags.append({"flag": "sensitive-field", "column": f"{table_real}.{c}",
+                    flags.append({"flag": "sensitive-field", "column": f"{owner or table_real}.{c}",
                                   "reason": "the legacy page outputs this column; review before exposing it in the API"})
             is_detail = "{" in path
             response = {"kind": "object" if is_detail else "list", "recordsAt": None if is_detail else res,
-                        "fields": fields, "selectedStar": "*" in selected}
+                        "fields": fields, "columns": field_cols, "selectedStar": "*" in selected}
         auth = self.auth_requirement(fid, item, pts, unit, page_report, session_filters)
         if auth.get("needsDecision"):
             flags.append({"flag": "no-guard-in-legacy", "reason": "the legacy page has no guard before this data access: "
@@ -510,6 +652,37 @@ class EndpointRecovery:
         if also:
             ep["alsoWrites"] = also
         return ep
+
+    def qualified_select(self, sql: str) -> dict[str, str]:
+        """Output column -> table, for select items written as alias.column
+        (`select p.pid, a.docFees from prestb p inner join appointmenttb a ...`)."""
+        m = re.match(r"\s*select\s+(.*?)\s+from\s+(.*)$", sql, re.I | re.S)
+        if not m:
+            return {}
+        alias = {}
+        for t, al in re.findall(r"(?:from|join|,)\s*`?(\w+)`?(?:\s+(?:as\s+)?(?!on\b|inner\b|left\b|right\b|join\b|where\b)(\w+))?",
+                                "from " + m.group(2), re.I):
+            real = self.schema_lower.get(t.lower(), t)
+            alias[t.lower()] = real
+            if al:
+                alias[al.lower()] = real
+        out = {}
+        for item in _split_select(m.group(1)):
+            q = re.fullmatch(r"`?(\w+)`?\.`?(\w+)`?(?:\s+(?:as\s+)?`?(\w+)`?)?", item.strip(), re.I)
+            if q and q.group(1).lower() in alias:
+                out[q.group(3) or q.group(2)] = alias[q.group(1).lower()]
+        return out
+
+    def column_owner(self, col: str, tables: list[str], main: str | None) -> str | None:
+        """Which table a selected column comes from. One table: that one. A join: the only joined
+        table whose schema has the column; None when several do (ambiguous), the main table when
+        the schema is unknown."""
+        if len(tables) <= 1 or not self.schema:
+            return main
+        owners = [t for t in tables if col in self.schema.get(t, {})]
+        if len(owners) == 1:
+            return owners[0]
+        return None if owners else main
 
     def source_rec(self, fid, item, region, params, rec_idx, queries, member) -> dict[str, Any]:
         """One legacy request behind an endpoint, with *its own* parameters (C4 needs the
@@ -526,11 +699,14 @@ class EndpointRecovery:
                          and s["superglobal"] in ("GET", "POST", "REQUEST") and self.inside(ca, s["node"], region["body"])}
             legacy_names |= body_keys
         fixed = {k: v for k, v in (region["trigger"]["fixed"] if region else {}).items() if k not in legacy_names}
-        rec = {"source_id": f"{a.path}:{code_item}", "page": a.path,
+        repeats = self.repeated_fields(code_fid, region) if region else []
+        same_as = {d["field"]: d["same_as"] for d in repeats}
+        rec = {"source_id": f"{a.path}:{code_item}", "page": a.path, "constraints": repeats,
                "legacy": {"method": region["trigger"]["method"] if region else "GET", "path": "/" + a.path,
                           "fixed": fixed, "records": rec_idx,
                           "trigger": region["trigger"]["keys"] if region else []},
-               "parameters": _dedupe_params([dict(p) for p in params]),
+               "parameters": _dedupe_params([{**p, "same_as": same_as[p["legacy_name"]]}
+                                             if p.get("legacy_name") in same_as else dict(p) for p in params]),
                "queries": queries or [], "stmt": code_item,
                "code": {"path": self.A[code_fid].path, "line": self.A[code_fid].line(code_item)}}
         return rec
@@ -567,12 +743,36 @@ class EndpointRecovery:
                 cur["sessionBindings"].append(b)
         for k, v in ep["response"].get("fields", {}).items():
             cur["response"].setdefault("fields", {}).setdefault(k, v)
+        for k, v in ep["response"].get("columns", {}).items():
+            cur["response"].setdefault("columns", {}).setdefault(k, v)
         cur["flags"] = _dedupe_flags(cur["flags"] + ep["flags"])
         if ep["auth"].get("required") != cur["auth"].get("required"):
             cur["flags"] = _dedupe_flags(cur["flags"] + [{"flag": "inconsistent-guard",
                                                            "reason": "some legacy pages guard this data, others do not"}])
             if ep["auth"].get("required"):
                 cur["auth"] = ep["auth"]
+
+
+def _split_select(s: str) -> list[str]:
+    out, depth, cur = [], 0, ""
+    for ch in s:
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        if ch == "," and depth == 0:
+            out.append(cur)
+            cur = ""
+        else:
+            cur += ch
+    return out + [cur] if cur.strip() else out
+
+
+def _repeats(rep: str, orig: str) -> bool:
+    """Is `rep` the confirmation of `orig`? cpassword / confirm_password / password2 / re_password ..."""
+    r, o = rep.lower(), orig.lower()
+    return r != o and o in r and re.fullmatch(rf"(c|conf|confirm|re|repeat|retype)?_?{re.escape(o)}_?(2|again|confirm|"
+                                              rf"confirmation|repeat)?", r) is not None
 
 
 def _norm(path: str) -> str:
@@ -614,20 +814,43 @@ def _dedupe_flags(flags: list[dict]) -> list[dict]:
 
 
 def endpoint_map(rec: dict[str, Any]) -> dict[str, Any]:
-    """C4 view (same structure as c4-stand-in/1) + C2 view (pages, queries)."""
+    """C4 view (same structure as c4-stand-in/1, plus the fields C4 asked for on 2026-10-21) + C2 view.
+
+    Per source: legacy.records is "only", a table number, "unknown" or "none"; constraints lists
+    fields that must repeat another (same_as); a login form also carries its user type, fields
+    and redirects. Per endpoint: auth (required, userTypes, sessionKeys) and response_fields
+    (field -> table.column). Top level: how to log in and where the token is."""
     out = []
+    login: dict[str, Any] = {}
     for ep in rec["endpoints"]:
         sources = []
         for s in ep["sources"]:
-            sources.append({"source_id": s["source_id"],
-                            "legacy": {k: s["legacy"][k] for k in ("method", "path", "fixed", "records")},
-                            "parameters": [{"name": p["name"], "in": p.get("in", "query"), "legacy_name": p["legacy_name"],
-                                            "legacy_in": p["legacy_in"], "column": p.get("column")}
-                                           for p in s["parameters"] if p.get("legacy_name")]})
+            src = {"source_id": s["source_id"], "code": s.get("code"),
+                   "legacy": {k: s["legacy"][k] for k in ("method", "path", "fixed", "records")},
+                   "parameters": [{"name": p["name"], "in": p.get("in", "query"), "legacy_name": p["legacy_name"],
+                                   "legacy_in": p["legacy_in"], "column": p.get("column"),
+                                   **({"same_as": p["same_as"]} if p.get("same_as") else {})}
+                                  for p in s["parameters"] if p.get("legacy_name")],
+                   "constraints": s.get("constraints", [])}
+            if s.get("login"):
+                src["login"] = s["login"]
+                t = s["login"]["userType"]
+                if isinstance(t, str):
+                    login.setdefault(t, {"pages": [], "fields": s["login"]["fields"], "sets": s["login"]["sets"],
+                                         "redirects": s["login"]["redirects"]})["pages"].append(s["legacy"]["path"])
+            sources.append(src)
+        auth = {"required": bool(ep["auth"].get("required")), "userTypes": ep["auth"].get("userTypes", []),
+                "sessionKeys": ep["auth"].get("sessionKeys", [])}
         out.append({"endpoint_id": ep["id"], "method": ep["method"], "path": ep["path"],
-                    "records_at": ep["response"].get("recordsAt"), "sources": sources,
-                    "status": "200", "mediaType": "application/json"})
-    return {"format": "c1-endpoint-map/1", "endpoints": out, "pages": rec["pages"], "queries": rec["queries"]}
+                    "records_at": ep["response"].get("recordsAt"),
+                    "response_fields": ep["response"].get("columns", {}),
+                    "auth": auth, "flags": sorted({f["flag"] for f in ep["flags"]}),
+                    "sources": sources, "status": "200", "mediaType": "application/json"})
+    return {"format": "c1-endpoint-map/1", "endpoints": out, "pages": rec["pages"], "queries": rec["queries"],
+            "login": {"endpoint": "POST /api/auth/login", "request": "JSON body with the login parameters",
+                      "tokenAt": "access_token", "tokenType": "bearer",
+                      "sendAs": "Authorization: Bearer <access_token>",
+                      "userTypes": {k: {**v, "pages": sorted(set(v["pages"]))} for k, v in sorted(login.items())}}}
 
 
 def run(out_dir: Path, src_root: Path | None, schema_files: list[Path]) -> dict[str, Any]:
