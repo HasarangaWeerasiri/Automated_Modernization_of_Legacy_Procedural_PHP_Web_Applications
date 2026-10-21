@@ -33,7 +33,11 @@
           {"cwd": "component2_frontend/output/test-app", "env": {"API_BASE_URL": "http://127.0.0.1:18190"},
            "command": ["node", "node_modules/next/dist/bin/next", "start", "c2-build/ui-{app}", "-p", "3100"]}
         ],
-        "replayArgs": {"phpblog": ["--db-port", "13307", "--database", "phpblog"]}
+        "replayArgs": {"phpblog": ["--db-port", "13307", "--database", "phpblog"]},
+        "needs": {
+          "hms": {"when": "data", "port": 13306, "hint": "Start Docker Desktop, then run: docker start c2-hms-db-1. Or migrate again without 'Replay data'."},
+          "phpblog": {"when": "data", "port": 13307, "hint": "Start Docker Desktop, then run: docker start c2-phpblog-db-1. Or migrate again without 'Replay data'."}
+        }
       }
     },
     "c3": {

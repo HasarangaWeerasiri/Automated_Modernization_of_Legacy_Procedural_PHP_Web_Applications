@@ -12,6 +12,7 @@ Run, from the repository root:
 import asyncio
 import json
 import os
+import socket
 import sqlite3
 import subprocess
 import threading
@@ -262,6 +263,13 @@ def serve(run_id: str) -> dict:
     block = config()["components"][run["component"]].get("serve")
     if not block:
         raise HTTPException(400, "this component serves nothing")
+    need = block.get("needs", {}).get(run["app"])  # e.g. the database the replay data comes from
+    if need and (run["summary"] or {}).get(need["when"], run["options"].get(need["when"])):
+        try:
+            socket.create_connection(("127.0.0.1", need["port"]), timeout=1).close()
+        except OSError:
+            raise HTTPException(409, f"The database for {run['app']} is not running (port {need['port']}). "
+                                     f"{need['hint']}") from None
     stop_served()
     values = {"app": run["app"], "replayArgs": block.get("replayArgs", {}).get(run["app"], [])}
     logs = RUNS / run_id / "serve.log"
