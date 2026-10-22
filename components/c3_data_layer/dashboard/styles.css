@@ -383,3 +383,19 @@ mark.mi-mark-bind { background: var(--accent-soft); color: var(--accent); border
 .explorer-stage > .stage-title { margin: var(--space-4) 0 var(--space-1); font-size: var(--fs-m); }
 .badge.muted { background: var(--grey-bg); color: var(--grey-fg); }
 td code, dd code { overflow-wrap: anywhere; }
+
+/* Compact FR cards */
+.fr-req-short { margin: var(--space-2) 0; color: var(--text-muted); font-size: var(--fs-s); display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden; }
+.fr-headline { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-2) 0; }
+.fr-kpi { appearance: none; text-align: left; font: inherit; cursor: pointer; border: 1px solid var(--border); border-radius: var(--radius-s);
+  background: var(--surface-sunken); color: var(--text); padding: var(--space-1) var(--space-2); display: flex; flex-direction: column; gap: 0; min-width: 0; flex: 1 1 0; }
+.fr-kpi-value strong { font-size: var(--fs-m); }
+.fr-kpi-label { font-size: var(--fs-xs); color: var(--text-muted); overflow-wrap: anywhere; }
+.fr-main-limit { margin: var(--space-2) 0; font-size: var(--fs-s); }
+.fr-cell { white-space: nowrap; }
+#section-functions .grid.cards { align-items: start; }
+.pp1-details .pp1-details { margin-left: var(--space-2); }
+.fr-kpi-caption { margin: var(--space-2) 0 0; font-size: var(--fs-xs); color: var(--text-muted); }
+#section-functions .fr-card { gap: var(--space-2); }
+#section-functions .fr-card > * { margin-top: 0; margin-bottom: 0; }

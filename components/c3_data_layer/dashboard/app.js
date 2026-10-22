@@ -266,24 +266,39 @@ const Evidence = (() => {
 
   function frCard(item) {
     const refs = item.measurements.map(byId).filter(Boolean);
+    const c = pp1().functions[item.fr] || {};
+    const headline = (c.headline || []).map((id) => refs.find((m) => m.id === id)).filter(Boolean);
+    const caption = headline.length && headline.every((m) => m.label === headline[0].label) ? headline[0].label : null;
     const siteList = item.site_list ? DATA.limitations.find((l) => l.fr === item.site_list) : null;
     const experiments = item.experiments.map((k) => h("a", { href: "#/evidence/evaluation", text: EXPERIMENT_LABELS[k] || k }));
+    const apps = [...new Set(refs.map((m) => m.app))];
+    const labels = [...new Set(refs.map((m) => m.label))];
+    const cell = (app, label) => refs.filter((m) => m.app === app && m.label === label).map((m, i, all) => h("button", {
+      type: "button", class: "linklike fr-cell", title: `${m.stage_label} · ${m.source.file || ""}`, onclick: () => showMeasurement(m),
+      "aria-label": `${appLabel(m.app)}, ${m.label}, ${m.stage_label}: ${formatValue(m)} ${ratio(m)}. Open evidence.`,
+      text: `${formatValue(m)}${ratio(m) ? ` (${ratio(m)})` : ""}${all.length > 1 ? ` · ${m.stage_label}` : ""}` }));
     return h("article", { class: "card fr-card", "aria-labelledby": `fr-${item.fr}` },
       h("div", { class: "fr-head" },
         h("h3", { id: `fr-${item.fr}` }, h("span", { class: "fr-id", text: item.fr }), item.title),
         h("span", { class: `badge ${STATUS_CLASS[item.status] || ""}`, text: item.status })),
-      h("blockquote", { class: "fr-req", text: item.requirement }),
-      h("p", { class: "fr-limit" }, h("strong", { text: "Limitation: " }), item.limitation),
-      h("ul", { class: "fr-list", "aria-label": `Supporting measurements for ${item.fr}` }, refs.map((m) => h("li", {},
-        h("button", { type: "button", class: "fr-item", onclick: () => showMeasurement(m),
+      h("p", { class: "fr-req-short", title: item.requirement, text: item.requirement }),
+      caption ? h("p", { class: "fr-kpi-caption", text: caption }) : null,
+      headline.length ? h("div", { class: "fr-headline", "aria-label": `Headline measurements for ${item.fr}` }, headline.map((m) =>
+        h("button", { type: "button", class: "fr-kpi", onclick: () => showMeasurement(m),
           "aria-label": `${appLabel(m.app)}, ${m.label}, ${m.stage_label}: ${formatValue(m)} ${ratio(m)}. Open evidence.` },
-        h("span", { class: "what" }, h("span", { text: `${appLabel(m.app)} · ${m.label}` }), stageBadge(m),
-          m.status !== "measured" ? statusBadge(m.status) : null, h("code", { text: m.source.file || "" })),
-        h("span", { class: "val" }, h("strong", { text: formatValue(m) }), ratio(m) ? h("span", { class: "muted", text: ` (${ratio(m)})` }) : null))))),
-      siteList ? h("p", {}, h("button", { type: "button", class: "button", onclick: () => showSites(siteList),
-        text: `Unsupported join sites: ${joinCounts(siteList)} (show sites)` })) : null,
-      experiments.length ? h("p", { class: "fr-limit muted" }, "Experiments: ",
-        experiments.flatMap((a, i) => (i ? [", ", a] : [a]))) : null,
+        h("span", { class: "fr-kpi-value" }, h("strong", { text: formatValue(m) }), ratio(m) ? h("span", { class: "muted", text: ` (${ratio(m)})` }) : null),
+        h("span", { class: "fr-kpi-label", text: caption ? appLabel(m.app) : `${appLabel(m.app)} · ${m.label}` })))) : null,
+      c.main_limit ? h("p", { class: "fr-main-limit" }, h("strong", { text: "Main limit: " }), c.main_limit) : null,
+      c.partial_reason ? h("p", { class: "fr-main-limit" }, h("strong", { text: "Why Partial: " }), c.partial_reason) : null,
+      details("Evidence and limitations",
+        h("blockquote", { class: "fr-req", text: item.requirement }),
+        h("p", { class: "fr-limit" }, h("strong", { text: "Limitation: " }), item.limitation),
+        table(["Application", ...labels], apps.map((a) => [appLabel(a), ...labels.map((l) => { const x = cell(a, l); return x.length ? x : "-"; })])),
+        h("p", { class: "muted", text: "Select a value for its evidence (stage, numerator and denominator, source file)." }),
+        siteList ? h("p", {}, h("button", { type: "button", class: "button", onclick: () => showSites(siteList),
+          text: `Unsupported join sites: ${joinCounts(siteList)} (show sites)` })) : null,
+        experiments.length ? h("p", { class: "fr-limit muted" }, "Experiments: ",
+          experiments.flatMap((a, i) => (i ? [", ", a] : [a]))) : null),
       frDetails(item));
   }
 
@@ -333,10 +348,9 @@ const Evidence = (() => {
   function frDetails(item) {
     const c = pp1().functions[item.fr];
     if (!c) return null;
-    return h("div", { class: "fr-details" },
-      h("p", { class: "fr-limit" }, h("strong", { text: "Research purpose: " }), c.purpose),
-      c.partial_reason ? h("p", { class: "fr-limit" }, h("strong", { text: "Why the status is Partial: " }), c.partial_reason) : null,
-      details("Implementation and techniques", h("p", { text: c.implementation }), bullets(c.techniques)),
+    return details("More detail: implementation, files, demonstration, improvements, tests, future work",
+      details("Implementation and techniques", h("p", {}, h("strong", { text: "Research purpose: " }), c.purpose),
+        h("p", { text: c.implementation }), bullets(c.techniques)),
       details("Key files and functions", bullets(c.code.map((r) => [h("code", { text: r.file }), ": ",
         r.functions.map((f, i) => [i ? ", " : "", h("code", { text: f })])]))),
       details("Demonstrable functionality", bullets(c.demonstration.map((d) => [h("strong", { text: appName(d.app) }),
@@ -346,7 +360,7 @@ const Evidence = (() => {
         bullets(c.tests.map((t) => h("code", { text: t }))),
         h("p", { class: "muted", text: "Results are the saved suite totals (all tests, including the files above):" }),
         h("ul", { class: "fr-list" }, latestTestIds().map((id) => h("li", {}, measurementButton(id, "Saved log"))))),
-      details("Remaining limitations and future work", h("p", { text: item.limitation }), bullets(c.future)),
+      details("Future work", bullets(c.future)),
       h("p", {}, h("button", { type: "button", class: "button", onclick: () => showSourceEvidence(item, c), text: "View source evidence" })));
   }
 
@@ -419,17 +433,23 @@ const Evidence = (() => {
         d.title.startsWith("E4") ? securityScope() : null)));
   }
 
-  function inventoryCard() {
-    const p = pp1();
-    return card("Technology and output inventory", "Technologies verified by their import sites in the repository; outputs checked in the current-code run.",
-      table(["Technology", "Role", "Area", "Version", "Imported in"], p.technologies.map((t) => [t.name, t.role, t.area,
-        t.version ? [t.version, " ", h("span", { class: "muted", text: `(${t.version_source})` })] : "-",
-        t.imported_in ? (Object.keys(t.imported_in).length ? Object.entries(t.imported_in).map(([area, files]) => `${area} (${files.length} files)`).join(", ")
-          : "No direct import") : "-"])),
-      h("h4", { text: "Outputs written by the pipeline" }),
-      table(["Output", "Stage", "Purpose", "Present in every current-code run", "Listed by integration.py"], p.artifacts.map((a) => [
-        h("code", { text: a.file }), a.stage, a.purpose, a.present_in_current_run ? "yes" : "no", a.in_integration_adapter_list ? "yes" : "no"])),
-      h("p", { class: "muted", text: "Generating the Alembic files is not running a database migration; the round trip was run separately (E3)." }));
+  // Evaluation: what was and was not verified (replaces the per-application "not yet measured" table).
+  function verificationScope(notMeasured) {
+    const finalRun = DATA.experiments.e1.runs.find((r) => r.kind === "final");
+    const suite = DATA.experiments.e1.separate_suites[0];
+    const all = suite ? measurement(suite.app, "mysql_equivalence_tests_passed") : null;
+    const join = suite ? measurement(suite.app, "join_rule_mysql_tests_passed") : null;
+    const noE1 = notMeasured.filter((m) => m.metric === "e1_equivalence").map((m) => appLabel(m.app));
+    const effort = notMeasured.filter((m) => m.metric === "migration_effort");
+    const open = (m) => h("button", { type: "button", class: "linklike", onclick: () => showMeasurement(m), text: formatValue(m) });
+    return card("Verification scope", "Missing evidence is shown as not measured, never as zero.", bullets([
+      [`E1 behavioural equivalence on MySQL was run for ${appLabel(finalRun.app)} only`, noE1.length ? `; not run for ${noE1.join(", ")}.` : "."],
+      all && join ? [`${appLabel(suite.app)} has a separate MySQL verification, not E1: `, open(all), " tests = ",
+        `${all.value - join.value}`, " tests of the application's PHP against the generated functions + ", open(join),
+        " direct-SQL join-rule tests."] : null,
+      `Execution time is measured on one machine (${DATA.experiments.performance.machine.cpu}); it is not a benchmark of other hardware.`,
+      ["Developer effort and maintainability are not claimed", effort.length ? ` (${effort[0].label}: ${NOT_MEASURED}).` : "."],
+    ].filter(Boolean)));
   }
 
   function renderOverview(root) {
@@ -693,7 +713,6 @@ const Evidence = (() => {
           ["E3 round trip (upgrade, compare, check, downgrade)", verdict(e3.verdict)],
           ...Object.entries(e3.steps).map(([k, v]) => [`E3 step: ${k}`, verdict(v)]),
         ]))),
-      inventoryCard(),
     );
   }
 
@@ -825,8 +844,7 @@ const Evidence = (() => {
             return [run.latest ? run.title : `${run.title} (history)`, run.date || "-", h("code", { text: run.head_short }),
               cell("passed"), cell("failed"), cell("skipped"), h("code", { text: run.file })];
           }))),
-        card("Not yet measured", "Shown as missing, never as zero.", table(["Measurement", "Application", "Status"],
-          notMeasured.map((m) => [m.label, appLabel(m.app), h("span", {}, statusBadge(m.status), " ", NOT_MEASURED)])))),
+        verificationScope(notMeasured)),
       card("Known limitations (FR2, FR4, FR6)", null, DATA.limitations.map((l) => h("div", { style: "margin-bottom:var(--space-3)" },
         h("strong", { text: `${l.fr}: ${l.title}. ` }), l.text, " ", h("span", { class: "muted" }, "Evidence: ", h("code", { text: l.evidence })))),
       table(["Join form", "Application", "Query ID", "Ground-truth ID", "PHP site", "Ground-truth label"],

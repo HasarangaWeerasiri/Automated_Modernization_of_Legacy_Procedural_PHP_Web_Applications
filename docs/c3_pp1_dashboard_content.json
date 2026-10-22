@@ -21,6 +21,8 @@
  },
  "functions": {
   "FR1": {
+   "headline": ["hms_kishan0725|post-adaptation (after H1)|sql_detection", "dignity_dev_hms|fresh holdout (first run)|sql_detection", "fee_rainbow|post-fix (wrapper support + fragment rule)|sql_detection"],
+   "main_limit": "PDO is covered by fixtures and unit tests only, and only single-parameter wrapper functions are detected.",
    "purpose": "Find every place where the legacy PHP sends SQL to MySQL, so that nothing is migrated blind.",
    "implementation": "A PHP extractor built on the nikic/php-parser AST walks every PHP file and reports each database execution call with its file, line, executor and SQL-argument expression. Single-parameter wrapper functions that forward their argument to an executor are detected, and calls to them become sites.",
    "techniques": ["PHP abstract syntax tree traversal (nikic/php-parser)", "Executor tables for mysqli, mysql_* and PDO-style methods (query, prepare, exec)", "PHP named-argument handling", "Wrapper-function detection", "Other DBMS APIs reported as UNSUPPORTED_EXECUTOR instead of ignored"],
@@ -34,6 +36,8 @@
    "future": ["Multi-parameter wrapper functions and class-based database layers.", "A benchmark application that uses PDO (PDO is covered by fixtures and unit tests only)."]
   },
   "FR2": {
+   "headline": ["dignity_dev_hms|fresh holdout (first run)|recovery_recall", "hms_kishan0725|post-adaptation (after H1)|recovery_recall", "fee_rainbow|post-fix (wrapper support + fragment rule)|recovery_recall"],
+   "main_limit": "SQL whose text differs between if/else branches is not rebuilt by a general rule; only two Clinic templates do this.",
    "purpose": "Rebuild the SQL text that the PHP constructs at run time, so it can be analysed and converted.",
    "implementation": "The assignment chain of the SQL variable is followed backwards through = and .= assignments; literals, concatenation, interpolation and array elements are rebuilt into a template with named placeholders for runtime values. SQL built and executed in the same conditional block is recovered. Chains that depend on which branch, loop iteration or switch case ran, or whose variables carry SQL text, are flagged UNRESOLVED with a reason code instead of guessed.",
    "techniques": ["Backward assignment-chain slicing", "PHP string decoding (escapes, interpolation, array elements)", "Template with named placeholders", "Guards: branching, loop/switch, structural placeholder, SQL-fragment variable", "Query-specific templates for exact Clinic shapes (reported separately)"],
@@ -48,6 +52,8 @@
    "future": ["General branch-variant reconstruction (deferred).", "Loop-built SQL as an explicit batch statement (not planned)."]
   },
   "FR3": {
+   "headline": ["all|post-adaptation (E2, 2026-10-15)|e2_schema_match"],
+   "main_limit": "Relationships come only from declared foreign keys; several applications declare none.",
    "purpose": "Know the database structure the migrated code must target.",
    "implementation": "The MySQL schema file is stripped of comments, its CREATE TABLE bodies are parsed into columns, keys, defaults, constraints and indexes, and phpMyAdmin-style ALTER TABLE key and AUTO_INCREMENT statements are applied afterwards. Views, triggers, procedures, functions and events are recorded as unsupported objects.",
    "techniques": ["Rule-based DDL parsing", "ALTER TABLE application", "Foreign-key relationship extraction", "Unsupported-object reporting"],
@@ -58,6 +64,8 @@
    "future": ["Relationship inference for schemas without declared foreign keys (not planned)."]
   },
   "FR4": {
+   "headline": ["dignity_dev_hms|fresh holdout (first run)|column_use_read", "dignity_dev_hms|fresh holdout (first run)|column_use_write", "hms_kishan0725|post-adaptation (after H1)|column_use_filter"],
+   "main_limit": "How result columns are used later in the PHP application logic is not traced.",
    "purpose": "Know which tables and columns each query reads, writes and filters.",
    "implementation": "Each recovered or converted statement is parsed with SQLGlot; tables and aliases are attributed, SELECT * is expanded against the schema, and columns are classified as read, write, filter, join, group, order or having.",
    "techniques": ["SQLGlot abstract syntax tree", "Alias resolution", "Star expansion against the parsed schema", "Column-role classification"],
@@ -69,6 +77,8 @@
    "future": ["Trace fetched-row keys into later PHP use (deferred; it could change frozen HMS outputs)."]
   },
   "FR5": {
+   "headline": ["all|post-adaptation (E2, 2026-10-15)|e2_schema_match"],
+   "main_limit": "Tables without a primary key become Core tables, not ORM classes.",
    "purpose": "Give the migrated application typed Python models of the existing database.",
    "implementation": "One SQLAlchemy ORM class per table with a primary key and a Core Table for tables without one; generic types are used where they are exact and MySQL variants where a generic type would change the column; TINYINT(1) becomes Boolean only for non-key columns; relationships come from foreign keys.",
    "techniques": ["MySQL to SQLAlchemy type mapping with dialect variants", "ORM class or Core Table selection", "Relationship generation from foreign keys"],
@@ -79,6 +89,8 @@
    "future": ["ORM classes for key-less tables would need a chosen surrogate key (design decision, not planned)."]
   },
   "FR6": {
+   "headline": ["dignity_dev_hms|current code|conversion_coverage_gt", "fee_rainbow|current code|conversion_coverage_gt", "hms_kishan0725|post-adaptation (E1 re-run)|e1_pass"],
+   "main_limit": "One ground-truth recoverable site is not converted, and MySQL behavioural equivalence (E1) exists for HMS only.",
    "purpose": "Replace string-built SQL with parameterized SQLAlchemy functions where this is safe.",
    "implementation": "The recovered template is parameterized (quoted placeholders become named binds, LIKE wildcards are bound with the value), parsed with SQLGlot and accepted only if every placeholder is in a scalar value position. Multi-table SELECTs must satisfy the INNER JOIN rule or the LEFT/comma-join result-shape rule. One text() function with named binds is emitted per accepted site; the SQL text itself is unchanged.",
    "techniques": ["Named bind parameters with SQLAlchemy text()", "SQLGlot value-position safety rule", "INNER JOIN rule", "LEFT and comma-join result-shape rule", "Prepared-statement placeholder naming", "Query-specific Clinic templates (reported separately)", "Standalone generated module with inlined helpers"],
@@ -90,6 +102,8 @@
    "future": ["Apply the result-shape check to INNER JOINs.", "A complete Fee-Rainbow schema.", "E1 behavioural runs for Dignity-Dev, Helpdesk and NEWS-BUZZ."]
   },
   "FR7": {
+   "headline": ["hms_kishan0725|current code (E4, 2026-10-20)|e4_safe_functions", "fee_rainbow|current code (E4, 2026-10-20)|e4_safe_functions", "dignity_dev_hms|current code (E4, 2026-10-20)|e4_safe_functions"],
+   "main_limit": "E4 is a bounded recording-session check; runtime hostile tests on MySQL cover HMS and a few Clinic cases only.",
    "purpose": "Make sure every runtime value reaches the database as a bound parameter, never as SQL text.",
    "implementation": "A placeholder is bound only in a scalar value position: comparison right-hand side, IN item, INSERT value, column plus value, BETWEEN bound, LIMIT or OFFSET, or the value argument of an allow-listed function. Identifiers and SQL fragments are flagged STRUCTURAL. The security report traces legacy user inputs to placeholders and scans the generated code for non-literal text() calls.",
    "techniques": ["SQLGlot position analysis", "Schema-derived identifier allow-lists (Clinic templates)", "Input-source tracing", "Generated-code scan", "E4 recording-session payload check"],
@@ -100,6 +114,8 @@
    "future": ["Runtime hostile testing on MySQL beyond HMS and the Clinic cases.", "A converter-level guard for whole-list IN fragments (recovery blocks them today)."]
   },
   "FR8": {
+   "headline": ["dignity_dev_hms|fresh holdout (first run)|correct_abstention", "news_buzz|post-fix (escape decoder)|correct_abstention", "fee_rainbow|post-fix (wrapper support + fragment rule)|correct_abstention"],
+   "main_limit": "Correct abstention is measurable only where the ground truth has non-recoverable sites.",
    "purpose": "Never generate SQL that might be wrong: flag it for a person instead.",
    "implementation": "Every site that fails a recovery or conversion guard is written to unresolved_queries.json with its stage, reason code and reason, and receives a stub function that raises instead of generated SQL.",
    "techniques": ["Stage-tagged reason codes", "Unresolved-site stubs", "Unresolved report"],
@@ -110,6 +126,8 @@
    "future": ["Per-reason manual-review guidance in the unresolved report itself."]
   },
   "FR9": {
+   "headline": ["all|current code (E3, 2026-10-19)|e3_roundtrip_pass"],
+   "main_limit": "Only an initial-schema revision is generated; there is no data migration.",
    "purpose": "Give the modernized data layer a managed starting point for future schema changes.",
    "implementation": "An Alembic environment (alembic.ini, env.py, script.py.mako) and an initial revision that creates every table in foreign-key dependency order are generated. Generating the files is not running a migration; the round trip was run separately in E3.",
    "techniques": ["Alembic revision generation", "Dependency ordering of tables"],
@@ -120,6 +138,8 @@
    "future": ["Data migration and incremental revisions."]
   },
   "FR10": {
+   "headline": ["hms_kishan0725|post-adaptation (after H1)|recovery_recall", "all|saved log (2026-10-20, HEAD 4d62a90)|tests_passed", "all|saved log (2026-10-20, HEAD 84e97c0)|tests_with_mysql_passed"],
+   "main_limit": "The frozen HMS handoff document cites one site without its include directory.",
    "purpose": "Let a reviewer go from any generated function back to the exact PHP line it replaces.",
    "implementation": "Each site keeps its file and line through every stage; traceability_report.json maps file:line to recovery status, conversion status and rule, and the generated function name and kind; generated docstrings carry the source label.",
    "techniques": ["Stable query IDs", "Source labels relative to the PHP root", "Traceability report"],

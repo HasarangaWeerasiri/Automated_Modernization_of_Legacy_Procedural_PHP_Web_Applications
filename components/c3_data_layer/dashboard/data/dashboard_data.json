@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": {
   "by": "scripts/summarize_evidence.py --dashboard-json",
-  "date": "2026-10-20T17:51:30+05:30",
-  "git_head": "1e575bac4910516826eeff02b2847eb4649bbcda",
+  "date": "2026-10-22T08:52:13+05:30",
+  "git_head": "dac03781fe656c15bf5e5bfbba25c42708121d1d",
   "pipeline_unchanged_since_head": true,
   "current_code_run": "fresh C3 run of all 9 apps into a temp folder outside the repo (written <temp>)"
  },
@@ -19163,6 +19163,12 @@
   },
   "functions": {
    "FR1": {
+    "headline": [
+     "hms_kishan0725|post-adaptation (after H1)|sql_detection",
+     "dignity_dev_hms|fresh holdout (first run)|sql_detection",
+     "fee_rainbow|post-fix (wrapper support + fragment rule)|sql_detection"
+    ],
+    "main_limit": "PDO is covered by fixtures and unit tests only, and only single-parameter wrapper functions are detected.",
     "purpose": "Find every place where the legacy PHP sends SQL to MySQL, so that nothing is migrated blind.",
     "implementation": "A PHP extractor built on the nikic/php-parser AST walks every PHP file and reports each database execution call with its file, line, executor and SQL-argument expression. Single-parameter wrapper functions that forward their argument to an executor are detected, and calls to them become sites.",
     "techniques": [
@@ -19228,6 +19234,12 @@
     ]
    },
    "FR2": {
+    "headline": [
+     "dignity_dev_hms|fresh holdout (first run)|recovery_recall",
+     "hms_kishan0725|post-adaptation (after H1)|recovery_recall",
+     "fee_rainbow|post-fix (wrapper support + fragment rule)|recovery_recall"
+    ],
+    "main_limit": "SQL whose text differs between if/else branches is not rebuilt by a general rule; only two Clinic templates do this.",
     "purpose": "Rebuild the SQL text that the PHP constructs at run time, so it can be analysed and converted.",
     "implementation": "The assignment chain of the SQL variable is followed backwards through = and .= assignments; literals, concatenation, interpolation and array elements are rebuilt into a template with named placeholders for runtime values. SQL built and executed in the same conditional block is recovered. Chains that depend on which branch, loop iteration or switch case ran, or whose variables carry SQL text, are flagged UNRESOLVED with a reason code instead of guessed.",
     "techniques": [
@@ -19308,6 +19320,10 @@
     ]
    },
    "FR3": {
+    "headline": [
+     "all|post-adaptation (E2, 2026-10-15)|e2_schema_match"
+    ],
+    "main_limit": "Relationships come only from declared foreign keys; several applications declare none.",
     "purpose": "Know the database structure the migrated code must target.",
     "implementation": "The MySQL schema file is stripped of comments, its CREATE TABLE bodies are parsed into columns, keys, defaults, constraints and indexes, and phpMyAdmin-style ALTER TABLE key and AUTO_INCREMENT statements are applied afterwards. Views, triggers, procedures, functions and events are recorded as unsupported objects.",
     "techniques": [
@@ -19359,6 +19375,12 @@
     ]
    },
    "FR4": {
+    "headline": [
+     "dignity_dev_hms|fresh holdout (first run)|column_use_read",
+     "dignity_dev_hms|fresh holdout (first run)|column_use_write",
+     "hms_kishan0725|post-adaptation (after H1)|column_use_filter"
+    ],
+    "main_limit": "How result columns are used later in the PHP application logic is not traced.",
     "purpose": "Know which tables and columns each query reads, writes and filters.",
     "implementation": "Each recovered or converted statement is parsed with SQLGlot; tables and aliases are attributed, SELECT * is expanded against the schema, and columns are classified as read, write, filter, join, group, order or having.",
     "techniques": [
@@ -19409,6 +19431,10 @@
     ]
    },
    "FR5": {
+    "headline": [
+     "all|post-adaptation (E2, 2026-10-15)|e2_schema_match"
+    ],
+    "main_limit": "Tables without a primary key become Core tables, not ORM classes.",
     "purpose": "Give the migrated application typed Python models of the existing database.",
     "implementation": "One SQLAlchemy ORM class per table with a primary key and a Core Table for tables without one; generic types are used where they are exact and MySQL variants where a generic type would change the column; TINYINT(1) becomes Boolean only for non-key columns; relationships come from foreign keys.",
     "techniques": [
@@ -19459,6 +19485,12 @@
     ]
    },
    "FR6": {
+    "headline": [
+     "dignity_dev_hms|current code|conversion_coverage_gt",
+     "fee_rainbow|current code|conversion_coverage_gt",
+     "hms_kishan0725|post-adaptation (E1 re-run)|e1_pass"
+    ],
+    "main_limit": "One ground-truth recoverable site is not converted, and MySQL behavioural equivalence (E1) exists for HMS only.",
     "purpose": "Replace string-built SQL with parameterized SQLAlchemy functions where this is safe.",
     "implementation": "The recovered template is parameterized (quoted placeholders become named binds, LIKE wildcards are bound with the value), parsed with SQLGlot and accepted only if every placeholder is in a scalar value position. Multi-table SELECTs must satisfy the INNER JOIN rule or the LEFT/comma-join result-shape rule. One text() function with named binds is emitted per accepted site; the SQL text itself is unchanged.",
     "techniques": [
@@ -19552,6 +19584,12 @@
     ]
    },
    "FR7": {
+    "headline": [
+     "hms_kishan0725|current code (E4, 2026-10-20)|e4_safe_functions",
+     "fee_rainbow|current code (E4, 2026-10-20)|e4_safe_functions",
+     "dignity_dev_hms|current code (E4, 2026-10-20)|e4_safe_functions"
+    ],
+    "main_limit": "E4 is a bounded recording-session check; runtime hostile tests on MySQL cover HMS and a few Clinic cases only.",
     "purpose": "Make sure every runtime value reaches the database as a bound parameter, never as SQL text.",
     "implementation": "A placeholder is bound only in a scalar value position: comparison right-hand side, IN item, INSERT value, column plus value, BETWEEN bound, LIMIT or OFFSET, or the value argument of an allow-listed function. Identifiers and SQL fragments are flagged STRUCTURAL. The security report traces legacy user inputs to placeholders and scans the generated code for non-literal text() calls.",
     "techniques": [
@@ -19626,6 +19664,12 @@
     ]
    },
    "FR8": {
+    "headline": [
+     "dignity_dev_hms|fresh holdout (first run)|correct_abstention",
+     "news_buzz|post-fix (escape decoder)|correct_abstention",
+     "fee_rainbow|post-fix (wrapper support + fragment rule)|correct_abstention"
+    ],
+    "main_limit": "Correct abstention is measurable only where the ground truth has non-recoverable sites.",
     "purpose": "Never generate SQL that might be wrong: flag it for a person instead.",
     "implementation": "Every site that fails a recovery or conversion guard is written to unresolved_queries.json with its stage, reason code and reason, and receives a stub function that raises instead of generated SQL.",
     "techniques": [
@@ -19678,6 +19722,10 @@
     ]
    },
    "FR9": {
+    "headline": [
+     "all|current code (E3, 2026-10-19)|e3_roundtrip_pass"
+    ],
+    "main_limit": "Only an initial-schema revision is generated; there is no data migration.",
     "purpose": "Give the modernized data layer a managed starting point for future schema changes.",
     "implementation": "An Alembic environment (alembic.ini, env.py, script.py.mako) and an initial revision that creates every table in foreign-key dependency order are generated. Generating the files is not running a migration; the round trip was run separately in E3.",
     "techniques": [
@@ -19719,6 +19767,12 @@
     ]
    },
    "FR10": {
+    "headline": [
+     "hms_kishan0725|post-adaptation (after H1)|recovery_recall",
+     "all|saved log (2026-10-20, HEAD 4d62a90)|tests_passed",
+     "all|saved log (2026-10-20, HEAD 84e97c0)|tests_with_mysql_passed"
+    ],
+    "main_limit": "The frozen HMS handoff document cites one site without its include directory.",
     "purpose": "Let a reviewer go from any generated function back to the exact PHP line it replaces.",
     "implementation": "Each site keeps its file and line through every stage; traceability_report.json maps file:line to recovery status, conversion status and rule, and the generated function name and kind; generated docstrings carry the source label.",
     "techniques": [
@@ -22983,321 +23037,6 @@
     }
    }
   },
-  "technologies": [
-   {
-    "name": "Python",
-    "role": "Pipeline language",
-    "area": "pipeline",
-    "version": null,
-    "version_source": null,
-    "imported_in": null
-   },
-   {
-    "name": "PHP and nikic/php-parser",
-    "role": "PHP abstract syntax tree for detection",
-    "area": "pipeline",
-    "package": "nikic/php-parser",
-    "version": "v5.9.0",
-    "version_source": "components/c3_data_layer/composer.lock",
-    "imported_in": null
-   },
-   {
-    "name": "SQLGlot",
-    "role": "SQL parsing for safety rules, join rules and column use",
-    "area": "pipeline",
-    "package": "sqlglot",
-    "module": "sqlglot",
-    "version": "30.21.0",
-    "version_source": "components/c3_data_layer/requirements.txt",
-    "imported_in": {
-     "src": [
-      "components/c3_data_layer/src/c3/analysis/column_analyzer.py",
-      "components/c3_data_layer/src/c3/conversion/branch_ir.py",
-      "components/c3_data_layer/src/c3/conversion/identifier_allowlist.py",
-      "components/c3_data_layer/src/c3/conversion/query_converter.py",
-      "components/c3_data_layer/src/c3/mapping/branch_recovery.py",
-      "components/c3_data_layer/src/c3/mapping/sql_parser.py"
-     ],
-     "scripts": [
-      "scripts/equivalence/compare.py",
-      "scripts/equivalence/input_table.py",
-      "scripts/make_handoff.py",
-      "scripts/schema_comparison.py"
-     ],
-     "dashboard": [
-      "components/c3_data_layer/dashboard/pp1_content.py"
-     ]
-    }
-   },
-   {
-    "name": "SQLAlchemy",
-    "role": "Generated models and text() functions; imported directly only by the Alembic emitter",
-    "area": "pipeline",
-    "package": "SQLAlchemy",
-    "module": "sqlalchemy",
-    "version": "2.1.3",
-    "version_source": "components/c3_data_layer/requirements.txt",
-    "imported_in": {
-     "src": [
-      "components/c3_data_layer/src/c3/generation/alembic_emitter.py"
-     ],
-     "tests": [
-      "components/c3_data_layer/tests/backend_verification/app.py",
-      "components/c3_data_layer/tests/backend_verification/test_app.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_behavioral_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_join_rule_mysql.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q010_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q011_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q012_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q013_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q014_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q016_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q020_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q020_rollback.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_write_equivalence.py",
-      "components/c3_data_layer/tests/fixtures/q014_generated.py",
-      "components/c3_data_layer/tests/mysql_validation/run_hard_migrated.py",
-      "components/c3_data_layer/tests/mysql_validation/run_migrated.py",
-      "components/c3_data_layer/tests/mysql_validation/run_mixed_migrated.py",
-      "components/c3_data_layer/tests/test_alembic_emitter.py",
-      "components/c3_data_layer/tests/test_alter_table_schema.py",
-      "components/c3_data_layer/tests/test_baseline_sqlacodegen.py",
-      "components/c3_data_layer/tests/test_behavioral_execution.py",
-      "components/c3_data_layer/tests/test_e1_harness.py",
-      "components/c3_data_layer/tests/test_e4_injection.py",
-      "components/c3_data_layer/tests/test_model_builder.py",
-      "components/c3_data_layer/tests/test_prepared_statements.py",
-      "components/c3_data_layer/tests/test_python_identifiers.py",
-      "components/c3_data_layer/tests/test_schema_fidelity.py",
-      "components/c3_data_layer/tests/test_schema_types_robustness.py",
-      "components/c3_data_layer/tests/test_security_report.py",
-      "components/c3_data_layer/tests/test_standalone_generated_code.py",
-      "components/c3_data_layer/tests/test_transaction_and_limit.py"
-     ],
-     "scripts": [
-      "scripts/alembic_roundtrip.py",
-      "scripts/baseline_sqlacodegen.py",
-      "scripts/check_models.py",
-      "scripts/e4_injection_check.py",
-      "scripts/equivalence/migrated_runner.py",
-      "scripts/equivalence/run_e1.py",
-      "scripts/make_handoff.py",
-      "scripts/schema_comparison.py"
-     ]
-    }
-   },
-   {
-    "name": "Alembic",
-    "role": "Generated migration environment and initial revision",
-    "area": "pipeline",
-    "package": "alembic",
-    "module": "alembic",
-    "version": "1.20.0",
-    "version_source": "components/c3_data_layer/requirements.txt",
-    "imported_in": {
-     "src": [
-      "components/c3_data_layer/src/c3/generation/alembic_emitter.py"
-     ],
-     "tests": [
-      "components/c3_data_layer/tests/test_alembic_emitter.py"
-     ],
-     "scripts": [
-      "scripts/alembic_roundtrip.py"
-     ]
-    }
-   },
-   {
-    "name": "MySQL",
-    "role": "Target database for E1, E2 live, E3 and the Clinic verification",
-    "area": "verification",
-    "version": null,
-    "version_source": null,
-    "imported_in": null
-   },
-   {
-    "name": "PyMySQL",
-    "role": "MySQL driver for experiments and MySQL tests, used through SQLAlchemy mysql+pymysql connection URLs (not imported directly)",
-    "area": "verification",
-    "package": "PyMySQL",
-    "module": "pymysql",
-    "version": "1.2.3",
-    "version_source": "components/c3_data_layer/requirements.txt",
-    "imported_in": {}
-   },
-   {
-    "name": "pytest",
-    "role": "Test runner",
-    "area": "tests",
-    "package": "pytest",
-    "module": "pytest",
-    "version": "9.1.1",
-    "version_source": "components/c3_data_layer/requirements.txt",
-    "imported_in": {
-     "tests": [
-      "components/c3_data_layer/tests/backend_verification/test_app.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_behavioral_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_join_rule_mysql.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q010_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q011_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q012_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q013_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q014_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q016_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q020_equivalence.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_q020_rollback.py",
-      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_write_equivalence.py",
-      "components/c3_data_layer/tests/test_alembic_emitter.py",
-      "components/c3_data_layer/tests/test_array_element_recovery.py",
-      "components/c3_data_layer/tests/test_baseline_sqlacodegen.py",
-      "components/c3_data_layer/tests/test_behavioral_execution.py",
-      "components/c3_data_layer/tests/test_branch_binding.py",
-      "components/c3_data_layer/tests/test_dashboard_data.py",
-      "components/c3_data_layer/tests/test_e1_harness.py",
-      "components/c3_data_layer/tests/test_executor_coverage.py",
-      "components/c3_data_layer/tests/test_guarded_block_recovery.py",
-      "components/c3_data_layer/tests/test_handoff_site_labels.py",
-      "components/c3_data_layer/tests/test_hms_handoff_signatures.py",
-      "components/c3_data_layer/tests/test_input_binding.py",
-      "components/c3_data_layer/tests/test_integration_adapter.py",
-      "components/c3_data_layer/tests/test_loop_switch_soundness.py",
-      "components/c3_data_layer/tests/test_outer_join_rule.py",
-      "components/c3_data_layer/tests/test_php_string_decoding.py",
-      "components/c3_data_layer/tests/test_prepared_statements.py",
-      "components/c3_data_layer/tests/test_python_identifiers.py",
-      "components/c3_data_layer/tests/test_q010_subquery.py",
-      "components/c3_data_layer/tests/test_q011_in_list.py",
-      "components/c3_data_layer/tests/test_q012_order_by.py",
-      "components/c3_data_layer/tests/test_q013_dynamic_table.py",
-      "components/c3_data_layer/tests/test_q014_ast_mutations.py",
-      "components/c3_data_layer/tests/test_q014_branch_emitter.py",
-      "components/c3_data_layer/tests/test_q014_branch_ir.py",
-      "components/c3_data_layer/tests/test_q014_branch_recovery.py",
-      "components/c3_data_layer/tests/test_q014_pipeline_generation.py",
-      "components/c3_data_layer/tests/test_q014_source_gate.py",
-      "components/c3_data_layer/tests/test_q014_unsupported_ast.py",
-      "components/c3_data_layer/tests/test_q014_unsupported_operations.py",
-      "components/c3_data_layer/tests/test_q015_candidate_validation.py",
-      "components/c3_data_layer/tests/test_q015_converter_bindings.py",
-      "components/c3_data_layer/tests/test_q016_conditional_concat.py",
-      "components/c3_data_layer/tests/test_q020_join_update.py",
-      "components/c3_data_layer/tests/test_report_consistency.py",
-      "components/c3_data_layer/tests/test_schema_fidelity.py",
-      "components/c3_data_layer/tests/test_schema_types_robustness.py",
-      "components/c3_data_layer/tests/test_security_report.py",
-      "components/c3_data_layer/tests/test_sql_fragment_variables.py",
-      "components/c3_data_layer/tests/test_standalone_generated_code.py",
-      "components/c3_data_layer/tests/test_transaction_and_limit.py",
-      "components/c3_data_layer/tests/test_tryit_bridge.py",
-      "components/c3_data_layer/tests/test_type_map.py",
-      "components/c3_data_layer/tests/test_value_positions.py"
-     ]
-    }
-   },
-   {
-    "name": "sqlacodegen",
-    "role": "Schema-only comparison baseline, run as a command by scripts/baseline_sqlacodegen.py (not imported)",
-    "area": "research tooling",
-    "package": "sqlacodegen",
-    "module": "sqlacodegen",
-    "version": "4.0.4",
-    "version_source": "components/c3_data_layer/requirements.txt",
-    "imported_in": {}
-   },
-   {
-    "name": "HTML, CSS and JavaScript",
-    "role": "Migration Studio front end; Python standard-library http.server bridge for Try It",
-    "area": "dashboard",
-    "version": null,
-    "version_source": null,
-    "imported_in": null
-   }
-  ],
-  "artifacts": [
-   {
-    "file": "queries.json",
-    "stage": "recovery",
-    "purpose": "Recovery result per detected site.",
-    "present_in_current_run": true,
-    "in_integration_adapter_list": true
-   },
-   {
-    "file": "converted_queries.json",
-    "stage": "conversion",
-    "purpose": "Conversion result per site.",
-    "present_in_current_run": true,
-    "in_integration_adapter_list": true
-   },
-   {
-    "file": "schema.json",
-    "stage": "schema",
-    "purpose": "Parsed schema and unsupported objects.",
-    "present_in_current_run": true,
-    "in_integration_adapter_list": true
-   },
-   {
-    "file": "models.py",
-    "stage": "models",
-    "purpose": "SQLAlchemy ORM classes and Core tables (primary output).",
-    "present_in_current_run": true,
-    "in_integration_adapter_list": true
-   },
-   {
-    "file": "migration_notes.md",
-    "stage": "models",
-    "purpose": "Schema features that need manual review.",
-    "present_in_current_run": true,
-    "in_integration_adapter_list": false
-   },
-   {
-    "file": "data_access.py",
-    "stage": "generation",
-    "purpose": "Generated functions and unresolved-site stubs (primary output).",
-    "present_in_current_run": true,
-    "in_integration_adapter_list": true
-   },
-   {
-    "file": "column_usage.json",
-    "stage": "analysis",
-    "purpose": "Tables and column roles per site.",
-    "present_in_current_run": true,
-    "in_integration_adapter_list": true
-   },
-   {
-    "file": "traceability_report.json",
-    "stage": "reports",
-    "purpose": "PHP file and line to generated function.",
-    "present_in_current_run": true,
-    "in_integration_adapter_list": false
-   },
-   {
-    "file": "unresolved_queries.json",
-    "stage": "reports",
-    "purpose": "Flagged sites with stage and reason (primary output).",
-    "present_in_current_run": true,
-    "in_integration_adapter_list": true
-   },
-   {
-    "file": "security_report.json",
-    "stage": "reports",
-    "purpose": "Legacy injection sites, remediation and generated-code scan.",
-    "present_in_current_run": true,
-    "in_integration_adapter_list": false
-   },
-   {
-    "file": "alembic/",
-    "stage": "migration",
-    "purpose": "Alembic environment and initial revision; generating it is not running a migration.",
-    "present_in_current_run": true,
-    "in_integration_adapter_list": false
-   },
-   {
-    "file": "summary.json",
-    "stage": "summary",
-    "purpose": "Counts by stage and the output list.",
-    "present_in_current_run": true,
-    "in_integration_adapter_list": true
-   }
-  ],
   "restricted_apps": [
    "ams_native",
    "dignity_dev_hms",

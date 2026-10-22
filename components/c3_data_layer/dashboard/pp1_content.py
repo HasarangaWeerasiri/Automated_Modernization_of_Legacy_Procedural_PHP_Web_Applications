@@ -1,5 +1,5 @@
-"""PP1 views of the C3 Migration Studio: FR detail, SQL support matrix, failure explorer, applications register,
-measurement definitions, technology and output inventory.
+"""PP1 views of the C3 Migration Studio: FR detail, SQL support matrix, failure explorer, applications register and
+measurement definitions.
 
 Text comes from the reviewed file docs/c3_pp1_dashboard_content.json (no research numbers). Every number added here is
 computed from the fresh current-code run or from committed evidence and is stored as {"value", "source", "derivation"}
@@ -142,6 +142,11 @@ def build(se, base, data):
         for imp in c["improvements"]:
             if subprocess.run(["git", "cat-file", "-e", imp["commit"] + "^{commit}"], cwd=se.ROOT, capture_output=True).returncode:
                 raise SystemExit(f"{CONTENT} {fr}: unknown commit {imp['commit']}")
+        headline = c.get("headline", [])
+        if not 1 <= len(headline) <= 3 or not set(headline) <= set(item["measurements"]):
+            raise SystemExit(f"{CONTENT} {fr}: headline must be one to three of the FR's own measurement ids")
+        if not c.get("main_limit") or len(c["main_limit"].split()) > 25:
+            raise SystemExit(f"{CONTENT} {fr}: main_limit is required and at most twenty-five words")
         if item["status"] == "Partial" and not c.get("partial_reason"):
             raise SystemExit(f"{CONTENT} {fr}: Partial status needs partial_reason")
         functions[fr] = c
@@ -342,32 +347,9 @@ def build(se, base, data):
                       "without_runtime_values": _v(app["functions"] - with_values, se.E4_REPORT, f"apps.{key}.detail[*]: no payload case (no bound value)"),
                       "functions": _v(app["functions"], se.E4_REPORT, f"apps.{key}.functions")}
 
-    # ---------- technology and output inventory ----------
-    req = dict(re.findall(r"^([A-Za-z0-9_.\-]+)==(\S+)$", (se.COMPONENT / "requirements.txt").read_text(encoding="utf-8"), re.M))
-    lock = {p["name"]: p["version"] for p in json.loads((se.COMPONENT / "composer.lock").read_text(encoding="utf-8"))["packages"]}
-    def importers(module):
-        out = {}
-        for area, folder in (("src", se.COMPONENT / "src"), ("tests", se.COMPONENT / "tests"), ("scripts", se.ROOT / "scripts"),
-                             ("dashboard", se.COMPONENT / "dashboard")):
-            files = [p for p in folder.rglob("*.py") if "__pycache__" not in p.parts
-                     and re.search(rf"^\s*(from|import)\s+{module}\b", p.read_text(encoding="utf-8", errors="replace"), re.M)]
-            if files: out[area] = sorted(p.relative_to(se.ROOT).as_posix() for p in files)
-        return out
-    tech = []
-    for t in content["technologies"]:
-        version = req.get(t.get("package")) or lock.get(t.get("package"))
-        tech.append({**t, "version": version, "version_source": ("components/c3_data_layer/requirements.txt" if t.get("package") in req
-                                                                 else "components/c3_data_layer/composer.lock" if t.get("package") in lock else None),
-                     "imported_in": importers(t["module"]) if t.get("module") else None})
-    one = runs[0][0]
-    artifacts = [{**a, "present_in_current_run": all((base / f / a["file"].rstrip("/")).exists() for f, _ in runs)} for a in content["artifacts"]]
-    integration = (se.COMPONENT / "src" / "c3" / "integration.py").read_text(encoding="utf-8")
-    for a in artifacts:
-        a["in_integration_adapter_list"] = f'"{a["file"]}"' in integration
-
     return {"content_source": CONTENT, "methodology": content["methodology"], "statuses": content["statuses"],
             "functions": functions, "sql_matrix": matrix, "star_join_sites": {"source": STAR_SITES, "warning": star["warning_text"], "sites": star_sites},
             "reasons": reasons, "reason_catalogue": catalogue, "template_overrides": overrides, "outcomes": outcome_list,
             "register": register, "ams_native": ams, "fee_rainbow_licence": content["fee_rainbow_licence"],
-            "measurement_definitions": defs, "e4_split": e4, "technologies": tech, "artifacts": artifacts,
+            "measurement_definitions": defs, "e4_split": e4,
             "restricted_apps": sorted(RESTRICTED)}

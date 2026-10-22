@@ -748,7 +748,7 @@ def test_pp1_content_file_holds_no_research_numbers():
     def strings(node, path="$"):
         if isinstance(node, dict):
             for k, v in node.items():
-                if k != "refs":  # measurement ids, resolved against dashboard_data.json
+                if k not in ("refs", "headline"):  # measurement ids, resolved against dashboard_data.json
                     yield from strings(v, f"{path}.{k}")
         elif isinstance(node, list):
             for i, v in enumerate(node):
@@ -828,8 +828,26 @@ def test_sql_matrix_uses_the_eight_status_classes(data):
     assert "Defence-in-depth" in in_fragment["limitation"]
 
 
-def test_pp1_views_are_rendered_by_app_js():
+def test_pp1_views_are_rendered_by_app_js(data):
     code = (DASHBOARD / "app.js").read_text(encoding="utf-8")
     for needle in ("SQL Support Matrix", "Failure & Limitation Explorer", "Applications & Licensing Register", "View source evidence",
-                   "Evidence methodology", "Result-shape warning", "Technology and output inventory", "How to read these numbers"):
+                   "Evidence methodology", "Result-shape warning", "How to read these numbers", "Evidence and limitations",
+                   "Main limit: ", "Why Partial: ", "Verification scope"):
         assert needle in code
+    # The technology and output inventory was removed from the page and the export (its facts stay in the content file).
+    assert "Technology and output inventory" not in code and "inventoryCard" not in code
+    assert "technologies" not in data["pp1"] and "artifacts" not in data["pp1"]
+    assert json.loads(PP1_CONTENT.read_text(encoding="utf-8"))["technologies"]
+    # The per-application "Not yet measured" table is replaced by one note that still keeps missing values out of zero.
+    assert 'card("Not yet measured"' not in code and "never as zero" in code
+
+
+def test_compact_fr_cards_show_referenced_headlines_and_a_short_main_limit(data):
+    items = {i["fr"]: i for i in data["functions"]["items"]}
+    ids = {m["id"] for m in data["measurements"]}
+    for fr, c in data["pp1"]["functions"].items():
+        assert 1 <= len(c["headline"]) <= 3 and set(c["headline"]) <= set(items[fr]["measurements"]) <= ids, fr
+        assert c["main_limit"] and len(c["main_limit"].split()) <= 25, fr
+    card = re.search(r"function frCard\(item\) \{(.*?)\n  \}\n", (DASHBOARD / "app.js").read_text(encoding="utf-8"), re.S).group(1)
+    # headline values are looked up among the card's referenced measurements, never computed
+    assert "refs.find((m) => m.id === id)" in card and "c.headline" in card
