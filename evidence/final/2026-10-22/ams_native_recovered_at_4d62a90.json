@@ -1,0 +1,50 @@
+{
+ "title": "ams-native recovered count at commit 4d62a90 (counts and identifiers only)",
+ "date": "2026-10-22T15:50:17+05:30",
+ "app": "ams-native-3c4d475 (unseen, no ground truth)",
+ "contents_policy": "Counts and query IDs only: no SQL text, no PHP source, no schema data.",
+ "pipeline_commit": "4d62a90c077ee2574433802f7b1f71208362bbaf",
+ "repository_head_when_recorded": "ec57bb8011cb8ba28bf1818f0dc0ceca84789d77",
+ "export_method": "git archive 4d62a90 components/c3_data_layer/src components/c3_data_layer/tools into a new empty temp folder outside the repository; components/c3_data_layer/vendor (untracked Composer packages for the PHP extractor) copied from the working tree; tools/ is unchanged between 4d62a90 and HEAD. The run imported c3 from the export.",
+ "inputs": {
+  "source": "original ams-native-3c4d475.zip (sha256 643fde998fa7f6045abeee4ea4ecbfcca9fa35b6bb830aed19a991d3d2680829), .php files and ams-native/database/ams_native.sql extracted to a temp folder",
+  "php_files": 42,
+  "php_set_sha256": "372d476fdd74280a004ef17ccda9a316b88107d92d5f691a60953cf43206b088",
+  "schema_sha256": "c9d9a0f64eabe8d003018c977e9e2d8fd5ea0a44bd29d4a2a1011d3fd3b9e994",
+  "matches": "evidence/final/2026-10-21/ams_native_post_t1.json inputs.php_set_sha256 and inputs.schema_sha256"
+ },
+ "command": "cd <export>/components/c3_data_layer; PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src <repo venv python> -B -m c3.cli run --php <temp>/ams-native --schema <temp>/ams_native.sql --output <temp out>",
+ "counts": {
+  "total_queries": 112,
+  "recovered_queries": 108,
+  "converted_queries": 108,
+  "converted_by_general_rules": 108,
+  "converted_by_query_specific_template": 0,
+  "unresolved_total": 4,
+  "unresolved_recovery_stage": 4,
+  "unresolved_conversion_stage": 0
+ },
+ "unresolved": [
+  {
+   "query_id": "Q060",
+   "stage": "recovery",
+   "reason_code": "UNSUPPORTED_SHAPE"
+  },
+  {
+   "query_id": "Q061",
+   "stage": "recovery",
+   "reason_code": "STRUCTURAL"
+  },
+  {
+   "query_id": "Q062",
+   "stage": "recovery",
+   "reason_code": "UNSUPPORTED_SHAPE"
+  },
+  {
+   "query_id": "Q064",
+   "stage": "recovery",
+   "reason_code": "LOOP_OR_SWITCH_CONTROL_FLOW"
+  }
+ ],
+ "check": "total_queries, converted_queries and unresolved_total equal evidence/final/2026-10-20/ams_native_post_t2.json runs.4d62a90"
+}

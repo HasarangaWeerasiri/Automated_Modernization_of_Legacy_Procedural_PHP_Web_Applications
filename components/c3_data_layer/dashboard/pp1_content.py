@@ -20,7 +20,8 @@ STAR_SITES = "evidence/final/2026-10-20/result_shape_star_join_sites.json"
 AMS = {"baseline": "evidence/baseline_unseen/ams_native/2026-10-20/baseline.json",
        "correction": "evidence/baseline_unseen/ams_native/2026-10-20/CORRECTION_2026-10-20.md",
        "post_t1": "evidence/final/2026-10-21/ams_native_post_t1.json",
-       "post_t2": "evidence/final/2026-10-20/ams_native_post_t2.json"}
+       "post_t2": "evidence/final/2026-10-20/ams_native_post_t2.json",
+       "recovered_4d62a90": "evidence/final/2026-10-22/ams_native_recovered_at_4d62a90.json"}
 RESTRICTED = {"hms_kishan0725", "dignity_dev_hms", "fee_rainbow", "ams_native"}
 # Licence provenance records (each must conclude MIT, match the recorded commit and both reference texts).
 PROVENANCE = {"fee_rainbow": "evidence/provenance/fee_rainbow_licence.json"}
@@ -147,6 +148,8 @@ def build(se, base, data):
             raise SystemExit(f"{CONTENT} {fr}: headline must be one to three of the FR's own measurement ids")
         if not c.get("main_limit") or len(c["main_limit"].split()) > 25:
             raise SystemExit(f"{CONTENT} {fr}: main_limit is required and at most twenty-five words")
+        if item["status"] == "Partial" and (not c.get("partial_short") or len(c["partial_short"].split()) > 25):
+            raise SystemExit(f"{CONTENT} {fr}: Partial status needs partial_short of at most twenty-five words")
         if item["status"] == "Partial" and not c.get("partial_reason"):
             raise SystemExit(f"{CONTENT} {fr}: Partial status needs partial_reason")
         functions[fr] = c
@@ -318,12 +321,17 @@ def build(se, base, data):
         missing = [i for i in r["measurements"].values() if i not in ids]
         if missing: raise SystemExit(f"register {r['app']}: unknown measurement ids {missing}")
     base_line = json.loads((se.ROOT / AMS["baseline"]).read_text(encoding="utf-8"))
+    ams_rec = json.loads((se.ROOT / AMS["recovered_4d62a90"]).read_text(encoding="utf-8"))
+    if (ams_rec["pipeline_commit"][:7] != "4d62a90" or any(ams_rec["counts"][k] != ams_t2["runs"]["4d62a90"][k] for k in ("total_queries", "converted_queries", "unresolved_total"))
+            or ams_rec["inputs"]["php_set_sha256"] != ams_post["inputs"]["php_set_sha256"] or ams_rec["inputs"]["schema_sha256"] != ams_post["inputs"]["schema_sha256"]):
+        raise SystemExit(f"{AMS['recovered_4d62a90']}: does not match the 4d62a90 row or the recorded inputs")
     ams = {"app": "ams_native", "label": "ams-native-3c4d475", **content["apps"]["ams_native"], "display": "Counts and query IDs only",
            "licence_history": [{"when": "first run (baseline, commit 351be5b)", "text": "Original ZIP hash not recorded; licence unknown.", "source": AMS["baseline"]},
                                {"when": "later on 2026-10-20", "text": "Original ZIP found; PHP and schema hashes match the baseline; LICENSE.txt is MIT. Source is still not exported.", "source": AMS["correction"]}],
            "runs": [{"label": "pre-improvement baseline (351be5b)", **{k: _v(base_line["counts"][k], AMS["baseline"], f"counts.{k}") for k in ("total_queries", "recovered_queries", "converted_queries", "unresolved_total")}},
                     {"label": "after the value-position extension (d263cbb)", **{k: _v(ams_post["post"]["counts"][k], AMS["post_t1"], f"post.counts.{k}") for k in ("total_queries", "recovered_queries", "converted_queries", "unresolved_total")}},
-                    {"label": "after the FR6 join rule (4d62a90)", **{k: _v(ams_t2["runs"]["4d62a90"][k], AMS["post_t2"], f"runs.4d62a90.{k}") for k in ("total_queries", "converted_queries", "unresolved_total")}}],
+                    {"label": "after the FR6 join rule (4d62a90)", **{k: _v(ams_t2["runs"]["4d62a90"][k], AMS["post_t2"], f"runs.4d62a90.{k}") for k in ("total_queries", "converted_queries", "unresolved_total")},
+                     "recovered_queries": _v(ams_rec["counts"]["recovered_queries"], AMS["recovered_4d62a90"], "counts.recovered_queries (re-run from a git archive export of 4d62a90)")}],
            "evidence_applied": ["E4-style check", "SQLite Alembic round trip", "output comparison"], "ground_truth": "none"}
 
     # ---------- measurement definitions and E4 split ----------

@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": {
   "by": "scripts/summarize_evidence.py --dashboard-json",
-  "date": "2026-10-22T08:52:13+05:30",
-  "git_head": "dac03781fe656c15bf5e5bfbba25c42708121d1d",
+  "date": "2026-10-22T15:50:58+05:30",
+  "git_head": "ec57bb8011cb8ba28bf1818f0dc0ceca84789d77",
   "pipeline_unchanged_since_head": true,
   "current_code_run": "fresh C3 run of all 9 apps into a temp folder outside the repo (written <temp>)"
  },
@@ -19314,6 +19314,7 @@
      "components/c3_data_layer/tests/test_php_string_decoding.py"
     ],
     "partial_reason": "Against the ground truth every site judged recoverable is recovered; against the requirement wording, SQL whose text differs between branches is not rebuilt by a general rule (only the Clinic templates do), so the status stays Partial.",
+    "partial_short": "SQL whose text differs between branches is not rebuilt by a general rule; only the Clinic templates do this.",
     "future": [
      "General branch-variant reconstruction (deferred).",
      "Loop-built SQL as an explicit batch statement (not planned)."
@@ -19426,6 +19427,7 @@
      "components/c3_data_layer/tests/test_sql_parser.py"
     ],
     "partial_reason": "How result columns are used later in the PHP application logic is not traced, so the second half of the requirement is not implemented.",
+    "partial_short": "How result columns are used later in the PHP application logic is not traced, so the second half of the requirement is not implemented.",
     "future": [
      "Trace fetched-row keys into later PHP use (deferred; it could change frozen HMS outputs)."
     ]
@@ -19577,6 +19579,7 @@
      "components/c3_data_layer/tests/benchmarks/clinic_hard/test_join_rule_mysql.py"
     ],
     "partial_reason": "One ground-truth recoverable site (Fee-Rainbow Q054) is not converted; behavioural equivalence is shown only for HMS (E1, with inconclusive sites) and Clinic; the INNER JOIN rule has no result-shape check, so converted star projections over joins are unverified.",
+    "partial_short": "One ground-truth recoverable site is not converted, and behavioural equivalence is shown only for HMS (E1) and Clinic.",
     "future": [
      "Apply the result-shape check to INNER JOINs.",
      "A complete Fee-Rainbow schema.",
@@ -22768,6 +22771,11 @@
       "value": 4,
       "source": "evidence/final/2026-10-20/ams_native_post_t2.json",
       "derivation": "runs.4d62a90.unresolved_total"
+     },
+     "recovered_queries": {
+      "value": 108,
+      "source": "evidence/final/2026-10-22/ams_native_recovered_at_4d62a90.json",
+      "derivation": "counts.recovered_queries (re-run from a git archive export of 4d62a90)"
      }
     }
    ],

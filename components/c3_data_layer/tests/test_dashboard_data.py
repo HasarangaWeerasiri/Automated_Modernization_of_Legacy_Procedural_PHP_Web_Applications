@@ -848,6 +848,49 @@ def test_compact_fr_cards_show_referenced_headlines_and_a_short_main_limit(data)
     for fr, c in data["pp1"]["functions"].items():
         assert 1 <= len(c["headline"]) <= 3 and set(c["headline"]) <= set(items[fr]["measurements"]) <= ids, fr
         assert c["main_limit"] and len(c["main_limit"].split()) <= 25, fr
+    for fr, item in items.items():
+        c = data["pp1"]["functions"][fr]
+        if item["status"] == "Partial":
+            assert c["partial_short"] and len(c["partial_short"].split()) <= 25 and c["partial_reason"], fr
+        else:
+            assert "partial_short" not in c, fr
     card = re.search(r"function frCard\(item\) \{(.*?)\n  \}\n", (DASHBOARD / "app.js").read_text(encoding="utf-8"), re.S).group(1)
     # headline values are looked up among the card's referenced measurements, never computed
     assert "refs.find((m) => m.id === id)" in card and "c.headline" in card
+    # Card front: no limitation line for Implemented FRs; Partial FRs show only the short "Why Partial" sentence.
+    # All limitation text (main_limit, partial_reason, the FR status limitation) stays in "Evidence and limitations".
+    front, evidence = card.split('details("Evidence and limitations"', 1)
+    assert "c.main_limit" not in front and "item.limitation" not in front and "c.partial_reason" not in front
+    assert 'item.status === "Partial" && c.partial_short' in front
+    assert "c.main_limit" in evidence and "c.partial_reason" in evidence and "item.limitation" in evidence
+
+
+def test_ams_native_recovered_at_4d62a90_comes_from_its_own_record(data):
+    row = next(r for r in data["pp1"]["ams_native"]["runs"] if r["label"] == "after the FR6 join rule (4d62a90)")
+    record_path = "evidence/final/2026-10-22/ams_native_recovered_at_4d62a90.json"
+    record = json.loads((ROOT / record_path).read_text(encoding="utf-8"))
+    assert row["recovered_queries"]["source"] == record_path
+    assert row["recovered_queries"]["value"] == record["counts"]["recovered_queries"]
+    assert record["pipeline_commit"].startswith("4d62a90") and "git archive 4d62a90" in record["export_method"]
+    for k in ("total_queries", "converted_queries", "unresolved_total"):
+        assert row[k]["value"] == record["counts"][k]
+    assert "SELECT" not in json.dumps(record) and "<?php" not in json.dumps(record)
+
+
+def test_live_upload_view_leaves_out_offline_evaluation_rows_and_states_its_scope():
+    code = (DASHBOARD / "app.js").read_text(encoding="utf-8")
+    block = re.search(r"/\* ===== MIGRATION IMPACT .*?===== \*/(.*?)/\* ===== END MIGRATION IMPACT ===== \*/", code, re.S).group(1)
+    # The four rows are skipped only for a live upload; the Evidence-tab view keeps them (with their references).
+    assert 'live ? null : ["Security checks"' in block
+    assert 'live ? null : [v.e1 ? "Behavioural equivalence" : "MySQL verification"' in block
+    assert 'live ? null : ["Verification"' in block
+    assert '!(opt.live && b.key === "e4")' in block
+    # The generated-code scan row and the security-report counts stay (they come from the benefits list and the facts).
+    assert "legacy_injection_sites_remediated" in block
+    assert "Scope of this live run" in block and 'href: "#/evidence/evaluation", text: "Evaluation tab"' in block
+    assert "opt.live ? liveScope() : null" in block
+    tryit = re.search(r"/\* ===== TRY IT .*?===== \*/(.*)", code, re.S).group(1)
+    assert 'role: "live upload", live: true' in tryit
+    # The Evidence-tab caller never sets live, so its rows are unchanged.
+    evidence_call = re.search(r"MigrationImpact\.render\(body, payload, \{(.*?)\}\);", code, re.S).group(1)
+    assert "live" not in evidence_call

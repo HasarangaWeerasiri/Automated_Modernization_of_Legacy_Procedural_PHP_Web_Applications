@@ -288,11 +288,12 @@ const Evidence = (() => {
           "aria-label": `${appLabel(m.app)}, ${m.label}, ${m.stage_label}: ${formatValue(m)} ${ratio(m)}. Open evidence.` },
         h("span", { class: "fr-kpi-value" }, h("strong", { text: formatValue(m) }), ratio(m) ? h("span", { class: "muted", text: ` (${ratio(m)})` }) : null),
         h("span", { class: "fr-kpi-label", text: caption ? appLabel(m.app) : `${appLabel(m.app)} · ${m.label}` })))) : null,
-      c.main_limit ? h("p", { class: "fr-main-limit" }, h("strong", { text: "Main limit: " }), c.main_limit) : null,
-      c.partial_reason ? h("p", { class: "fr-main-limit" }, h("strong", { text: "Why Partial: " }), c.partial_reason) : null,
+      item.status === "Partial" && c.partial_short ? h("p", { class: "fr-main-limit" }, h("strong", { text: "Why Partial: " }), c.partial_short) : null,
       details("Evidence and limitations",
         h("blockquote", { class: "fr-req", text: item.requirement }),
         h("p", { class: "fr-limit" }, h("strong", { text: "Limitation: " }), item.limitation),
+        c.main_limit ? h("p", { class: "fr-limit" }, h("strong", { text: "Main limit: " }), c.main_limit) : null,
+        c.partial_reason ? h("p", { class: "fr-limit" }, h("strong", { text: "Why the status is Partial: " }), c.partial_reason) : null,
         table(["Application", ...labels], apps.map((a) => [appLabel(a), ...labels.map((l) => { const x = cell(a, l); return x.length ? x : "-"; })])),
         h("p", { class: "muted", text: "Select a value for its evidence (stage, numerator and denominator, source file)." }),
         siteList ? h("p", {}, h("button", { type: "button", class: "button", onclick: () => showSites(siteList),
@@ -1106,7 +1107,8 @@ const MigrationImpact = (() => {
   }
 
   // ---------- 4. structural comparison ----------
-  function structural(p, verification) {
+  function structural(p, verification, opt) {
+    const live = Boolean(opt && opt.live);
     const f = p.facts;
     const v = verification || {};
     const e1 = v.e1 ? `E1: PASS ${v.e1.verdicts.PASS}, FAIL ${v.e1.verdicts.FAIL}, INCONCLUSIVE ${v.e1.verdicts.INCONCLUSIVE} of ${v.e1.sites} sites`
@@ -1121,15 +1123,17 @@ const MigrationImpact = (() => {
       ["Primary / foreign key handling", `${f.tables_with_primary_key} tables with a primary key; ${f.foreign_keys} declared foreign keys`, `${f.relationships} relationship attributes from declared foreign keys; tables without a key become Core Tables`, "schema.json, models.py", chip("measured")],
       ["Query source traceability", `${f.detected} sites at PHP file:line`, `${ofText(f.traceable_sites, f.trace_entries)} mapped; ${ofText(f.functions_citing_site, f.data_access_functions)} docstrings cite the site`, "traceability_report.json, data_access.py", chip("measured")],
       ["Unresolved-query visibility", "Not reported by the legacy code", `${f.unresolved} sites with reason codes and stage`, "unresolved_queries.json", chip("measured")],
-      ["Security checks", `Confirmed legacy injection sites: ${ofText(f.legacy_injection_sites, null)}`, security, "security_report.json; E4 report", chip(v.e4 ? "measured" : "none")],
-      [v.e1 ? "Behavioural equivalence" : "MySQL verification", "-", e1, v.e1 ? v.e1.source : v.mysql_suite ? v.mysql_suite.source : "-", chip(v.e1 || v.mysql_suite ? "measured" : "none")],
-    ];
+      // A live upload has no E1, MySQL or E4 run: those rows are left out (see "Scope of this live run").
+      live ? null : ["Security checks", `Confirmed legacy injection sites: ${ofText(f.legacy_injection_sites, null)}`, security, "security_report.json; E4 report", chip(v.e4 ? "measured" : "none")],
+      live ? null : [v.e1 ? "Behavioural equivalence" : "MySQL verification", "-", e1, v.e1 ? v.e1.source : v.mysql_suite ? v.mysql_suite.source : "-", chip(v.e1 || v.mysql_suite ? "measured" : "none")],
+    ].filter(Boolean);
     return step("Structural Comparison & Maintainability", "Static structural counts only. No cyclomatic complexity, maintainability index, cognitive complexity or lines-of-code comparison is shown: the two codebases have not been measured with a comparable method.",
       "layers", grid(["Attribute", "Before: legacy PHP", "After: C3 SQLAlchemy", "Evidence / calculation", "Classification"], rows, "mi-matrix"));
   }
 
   // ---------- 5. benefits matrix ----------
-  function benefitsMatrix(p, verification) {
+  function benefitsMatrix(p, verification, opt) {
+    const live = Boolean(opt && opt.live);
     const f = p.facts;
     const v = verification || {};
     const verify = [v.e1 ? `E1 (this app): PASS ${v.e1.verdicts.PASS} / FAIL ${v.e1.verdicts.FAIL} / INCONCLUSIVE ${v.e1.verdicts.INCONCLUSIVE} of ${v.e1.sites}` : null,
@@ -1149,9 +1153,9 @@ const MigrationImpact = (() => {
         `${ofText(f.traceable_sites, f.trace_entries)} sites mapped`, chip("measured")],
       ["Reviewability", "Complex unsupported SQL", "Unresolved-query report with reasons", "Gaps are explicit",
         `${f.unresolved} sites with reason codes`, chip("measured")],
-      ["Verification", "Migrated behaviour unverified", "App-specific E1 / MySQL tests and bounded E4 where run", "Evidence instead of assumption", verify,
+      live ? null : ["Verification", "Migrated behaviour unverified", "App-specific E1 / MySQL tests and bounded E4 where run", "Evidence instead of assumption", verify,
         chip(v.e1 || v.mysql_suite || v.e4 ? "measured" : "none")],
-    ];
+    ].filter(Boolean);
     return step("Migration Benefits Matrix", null, "matrix",
       grid(["Category", "Legacy difficulty", "C3 transformation", "Benefit", "Supporting measurement", "Evidence type"], rows, "mi-matrix"));
   }
@@ -1187,7 +1191,8 @@ const MigrationImpact = (() => {
 
   // ---------- 8. technical evidence ----------
   function evidence(p, opt) {
-    const rows = p.benefits.map((b) => [
+    // The E4 item of a live upload is "not measured" in the data; the live view leaves the row out.
+    const rows = p.benefits.filter((b) => !(opt.live && b.key === "e4")).map((b) => [
       h("span", {}, b.label, b.note ? h("div", { class: "muted", text: b.note }) : null),
       ofText(b.value, b.of),
       b.source && b.source.file ? h("span", {}, h("code", { text: b.source.file }), b.source.field || b.source.derivation ? ` · ${b.source.field || b.source.derivation}` : "") : "not measured"]);
@@ -1205,6 +1210,14 @@ const MigrationImpact = (() => {
       opt.sourcesNote ? h("p", { class: "mi-fine muted", text: opt.sourcesNote }) : null);
   }
 
+  // Live uploads are analysed statically; the offline evaluations are on the Evaluation tab.
+  function liveScope() {
+    return h("div", { class: "notice info mi-live-scope" }, h("strong", { text: "Scope of this live run" }), h("p", {},
+      "This upload is analysed statically: conversion coverage, parameterization, traceability and structure are computed from its output. "
+      + "Behavioural equivalence (E1), the injection payload check (E4) and Alembic round trips (E2/E3) are separate offline evaluations on the "
+      + "benchmark applications; see the ", h("a", { href: "#/evidence/evaluation", text: "Evaluation tab" }), "."));
+  }
+
   function render(root, payload, options) {
     const opt = options || {};
     const rows = opt.coverage || [{ label: opt.label, detected: payload.facts.detected, converted: payload.facts.converted,
@@ -1214,8 +1227,9 @@ const MigrationImpact = (() => {
       payload.detail ? explorer(payload, opt)
         : step("Real Code Transformation Explorer", null, "explorer", h("div", { class: "notice", text: opt.countsOnlyText || "Counts only for this application." })),
       scoreboard(payload),
-      structural(payload, payload.verification),
-      benefitsMatrix(payload, payload.verification),
+      opt.live ? liveScope() : null,
+      structural(payload, payload.verification, opt),
+      benefitsMatrix(payload, payload.verification, opt),
       coverage(rows, opt.coverageNote || payload.coverage_note, opt.coverageSource),
       limitations(payload),
       evidence(payload, opt));
@@ -1325,7 +1339,7 @@ const TryIt = (() => {
     }
     fill(box, h("p", { class: "muted", text: "Loading Migration Impact…" }));
     return getJson(`${API}runs/${state.run}/before_after`)
-      .then((payload) => MigrationImpact.render(box, payload, { label: summary.upload.zip_name, role: "live upload",
+      .then((payload) => MigrationImpact.render(box, payload, { label: summary.upload.zip_name, role: "live upload", live: true,
         countsOnlyText: "Detail is not available for this run." }))
       .catch((error) => fill(box, h("p", { class: "muted", text: error.message })));
   }
