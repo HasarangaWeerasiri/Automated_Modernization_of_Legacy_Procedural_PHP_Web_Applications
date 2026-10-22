@@ -83,3 +83,14 @@ Fields added on 2026-10-22, after C4 checked the map against its 11 needs:
 | Whole pipeline byte-identical on re-run and from another folder | yes | yes |
 
 Cross-check: our `POST /api/contact` mapping (`txtName`/`txtEmail`/`txtPhone`/`txtMsg` → `contact.*`) and the patient search (`patient_contact` → `patreg.contact`) are the same as in C4's hand-written stand-in map.
+
+## Secure by default (2026-10-22)
+
+When the legacy page has no login check before a data access, the endpoint is **locked by default**: `auth = {required: true, securedByDefault: true, needsDecision: true}`.
+
+- The flag `no-guard-in-legacy` stays, so a person can mark the endpoint public.
+- OpenAPI carries `security: bearerAuth`, a 401 response and a description saying why.
+- FastAPI adds `Depends(get_current_user)`.
+- The endpoint map exposes `auth.securedByDefault`, so C4 knows a login is needed even though the legacy page had none.
+
+The login endpoint itself stays open.

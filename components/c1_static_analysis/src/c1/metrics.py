@@ -70,16 +70,17 @@ def security(out: Path, manifest: dict, asts: dict[str, AstDoc]) -> dict[str, An
     unprot_pages = [p for p in auth["pages"] if p["status"] == "unguarded"]
     unprot_ops = sum(len(p.get("unprotected", [])) for p in unprot_pages)
     writes = sum(p.get("unguardedWrites") or 0 for p in unprot_pages)
-    token = [e["id"] for e in eps if e["auth"].get("required")]
     login = [e["id"] for e in eps if e["path"] == "/api/auth/login"]
+    by_default = [e["id"] for e in eps if e["auth"].get("securedByDefault")]
+    token = [e["id"] for e in eps if e["auth"].get("required") and e["id"] not in by_default]
     open_ = [e["id"] for e in eps if not e["auth"].get("required") and e["id"] not in login]
     s1 = {
         "before": {"pages": len(unprot_pages), "dataOperations": unprot_ops, "writeOperations": writes,
                    "dataPages": sum(1 for p in auth["pages"] if p["dataAccess"])},
-        "after": {"endpoints": len(eps), "tokenRequired": len(token), "publicLogin": len(login),
-                  "awaitingDecision": len(open_)},
-        "note": "after: every endpoint either checks a JWT or is listed in flags.json for a person to mark it "
-                "public; none is silently left open",
+        "after": {"endpoints": len(eps), "tokenRequired": len(token), "lockedByDefault": len(by_default),
+                  "publicLogin": len(login), "open": len(open_)},
+        "note": "after: every endpoint requires a login except the login itself; the ones whose legacy page had "
+                "no check are locked by default and listed in flags.json for a person to mark public",
     }
 
     # S2: redirect without exit

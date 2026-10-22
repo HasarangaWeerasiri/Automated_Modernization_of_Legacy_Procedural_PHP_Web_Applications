@@ -160,9 +160,9 @@ def score(feat: dict[str, Any]) -> dict[str, dict[str, Any]]:
         (X <= 0.2, +20, f"pages rarely combine areas ({X:.0%}): services would seldom need each other"),
         (S >= 50, +15, f"large API ({S} endpoints)"),
         (S < 30, -15, f"small app ({S} endpoints): network calls, separate databases and deployment cost more "
-                      "than they save (monolith first)"),
+                      "than they save"),
         (X > 0.4, -20, f"{X:.0%} of data pages combine several areas: they would need distributed joins or a "
-                       "shared database (shared-persistence smell)"),
+                       "shared database"),
         (feat["identityShared"], -5, "every area depends on the same login data: needs a separate auth service"),
     ])
     return out

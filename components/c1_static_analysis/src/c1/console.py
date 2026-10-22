@@ -34,7 +34,31 @@ NARROW = [
     '╠╩╗╠═╣║  ╠╩╗║╣ ║║║ ║║  ┌┼─  ╠═╣║ ║ ║ ╠═╣  ║║║║║ ╦╠╦╝╠═╣ ║ ║║ ║║║║',
     '╚═╝╩ ╩╚═╝╩ ╩╚═╝╝╚╝═╩╝  └┘   ╩ ╩╚═╝ ╩ ╩ ╩  ╩ ╩╩╚═╝╩╚═╩ ╩ ╩ ╩╚═╝╝╚╝',
 ]
-BANNERS = [WIDE, MEDIUM, NARROW]
+LARGE = [
+    '▗▄▄▖   ▄    ▄▄ ▗▖ ▄▖▗▄▄▄▖▗▄ ▗▖▗▄▄        ▗▄▖        ▄  ▗▖ ▗▖▗▄▄▄▖▗▖ ▗▖     ▗▄ ▄▖ ▄▄▄   ▄▄ ▗▄▄▖   ▄  ▗▄▄▄▖ ▄▄▄  ▗▄▖ ▗▄ ▗▖',
+    '▐▛▀▜▌ ▐█▌  █▀▀▌▐▌▐▛ ▐▛▀▀▘▐█ ▐▌▐▛▀█       █▀▜       ▐█▌ ▐▌ ▐▌▝▀█▀▘▐▌ ▐▌     ▐█ █▌ ▀█▀  █▀▀▌▐▛▀▜▌ ▐█▌ ▝▀█▀▘ ▀█▀  █▀█ ▐█ ▐▌',
+    '▐▌ ▐▌ ▐█▌ ▐▛   ▐▙█  ▐▌   ▐▛▌▐▌▐▌ ▐▌      ▜▖        ▐█▌ ▐▌ ▐▌  █  ▐▌ ▐▌     ▐███▌  █  ▐▌   ▐▌ ▐▌ ▐█▌   █    █  ▐▌ ▐▌▐▛▌▐▌',
+    '▐███  █ █ ▐▌   ▐██  ▐███ ▐▌█▐▌▐▌ ▐▌      ██▖▄      █ █ ▐▌ ▐▌  █  ▐███▌     ▐▌█▐▌  █  ▐▌▗▄▖▐███  █ █   █    █  ▐▌ ▐▌▐▌█▐▌',
+    '▐▌ ▐▌ ███ ▐▙   ▐▌▐▙ ▐▌   ▐▌▐▟▌▐▌ ▐▌     ▐▌▝▙█      ███ ▐▌ ▐▌  █  ▐▌ ▐▌     ▐▌▀▐▌  █  ▐▌▝▜▌▐▌▝█▖ ███   █    █  ▐▌ ▐▌▐▌▐▟▌',
+    '▐▙▄▟▌▗█ █▖ █▄▄▌▐▌ █▖▐▙▄▄▖▐▌ █▌▐▙▄█      ▝█▄█▌     ▗█ █▖▝█▄█▘  █  ▐▌ ▐▌     ▐▌ ▐▌ ▄█▄  █▄▟▌▐▌ ▐▌▗█ █▖  █   ▄█▄  █▄█ ▐▌ █▌',
+    '▝▀▀▀ ▝▘ ▝▘  ▀▀ ▝▘ ▝▘▝▀▀▀▘▝▘ ▀▘▝▀▀        ▝▀▀▀     ▝▘ ▝▘ ▝▀▘   ▀  ▝▘ ▝▘     ▝▘ ▝▘ ▀▀▀   ▀▀ ▝▘ ▝▀▝▘ ▝▘  ▀   ▀▀▀  ▝▀▘ ▝▘ ▀▘',
+]
+WIDE_TWO_ROWS = [
+    '██████╗  █████╗  ██████╗██╗  ██╗███████╗███╗   ██╗██████╗        ██╗        █████╗ ██╗   ██╗████████╗██╗  ██╗',
+    '██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔════╝████╗  ██║██╔══██╗       ██║       ██╔══██╗██║   ██║╚══██╔══╝██║  ██║',
+    '██████╔╝███████║██║     █████╔╝ █████╗  ██╔██╗ ██║██║  ██║    ████████╗    ███████║██║   ██║   ██║   ███████║',
+    '██╔══██╗██╔══██║██║     ██╔═██╗ ██╔══╝  ██║╚██╗██║██║  ██║    ██╔═██╔═╝    ██╔══██║██║   ██║   ██║   ██╔══██║',
+    '██████╔╝██║  ██║╚██████╗██║  ██╗███████╗██║ ╚████║██████╔╝    ██████║      ██║  ██║╚██████╔╝   ██║   ██║  ██║',
+    '╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚═════╝     ╚═════╝      ╚═╝  ╚═╝ ╚═════╝    ╚═╝   ╚═╝  ╚═╝',
+    '',
+    '                   ███╗   ███╗██╗ ██████╗ ██████╗  █████╗ ████████╗██╗ ██████╗ ███╗   ██╗',
+    '                   ████╗ ████║██║██╔════╝ ██╔══██╗██╔══██╗╚══██╔══╝██║██╔═══██╗████╗  ██║',
+    '                   ██╔████╔██║██║██║  ███╗██████╔╝███████║   ██║   ██║██║   ██║██╔██╗ ██║',
+    '                   ██║╚██╔╝██║██║██║   ██║██╔══██╗██╔══██║   ██║   ██║██║   ██║██║╚██╗██║',
+    '                   ██║ ╚═╝ ██║██║╚██████╔╝██║  ██║██║  ██║   ██║   ██║╚██████╔╝██║ ╚████║',
+    '                   ╚═╝     ╚═╝╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝',
+]
+BANNERS = [WIDE, LARGE, MEDIUM, NARROW]
 
 # Left-to-right colour gradient across the banner: cyan -> blue -> violet -> pink (256-colour codes).
 GRADIENT = [51, 45, 39, 33, 27, 63, 99, 135, 141, 177, 171, 165, 201]
@@ -83,8 +107,15 @@ class Console:
         print(text, file=self.out, flush=True)
 
     # ---- pieces ----------------------------------------------------------------------------------
-    def banner(self) -> None:
-        art = next((b for b in BANNERS if self.width >= max(map(len, b)) + 3), ["BACKEND & AUTH MIGRATION"])
+    def banner(self, big: bool = False) -> None:
+        # big=True (the default from the command line) always uses the largest banner; maximise the
+        # window, it is 183 characters wide. big=False picks the largest that fits (--fit).
+        fits = lambda b: self.width >= max(map(len, b)) + 3  # noqa: E731
+        if big:  # the big title: one row when it fits, else the same letters in two rows
+            order = [WIDE, WIDE_TWO_ROWS] + BANNERS[1:]
+            art = next((b for b in order if fits(b)), ["BACKEND & AUTH MIGRATION"])
+        else:
+            art = next((b for b in BANNERS if fits(b)), ["BACKEND & AUTH MIGRATION"])
         w = max(map(len, art))
         self.say()
         for line in art:
@@ -121,13 +152,13 @@ class Console:
         try:
             result = fn()
         except Exception as e:
-            self.say(self.c(" FAIL ", "1", "97", "41") + "  " + self.c(f"{type(e).__name__}: {e}", "91"))
+            self.say(self.c(" FAIL ", "1", "97", "101") + "  " + self.c(f"{type(e).__name__}: {e}", "91"))
             if not isinstance(e, self.expected):
                 self.say(self.c("".join(traceback.format_exc()), "2"))
             raise StepFailed(title) from e
         dt = time.perf_counter() - t0
         text, level = describe(result)
-        badge = {"ok": self.c(" OK ", "1", "30", "42"), "warn": self.c(" OK ", "1", "30", "43")}[level]
+        badge = {"ok": self.c(" OK ", "1", "30", "102"), "warn": self.c(" OK ", "1", "30", "103")}[level]
         colour = {"ok": "97", "warn": "93"}[level]
         self.say(badge + "  " + self.c(text, colour) + "  " + self.c(f"{dt:.1f}s", "2"))
         return result
@@ -155,7 +186,7 @@ class Console:
         self.say()
 
     def done(self, seconds: float, fingerprint: str | None = None) -> None:
-        self.say("  " + self.c(" DONE ", "1", "30", "46") + "  " + self.c(f"Pipeline finished in {seconds:.1f}s.", "2"))
+        self.say("  " + self.c(" DONE ", "1", "30", "106") + "  " + self.c(f"Pipeline finished in {seconds:.1f}s.", "2"))
         if fingerprint:
             self.say("  " + self.c("Output fingerprint ", self.fg(245)) + self.c(fingerprint, "1", self.fg(51))
                      + self.c("   run again: the same input always gives the same fingerprint", "2"))

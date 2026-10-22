@@ -92,8 +92,7 @@ def _summary(con: ui.Console, out: Path, results: dict) -> None:
     rec = architecture.TITLES.get(ar.get("recommended", ""), "-")
     con.summary([
         ("Pages using data with no login check",
-         f"{s1.get('before', {}).get('pages', 0)} -> {s1.get('after', {}).get('tokenRequired', 0)} locked, "
-         f"{s1.get('after', {}).get('awaitingDecision', 0)} flagged", "ok"),
+         f"{s1.get('before', {}).get('pages', 0)} pages -> 0 open endpoints", "ok" if not s1.get("after", {}).get("open") else "warn"),
         ("Redirects that do not stop (EAR)", f"{sec.get('S2_executionAfterRedirect', {}).get('before', 0)} -> 0", "ok"),
         ("SQL built from request input", f"{s3.get('queriesBuiltFromInput', 0)} -> 0", "ok"),
         ("Files mixing HTML, logic and SQL", f"{t1.get('percentMixed', 0)}% -> 0%", "ok"),
@@ -122,6 +121,8 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--title", default="Migrated")
     r.add_argument("--php")
     r.add_argument("--plain", action="store_true", help="no colours or banner")
+    r.add_argument("--fit", action="store_true", help="pick a smaller title when the window is narrow "
+                   "(default: always the big title; maximise the window)")
     r.add_argument("--architecture", choices=architecture.CANDIDATES,
                    help="target architecture to select (only layered-monolith is generated today)")
     a = sub.add_parser("analyse", help="run every stage after extract")
@@ -130,12 +131,14 @@ def main(argv: list[str] | None = None) -> int:
     a.add_argument("--schema", type=Path, action="append", default=[])
     a.add_argument("--title", default="Migrated")
     a.add_argument("--plain", action="store_true", help="no colours or banner")
+    a.add_argument("--fit", action="store_true", help="pick a smaller title when the window is narrow "
+                   "(default: always the big title; maximise the window)")
     a.add_argument("--architecture", choices=architecture.CANDIDATES)
     args = ap.parse_args(argv)
 
     con = ui.Console(plain=args.plain)
     con.expected = (extract.ExtractError,)
-    con.banner()
+    con.banner(big=not args.fit)
     src = args.src
     info = [("App", args.title)]
     if src:

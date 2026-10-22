@@ -143,3 +143,34 @@ C4 checked `endpoint-map.json` against their 11 needs: 7 were fully met, 3 partl
 - **Not blocking.** `GET /api/me/users` (include/header.php, table `users`) is now flagged `table-not-in-schema` instead of being dropped, so the endpoint counts stay the same.
 - **Effect:** HMS still has 19 endpoints, with 46 review items (+table-not-in-schema, +user-type-unknown, -1 type-unknown). The fingerprint is now `D012 91EA 3AC8 A46E`.
 - **Tests:** 4 new; 159 pass.
+
+## 2026-10-22 — Report: research citations removed
+- **Why:** the paper citations in `report.html` are for us, not for the developer reading the report.
+- **What:** removed the citations from the report's metrics and architecture sections. The two architecture reasons no longer say "(monolith first)" or "(shared-persistence smell)". The references stay in the design docs, the module docstrings, and `metrics.json` / `architecture.json`.
+- **Effect:** no analysis result changed. The HMS fingerprint is now `635A 9E9C 414A 49E2` (the report text changed).
+
+## 2026-10-22 — Bigger title in the console
+- **What:** the big shadow title is always used: one row when the window is 186+ characters wide, otherwise the same letters in two rows (112+), so it never wraps. Brighter OK / DONE / FAIL badges. `--fit` picks a smaller title for narrow windows: a solid block title from 123 characters, smaller ones below that.
+- **Tests:** 1 new; 160 pass. No output file changes, so the fingerprint is unchanged.
+
+## 2026-10-22 — Task 17: Secure by default (decision with Amindu)
+- **Why:** `DELETE /api/doctb` (admin-panel1.php:26 `delete from doctb where email=...`) had no login check in HMS. The generated backend kept it open (flagged), which looked insecure.
+- **What:**
+  - An endpoint whose legacy page had no check now **requires a login** (`auth.required: true, securedByDefault: true`) and is still flagged `no-guard-in-legacy` ("locked by default; mark it public if anyone should reach it"). This is OWASP "deny by default".
+  - Changes in each output:
+    - **OpenAPI:** `security: bearerAuth` + a 401 response + a description, and `x-c1.auth.securedByDefault`.
+    - **FastAPI routes:** `Depends(get_current_user)`.
+    - **report.html:** Auth says "token (locked by default: no check in legacy)", and the metrics row says "0 open".
+    - **metrics.json** S1 after: `{tokenRequired, lockedByDefault, open: 0}`.
+    - **endpoint-map.json** `auth.securedByDefault`.
+    - **Console:** "13 pages -> 0 open endpoints".
+  - `inconsistent-guard` now compares the legacy evidence (`securedByDefault`), not `required`.
+- **HMS:** 8 protected + 10 locked by default + 1 login (open); 0 open. `DELETE /api/doctb`, `POST /api/contact` and `GET /api/doctb` now give 401 without a token (checked on a live server).
+- **Trade-off:** truly public pages (contact form, patient registration) need a person to mark them public. C4 must send a login for them (its logins file).
+- **Tests:** 3 updated (contract, endpoints, e2e) plus a live 401 check on the unguarded form in the boot test; 160 pass. Fingerprint `C944 2353 0CB2 F903` (superseded below).
+
+## 2026-10-22 — Fix: Swagger did not show "Locked by default"
+- **Why:** Amindu saw no note on `DELETE /api/doctb` in Swagger. Swagger shows the text FastAPI builds from the route docstring, not `openapi.json`, and only `openapi.json` had the note.
+- **What:** `contract._description(ep)` builds one text used for both the OpenAPI `description` and the route docstring. Locked-by-default endpoints start with the note.
+- **Test:** the boot test now checks that every served description equals the contract's, and that `POST /api/contact` starts with "Locked by default". 160 pass.
+- **HMS:** fingerprint is now `B199 3217 5B65 B368`.

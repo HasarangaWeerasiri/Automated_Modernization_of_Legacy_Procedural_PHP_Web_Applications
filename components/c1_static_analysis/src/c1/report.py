@@ -99,7 +99,8 @@ def build(out_dir: Path, title: str) -> str:
         params = " ".join(f"<span class=chip>{esc(p['name'])} ← {esc(p['legacy_name'])}</span>" for p in e["params"][:8])
         fields = list(e["response"].get("fields", {}))
         resp = esc(e["response"]["kind"]) + (f": {esc(', '.join(fields[:8]))}{' …' if len(fields) > 8 else ''}" if fields else "")
-        auth_txt = "token" if e["auth"].get("required") else "<span class=warn>none in legacy</span>"
+        auth_txt = ("token <span class=warn>(locked by default: no check in legacy)</span>" if e["auth"].get("securedByDefault")
+                    else "token" if e["auth"].get("required") else "none")
         fl = " ".join(f"<span class=chip>{esc(f['flag'])}</span>" for f in e["flags"])
         parts.append(f"<tr><td><code>{esc(e['id'])}</code></td><td>{src}</td><td>{params}</td><td>{resp}</td><td>{auth_txt}</td><td>{fl}</td></tr>")
     parts.append("</table>")
@@ -149,8 +150,7 @@ def architecture_section(a: dict) -> str:
                    f"<b>{o['score']}</b><span class=muted> / 100 fit</span><ul class=reasons>{reasons}</ul>{mods}</label></div>")
     out.append("</div><p class=note>Scores are transparent rules over the analysis (listed on each card). "
                "Only the layered monolith is generated today; the other options show the module plan the "
-               "generator will follow. Method after Service Cutter (Gysel et al. 2016) and Mono2Micro "
-               "(Kalia et al. 2021); prefers the simpler option on a tie (Fowler, MonolithFirst).</p>")
+               "generator will follow. On a tie, the simpler option is preferred.</p>")
     return "".join(out)
 
 
@@ -163,8 +163,8 @@ def metrics_section(m: dict) -> str:
     rows = [
         ("Security", "Pages that use data with no working login check (CWE-862)",
          f"{s1['before']['pages']} pages, {s1['before']['dataOperations']} data operations",
-         f"{a1['tokenRequired']} token-protected, {a1['awaitingDecision']} awaiting a decision, {a1['publicLogin']} login",
-         "ok" if a1["awaitingDecision"] == 0 else "warn", s1["note"]),
+         f"0 open: {a1['tokenRequired']} protected, {a1['lockedByDefault']} locked by default, {a1['publicLogin']} login",
+         "ok" if a1["open"] == 0 else "warn", s1["note"]),
         ("Security", "Redirects that do not stop the page (EAR, CWE-698)",
          str(sec["S2_executionAfterRedirect"]["before"]), "0", "ok", sec["S2_executionAfterRedirect"]["note"]),
         ("Security", "SQL text built from request input (CWE-89)",
@@ -181,8 +181,7 @@ def metrics_section(m: dict) -> str:
          str(t2["before"]), "0", "ok", "after: SQL lives only in the data layer"),
     ]
     out = ["<h2>What the migration changed</h2><p class=muted>Before = the legacy PHP app. After = the generated "
-           "backend. Measures: attack surface (Manadhata &amp; Wing 2011), concern tangling (Eaddy et al. 2008), "
-           "cyclomatic complexity (McCabe 1976).</p>",
+           "backend.</p>",
            "<table><tr><th>Factor</th><th>Measure</th><th>Before</th><th>After</th><th>Why</th></tr>"]
     for fac, name, before, after, cls, note in rows:
         out.append(f"<tr><td><span class=chip>{esc(fac)}</span></td><td>{esc(name)}</td><td class=bad>{esc(before)}</td>"
@@ -190,7 +189,7 @@ def metrics_section(m: dict) -> str:
     out.append("</table>")
     b = c1["before"]
     out.append(f"<p class=muted>Cyclomatic complexity of the legacy code: {b['units']} units, median {b['median']}, "
-               f"max {b['max']}, {b['over10']} over McCabe's threshold of 10. {esc(c1['note'])}.</p>")
+               f"max {b['max']}, {b['over10']} above 10 (hard to test and change). {esc(c1['note'])}.</p>")
     split = c1["after"]["pagesSplitIntoEndpoints"][:6]
     if split:
         out.append("<table><tr><th>Legacy page</th><th>V(G) of the page</th><th>Split into endpoints</th></tr>")

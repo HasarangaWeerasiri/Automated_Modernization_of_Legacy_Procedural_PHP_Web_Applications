@@ -19,7 +19,7 @@ def test_plain_output_has_no_escape_codes():
     text = out.getvalue()
     assert "\033[" not in text
     assert any(b[0] in text for b in ui.BANNERS) or "BACKEND & AUTH MIGRATION" in text
-    assert all(len(b) <= 6 for b in ui.BANNERS)  # every banner is one row of letters
+    assert all(len(b) <= 8 for b in ui.BANNERS)  # every fitted banner is one row of letters
     assert "3 definitions" in text and "1 SQL queries traced" in text
 
 
@@ -51,3 +51,13 @@ def test_descriptions_flag_problems_as_warnings():
     assert ui.describe_auth({"totals": {"pages:guarded": 5, "pages:unguarded": 0}})[1] == "ok"
     assert ui.describe_endpoints({"totals": {"endpoints": 2, "method:GET": 1, "method:POST": 1}})[0] == \
         "2 REST endpoints  (1 GET · 1 POST)"
+
+
+def test_big_title_uses_one_row_when_it_fits_else_the_same_letters_in_two_rows():
+    for width, expected in ((200, ui.WIDE), (150, ui.WIDE_TWO_ROWS)):
+        out = io.StringIO()
+        con = ui.Console(stream=out)
+        con.width = width
+        con.banner(big=True)
+        assert expected[0] in out.getvalue()
+        assert all(len(line) <= width for line in out.getvalue().splitlines())  # never wraps

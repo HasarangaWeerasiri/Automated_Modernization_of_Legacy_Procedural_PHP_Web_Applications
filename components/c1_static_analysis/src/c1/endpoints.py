@@ -20,7 +20,8 @@ Step 6, response shape: only the columns the page actually uses, through the DFG
   origins `column:<query>:<name>` (not the full `SELECT *`). Types come from the schema.
 
 Never guessed (flagged instead): a legacy GET that writes data ("mutating GET",
-supervisor decision pending), a page with data access and no guard (needsDecision),
+supervisor decision pending), a page with data access and no guard (needsDecision: the
+endpoint is locked by default, `securedByDefault`, until a person marks it public),
 dynamic SQL structure, unknown column types, sensitive fields (password-like).
 """
 
@@ -642,8 +643,8 @@ class EndpointRecovery:
                         "fields": fields, "columns": field_cols, "selectedStar": "*" in selected}
         auth = self.auth_requirement(fid, item, pts, unit, page_report, session_filters)
         if auth.get("needsDecision"):
-            flags.append({"flag": "no-guard-in-legacy", "reason": "the legacy page has no guard before this data access: "
-                          "public endpoint or missing check? (needs a decision)"})
+            flags.append({"flag": "no-guard-in-legacy", "reason": "the legacy page has no guard before this data access; "
+                          "locked by default (login required): mark it public if anyone should reach it"})
         ep = {"id": f"{method} {path}", "method": method, "path": path, "kind": kind, "resource": res,
               "table": table_real, "params": _dedupe_params(params), "sessionBindings": session_filters,
               "response": response, "auth": auth,
@@ -727,7 +728,10 @@ class EndpointRecovery:
             if session_filters and not guards:
                 out["note"] = "the query is filtered by a session value but no guard was found: the token must identify the user"
             return out
-        return {"required": False, "needsDecision": True}
+        # secure by default (OWASP: deny by default): the legacy page had no check, so the new
+        # endpoint requires a login until a person marks it public. Still flagged for that decision.
+        return {"required": True, "securedByDefault": True, "needsDecision": True,
+                "kinds": ["authentication"], "guards": [], "roles": []}
 
     @staticmethod
     def merge(eps: dict[str, dict], ep: dict) -> None:
@@ -746,10 +750,10 @@ class EndpointRecovery:
         for k, v in ep["response"].get("columns", {}).items():
             cur["response"].setdefault("columns", {}).setdefault(k, v)
         cur["flags"] = _dedupe_flags(cur["flags"] + ep["flags"])
-        if ep["auth"].get("required") != cur["auth"].get("required"):
+        if bool(ep["auth"].get("securedByDefault")) != bool(cur["auth"].get("securedByDefault")):
             cur["flags"] = _dedupe_flags(cur["flags"] + [{"flag": "inconsistent-guard",
                                                            "reason": "some legacy pages guard this data, others do not"}])
-            if ep["auth"].get("required"):
+            if not ep["auth"].get("securedByDefault"):  # keep the requirement the legacy code proves
                 cur["auth"] = ep["auth"]
 
 
@@ -839,7 +843,8 @@ def endpoint_map(rec: dict[str, Any]) -> dict[str, Any]:
                     login.setdefault(t, {"pages": [], "fields": s["login"]["fields"], "sets": s["login"]["sets"],
                                          "redirects": s["login"]["redirects"]})["pages"].append(s["legacy"]["path"])
             sources.append(src)
-        auth = {"required": bool(ep["auth"].get("required")), "userTypes": ep["auth"].get("userTypes", []),
+        auth = {"required": bool(ep["auth"].get("required")), "securedByDefault": bool(ep["auth"].get("securedByDefault")),
+                "userTypes": ep["auth"].get("userTypes", []),
                 "sessionKeys": ep["auth"].get("sessionKeys", [])}
         out.append({"endpoint_id": ep["id"], "method": ep["method"], "path": ep["path"],
                     "records_at": ep["response"].get("recordsAt"),

@@ -33,6 +33,20 @@ PY_TYPES = {"integer": "int", "number": "float", "boolean": "bool"}
 PY_FORMATS = {"date": "datetime.date", "date-time": "datetime.datetime", "time": "datetime.time"}
 
 
+
+LOCKED_NOTE = ("Locked by default: the legacy page had no login check here. "
+               "Mark it public if anyone should reach it (see flags.json).")
+
+
+def _description(ep: dict) -> str:
+    """One text for openapi.json and for the route docstring (which Swagger shows), so they never differ."""
+    srcs = ", ".join(f"{s['page']} ({s['legacy']['method']})" for s in ep["sources"][:4])
+    flags = sorted({f["flag"] for f in ep["flags"]})
+    text = f"{ep['kind']} {ep.get('table') or ep['resource']}. Legacy: {srcs}. Flags: {', '.join(flags) or 'none'}."
+    if ep["auth"].get("required") and ep["auth"].get("securedByDefault"):
+        text = f"{LOCKED_NOTE} {text}"
+    return text
+
 def op_id(ep: dict[str, Any]) -> str:
     parts = re.sub(r"[{}]", "", ep["path"]).strip("/").replace("/", "_")
     return re.sub(r"[^a-zA-Z0-9_]", "_", f"{ep['method'].lower()}_{parts}")
@@ -107,6 +121,7 @@ def build_openapi(rec: dict[str, Any], title: str, schema_db: dict | None) -> di
         if ep["auth"].get("required"):
             op["security"] = [{"bearerAuth": []}]
             op["responses"]["401"] = {"description": "missing or invalid token"}
+        op["description"] = _description(ep)
         op["x-c1"] = {
             "endpointId": ep["id"],
             "sources": [{"page": s["page"], "method": s["legacy"]["method"], "line": s.get("code", {}).get("line"),
@@ -269,12 +284,10 @@ def gen_routes(rec: dict[str, Any], oa: dict[str, Any]) -> tuple[str, str]:
         for b in ep.get("sessionBindings", []):
             call_args.append(f"{_py_name(b['sessionKey'])}=user.claims.get({b['sessionKey']!r})")
         resp = op["responses"]["200"]["content"]["application/json"]["schema"]["$ref"].rsplit("/", 1)[1]
-        srcs = ", ".join(f"{s['page']} ({s['legacy']['method']})" for s in ep["sources"][:4])
-        flags = sorted({f["flag"] for f in ep["flags"]})
         routes.append(f'@router.{ep["method"].lower()}({ep["path"]!r}, response_model={resp}, tags=[{ep["resource"]!r}])\n')
         routes.append(f"def {oid}({', '.join(args)}) -> {resp}:\n")
-        routes.append(f'    """{ep["kind"]} {ep.get("table") or ep["resource"]}. Legacy: {srcs}.')
-        routes.append(f" Flags: {', '.join(flags) or 'none'}.\"\"\"\n")
+        # Swagger shows this docstring, so it carries the same text as the contract's description.
+        routes.append('    """' + _description(ep) + '"""\n')
         if ep["kind"] == "login":
             routes.append(f"    claims = data_access.{oid}({', '.join(call_args)})\n")
             routes.append('    return Token(access_token=create_access_token(claims), token_type="bearer")\n\n\n')

@@ -123,5 +123,22 @@ git commit -m "feat(endpoints): add search result tables, same_as fields, login 
 - Endpoints on tables missing from the schema are flagged table-not-in-schema"
 ```
 
+## Group 15 — fix(report): plain-language report
+```
+git add src/c1/report.py src/c1/architecture.py src/c1/console.py src/c1/__main__.py tests/test_console.py docs/DEVLOG.md docs/PP1_DEMO_SCRIPT.md docs/COMMIT_GROUPS.md docs/PANEL_QA.md
+git commit -m "fix(report): remove research citations from the developer report" -m "- Citations stay in the design docs and in metrics.json / architecture.json
+- No analysis result changes; new HMS fingerprint in the demo script
+- Big console title by default; --fit picks a smaller one for narrow windows"
+```
+
+## Group 16 — feat(auth): secure by default
+```
+git add src/c1/endpoints.py src/c1/contract.py src/c1/metrics.py src/c1/report.py src/c1/__main__.py tests/test_contract.py tests/test_endpoints.py tests/test_pipeline_e2e.py docs
+git commit -m "feat(auth): lock endpoints whose legacy page had no login check (secure by default)" -m "- Unguarded legacy data access -> login required + flag no-guard-in-legacy (mark public to open)
+- OpenAPI security + 401 + description; report and metrics show 0 open endpoints
+- endpoint-map auth.securedByDefault for C4
+- Swagger shows the same description as openapi.json (one shared text)"
+```
+
 ---
 Checked on 2026-10-17: committing groups 1→11 in order on top of your last push, the tests pass after **every** group (20, 55, 68, 90, 101, 115, 127, 131, 147, 150, 150 tests; console added 2026-10-19). On 2026-10-21 metrics + architecture were added to group 9; the full suite is now 155 (the per-group counts for 9–12 were not re-checked after that). So any prefix of the groups is safe to push.

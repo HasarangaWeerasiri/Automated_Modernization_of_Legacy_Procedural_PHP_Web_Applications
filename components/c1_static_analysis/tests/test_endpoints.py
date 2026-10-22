@@ -49,7 +49,8 @@ if (isset($_POST['btnSubmit'])) {
     got = {(p["name"], p["in"], p["legacy_name"], p["column"]) for p in s["parameters"]}
     assert got == {("name", "body", "txtName", "contact.name"), ("email", "body", "txtEmail", "contact.email"),
                    ("message", "body", "txtMsg", "contact.message")}
-    assert e["auth"]["required"] is False and any(f["flag"] == "no-guard-in-legacy" for f in e["flags"])
+    assert e["auth"]["required"] is True and e["auth"]["securedByDefault"] is True  # deny by default
+    assert any(f["flag"] == "no-guard-in-legacy" for f in e["flags"])
 
 
 def test_list_render_uses_only_columns_the_page_reads():
@@ -229,7 +230,7 @@ while ($row = mysqli_fetch_array($r)) { echo $row['appdate']; }
     }
     em = endpoint_map(endpoints(files))
     me = next(e for e in em["endpoints"] if e["endpoint_id"].startswith("GET /api/me/"))
-    assert me["auth"] == {"required": True, "userTypes": ["patreg"], "sessionKeys": ["pid"]}
+    assert me["auth"] == {"required": True, "securedByDefault": False, "userTypes": ["patreg"], "sessionKeys": ["pid"]}
     login = em["login"]
     assert login["tokenAt"] == "access_token" and login["sendAs"].startswith("Authorization: Bearer")
     assert login["userTypes"]["patreg"]["sets"] == ["pid"]

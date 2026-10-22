@@ -55,7 +55,8 @@ def test_all_stages_run_and_agree(tmp_path):
     oa = json.loads((out / "contract" / "openapi.json").read_text(encoding="utf-8"))
     assert set(oa["paths"]) == {"/api/items"}
     assert oa["paths"]["/api/items"]["get"]["security"] == [{"bearerAuth": []}]
-    assert "security" not in oa["paths"]["/api/items"]["post"]
+    post = oa["paths"]["/api/items"]["post"]  # add.php had no check: locked by default
+    assert post["security"] == [{"bearerAuth": []}] and post["x-c1"]["auth"]["securedByDefault"]
     report = (out / "report.html").read_text(encoding="utf-8")
     assert "add.php" in report and "unguarded" in report
 

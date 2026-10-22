@@ -12,7 +12,7 @@ Manadhata & Wing (IEEE TSE 2011) measure how much of a system an attacker can re
 
 | Id | Measure | Before | After |
 |---|---|---|---|
-| S1 | Missing authorization (CWE-862): data operations with no working check | unguarded pages and operations (`auth.json`) | token-protected endpoints, plus those flagged for a decision. None is left open silently |
+| S1 | Missing authorization (CWE-862): data operations with no working check | unguarded pages and operations (`auth.json`) | 0 open: endpoints with a proven check need a token; those whose legacy page had none are **locked by default** (secure by default) and flagged for a person to mark public |
 | S2 | Execution after redirect (CWE-698, Doupé et al. CCS 2011) | redirects without `exit` and broken guards | 0. `Depends(get_current_user)` raises before the handler runs |
 | S3 | SQL text built from request input (CWE-89) | queries whose SQL carries a request value, directly (DFG) or through a function parameter (endpoint params) | 0 in the interface. Values arrive as typed arguments, and C3 must bind them |
 | S4 | Request inputs with no declared type | distinct `$_GET`/`$_POST`/`$_COOKIE` reads | declared OpenAPI parameters, checked by Pydantic (422 on a wrong type) |

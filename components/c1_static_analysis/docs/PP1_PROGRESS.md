@@ -61,7 +61,7 @@ Security is measured as attack surface (Manadhata & Wing, IEEE TSE 2011). Struct
 
 | Measure | Before | After |
 |---|---|---|
-| Data pages with no working login check (CWE-862) | 13 | 8 token-protected + 10 flagged for a decision |
+| Data pages with no working login check (CWE-862) | 13 | 0 open endpoints (8 protected + 10 locked by default, flagged for review) |
 | Redirects that don't stop (EAR, CWE-698) | 12 | 0 |
 | SQL built from request input (CWE-89) | 26 | 0 (typed arguments) |
 | Untyped request inputs | 90 | 0 (45 declared parameters) |
@@ -91,8 +91,8 @@ An output fingerprint is printed after each run. The same input gives the same c
 - 2:30 script: `docs/PP1_DEMO_SCRIPT.md`.
 - Laravel: proposed out of scope, because frameworks already declare their routes, so there is no API to recover.
 
-### Open decision
+### Decision taken (22 Oct): secure by default
 
-Secure by default: lock the endpoints whose legacy page had no check (10 on HMS) and let a person mark the public ones. Recommended, waiting for agreement.
+Endpoints whose legacy page had no check are locked (login required) and flagged; a person marks the truly public ones. HMS: 0 open endpoints.
 
 Tests: 155 pass.
