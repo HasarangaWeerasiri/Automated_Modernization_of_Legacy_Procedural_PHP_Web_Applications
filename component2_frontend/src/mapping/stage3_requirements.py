@@ -1,3 +1,4 @@
+# What this file does: Stage 3 - finds which table and column each component's data comes from.
 """Stage 3: data requirement recovery (docs/reconciliation-spec.md section 1).
 
 For every component of the Stage 2 tree, the data it needs: what its output

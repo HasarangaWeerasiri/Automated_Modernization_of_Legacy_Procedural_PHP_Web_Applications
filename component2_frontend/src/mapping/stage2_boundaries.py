@@ -1,3 +1,4 @@
+# What this file does: Stage 2 - cuts the page into components with the 23 rules.
 """Stage 2: boundary inference.
 
 Turns the Stage 1 result into a component tree by applying the owner's

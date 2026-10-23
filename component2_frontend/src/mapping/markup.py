@@ -1,3 +1,4 @@
+# What this file does: joins split HTML pieces into one HTML tree.
 """A page's output as one markup tree, for Stage 5.
 
 The timeline gives output statements in order: inline HTML, echoes and prints,

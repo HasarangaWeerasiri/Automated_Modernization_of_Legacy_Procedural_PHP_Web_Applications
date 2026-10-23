@@ -1,4 +1,5 @@
 <?php
+// What this file does: turns PHP code into an AST (a syntax tree) with nikic/php-parser.
 /**
  * Component 2 whole-app test harness, AST producer: parse only, never execute.
  *

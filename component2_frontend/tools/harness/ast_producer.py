@@ -1,3 +1,4 @@
+# What this file does: runs parse.php on every PHP file of an app.
 """AST producer of the Component 2 test harness: PHP files -> AST files in Member 01's format.
 
 The other half of the harness (harness.py) builds timelines from an AST read through

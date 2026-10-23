@@ -1,3 +1,4 @@
+# What this file does: Stage 1 - keeps only the UI parts; removes SQL and business logic.
 """Stage 1: presentation isolation.
 
 Decides, for every node the timeline mentions, whether it stays in the

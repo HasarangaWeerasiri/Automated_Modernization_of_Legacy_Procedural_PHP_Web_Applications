@@ -1,3 +1,4 @@
+# What this file does: checks for invalid tag nesting.
 """HTML nesting check for Stage 5's output (docs/generation-spec.md v0.2 section 10).
 
 A browser does not keep invalid nesting as written: `<form>` directly in a

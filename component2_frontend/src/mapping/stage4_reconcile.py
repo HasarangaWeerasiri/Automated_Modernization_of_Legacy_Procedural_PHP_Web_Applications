@@ -1,3 +1,4 @@
+# What this file does: Stage 4 - checks the API offers that data under the exact same name.
 """Stage 4: contract reconciliation (docs/reconciliation-spec.md section 2).
 
 Checks the needs Stage 3 recovered against the response Component 1's

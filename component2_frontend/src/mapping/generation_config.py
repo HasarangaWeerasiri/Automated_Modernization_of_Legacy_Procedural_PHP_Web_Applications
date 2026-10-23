@@ -1,3 +1,4 @@
+# What this file does: reads Stage 5's settings from config/generation.json and config/react_dom.json.
 """Reads Stage 5's settings: config/generation.json and config/react_dom.json.
 
 generation.json holds the owner-changeable settings of docs/generation-spec.md

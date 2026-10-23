@@ -1,3 +1,4 @@
+# What this file does: the main runner: runs everything and builds the Next.js app.
 """Run Stages 1-5 on the rule-discovery apps, each as one whole Next.js app (roadmap Phases 1 and 2b).
 
 An app's timelines are not independent: a page calls functions, and a header / footer pair wraps

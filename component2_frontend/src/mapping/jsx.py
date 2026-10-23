@@ -1,3 +1,4 @@
+# What this file does: writes the code in one fixed format every time (deterministic).
 """A small JSX tree and its one fixed formatter (docs/generation-spec.md section 9).
 
 No Prettier: its version drift would break determinism. The format is fixed:

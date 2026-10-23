@@ -1,3 +1,4 @@
+# What this file does: Stage 2 - finds reusable functions and header/footer pairs.
 """App-level facts for the function and layout rules (boundary-rules.md v0.12 section 4).
 
 R-F1, R-F1b and R-F2 need more than one timeline: a function's own timeline, and the call

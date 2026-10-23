@@ -1,3 +1,4 @@
+# What this file does: an early demo script; not used by the pipeline.
 """
 Crude exploratory script: find `echo`/`print` statements in a raw PHP file
 using plain string matching (no AST).

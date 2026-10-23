@@ -1,3 +1,4 @@
+# What this file does: fixes invalid HTML the same way a browser does.
 """Browser-equivalent markup (docs/generation-spec.md v0.6 section 5b).
 
 Legacy pages were rendered by browsers, which repair some invalid HTML by fixed HTML5 parsing

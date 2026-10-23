@@ -1,3 +1,4 @@
+# What this file does: the data shapes the pipeline uses (no logic).
 """Internal types for Component 2. Plain data: no parsing, no logic.
 
 src/mapping/loader.py is the only module that knows the backend member's JSON

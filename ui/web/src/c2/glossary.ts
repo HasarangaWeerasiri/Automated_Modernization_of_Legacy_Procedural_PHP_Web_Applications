@@ -39,3 +39,8 @@ export const REASONS: Record<string, string> = {
 };
 
 export const SEVERITY_ORDER = ["todo", "review", "info"] as const;
+
+// How a unit's role is shown. The pipeline's own word stays "component" (rule R-F1, function component);
+// the UI says "reusable component" because that is what it is to a reader: written once, used on many pages.
+const ROLE_LABELS: Record<string, string> = { component: "reusable component", not_called: "not called" };
+export const roleLabel = (role: string) => ROLE_LABELS[role] ?? role;

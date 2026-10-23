@@ -1,3 +1,4 @@
+# What this file does: lists what the tool could not handle, as evidence for the rules.
 """Write docs/php-analysis/pattern-log.md: what the pipeline could not handle on the whole apps.
 
 The evidence for roadmap Phases 2 and 3. From the outputs of tools/harness/run_apps.py it lists

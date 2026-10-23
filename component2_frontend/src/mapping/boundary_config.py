@@ -1,3 +1,4 @@
+# What this file does: reads the rule numbers (R-I4 = 3, R-I5 = 4) from config/boundary_rules.json.
 """Reads config/boundary_rules.json: the thresholds of the boundary rules.
 
 The rules themselves are in docs/php-analysis/boundary-rules.md and are decided

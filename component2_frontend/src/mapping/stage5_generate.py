@@ -1,3 +1,4 @@
+# What this file does: Stage 5 - writes the Next.js code (page.tsx, components, api.ts).
 """Stage 5: generation (docs/generation-spec.md v0.2).
 
 Turns the Stage 2 component tree, the Stage 3 needs and the Stage 4 results

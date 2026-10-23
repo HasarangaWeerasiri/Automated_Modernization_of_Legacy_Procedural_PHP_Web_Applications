@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { C2Summary, Run, runFile, runJSON, runSource } from "../api";
-import { REASONS, RULES } from "./glossary";
+import { REASONS, RULES, roleLabel } from "./glossary";
 
 // Stage outputs, as the pipeline writes them (only the fields shown here).
 type TreeNode = {
@@ -103,7 +103,7 @@ export default function Explorer({ run, summary }: { run: Run; summary: C2Summar
           <div className="page-sub">PHP source → Stage 2 component tree (rule, status) → generated React code.</div>
         </div>
         <select value={key} onChange={(e) => setKey(e.target.value)}>
-          {units.map((u) => <option key={u.key} value={u.key}>{u.key} ({u.role})</option>)}
+          {units.map((u) => <option key={u.key} value={u.key}>{u.key} ({roleLabel(u.role)})</option>)}
         </select>
       </div>
       {error && <div className="banner error">{error}</div>}

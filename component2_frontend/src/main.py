@@ -1,3 +1,4 @@
+# What this file does: command to run one page through the stages.
 """
 Entry point for Component 2 (Frontend Migration).
 

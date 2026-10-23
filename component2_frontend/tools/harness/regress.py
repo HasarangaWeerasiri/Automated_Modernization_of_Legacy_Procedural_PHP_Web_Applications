@@ -1,3 +1,4 @@
+# What this file does: checks the harness against the existing mock timelines.
 """Regression check: the harness against the existing generated mocks (roadmap Phase 1, brief section 2).
 
 For each mock made from a real source file, the harness runs on that file with the mock's file id,

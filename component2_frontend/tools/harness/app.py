@@ -1,3 +1,4 @@
+# What this file does: takes a whole app and builds one timeline per page and per function.
 """Whole-app side of the Component 2 test harness: every PHP file of an app -> timelines.
 
 For each app (rule-discovery corpus only: HMS, WackoPicko, phpBlog, attendance and warehouse) this produces an AST for every PHP

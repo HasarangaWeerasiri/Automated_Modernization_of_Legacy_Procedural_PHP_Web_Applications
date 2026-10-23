@@ -1,5 +1,5 @@
 import { C2Summary, Run } from "../api";
-import { SEVERITY_ORDER } from "./glossary";
+import { SEVERITY_ORDER, roleLabel } from "./glossary";
 
 export default function Overview({ run, summary }: { run: Run; summary: C2Summary }) {
   const pages = summary.pages ?? [];
@@ -10,7 +10,7 @@ export default function Overview({ run, summary }: { run: Run; summary: C2Summar
   const stats: [string, string | number, string?][] = [
     ["Units", summary.units ?? pages.length],
     ["Pages", byRole("page")],
-    ["Function components", byRole("component")],
+    ["Reusable components", byRole("component")],
     ["Shells", (summary.shells ?? []).length],
     ["Components generated", summary.components ?? 0],
     ["C2Todos", summary.c2todos ?? 0],
@@ -75,7 +75,7 @@ export default function Overview({ run, summary }: { run: Run; summary: C2Summar
               {pages.map((p) => (
                 <tr key={p.key}>
                   <td className="mono">{p.key}</td>
-                  <td>{p.notGenerated ? <span className="tag c-info">not generated: {p.notGenerated.reason}</span> : p.role}</td>
+                  <td>{p.notGenerated ? <span className="tag c-info">not generated: {p.notGenerated.reason}</span> : roleLabel(p.role)}</td>
                   <td className="mono muted">{p.route ?? ""}</td>
                   <td className="mono">{(p.components ?? []).join(", ")}</td>
                   <td className="num">{p.c2todos ?? ""}</td>

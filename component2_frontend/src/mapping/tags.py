@@ -1,3 +1,4 @@
+# What this file does: Stage 2 - tracks which HTML tags are open at each point.
 """HTML tag tracking across a page's output nodes.
 
 Tags are often split across output nodes by echo interpolations

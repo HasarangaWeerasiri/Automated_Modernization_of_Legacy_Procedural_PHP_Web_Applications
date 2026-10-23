@@ -1,3 +1,4 @@
+# What this file does: translates PHP if-conditions to TypeScript; if it can't, uses unresolvedCondition.
 """PHP condition -> TypeScript, by whitelist only (docs/generation-spec.md section 6).
 
 A condition is translated only if every part of it is on the spec's whitelist:

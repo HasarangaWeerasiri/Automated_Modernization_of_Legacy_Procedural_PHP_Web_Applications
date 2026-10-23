@@ -1,3 +1,4 @@
+# What this file does: builds the timeline from the AST: what the page prints, in order.
 """Component 2 whole-app test harness, timeline builder: an AST -> output timelines (schema 1.0).
 
 A **test harness, not Member 01's core** (docs/c2-roadmap.md Phases 1 and 1b). It lets Stages 1-5 run

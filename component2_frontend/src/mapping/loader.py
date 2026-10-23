@@ -1,3 +1,4 @@
+# What this file does: the only file that reads Component 1's JSON; turns it into Python objects.
 """The only module that reads the backend member's JSON formats.
 
 It validates timeline_*.json / labels_*.json against schema 1.0 and converts
