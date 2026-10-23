@@ -118,6 +118,7 @@ def severity_of(kind: str, flag: str | None, status: str, in_abstained: bool) ->
 
 
 def pascal(text: str) -> str:
+    """PascalCase of a name (prefixed with 'P' if it would start with a digit): generated component names."""
     parts = [p for p in re.split(r"[^A-Za-z0-9]+", text) if p]
     name = "".join(p[0].upper() + p[1:] for p in parts)
     return name if name and not name[0].isdigit() else "P" + name
@@ -133,10 +134,12 @@ def route_of(entrypoint: str) -> str:
 
 
 def prop_access(base: str, name: str) -> str:
+    """TypeScript access to a property: dot form for an identifier, bracket form otherwise."""
     return f"{base}.{name}" if _IDENTIFIER.fullmatch(name) else f"{base}[{jsx.js_string(name)}]"
 
 
 def safe_id(node_id: str) -> str:
+    """A node id usable in a function name (every non-word character becomes '_')."""
     return re.sub(r"\W", "_", node_id)
 
 
@@ -215,10 +218,12 @@ class _File:
     count: int = 0
 
     def mark(self) -> str:
+        """A new mark, unique in the file, used to find the line a flag ends up on."""
         self.count += 1
         return f"m{self.count}"
 
     def use(self, module: str, name: str, type_only: bool = False) -> None:
+        """Import `name` from `module` in this file (as a type-only import when asked)."""
         (self.type_imports if type_only else self.imports).setdefault(module, set()).add(name)
 
 
@@ -283,6 +288,7 @@ class _Space:
     """Whitespace-only text; kept as {" "} only between two inline nodes (spec section 5)."""
 
     def __init__(self, text: str):
+        """Whitespace-only text, decided later by its neighbours (spec section 5 whitespace rules)."""
         self.text = text
 
 
@@ -301,6 +307,8 @@ class Generator:
     def __init__(self, tree: ComponentTree, requirements: RequirementsResult, report: ReconciliationReport,
                  contract: Contract, timeline: Timeline, boundary_config: BoundaryConfig, config: GenerationConfig,
                  units=None, layout: UnitLayout | None = None):
+        """Set up the generator for one unit: its tree, Stage 3/4 results, contract, timeline, configs and layout (page,
+        component or shell)."""
         self.tree, self.report, self.timeline = tree, report, timeline
         self.boundary_config, self.config, self.react = boundary_config, config, config.react
         self.units, self.layout = units, layout or UnitLayout()
@@ -332,9 +340,11 @@ class Generator:
     # ---- inputs
 
     def _index_tree(self) -> None:
+        """Give every tree node its component id (0, 0.1, ...), its parent and its place in order."""
         self.ids, self.parents, self.order = {}, {}, []
 
         def walk(node, cid, parent):
+            """Record a node's id, parent and order, then its children's."""
             self.ids[id(node)] = cid
             self.parents[id(node)] = parent
             self.order.append(node)
@@ -382,6 +392,7 @@ class Generator:
         self.page_guard = root.source_ids[0] if root.rule == "R-I1" else None
 
     def _index_results(self) -> None:
+        """Index Stage 4's results by (node id, expression), and its collection results by List id."""
         self.results = {}
         for r in self.report.results:
             for ref in r.need.references:
@@ -389,6 +400,8 @@ class Generator:
         self.collections = {r.component_id: r for r in self.report.collection_results}
 
     def _endpoint(self, contract: Contract) -> None:
+        """The page's endpoint and response schema from Stage 4 and the contract, or the page-level gap (no_endpoint,
+        endpoint_not_in_contract, ...)."""
         ref = self.report.endpoint
         endpoint = contract.endpoints.get((ref.method, ref.path, ref.status, ref.media_type)) if ref else None
         self.schema = endpoint.schema if endpoint is not None and endpoint.method == "get" else None
@@ -415,10 +428,12 @@ class Generator:
                                               list_stem[:1].lower() + list_stem[1:], mapped.schema_property)
 
     def _names(self) -> None:
+        """Give every generated component its deterministic name (spec section 3), unique in the unit."""
         self.names, used, lists, sections = {}, set(), 0, 0
         route = self.layout.stem or pascal(self.route)
 
         def unique(name):
+            """The name, or the name with the first free numeric suffix."""
             candidate, n = name, 2
             while candidate in used:
                 candidate, n = f"{name}{n}", n + 1
@@ -450,6 +465,8 @@ class Generator:
                     self.names[id(child)] = unique(stem + "Empty")
 
     def row_scope(self, list_node: ComponentNode) -> _Row:
+        """What an Item's row is: its fields and TypeScript type, from the List's mapped collection or its own endpoint
+        (else untyped)."""
         list_id = self.ids[id(list_node)]
         loop = next((e for n in self.outputs for e in n.enclosed_by if e.node_id == list_node.source_ids[0]), None)
         mapped = self.collections.get(list_id)
@@ -472,6 +489,7 @@ class Generator:
     # ---- entries
 
     def todo(self, node_id: str, reason: str, ctx: _Ctx, detail: str = "") -> jsx.Element:
+        """A <C2Todo id reason /> element, recorded in the flag list with its line."""
         mark = ctx.file.mark()
         ctx.file.entries.append(_Entry("C2Todo", None, reason, REVIEW, node_id, detail, mark, ctx.function,
                                        ctx.in_abstained))
@@ -479,6 +497,7 @@ class Generator:
         return jsx.Element("C2Todo", [jsx.Attr("id", node_id), jsx.Attr("reason", reason)], marks=(mark,))
 
     def unresolved(self, node_id: str, reason: str, ctx: _Ctx, marks: list) -> str:
+        """An unresolvedCondition(id, reason) call for a condition that is not translated, recorded in the flag list."""
         mark = ctx.file.mark()
         ctx.file.entries.append(_Entry("unresolvedCondition", None, reason, REVIEW, node_id, "", mark, ctx.function,
                                        ctx.in_abstained))
@@ -488,12 +507,14 @@ class Generator:
 
     def flag(self, ctx: _Ctx, flag: str, status: str, node_id: str, detail: str = "", reason: str | None = None,
              mark: str | None = None) -> str:
+        """Record a flag (reason, severity, node, detail) and return its mark."""
         mark = mark or ctx.file.mark()
         ctx.file.entries.append(_Entry("flag", flag, reason or flag, status, node_id, detail, mark, ctx.function,
                                        ctx.in_abstained))
         return mark
 
     def place_markup_flags(self, anchor, ctx: _Ctx, marks: list) -> None:
+        """Record the markup flags (Stage 5 markup builder) that belong to this element."""
         for f in self.pending_flags.pop(id(anchor), []):
             marks.append(self.flag(ctx, f.flag, f.status, f.node_id, f.detail))
 
@@ -518,15 +539,18 @@ class Generator:
                 self.drop_subtree_flags(branch, ctx, why)
 
     def lib(self, file: _File, name: str) -> str:
+        """The relative import path of a lib/ module from a generated file."""
         depth = file.path.count("/")
         return "../" * depth + "lib/" + name
 
     def component_module(self, file: _File, name: str) -> str:
+        """The relative import path of a component module from a generated file."""
         return ("./" if file.path.startswith("components/") else "../" * file.path.count("/") + "components/") + name
 
     # ---- markup -> JSX
 
     def nodes(self, items: list, ctx: _Ctx) -> list:
+        """Generate JSX for a list of markup items; an R-I8 exit arm takes everything after it as its implicit else."""
         out = []
         for index, item in enumerate(items):
             if isinstance(item, MIf) and item.if_id in self.r_i8_exit and not ctx.silent:
@@ -568,6 +592,7 @@ class Generator:
     # ---- R-I8, case 1: redirect guards
 
     def arm_outputs(self, mif: MIf, branch: MBranch) -> list:
+        """The output nodes inside one arm of an if."""
         enclosure = branch.enclosure
         return [n for n in self.outputs if any(
             e.node_id == mif.if_id and (e.branch, e.cond_node_id) == (enclosure.branch, enclosure.cond_node_id)
@@ -580,6 +605,7 @@ class Generator:
                     and tagtrack.only_redirect("".join(tagtrack.output_text(n) for n in nodes)))
 
     def redirect_flag(self, mif: MIf, branch: MBranch, ctx: _Ctx) -> None:
+        """Flag an R-I8 redirect guard (with its target when known): not rendered, the redirect is Component 1's."""
         nodes = self.arm_outputs(mif, branch)
         target = tagtrack.redirect_target("".join(tagtrack.output_text(n) for n in nodes))
         self.flag(ctx, "redirect_guard", REVIEW, nodes[0].id,
@@ -603,6 +629,7 @@ class Generator:
         return []
 
     def spaces(self, items: list) -> list:
+        """Decide whitespace-only text between nodes: {" "} between inline nodes, dropped between blocks."""
         out, i = [], 0
         while i < len(items):
             if not isinstance(items[i], _Space):
@@ -620,6 +647,7 @@ class Generator:
         return out
 
     def inline(self, node) -> bool:
+        """True if a JSX node is inline content (text, an expression, an inline element), for the whitespace rules."""
         if isinstance(node, (jsx.Text, jsx.Expr)):
             return True
         if isinstance(node, jsx.Element):
@@ -632,6 +660,8 @@ class Generator:
         return False
 
     def node(self, item, ctx: _Ctx) -> list:
+        """Generate JSX for one markup item: a component call at a boundary, else text, value, element, if, loop or
+        abstained region."""
         component = ctx.boundary.get(id(item))
         if component is not None and item is not ctx.root:
             return self.call(component, ctx)
@@ -700,6 +730,7 @@ class Generator:
         return [*before, jsx.Element(unit.name, attrs, inside), *after]
 
     def text(self, item: MText, ctx: _Ctx) -> list:
+        """Literal text as JSX: entities decoded, whitespace collapsed (kept exactly inside <pre> / <textarea>)."""
         decoded = html.unescape(item.text)
         if ctx.preserve:
             return [jsx.Text(decoded)]
@@ -708,6 +739,8 @@ class Generator:
         return [jsx.Text(_SPACE_RUN.sub(" ", decoded))]
 
     def escaped(self, output: OutputNode) -> bool:
+        """True if PHP escaped this output (a literal, or a wrapper like htmlspecialchars); else React's escaping is a
+        change."""
         top = output.reads[0] if output.reads else None
         if top is None or top.source_kind == "literal":
             return True
@@ -765,6 +798,7 @@ class Generator:
         return _Value(code=code, wrappers=tuple(wrappers))
 
     def worst_reason(self, node_id: str, read) -> str:
+        """The reason a value cannot be generated: the first flagged (or excluded) Stage 4 result among its base reads."""
         for base, _ in _base_reads(read):
             if base.source_kind == "literal":
                 continue
@@ -776,6 +810,8 @@ class Generator:
         return "expression_not_translatable"
 
     def dynamic(self, item: MDynamic, ctx: _Ctx) -> list:
+        """Generate a printed value: {row.field} when Stage 4 matched it, else a C2Todo; flag escaping_changed when PHP
+        did not escape it."""
         output = item.output
         node_id = _dynamic_id(item)  # spec v0.6: one expression of an echo string has its own (AST) id
         marks = []
@@ -801,6 +837,8 @@ class Generator:
     # ---- elements and attributes
 
     def element(self, el: MElement, ctx: _Ctx) -> list:
+        """Generate one HTML element as JSX: tag, attributes, children and its markup flags (a shell's <head> goes to
+        the layout)."""
         tag, marks = el.tag, []
         self.emitted_in.setdefault(el.node_id, (ctx.file, ctx.function, ctx.function_key, ctx.in_abstained))
         if self.layout.mode == "shell" and tag == "head":  # R-F2: its literal parts go to the group's layout.tsx
@@ -848,6 +886,7 @@ class Generator:
     # ---- the shell's document parts (R-F2): app/(<h>)/layout.tsx
 
     def layout_ctx(self, ctx: _Ctx) -> _Ctx:
+        """The context for writing a shell's root layout.tsx (its RootLayout function)."""
         file = self.file(f"app/{self.layout.group}/layout.tsx")
         if not file.functions:
             file.functions.append(_Function("RootLayout", "", [], [], file.mark()))
@@ -894,6 +933,8 @@ class Generator:
                                      marks=self.layout_marks.get("html", ()))]
 
     def prop_kinds(self, tag: str, prop: str) -> str | None:
+        """What kinds of value React's types accept for a prop on a tag (from config/react_dom.json), or None if it is
+        not declared."""
         stack, seen = [self.react.elements[tag], "AriaAttributes"], set()
         while stack:
             name = stack.pop(0)
@@ -914,6 +955,8 @@ class Generator:
         return html.unescape("".join(kind.parts or [])).strip().lower() in self.config.fixed_value_input_types
 
     def prop_name(self, el: MElement, name: str) -> str | None:
+        """The React prop name for an HTML attribute (class -> className, form state -> defaultValue, ...), or None if
+        React does not declare it."""
         tag = el.tag
         renamed = self.config.form_state.get(tag, {}).get(name) or self.config.attribute_renames.get(name)
         if renamed and name == "value" and self.fixed_value(el):
@@ -1061,6 +1104,8 @@ class Generator:
         return self.attribute(a, el, prop, kinds, ctx, marks)
 
     def attribute(self, a, el: MElement, prop: str, kinds: str, ctx: _Ctx, marks: list):
+        """Generate one attribute: a literal, a template literal of matched fields, or omitted with a flag (spec section
+        5)."""
         letters, _, literal_text = kinds.partition(":")
         literals = literal_text.split("|") if literal_text else []
         parts = a.parts or []
@@ -1098,6 +1143,7 @@ class Generator:
             marks.append(self.flag(ctx, "attribute_omitted", REVIEW, node_id, what, reason=reason))
 
     def legacy_link(self, a, static_text: str, ctx: _Ctx, marks: list) -> None:
+        """Flag a link or form action that points at a .php page (legacy_link, info)."""
         if a.name in self.config.legacy_link_attributes and re.search(self.config.legacy_link_pattern, static_text):
             marks.append(self.flag(ctx, "legacy_link", INFO, a.node_id, f"{a.name} points at a .php page"))
 
@@ -1134,6 +1180,8 @@ class Generator:
         return (None, failures) if failures else (jsx.template_literal(pieces), [])
 
     def attribute_if(self, part, ctx: _Ctx, marks: list):
+        """Generate an attribute decided by an if (R-I3): a conditional value when every condition translates, else
+        omitted with a flag."""
         branches, otherwise, failures = [], '""', []
         if part.branches and part.branches[0][0].branch != "then":
             # The `then` arm prints nothing, so the timeline does not carry its condition: when the other arms
@@ -1161,6 +1209,7 @@ class Generator:
         return code, []
 
     def style(self, a, el: MElement, ctx: _Ctx, marks: list):
+        """A style attribute as a style object when every declaration parses, else a C2Todo (unsupported_style)."""
         parts = a.parts or []
         problem = None
         if not all(isinstance(p, str) for p in parts):
@@ -1198,6 +1247,7 @@ class Generator:
         return jsx.Attr("style", code="{ " + ", ".join(f"{k}: {jsx.js_string(v)}" for k, v in entries.items()) + " }")
 
     def content_prop(self, el: MElement, ctx: _Ctx, marks: list):
+        """Element content that React takes as a prop (e.g. <textarea> content as defaultValue)."""
         prop = self.config.content_as_prop[el.tag]
         parts = list(el.content or [])
         if parts and isinstance(parts[0], str) and parts[0].startswith("\n"):
@@ -1216,18 +1266,21 @@ class Generator:
     # ---- conditions
 
     def scope(self, ctx: _Ctx, guard_var: str | None = None, if_id: str | None = None) -> Scope:
+        """What a condition here may use: the Item's row, the list-guard variable, typed props and row counts."""
         row = ctx.row
         return Scope(row_var=row.php_var if row else None, row_fields=row.fields if row else None,
                      guard_var=guard_var, props=tuple(self.props.items()),
                      row_counts=self.count_scopes.get(if_id, ()) if if_id else ())
 
     def note_condition_uses(self, code: str, ctx: _Ctx) -> None:
+        """Note that translated code uses `row` or `items`, so the function receives them."""
         if re.search(r"\brow\b", code):
             ctx.uses.add("row")
         if re.search(r"\bitems\b", code):
             ctx.uses.add("items")
 
     def condition(self, mif: MIf, branch: MBranch, ctx: _Ctx, marks: list, guard_var: str | None = None) -> str:
+        """Translate an arm's condition (spec section 6 whitelist), or emit unresolvedCondition with the reason."""
         translation = translate(branch.enclosure.cond_expr, self.scope(ctx, guard_var, mif.if_id),
                                 self.config.condition_context_reasons)
         node_id = mif.if_id if branch.enclosure.branch == "then" else branch.enclosure.cond_node_id
@@ -1244,6 +1297,8 @@ class Generator:
                                    f"{comparison}: PHP compares two numeric strings as numbers"))
 
     def if_(self, mif: MIf, ctx: _Ctx) -> list:
+        """Generate an if by its Stage 2 rule: page guard, redirect guard, nothing (R-I7 / R-I8c), conditional or chain;
+        untranslatable if/else renders nothing (spec v0.16)."""
         if mif.if_id == self.page_guard:  # R-I1: the page renders normally
             return self.page_body(mif.branches[0].children, ctx)
         if mif.if_id in self.r_i8_guard and not ctx.silent:  # R-I8: a redirect guard is not a component
@@ -1351,6 +1406,7 @@ class Generator:
         return [todo]
 
     def arms_function(self, pending: _Arms) -> None:
+        """Write the unused Arms_<id>() function holding every arm of a conditional that is not rendered (spec v0.16)."""
         outer = pending.ctx
         file, name = outer.file, f"Arms_{safe_id(pending.if_id)}"
         key = file.mark()
@@ -1463,6 +1519,7 @@ class Generator:
     # ---- loops
 
     def loop(self, mloop: MLoop, ctx: _Ctx) -> list:
+        """Generate a loop: the List's .map(), nothing for R-L5 / R-I7 loops, or a gap."""
         loop_id = mloop.enclosure.node_id
         lst = ctx.list_node
         if lst is not None and lst.source_ids[0] == loop_id:
@@ -1497,6 +1554,8 @@ class Generator:
                    and uses.search(q.sql) for q in self.timeline.queries.values())
 
     def list_map(self, mloop: MLoop, ctx: _Ctx) -> list:
+        """The List's items.map(...): an Item component per row, or an inline map for R-L3 / R-L3b; a C2Todo if the
+        collection is not mapped."""
         lst, out, marks = ctx.list_node, [], []
         self.place_markup_flags(mloop, ctx, marks)
         collection = self.collections.get(self.ids[id(lst)])
@@ -1545,6 +1604,8 @@ class Generator:
     # ---- abstained regions
 
     def abstained(self, item: MAbstain, ctx: _Ctx) -> list:
+        """An abstained region: a C2Todo in place (one per run of unresolved calls); its code goes to an unused
+        Abstained_ function."""
         node = item.node
         source = node.source_ids[0]
         if isinstance(item.region, OutputNode) and app_units.is_slot(item.region):
@@ -1558,6 +1619,7 @@ class Generator:
         return [todo]
 
     def abstained_function(self, pending, ctx: _Ctx) -> None:
+        """Write the unused Abstained_<id>() (or Arms_<id>()) function so the developer has the region's code."""
         if isinstance(pending, _Arms):  # spec v0.16
             self.arms_function(pending)
             return
@@ -1617,6 +1679,8 @@ class Generator:
         return out
 
     def list_root(self, lst: ComponentNode, loop: MLoop, markup: Markup):
+        """The markup a List component renders: its container element (or none, R-L2b / R-F1b) and its empty-state
+        guard."""
         guard = markup.ifs.get(lst.source_ids[1]) if len(lst.source_ids) > 1 else None
         container = None
         if lst.container is not None and lst.container.has_wrapper:
@@ -1650,6 +1714,7 @@ class Generator:
         return root
 
     def call(self, component: ComponentNode, ctx: _Ctx) -> list:
+        """A component call at the boundary, with its props (items, row, outer, literal props)."""
         name, props = self.component(component, ctx, ctx.row)
         attrs = []
         if component.type == "List":
@@ -1679,6 +1744,7 @@ class Generator:
         return [jsx.Element(name, attrs)]
 
     def component(self, component: ComponentNode, caller: _Ctx, row: _Row | None) -> tuple[str, set]:
+        """Generate a component's file and function once, and return its name and the props it uses."""
         if id(component) in self.generated:
             return self.generated[id(component)]
         name = self.names[id(component)]
@@ -1758,6 +1824,7 @@ class Generator:
 
     def signature(self, props: set, row: _Row | None, required: tuple = (), component=None,
                   outer: _Row | None = None) -> str:
+        """A component function's parameter list with TypeScript types (items, row, outer, typed props)."""
         names, types = [], []
         if "items" in props:
             item_type = self.row_scope(component).type_code if component is not None and component.type == "List" \
@@ -1788,11 +1855,13 @@ class Generator:
         return [lines[local] for local in sorted(lines)]
 
     def file(self, path: str) -> _File:
+        """The generated file at `path` (created on first use)."""
         if path not in self.files:
             self.files[path] = _File(path)
         return self.files[path]
 
     def queue_markup_flags(self, markup: Markup) -> None:
+        """Hold the markup builder's flags until the element they belong to is generated."""
         for f in markup.flags:
             self.pending_flags.setdefault(id(f.anchor), []).append(f)
 
@@ -1814,6 +1883,7 @@ class Generator:
         return sorted({n.loc.start_line for n in self.timeline.sequence if n.loc is not None})
 
     def error_output_only(self, lines: list) -> GenerationResult:
+        """The result for a file that prints only in exit arms: not a page, one review flag (error_output_only)."""
         detail = ("the file prints only in arms that exit (R-I8 / R-I8c" + (", lines " + ", ".join(
             map(str, lines)) if lines else "") + "): an error stop or a redirect, not a page. Its include and "
             "call sites carry exit_output_not_generated")
@@ -1844,6 +1914,8 @@ class Generator:
                                                "owner": "Component 1 (Route Handler)"})
 
     def run(self) -> GenerationResult:
+        """Generate the unit: not a page for a non-HTML response or an error-output-only file, else every file, falling
+        back to C2Todo on a generation error."""
         if self.tree.root.status == "abstain" and self.tree.root.reason == "non_html_response":
             return self.not_generated()
         if (lines := self.error_output_arms()) is not None:
@@ -1974,11 +2046,13 @@ class Generator:
         return list(found.values())
 
     def api_types(self) -> str:
+        """lib/api-types.ts: a TypeScript type for each response schema the unit uses."""
         if self.schema is None and not self.query_data:
             return "// No mapped endpoint: this page uses no response types.\nexport {};\n"
         named: dict[str, str] = {}
 
         def ts(schema: SchemaType, depth: int, top: bool = False) -> str:
+            """A schema as TypeScript type code (named types for $refs)."""
             if schema.ref and not top:
                 if schema.ref not in named:
                     named[schema.ref] = ""
@@ -2021,6 +2095,7 @@ class Generator:
         return "\n".join(lines) + "\n"
 
     def render(self, file: _File) -> tuple[str, dict]:
+        """A generated file's text (imports, then functions) and the line of each mark."""
         out = jsx.Lines()
         imports = []
         modules = sorted(set(file.imports) | set(file.type_imports), key=lambda m: (m != "react", m))
@@ -2047,6 +2122,7 @@ class Generator:
         return out.text(), out.marks
 
     def type_imports(self) -> None:
+        """Import the response types each file's function headers use."""
         for file in self.files.values():
             text = "\n".join(f.header for f in file.functions)
             names = set(re.findall(r"\b([A-Z]\w*)\b", text)) & self.type_names()
@@ -2054,11 +2130,13 @@ class Generator:
                 file.use(self.lib(file, "api-types"), name, type_only=True)
 
     def type_names(self) -> set:
+        """The names of every response type the unit can use."""
         names = set()
         if self.response_type:
             names.add(self.response_type)
 
         def collect(schema):
+            """Add a schema's type name and those of the schemas inside it."""
             if schema is None:
                 return
             if schema.ref:
@@ -2082,6 +2160,7 @@ class Generator:
         functions = {f.name: (f, file) for file in self.files.values() for f in file.functions}
 
         def build(items: list, file: _File, function: str) -> list:
+            """Our generated JSX as an element tree, for the HTML nesting check."""
             out = []
             for item in items:
                 if isinstance(item, jsx.Text):
@@ -2128,6 +2207,7 @@ class Generator:
                                            detail, mark, function, in_abstained))
 
     def result(self) -> GenerationResult:
+        """Assemble the unit's result: rendered files, C2Todos and flags with their lines, components and counts."""
         self.type_imports()
         self.nesting_check()
         files, todos, flags = [], [], []
@@ -2188,6 +2268,7 @@ def _presence_attr(a: MAttrPresence, name: str, arm: int | None = None):
 
 
 def _value_code(attr: jsx.Attr) -> str:
+    """An attribute's value as code: its expression, a JS string or true."""
     return attr.code if attr.code is not None else jsx.js_string(attr.value) if attr.value is not None else "true"
 
 
@@ -2232,6 +2313,7 @@ def _dynamic_id(item: MDynamic) -> str:
 
 
 def _split_declarations(style: str) -> list[str]:
+    """Split a style attribute into its declarations, ignoring ';' inside quotes or parentheses."""
     out, depth, quote, start = [], 0, None, 0
     for i, ch in enumerate(style):
         if quote:
@@ -2251,6 +2333,7 @@ def _split_declarations(style: str) -> list[str]:
 
 
 def _is_ancestor(outer, inner) -> bool:
+    """True if `outer` is an ancestor of `inner` in the markup tree."""
     node = inner.parent
     while node is not None:
         if node is outer:
@@ -2260,6 +2343,7 @@ def _is_ancestor(outer, inner) -> bool:
 
 
 def _contains(branch: MBranch, target) -> bool:
+    """True if `target` lies inside `branch`."""
     node = target.parent
     while node is not None:
         if node is branch:
@@ -2269,6 +2353,7 @@ def _contains(branch: MBranch, target) -> bool:
 
 
 def _walk(node: ComponentNode):
+    """Every node of a component tree, depth first."""
     yield node
     for child in node.children:
         yield from _walk(child)
@@ -2312,6 +2397,7 @@ def write_files(result: GenerationResult, directory: Path) -> list[Path]:
 
 
 def _entry_dict(e: GenerationEntry) -> dict:
+    """A C2Todo or flag as JSON for stage5.json."""
     out = {"kind": e.kind}
     if e.kind == "flag":
         out["flag"] = e.flag
@@ -2323,6 +2409,7 @@ def _entry_dict(e: GenerationEntry) -> dict:
 
 
 def flag_key(e: GenerationEntry) -> str:
+    """A flag's counting key: its flag, or 'flag:reason' when the reason differs."""
     return e.flag if e.flag == e.reason else f"{e.flag}:{e.reason}"
 
 
@@ -2336,6 +2423,7 @@ def by_severity(result: GenerationResult) -> dict[str, dict[str, int]]:
 
 
 def counts(result: GenerationResult) -> dict:
+    """The unit's counts: C2Todos and flags by reason, by severity, components and the flag-rate metrics."""
     todo_reasons, flag_reasons = {}, {}
     for t in result.todos:
         todo_reasons[t.reason] = todo_reasons.get(t.reason, 0) + 1
@@ -2356,6 +2444,7 @@ def counts(result: GenerationResult) -> dict:
 
 
 def result_to_dict(result: GenerationResult, output_dir: str) -> dict:
+    """The whole Stage 5 result as the JSON written to stage5.json."""
     return {
         "stage": 5,
         "entrypoint": result.entrypoint,
@@ -2377,12 +2466,14 @@ def dumps(result: GenerationResult, output_dir: str) -> str:
 
 
 def write_report(result: GenerationResult, path: Path, output_dir: str) -> None:
+    """Write the Stage 5 report as JSON to `path` (LF line endings)."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="\n") as f:
         f.write(dumps(result, output_dir))
 
 
 def summary(result: GenerationResult) -> str:
+    """One summary line: components without C2Todo, todo / review / info, flag rate and files."""
     c = counts(result)
     s = c["severity"]
     return (f"[Stage 5] {c['metrics']['componentsWithoutC2Todo']} components without C2Todo · "

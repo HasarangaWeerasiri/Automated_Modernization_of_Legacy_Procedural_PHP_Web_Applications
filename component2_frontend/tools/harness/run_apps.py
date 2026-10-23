@@ -203,6 +203,7 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, bu
             route, stem = route_of(page.path, timelines.docroot)
 
             def layout(tree, route=route, stem=stem):
+                """Where a page goes: under its shell's route group, or (plain), at its route."""
                 group = units.shells[tree.root.shell.header].group if tree.root.shell else PLAIN_GROUP
                 return stage5.UnitLayout(mode="page", route=f"{group}/{route}" if route else group, stem=stem)
 
@@ -336,6 +337,7 @@ def run_app(timelines: AppTimelines, output: Path = OUTPUT, tsc: bool = True, bu
 
 
 def main(argv: list[str]) -> int:
+    """Command-line entry: run the given apps (all by default) through Stages 1-5 and report crashes and compile errors."""
     reason = unavailable()
     if reason:
         print(f"harness cannot run: {reason}")

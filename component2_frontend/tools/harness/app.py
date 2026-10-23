@@ -74,6 +74,7 @@ class AppTimelines:
 
 
 def head_commit(root: Path) -> str:
+    """The commit the app's clone is checked out at."""
     return subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True, text=True,
                           check=True).stdout.strip()
 
@@ -152,6 +153,7 @@ def commit_schema(app: str) -> dict:
 
 
 def page_key(path: str, function: str | None) -> str:
+    """A unit's key: its path with '/' written '__', plus '#function' for a function unit."""
     return path.replace("/", "__") + (f"#{function}" if function else "")
 
 
@@ -260,6 +262,8 @@ def tree_timelines(app: str, tree: Path, files: list[str], prefix: str, docroot:
     file_ids = {path: harness.file_id for path, harness in harnesses.items()}
 
     def provenance(path: str) -> dict:
+        """The _provenance block of a timeline: parser, PHP version, source file and commit, and the note that this is
+        test-harness output."""
         return {"generator": "c2-harness", "parser": meta["parser"], "parserSyntax": meta["syntax"][file_ids[path]],
                 "php": meta["php"], "source": f"{prefix}/{path}", "sourceCommit": commit,
                 **({"analysisSubstitution": f"not in the repository: analysed from {substitutions[path]} "
@@ -290,4 +294,5 @@ def dir_timelines(folder: Path, app: str, docroot: str = "", exclude: tuple = ("
 
 
 def dump_timeline(timeline: dict) -> str:
+    """A timeline as indented JSON text with a final newline."""
     return json.dumps(timeline, indent=2, ensure_ascii=False) + "\n"

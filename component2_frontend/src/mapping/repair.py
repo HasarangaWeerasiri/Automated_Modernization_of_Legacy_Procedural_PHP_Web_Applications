@@ -33,6 +33,7 @@ TABLE_CONTENT = frozenset(("caption", "colgroup", "col", "thead", "tbody", "tfoo
 
 
 def _blank(node) -> bool:
+    """True for a text node that is only HTML whitespace."""
     return isinstance(node, MText) and node.text.strip(HTML_SPACE) == ""
 
 
@@ -62,6 +63,8 @@ def _split_paragraph(p: MElement, owner, flags: list) -> list | None:
 
 
 def _wrap_rows(table: MElement, flags: list) -> None:
+    """Wrap rows placed directly in a <table> in a <tbody>, as a browser does (flag implicit_tbody); tables with other
+    content are left alone."""
     children = table.children
     if not all(_blank(c) or _row_loop(c) or (isinstance(c, MElement) and (c.tag == "tr" or c.tag in TABLE_CONTENT))
                for c in children):
@@ -69,6 +72,7 @@ def _wrap_rows(table: MElement, flags: list) -> None:
     out, run = [], []
 
     def close() -> None:
+        """Put the rows collected so far in one <tbody>, leaving trailing whitespace outside it."""
         while run and _blank(run[-1]):  # trailing whitespace stays outside the tbody
             tail.insert(0, run.pop())
         if any(not _blank(c) for c in run):  # static rows, a loop of rows (spec v0.7), or both
@@ -101,6 +105,7 @@ def _wrap_rows(table: MElement, flags: list) -> None:
 
 
 def _repair(children: list, owner, flags: list) -> list:
+    """Apply the browser-equivalent repairs to a list of children, recursively: split paragraphs, wrap table rows."""
     out = []
     for child in children:
         split = _split_paragraph(child, owner, flags) if isinstance(child, MElement) else None

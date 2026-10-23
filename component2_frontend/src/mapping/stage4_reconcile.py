@@ -59,6 +59,8 @@ def _match(column: str, properties: tuple[str, ...], prefix: str):
 
 def reconcile(requirements: RequirementsResult, contract: Contract,
               endpoint_map: dict[str, EndpointRef]) -> ReconciliationReport:
+    """Stage 4: match each need with the contract's response for the page (or, per query, for each List) and report
+    matched, missing, excluded, cannot-reconcile and unused."""
     ref = endpoint_map.get(requirements.entrypoint)
     endpoint = contract.endpoints.get((ref.method, ref.path, ref.status, ref.media_type)) if ref else None
     shape = endpoint.response if endpoint else None
@@ -153,6 +155,8 @@ def _map_collection(list_id, ref, endpoint, shape, arrays, nested):
 
 
 def _decide(need: Need, ref, endpoint, shape, arrays, nested):
+    """The result for one need: excluded (context), cannot reconcile (with its reason) or a match against the response's
+    properties."""
     if need.kind == "context":
         return "excluded", need.source_kind, None, None
     if need.kind in ("ambiguous", "unresolved"):
@@ -176,6 +180,7 @@ def _decide(need: Need, ref, endpoint, shape, arrays, nested):
 
 
 def report_to_dict(report: ReconciliationReport) -> dict:
+    """The whole Stage 4 report as the JSON written to stage4.json."""
     ref = report.endpoint
     return {
         "stage": 4,
@@ -197,6 +202,7 @@ def report_to_dict(report: ReconciliationReport) -> dict:
 
 
 def _result_dict(r: NeedResult) -> dict:
+    """One need's result as JSON, with the need itself."""
     return {"componentId": r.component_id, "componentType": r.component_type, "result": r.result,
             "flagged": r.result in FLAGGED, "reason": r.reason, "fromAbstained": r.need.from_abstained,
             "schemaProperty": r.schema_property, "type": r.type, "hint": r.hint, "need": need_dict(r.need)}
@@ -208,12 +214,14 @@ def dumps(report: ReconciliationReport) -> str:
 
 
 def write_report(report: ReconciliationReport, path: Path) -> None:
+    """Write the Stage 4 report as JSON to `path` (LF line endings)."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="\n") as f:
         f.write(dumps(report))
 
 
 def summary(report: ReconciliationReport) -> str:
+    """One summary line: needs by result, collections mapped and unused properties."""
     c = report.counts
     lists = c.collections_mapped + c.collections_cannot_reconcile
     if c.collections_cannot_reconcile:
@@ -225,4 +233,5 @@ def summary(report: ReconciliationReport) -> str:
 
 
 def flagged(report: ReconciliationReport) -> list[NeedResult]:
+    """The results that are flagged (missing or cannot reconcile)."""
     return [r for r in report.results if r.result in FLAGGED]

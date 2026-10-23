@@ -260,6 +260,7 @@ class Ast:
 
     @property
     def root(self) -> AstNode:
+        """The AST's root node."""
         return self.nodes[self.root_id]
 
 

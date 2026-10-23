@@ -122,23 +122,28 @@ class Lines:
     """Lines of one file, with the line number of every mark."""
 
     def __init__(self):
+        """No lines yet, and no marks."""
         self.lines: list[str] = []
         self.marks: dict[str, int] = {}
 
     def add(self, text: str, marks: tuple[str, ...] = ()) -> None:
+        """Append one line; each mark remembers the first line it appears on (for flag line numbers)."""
         self.lines.append(text)
         for mark in marks:
             self.marks.setdefault(mark, len(self.lines))
 
     def extend(self, rendered: list[tuple[str, tuple[str, ...]]]) -> None:
+        """Append rendered lines with their marks."""
         for text, marks in rendered:
             self.add(text, marks)
 
     def text(self) -> str:
+        """The file's text, with a final newline."""
         return "\n".join(self.lines) + "\n"
 
 
 def _attrs(attrs: list[Attr]) -> str:
+    """A JSX element's attributes as text: an expression, a bare boolean, a quoted value or a JS string."""
     out = []
     for a in attrs:
         if a.code is not None:
@@ -153,6 +158,7 @@ def _attrs(attrs: list[Attr]) -> str:
 
 
 def _marks(node) -> tuple[str, ...]:
+    """The marks of a node and, for an element, of its attributes."""
     marks = tuple(node.marks)
     if isinstance(node, Element):
         for a in node.attrs:

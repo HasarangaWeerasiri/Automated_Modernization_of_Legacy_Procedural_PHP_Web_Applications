@@ -54,6 +54,7 @@ _TS_PRIMARY = 20
 
 class NotTranslatable(Exception):
     def __init__(self, reason: str = "condition_not_translatable"):
+        """Keep the reason the condition cannot be translated (the flag's reason)."""
         super().__init__(reason)
         self.reason = reason
 
@@ -95,6 +96,7 @@ class _Node:
 
 
 def _tokens(text: str) -> list[tuple[str, str]]:
+    """Split a PHP condition into (kind, text) tokens; any character outside the whitelist makes it not translatable."""
     out = []
     for found in _TOKEN.finditer(text):
         kind = found.lastgroup
@@ -110,22 +112,27 @@ def _tokens(text: str) -> list[tuple[str, str]]:
 
 
 def _php_single_quoted(literal: str) -> str:
+    """The value of a PHP single-quoted string literal (only \\ and \' are escapes)."""
     return re.sub(r"\\([\\'])", r"\1", literal[1:-1])
 
 
 def _ts_property(base: str, name: str) -> str:
+    """TypeScript access to a property: dot form for a plain identifier, bracket form otherwise."""
     return f"{base}.{name}" if re.fullmatch(r"[A-Za-z_$][\w$]*", name) else f'{base}["{name}"]'
 
 
 class _Parser:
     def __init__(self, tokens, scope: Scope):
+        """Start at the first token, with the scope that says which names can be translated."""
         self.tokens, self.scope, self.i = tokens, scope, 0
         self.notes: list[str] = []
 
     def peek(self, offset=0):
+        """The token `offset` places ahead, or (None, None) past the end."""
         return self.tokens[self.i + offset] if self.i + offset < len(self.tokens) else (None, None)
 
     def take(self, value=None):
+        """Consume the next token (it must equal `value` when one is given); else not translatable."""
         token = self.peek()
         if token[0] is None or (value is not None and token[1] != value):
             raise NotTranslatable()
@@ -133,12 +140,14 @@ class _Parser:
         return token
 
     def parse(self) -> _Node:
+        """The whole condition as one expression; leftover tokens make it not translatable."""
         node = self.binary(0)
         if self.peek()[0] is not None:
             raise NotTranslatable()
         return node
 
     def binary(self, weakest: int) -> _Node:
+        """Parse binary operators by precedence (precedence climbing), refusing chained comparisons."""
         left = self.unary()
         while True:
             kind, op = self.peek()
@@ -152,6 +161,7 @@ class _Parser:
             left = self.combine(op, left, right)
 
     def unary(self) -> _Node:
+        """Parse a `!` negation, or else a primary expression."""
         kind, value = self.peek()
         if (kind, value) == ("op", "!"):
             self.take()
@@ -160,6 +170,7 @@ class _Parser:
         return self.primary()
 
     def primary(self) -> _Node:
+        """Parse a parenthesised expression, a number, a string literal or a variable."""
         kind, value = self.take()
         if (kind, value) == ("op", "("):
             inner = self.binary(0)
@@ -196,6 +207,7 @@ class _Parser:
         raise NotTranslatable()
 
     def row_field(self) -> _Node:
+        """Translate `$row['x']` to `row.x`, only for a field in the Item's type."""
         kind, name = self.take()
         scope = self.scope
         if kind != "var" or name != scope.row_var or scope.row_fields is None:
@@ -219,6 +231,8 @@ class _Parser:
         return _Node(_ts_property(scope.row_code, key), _TS_PRIMARY, kind_, schema.nullable)
 
     def variable(self) -> _Node:
+        """Translate a variable: a row field, a row count, the list-guard variable or a typed prop; anything else is not
+        translatable."""
         kind, name = self.peek()
         if name == self.scope.row_var and self.peek(1) == ("op", "["):
             return self.row_field()
@@ -244,6 +258,8 @@ class _Parser:
         return node
 
     def combine(self, op: str, left: _Node, right: _Node) -> _Node:
+        """Combine two translated operands with a PHP operator, refusing type mixes whose PHP and JavaScript results
+        differ."""
         if op in ("and", "or", "&&", "||"):
             ts_op = {"and": "&&", "or": "||"}.get(op, op)
             power = _TS[ts_op]
@@ -266,6 +282,7 @@ class _Parser:
 
     @staticmethod
     def wrap(node: _Node, needed: int) -> str:
+        """The operand's code, in parentheses when it binds looser than needed."""
         return node.code if node.ts >= needed else f"({node.code})"
 
 

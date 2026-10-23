@@ -58,6 +58,7 @@ class NodeTags:
 
 class _Tracker:
     def __init__(self, void_tags):
+        """An empty tag stack, reading text, with no events yet."""
         self.void = frozenset(void_tags)
         self.stack: list[OpenTag] = []
         self.serial = 0
@@ -72,6 +73,7 @@ class _Tracker:
         self.visible_text: set[str] = set()  # nodes that print non-whitespace character data
 
     def feed(self, node_id: str, text: str) -> None:
+        """Feed one node's output text, character by character, recording its tag events under that node."""
         self.node = node_id
         self.events.setdefault(node_id, [])
         for ch in text:
@@ -85,6 +87,7 @@ class _Tracker:
         return "=" in token
 
     def _char(self, ch: str) -> None:
+        """Advance the tag tracker's state machine by one character (text, tag, attribute value, comment, raw text)."""
         state = self.state
         if ch == DYNAMIC and (state in ("lt", "close") or (state == "tag" and not self._in_value())):
             self.dynamic_in_name.add(self.node)
@@ -143,6 +146,7 @@ class _Tracker:
                 self._close(self.raw_tag)
 
     def _open(self, buf: str) -> None:
+        """Record an opening tag: a void element closes at once, any other is pushed on the open-tag stack."""
         name = _NAME.match(buf).group(0)
         rest = buf[len(name):]
         name = name.lower()
@@ -162,6 +166,7 @@ class _Tracker:
             self.state, self.raw_tag, self.buf = "rawtext", name, ""
 
     def _close(self, name: str) -> None:
+        """Record a closing tag: pop up to the nearest open tag of that name, or record it as unmatched (R-L6)."""
         events = self.events[self.tag_node]
         for index in range(len(self.stack) - 1, -1, -1):
             if self.stack[index].tag == name:
@@ -193,6 +198,8 @@ def track(nodes: tuple[OutputNode, ...] | list[OutputNode], config: BoundaryConf
     tracker = _Tracker(config.void_tags)
     snapshots = []
     def state() -> tuple:
+        """The tracker's state after a node: the open-tag stack, whether it is inside a tag and inside an attribute
+        value."""
         in_tag = tracker.state == "tag"
         return tuple(tracker.stack), in_tag, in_tag and tracker._in_value()
 
@@ -277,10 +284,12 @@ def only_inline_js(run: list[NodeTags]) -> bool:
 
 
 def has_unmatched_close(run: list[NodeTags]) -> bool:
+    """True if any node of the run has a closing tag that matches nothing."""
     return any(e.kind == "unmatched_close" for t in run for e in t.events)
 
 
 def _opened(run: list[NodeTags]) -> set[int]:
+    """The serial numbers of the elements opened in the run."""
     return {e.element.serial for t in run for e in t.events if e.kind == "open"}
 
 

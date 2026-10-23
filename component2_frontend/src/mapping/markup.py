@@ -84,6 +84,7 @@ def starts_body(text: str) -> bool:
 
 class GenerationError(Exception):
     def __init__(self, reason: str, detail: str):
+        """Keep the reason (the C2Todo reason) and a detail of why the markup cannot be generated."""
         super().__init__(f"{reason}: {detail}")
         self.reason, self.detail = reason, detail
 
@@ -128,6 +129,7 @@ class MAttrGap:
     parts: list = None  # itself: never static text, so whatever asks "is this attribute literal?" says no
 
     def __post_init__(self):
+        """A gap is one attribute part of its own."""
         self.parts = [self]
 
 
@@ -141,10 +143,12 @@ class MAttrPresence:
     parts: list = None
 
     def __post_init__(self):
+        """A conditional attribute is one attribute part of its own."""
         self.parts = [self]
 
     @property
     def node_id(self) -> str:
+        """The id of the if that decides the attribute."""
         return self.if_id
 
 
@@ -221,6 +225,7 @@ class _Frame:
 
 
 def region_id(item) -> str:
+    """The node id of a region: an output node's id, an if's id or a loop's id."""
     if isinstance(item, OutputNode):  # an output node Stage 2 abstained on by itself
         return item.id
     return item.node_id if isinstance(item, _If) else item.enclosure.node_id
@@ -259,6 +264,8 @@ class Builder:
     def __init__(self, outputs: list[OutputNode], config: BoundaryConfig, abstain: dict[str, ComponentNode],
                  strict: bool = True, stray: bool = False, opaque: frozenset = frozenset(),
                  body_slots: frozenset = frozenset()):
+        """Start an empty markup tree for a unit's output nodes, with the void tags, the abstained regions and the
+        browser-repair settings."""
         self.void = frozenset(config.void_tags)
         self.abstain_by_source = abstain
         self.strict = strict
@@ -289,6 +296,7 @@ class Builder:
     # ---- entry points
 
     def build(self, items: list) -> Markup:
+        """Build the whole markup tree; output ending inside a tag or a region left open cannot be generated."""
         self.walk(items)
         if self.state != "data":
             raise GenerationError("markup_not_generatable", f"output ends inside markup (state {self.state})")
@@ -303,6 +311,7 @@ class Builder:
         return Markup(self.root, self.loops, self.ifs, self.flags)
 
     def walk(self, items: list) -> None:
+        """Walk regions in order: output nodes, abstained regions, call or include slots, loops and ifs."""
         for item in items:
             if isinstance(item, OutputNode):
                 if item.id in self.body_slots and not any(isinstance(e, _Frame) for e in self.stack):
@@ -330,22 +339,27 @@ class Builder:
     # ---- regions
 
     def container(self) -> list:
+        """The child list new nodes go into (the open element's, the open region's, or the root)."""
         if not self.stack:
             return self.root
         top = self.stack[-1]
         return top.children
 
     def parent(self):
+        """The node new nodes belong to: the open element or region owner (None at the root)."""
         if not self.stack:
             return None
         top = self.stack[-1]
         return top.owner if isinstance(top, _Frame) else top
 
     def append(self, node) -> None:
+        """Add a node to the current container and set its parent."""
         node.parent = self.parent()
         self.container().append(node)
 
     def abstained(self, item, node: ComponentNode) -> None:
+        """Place an abstained region: inside a tag only that attribute is lost; elsewhere one placeholder for the
+        region."""
         if self.state != "data":  # inside a start tag: only that tag's attribute is lost (start-tag fallback)
             self.attribute_gap(_outputs([item]), node.source_ids[0], node.reason,
                                f"abstained region {region_id(item)} inside a tag")
@@ -358,6 +372,7 @@ class Builder:
         self.append(MAbstain(node, item))
 
     def slot(self, node: OutputNode) -> None:
+        """Place a call, include or shell-children slot; it must not stand inside a tag."""
         if self.state != "data":
             raise GenerationError("markup_not_generatable", f"call {node.id} inside a tag")
         self.flush_text()
@@ -366,6 +381,7 @@ class Builder:
         self.append(MCall(node))
 
     def loop(self, item: _Loop) -> None:
+        """Place a loop and walk its body as a region of its own; it must not stand inside a tag."""
         if self.state != "data":
             raise GenerationError("markup_not_generatable", f"loop {item.enclosure.node_id} inside a tag")
         self.flush_text()
@@ -375,6 +391,7 @@ class Builder:
         self.region(node, node.children, item.items)
 
     def if_(self, item: _If) -> None:
+        """Place an if: inside an attribute value as an attribute if, otherwise as a region with one child list per arm."""
         if self.state in _ATTR_VALUE:
             self.attribute_if(item)
             return
@@ -399,6 +416,8 @@ class Builder:
             self.region(branch, branch.children, arm.items)
 
     def region(self, owner, children: list, items: list) -> None:
+        """Walk a loop's or an arm's items as a region; elements still open at its end are closed there (or it cannot be
+        generated)."""
         frame = _Frame(owner, children)
         self.stack.append(frame)
         self.walk(items)
@@ -457,6 +476,7 @@ class Builder:
         self.tag.attrs.append(MAttrPresence(item.node_id, arms))
 
     def attribute_if(self, item: _If) -> None:
+        """An if inside an attribute value: each arm's text becomes one alternative of that attribute."""
         attr, state, outer = self.attr, self.state, self.attr.parts
         part = MAttrIf(item.node_id, [])
         outer.append(part)
@@ -472,6 +492,8 @@ class Builder:
     # ---- output nodes
 
     def output(self, node: OutputNode) -> None:
+        """Feed one output node: its raw markup, its echo parts (literal pieces as markup, each expression as one value)
+        or its value."""
         self.node = node.id
         if node.raw is not None:
             self.feed(node.raw)
@@ -491,10 +513,13 @@ class Builder:
             self.dynamic(node)
 
     def feed(self, text: str) -> None:
+        """Feed literal markup text, character by character (line endings normalised)."""
         for ch in text.replace("\r\n", "\n").replace("\r", "\n"):
             self.char(ch)
 
     def dynamic(self, node: OutputNode, echo_part=None) -> None:
+        """Place a printed value: as text content, or as part of an attribute value; elsewhere in a tag it cannot be
+        generated."""
         part = MDynamic(node, part=echo_part)
         state = self.state
         if state == "tag_open":
@@ -525,16 +550,19 @@ class Builder:
     # ---- the tokenizer
 
     def text_append(self, ch: str) -> None:
+        """Add a character to the pending text, remembering which node it came from."""
         if not self.text:
             self.text_node = self.node
         self.text.append(ch)
 
     def flush_text(self) -> None:
+        """Turn the pending text into a text node."""
         if self.text:
             self.append(MText("".join(self.text), self.text_node))
             self.text = []
 
     def anchor(self):
+        """The nearest open element (or region owner) a flag is attached to."""
         for entry in reversed(self.stack):
             if isinstance(entry, MElement):
                 return entry
@@ -543,9 +571,11 @@ class Builder:
         return None
 
     def flag(self, flag, status, node_id, detail, anchor=None) -> None:
+        """Record a markup flag (reason, severity, node and detail)."""
         self.flags.append(MarkupFlag(flag, status, node_id, detail, anchor))
 
     def char(self, ch: str) -> None:
+        """Advance the HTML tokenizer's state machine by one character (data, tags, attributes, comments, raw text)."""
         s = self.state
         space = ch in HTML_SPACE
         if s == "data":
@@ -703,6 +733,7 @@ class Builder:
                 self.state, self.tag = "data", None
 
     def value_append(self, ch: str) -> None:
+        """Add a character to the current attribute value."""
         parts = self.attr.parts
         if parts and isinstance(parts[-1], str):
             parts[-1] += ch
@@ -758,6 +789,7 @@ class Builder:
                     and all(isinstance(child, (MText, MElement)) for child in top.children))
 
     def in_head(self) -> bool:
+        """True while a <head> element is open."""
         return any(isinstance(e, MElement) and e.tag == "head" for e in self.stack)
 
     def mark_body(self) -> None:
@@ -766,6 +798,7 @@ class Builder:
             self.body_started = True
 
     def end_head(self, by: str) -> None:
+        """Close the open <head> as a browser does when body content starts (flag implied_end_tag, spec v0.14)."""
         head = self.stack.pop()
         head.end, head.clean = "implied", True
         self.flag("implied_end_tag", "info", head.node_id,
@@ -773,6 +806,8 @@ class Builder:
                   head.parent if isinstance(head.parent, MElement) else None)
 
     def start_tag(self, self_closing: bool = False) -> None:
+        """Handle a finished start tag: end <head> if needed, apply the HTML5 rules for head/body, open the element (or
+        close a void one)."""
         element = self.tag
         element.tag = self.tag_name.lower()
         self.state = "data"
@@ -804,6 +839,8 @@ class Builder:
         del self.stack[index:]
 
     def end_tag(self) -> None:
+        """Handle a finished end tag with the HTML5 rules: close the matching element, imply end tags, or flag an
+        unmatched close."""
         self.state = "data"
         name = self.end_name.strip().lower()
         if name in ("html", "body", "br") and not self.in_head():
@@ -860,6 +897,7 @@ class Builder:
                   self.anchor())
 
     def bogus_end(self) -> None:
+        """End a <!...> declaration: a doctype is flagged document_shell, anything else is a dropped comment."""
         self.state = "data"
         if self.decl.lower().startswith("doctype"):
             self.flag("document_shell", "review", self.tag_node, "<!DOCTYPE> dropped: it belongs in app/layout.tsx",
@@ -883,6 +921,7 @@ def _outputs(items: list) -> list[OutputNode]:
 
 
 def _first_output(item) -> OutputNode | None:
+    """The first output node inside a region (None if it has none)."""
     if isinstance(item, OutputNode):
         return item
     groups = [b.items for b in item.branches] if isinstance(item, _If) else [item.items]

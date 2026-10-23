@@ -322,10 +322,13 @@ class _AttributeIfs(markup.Builder):
     leaving it out, so that reading goes on)."""
 
     def __init__(self, outputs, config):
+        """A markup walk that records ifs found inside a tag, instead of failing on them."""
         super().__init__(outputs, config, {}, strict=False)
         self.found = []  # (if id, the tag it is in, what its first branch prints)
 
     def if_(self, item):
+        """Record an if that sits inside a tag (with the tag and what its first branch prints); handle other ifs as
+        usual."""
         if self.state not in ("data", "rawtext") and self.state not in markup._ATTR_VALUE:
             first = markup._first_output(item)
             text = (first.raw if first.raw is not None else markup.php_literal_text(first.reads[0].expr)
@@ -350,6 +353,7 @@ def attribute_ifs(timeline_path: Path, config) -> list:
 
 
 def _walk(node, parents=()):
+    """Every node of a stage2 tree (JSON) with its ancestors, depth first."""
     yield node, parents
     for child in node["children"]:
         yield from _walk(child, parents + (node,))
@@ -368,6 +372,7 @@ def last_line(loc: dict) -> int:
 
 
 def collect(output: Path) -> dict:
+    """Read every app's run outputs and collect what the pipeline could not handle, by kind, for the pattern log."""
     found: dict[str, list] = {}  # kind -> [(where, detail)]
     rules: dict[str, dict] = {app: {} for app in APPS}
     calls: dict[tuple, list] = {}  # (app, name, prints, resolved) -> [where]
@@ -378,6 +383,7 @@ def collect(output: Path) -> dict:
     config = load_boundary_config()
 
     def add(kind, place, detail=""):
+        """Record one finding of a kind with its place and detail."""
         found.setdefault(kind, []).append((place, detail))
 
     for app in APPS:
@@ -568,6 +574,7 @@ def filters_in_loops(timeline: dict) -> list:
 
 
 def per_app(places: list, app: str) -> int:
+    """How many places belong to one app."""
     return sum(place.startswith(f"`{app}/") for place, _ in places)
 
 
@@ -777,12 +784,14 @@ def phase3_section(number: int, app: str, data: dict, ordered: list, verdicts: d
 
 
 def examples(places: list) -> str:
+    """The first few places of a finding as table text, with how many more there are."""
     shown = [p if not d else f"{p} — {d}" for p, d in places[:MAX_EXAMPLES]]
     more = len(places) - len(shown)
     return "<br>".join(shown) + (f"<br>… {more} more" if more > 0 else "")
 
 
 def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
+    """The pattern log as Markdown (docs/php-analysis/pattern-log.md)."""
     data = collect(output)
     found = data["found"]
     summary = data["summary"]
@@ -918,6 +927,7 @@ def render(output: Path = OUTPUT, markdown: Path = DEFAULT_MARKDOWN) -> str:
 
 
 def main(argv: list[str]) -> int:
+    """Command-line entry: write the pattern log."""
     markdown = Path(argv[0]) if argv else DEFAULT_MARKDOWN
     text = render(OUTPUT, markdown)
     markdown.parent.mkdir(parents=True, exist_ok=True)

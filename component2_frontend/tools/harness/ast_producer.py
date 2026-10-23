@@ -37,6 +37,7 @@ class SourceFile:
 
 
 def find_php() -> str | None:
+    """The PHP executable: PHP_BIN, then php on the PATH, then XAMPP's (None if there is none)."""
     for candidate in (os.environ.get("PHP_BIN"), shutil.which("php"), r"C:\xampp\php\php.exe"):
         if candidate and Path(candidate).exists():
             return candidate
@@ -76,6 +77,7 @@ def parse_sources(files: list[SourceFile]) -> tuple[list[Ast], dict]:
 
 
 def main(argv: list[str]) -> int:
+    """Command-line entry: parse the given PHP files and write their ASTs."""
     reason = unavailable()
     if reason or len(argv) < 2:
         print(reason or __doc__)

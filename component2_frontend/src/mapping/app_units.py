@@ -71,10 +71,12 @@ class AppUnits:
         return frozenset(s.header for s in self.shells.values()) | frozenset(s.footer for s in self.shells.values())
 
     def shell_of_footer(self, footer: str) -> ShellUnit | None:
+        """The shell pair whose footer is `footer` (None if it is no shell's footer)."""
         return next((s for s in self.shells.values() if s.footer == footer), None)
 
 
 def pascal(text: str) -> str:
+    """PascalCase of a name: its alphanumeric parts, each with a capital first letter (component names)."""
     return "".join(part[:1].upper() + part[1:] for part in re.split(r"[^A-Za-z0-9]+", text) if part)
 
 
@@ -102,10 +104,13 @@ def outputs_with_slots(timeline: Timeline) -> list[OutputNode]:
 
 
 def is_slot(node: OutputNode) -> bool:
+    """True for a node that stands for other output: a call, a shell's children slot or an include."""
     return node.kind in (CALL, CHILDREN, INCLUDE)
 
 
 def _tag_facts(timeline: Timeline, config: BoundaryConfig) -> tuple[bool, tuple, tuple]:
+    """Whether a unit's markup is tag-balanced on its own, which tags it leaves open and which closing tags match
+    nothing (for R-F1 / R-F2)."""
     if not timeline.sequence:
         return True, (), ()
     tracked = tagtrack.track(timeline.sequence, config)
@@ -209,6 +214,7 @@ def _recursive(graph: dict[str, set]) -> set:
 
 
 def file_name(entrypoint: str) -> str:
+    """An entrypoint without its .php extension."""
     return entrypoint.removesuffix(".php")
 
 

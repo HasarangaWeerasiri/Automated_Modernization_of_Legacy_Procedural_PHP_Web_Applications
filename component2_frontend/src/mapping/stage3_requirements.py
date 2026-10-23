@@ -88,16 +88,20 @@ def _classify(read: Read):
 
 class _Component:
     def __init__(self, component_id: str, node: ComponentNode, row_of: str | None):
+        """A component being filled: its id, its tree node, the List whose row it reads, and its needs."""
         self.component_id, self.node, self.row_of = component_id, node, row_of
         self.needs: dict[tuple, dict] = {}  # dedup key -> Need fields + references, in first-appearance order
 
     def add(self, key, fields, reference, row_of):
+        """Add one reference to a need, merging references to the same need (same key, same row owner)."""
         key = (*key, row_of)
         entry = self.needs.setdefault(key, fields | {"row_of": row_of, "references": []})
         entry["references"].append(reference)
 
 
 def recover_requirements(component_tree: ComponentTree, timeline: Timeline) -> RequirementsResult:
+    """Stage 3: walk the component tree and list, for each component, the data its output reads (field, ambiguous,
+    unresolved or context needs, and each List's collection)."""
     outputs = {node.id: node for node in timeline.sequence}
     loops = {e.node_id: e for node in timeline.sequence for e in node.enclosed_by if e.role == "iteration"}
     components: list[_Component] = []
@@ -113,6 +117,8 @@ def recover_requirements(component_tree: ComponentTree, timeline: Timeline) -> R
 
     def visit(node: ComponentNode, component_id: str, owner: _Component | None, row_of: str | None,
               parent_list: str | None, abstained: bool, ancestors: tuple = ()) -> None:
+        """Visit a tree node: start a new component for component types, then collect the needs of its output nodes and
+        children."""
         abstained = abstained or node.type == "Abstain"
         if node.type in COMPONENT_TYPES:
             if node.type == "Item":
@@ -181,6 +187,7 @@ def recover_requirements(component_tree: ComponentTree, timeline: Timeline) -> R
 
 
 def need_counts(result: RequirementsResult) -> dict[str, int]:
+    """How many needs of each kind (field, ambiguous, unresolved, context, collection)."""
     kinds = ("field", "ambiguous", "unresolved", "context", "collection")
     counts = {kind: 0 for kind in kinds}
     for component in result.components:
@@ -193,6 +200,7 @@ def need_counts(result: RequirementsResult) -> dict[str, int]:
 
 
 def need_dict(need: Need) -> dict:
+    """A need as JSON, with every reference (node, file, line, column, expression)."""
     return {
         "kind": need.kind,
         "name": need.name,
@@ -211,6 +219,7 @@ def need_dict(need: Need) -> dict:
 
 
 def requirements_to_dict(result: RequirementsResult) -> dict:
+    """The whole Stage 3 result as the JSON written to stage3.json."""
     return {
         "stage": 3,
         "entrypoint": result.entrypoint,
@@ -229,12 +238,14 @@ def dumps(result: RequirementsResult) -> str:
 
 
 def write_requirements(result: RequirementsResult, path: Path) -> None:
+    """Write the Stage 3 result as JSON to `path` (LF line endings)."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="\n") as f:
         f.write(dumps(result))
 
 
 def summary(result: RequirementsResult) -> str:
+    """One summary line: components and needs by kind."""
     c = need_counts(result)
     total = c["field"] + c["ambiguous"] + c["unresolved"] + c["context"]
     return (f"[Stage 3] {len(result.components)} components, {total} needs: {c['field']} field, "

@@ -55,6 +55,7 @@ DEFAULT_ENDPOINT_MAP = ROOT / "mocks" / "endpoint_map.json"
 
 
 def parse_args() -> argparse.Namespace:
+    """The command-line options of `python -m src.main`."""
     parser = argparse.ArgumentParser(
         prog="component2-frontend",
         description="Generate Next.js TSX components from a legacy PHP output timeline and an OpenAPI contract.",
@@ -126,6 +127,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def load_stage_inputs(timeline_path: Path, labels_path: Path):
+    """Load and validate the timeline and labels files, or print why and exit."""
     for path in (timeline_path, labels_path):
         if not path.exists():
             console.print(f"[red]Input not found:[/red] {path}")
@@ -138,10 +140,12 @@ def load_stage_inputs(timeline_path: Path, labels_path: Path):
 
 
 def stage_output_path(stage: int, timeline_path: Path) -> Path:
+    """output/stage<N>_<name>.json for a timeline file."""
     return ROOT / "output" / f"stage{stage}_{timeline_path.stem.removeprefix('timeline_')}.json"
 
 
 def load_or_exit(what: str, load, path: Path):
+    """Load a file with `load`, or print why it is invalid and exit."""
     try:
         return load(path)
     except (OSError, ValueError) as e:
@@ -150,10 +154,12 @@ def load_or_exit(what: str, load, path: Path):
 
 
 def wrote(path: Path) -> None:
+    """Print the path of a written file, relative to the project."""
     console.print(f"  wrote {path.relative_to(ROOT).as_posix()}", style="dim")
 
 
 def print_stage1(result) -> None:
+    """Print Stage 1's summary and every node marked review."""
     console.print(escape(summary(result)), style="bold")
     for node in result.kept:
         if node.status is Status.REVIEW:
@@ -187,7 +193,9 @@ def component_label(node) -> str:
 
 
 def print_stage2(tree) -> None:
+    """Print the Stage 2 component tree and its summary."""
     def add(branch, node):
+        """Add a component and its children to the printed tree."""
         child = branch.add(component_label(node))
         for sub in node.children:
             add(child, sub)
@@ -200,10 +208,12 @@ def print_stage2(tree) -> None:
 
 
 def print_stage3(requirements) -> None:
+    """Print Stage 3's summary."""
     console.print(escape(stage3.summary(requirements)), style="bold")
 
 
 def print_stage4(report) -> None:
+    """Print Stage 4's summary, its endpoint and a table of every missing or cannot-reconcile need."""
     console.print(escape(stage4.summary(report)), style="bold")
     endpoint = report.endpoint
     console.print("  endpoint: " + (f"{endpoint.method.upper()} {endpoint.path}" if endpoint else "none mapped"),
@@ -237,11 +247,13 @@ def print_stage4(report) -> None:
 
 
 def print_stage5(result) -> None:
+    """Print Stage 5's summary and its todo, review and info counts by reason."""
     console.print(escape(stage5.summary(result)), style="bold")
     severity = stage5.by_severity(result)
     escaping = severity["info"].pop("escaping_changed", 0)
 
     def line(by_reason):
+        """Counts by reason as one line ('none' when empty)."""
         return escape(", ".join(f"{reason} {n}" for reason, n in by_reason.items()) or "none")
 
     console.print(f"  todo by reason: {line(severity['todo'])}")
@@ -265,6 +277,7 @@ def run_stages(args) -> None:
     timeline, labels = load_stage_inputs(args.timeline, args.labels)
 
     def stage(number, title, result, write, show):
+        """Write one stage's result and, when that stage is shown, print it."""
         path = stage_output_path(number, args.timeline)
         write(result, path)
         if number in shown:
@@ -300,10 +313,12 @@ def run_stages(args) -> None:
     relative = directory.relative_to(ROOT).as_posix() if directory.is_relative_to(ROOT) else directory.as_posix()
 
     def write(result, path):
+        """Write Stage 5's report and its generated files."""
         stage5.write_report(result, path, relative)
         stage5.write_files(result, directory)
 
     def show(result):
+        """Print Stage 5's summary and how many files it wrote."""
         print_stage5(result)
         console.print(f"  wrote {len(result.files)} files to {relative}/", style="dim")
 
@@ -311,6 +326,8 @@ def run_stages(args) -> None:
 
 
 def main() -> None:
+    """Command-line entry: with --stage, run the staged pipeline; otherwise the original mode, which loads and shows the
+    --input timeline and the --contract."""
     args = parse_args()
 
     if args.stage is not None:

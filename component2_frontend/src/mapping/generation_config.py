@@ -23,6 +23,7 @@ _STRINGS = ("legacy_link_pattern", "api_base_url_env")
 
 
 def load_react_dom(path: Path = REACT_DOM_PATH) -> ReactDom:
+    """Load config/react_dom.json: the elements, attributes and CSS properties React's types accept."""
     with Path(path).open("r", encoding="utf-8") as f:
         doc = json.load(f)
     if not {"elements", "extends", "props", "css"} <= set(doc):
@@ -32,6 +33,7 @@ def load_react_dom(path: Path = REACT_DOM_PATH) -> ReactDom:
 
 
 def load_generation_config(path: Path = DEFAULT_PATH, react_dom_path: Path = REACT_DOM_PATH) -> GenerationConfig:
+    """Load and validate config/generation.json (Stage 5's settings) together with the React attribute list."""
     with Path(path).open("r", encoding="utf-8") as f:
         doc = json.load(f)
     expected = set(_LISTS + _MAPS + _NESTED + _STRINGS)

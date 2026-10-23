@@ -13,6 +13,7 @@ from pathlib import Path
 
 
 def find_echo_lines(path: Path) -> None:
+    """Print every line of a PHP file that contains echo or print, with its line number (an exploration aid)."""
     with path.open("r", encoding="utf-8", errors="replace") as f:
         lines = f.readlines()
 
@@ -23,6 +24,7 @@ def find_echo_lines(path: Path) -> None:
 
 
 def main() -> None:
+    """Command-line entry: list the echo / print lines of one PHP file."""
     if len(sys.argv) != 2:
         print(f"Usage: python {sys.argv[0]} <path-to-php-file>")
         sys.exit(1)

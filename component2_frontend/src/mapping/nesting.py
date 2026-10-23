@@ -46,6 +46,7 @@ class Difference:
 
 
 def serialise(nodes: list, void_tags: frozenset) -> str:
+    """The element tree as tag-only HTML (text as a placeholder), for the HTML5 parser to rebuild."""
     out = []
     for node in nodes:
         if node == TEXT:
@@ -72,6 +73,7 @@ def _children(element) -> list:
 
 
 def _merge_text(items: list) -> list:
+    """The items with consecutive text runs merged into one."""
     out = []
     for item in items:
         if item == TEXT and out and out[-1] == TEXT:
@@ -81,6 +83,7 @@ def _merge_text(items: list) -> list:
 
 
 def _names(items: list) -> tuple[str, ...]:
+    """The tag name of each item (the text marker for text)."""
     return tuple(TEXT if item == TEXT else item.tag for item in items)
 
 
@@ -94,6 +97,7 @@ def compare(nodes: list, void_tags: frozenset) -> list[Difference]:
     differences: list[Difference] = []
 
     def walk(ours: list, theirs: list, path: list, owner) -> None:
+        """Compare our tree with the parser's, level by level, and record every level where the children differ."""
         ours = _merge_text(ours)
         if _names(ours) != _names(theirs):
             differences.append(Difference(" > ".join(path) or "(top level)", _names(ours), _names(theirs), owner))

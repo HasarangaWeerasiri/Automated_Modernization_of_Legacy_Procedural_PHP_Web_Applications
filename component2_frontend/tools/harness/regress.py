@@ -33,12 +33,14 @@ ENCLOSURE_EXTENSIONS = ("exits", "fetchNodeId")
 
 
 def source_bytes(app: str, path: str) -> bytes:
+    """A file's bytes at the app's pinned commit (from git)."""
     config = APPS[app]
     return subprocess.run(["git", "-C", str(config["root"]), "show", f"{config['commit']}:{path}"],
                           capture_output=True, check=True).stdout
 
 
 def harness_timeline(mock: str, work: Path) -> dict:
+    """The harness's timeline for one mock's source file (or function)."""
     app, path, function, file_id = MOCKS[mock]
     source = work / f"{mock}.php"
     source.write_bytes(source_bytes(app, path))
@@ -77,6 +79,7 @@ def compare(mock_doc: dict, harness_doc: dict) -> list[dict]:
 
 
 def run(work: Path) -> dict[str, list[dict]]:
+    """Compare every mock with the harness's timeline of the same source."""
     out = {}
     for mock in MOCKS:
         mock_doc = json.loads((ROOT / "mocks" / f"timeline_{mock}.json").read_text(encoding="utf-8"))
@@ -85,6 +88,7 @@ def run(work: Path) -> dict[str, list[dict]]:
 
 
 def main() -> int:
+    """Command-line entry: print the differences between the mocks and the harness."""
     import tempfile
 
     with tempfile.TemporaryDirectory() as work:

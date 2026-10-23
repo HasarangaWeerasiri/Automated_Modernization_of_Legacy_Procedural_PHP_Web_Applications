@@ -57,6 +57,7 @@ def _classify(label: Label | None) -> tuple[Status | None, str]:
 
 
 def _flat_reads(reads: tuple[Read, ...]):
+    """Every read and, recursively, the reads it is derived from."""
     for read in reads:
         yield read
         yield from _flat_reads(read.derived_from)
@@ -72,6 +73,7 @@ def _nodes(timeline: Timeline):
     seen = set()
 
     def first(node_id):
+        """True the first time a node id is seen, so each node is listed once."""
         if node_id in seen:
             return False
         seen.add(node_id)
@@ -92,7 +94,9 @@ def _nodes(timeline: Timeline):
 
 
 def isolate_presentation(timeline: Timeline, labels: dict[str, Label]) -> PresentationResult:
+    """Stage 1: give every node the timeline mentions a status from its own label (keep, review or exclude)."""
     def labelled(chain: tuple[Enclosure, ...]) -> tuple[Enclosure, ...]:
+        """The enclosure chain with each enclosure's own label attached (information for Stage 2)."""
         return tuple(replace(enc, label=labels.get(enc.node_id)) for enc in chain)
 
     kept, excluded = [], []
@@ -125,12 +129,14 @@ def isolate_presentation(timeline: Timeline, labels: dict[str, Label]) -> Presen
 
 
 def _label_dict(label: Label | None) -> dict | None:
+    """A label as JSON (None when the node has no label)."""
     if label is None:
         return None
     return {"concern": label.concern.value, "basis": label.basis, "ruleId": label.rule_id, "reason": label.reason}
 
 
 def _enclosure_dict(enc: Enclosure) -> dict:
+    """An enclosure (loop, branch, switch case or try/catch) as JSON, with its label."""
     if enc.role == "iteration":
         d = {"nodeId": enc.node_id, "kind": enc.kind, "role": enc.role, "iterExpr": enc.iter_expr,
              "iterSourceKind": enc.iter_source_kind, "valueVar": enc.value_var, "keyVar": enc.key_var}
@@ -143,6 +149,7 @@ def _enclosure_dict(enc: Enclosure) -> dict:
 
 
 def _read_dict(read: Read) -> dict:
+    """A read as JSON, including the reads it is derived from and its basis when present."""
     d = {
         "expr": read.expr,
         "var": read.var,
@@ -161,12 +168,14 @@ def _read_dict(read: Read) -> dict:
 
 
 def _output_dict(output: OutputNode) -> dict:
+    """An output node's content as JSON: its raw markup, or its reads."""
     if output.raw is not None:
         return {"raw": output.raw}
     return {"reads": [_read_dict(r) for r in output.reads]}
 
 
 def result_to_dict(result: PresentationResult) -> dict:
+    """The whole Stage 1 result as the JSON written to stage1.json."""
     return {
         "stage": 1,
         "entrypoint": result.entrypoint,
@@ -193,11 +202,13 @@ def dumps(result: PresentationResult) -> str:
 
 
 def write_result(result: PresentationResult, path: Path) -> None:
+    """Write the Stage 1 result as JSON to `path` (LF line endings)."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="\n") as f:
         f.write(dumps(result))
 
 
 def summary(result: PresentationResult) -> str:
+    """One summary line: how many nodes were kept, marked review and excluded."""
     c = result.counts
     return f"[Stage 1] {c.total} nodes -> {c.kept} kept, {c.review} review, {c.excluded} excluded"

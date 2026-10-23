@@ -72,11 +72,13 @@ AST_ROOT_KIND = "File"
 
 
 def _check_node_id(value, where: str) -> None:
+    """Raise unless the value is a '<fileId>#<ordinal>' node id."""
     if not isinstance(value, str) or not NODE_ID.match(value):
         raise ValueError(f"{where}: {value!r} is not a '<fileId>#<ordinal>' node id")
 
 
 def _check_read(read: dict, where: str) -> None:
+    """Raise unless a read has exactly the schema's keys and consistent sourceKind, confidence, var, path and source."""
     keys = READ_KEYS | ({"derivedFrom"} if read.get("sourceKind") == "computed" else set())
     # basis is optional (Member 01 Q1, proposed): how a resolved db read was decided ("schema-expanded").
     if not keys <= set(read) <= keys | {"basis"}:
@@ -192,6 +194,7 @@ def _check_exit_output(found, where: str) -> None:
 
 
 def _loc(d: dict | None) -> Loc | None:
+    """A source location from JSON (None when the node has no loc)."""
     if d is None:
         return None
     return Loc(d["startLine"], d["endLine"], d["startCol"], d["endCol"], d["startByte"], d["endByte"])
@@ -384,6 +387,7 @@ def load_labels_json(path: Path) -> dict:
 
 
 def _read(d: dict) -> Read:
+    """A read from JSON, with the reads it is derived from."""
     src = d["source"]
     return Read(
         expr=d["expr"],
@@ -398,10 +402,12 @@ def _read(d: dict) -> Read:
 
 
 def _argument(d: dict) -> CallArg:
+    """A call argument from JSON."""
     return CallArg(kind=d["kind"], type=d.get("type"), value=d.get("value"), expr=d.get("expr"))
 
 
 def _enclosure(d: dict) -> Enclosure:
+    """An enclosure from JSON: an iteration, a branch, or any other role with its extra keys kept."""
     if d["role"] == "iteration":
         return Enclosure(node_id=d["nodeId"], kind=d["kind"], role="iteration", iter_expr=d["iterExpr"],
                          iter_source_kind=d["iterSourceKind"], value_var=d["valueVar"], key_var=d["keyVar"],
@@ -485,6 +491,7 @@ def load_labels(path: Path) -> dict[str, Label]:
 
 
 def _check_ast_ref(value, nodes: dict, where: str) -> None:
+    """Raise unless the value is the id of a node of this AST."""
     if not isinstance(value, str) or value not in nodes:
         raise ValueError(f"{where}: {value!r} is not a node of this AST")
 
@@ -598,6 +605,7 @@ HTTP_METHODS = ("get", "put", "post", "delete", "options", "head", "patch", "tra
 
 
 def _is_type(schema: dict, name: str) -> bool:
+    """True when a JSON schema's type is `name` (or a list that contains it)."""
     kind = schema.get("type")
     return kind == name or (isinstance(kind, list) and name in kind)
 
@@ -621,6 +629,8 @@ def _resolve(doc: dict, schema, path: Path):
 
 
 def _response_shape(doc: dict, schema, path: Path) -> ResponseShape | None:
+    """The properties of a response schema and its array properties with their item properties (None if it is neither an
+    object nor an array)."""
     schema = _resolve(doc, schema, path)
     if not isinstance(schema, dict):
         return None

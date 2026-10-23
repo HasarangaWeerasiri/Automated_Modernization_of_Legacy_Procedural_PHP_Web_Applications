@@ -153,6 +153,7 @@ def _regions(nodes: list[KeptNode], depth: int = 0) -> list:
 
 
 def _flat(items: list) -> list[KeptNode]:
+    """Every output node in a list of regions (loops and if-branches opened up), in order."""
     nodes = []
     for item in items:
         if isinstance(item, KeptNode):
@@ -177,10 +178,43 @@ def _blank(node: KeptNode) -> bool:
 
 # ----------------------------------------------------------------------------- the rules
 
+# Where each of the 23 boundary rules (docs/php-analysis/boundary-rules.md) is applied in _Builder below.
+#
+#   Loop rules (section 2), 9:
+#     R-L1  Loop -> List + Item ......................... list_parts(), loop()
+#     R-L2a Container = nearest open tag ................. list_parts()
+#     R-L2b Item with several roots, no wrapper .......... list_parts()
+#     R-L3  One-element body stays an inline map ......... list_parts()
+#     R-L3b Text-only body, inline map ................... list_parts()
+#     R-L4  Nested loops, innermost first ................ no code of its own: items() / loop() recurse inward
+#     R-L5  Loop with no output, not a boundary .......... list_parts()
+#     R-L6  Tags crossing a branch or loop -> abstain .... list_parts(), if_()
+#     R-L7  Chunked loop -> abstain ...................... list_parts()
+#
+#   If rules (section 3), 11:
+#     R-I1  Page guard ................................... page(), other_path_leaves()
+#     R-I2  List guard (empty state) ..................... guarded_list()
+#     R-I2b Multi-loop list guard ........................ if_()
+#     R-I3  Attribute conditional ........................ if_(), leaves()
+#     R-I3b Attribute-presence conditional ............... if_(), attribute_presence()
+#     R-I4  Small content if -> inline ................... if_()
+#     R-I5  Fallback -> own Conditional component ........ if_()
+#     R-I6  Sibling chain ................................ items(), chainable()
+#     R-I7  No output left (only inline JS) .............. if_(), list_parts()
+#     R-I8  Exit-terminated arm .......................... exit_if(), shell()
+#     R-I8c Exit arm in an included file or function ..... exit_if()
+#
+#   Function and layout rules (section 4), 3:
+#     R-F1  Function component ........................... call()
+#     R-F1b Caller-opened container ...................... list_parts()
+#     R-F2  Shell pair (header + footer -> layout) ....... page(), shell(), call()
+
 
 class _Builder:
     def __init__(self, outputs: list[KeptNode], review: dict[str, str], config: BoundaryConfig,
                  timeline: Timeline | None = None, units=None):
+        """Keep the output nodes, their Stage 1 review reasons, the tag-tracker result and the timeline facts (calls,
+        function, content type, top-level ifs) the rules read."""
         self.outputs = outputs
         self.review = review  # Stage 1 review reason by node id
         self.config = config
@@ -198,10 +232,12 @@ class _Builder:
         self.included = self.included or bool(timeline is not None and "shell" in timeline.provenance)
 
     def run(self, nodes: list[KeptNode]) -> list[tagtrack.NodeTags]:
+        """The tag-tracker result of each node."""
         return [self.tags[k.node_id] for k in nodes]
 
     def node(self, type_, rules, reason, nodes, sources=(), children=(), abstain=False, flags=(), review=(),
              **extra):
+        """Make a component-tree node; its status is abstain, review (with every review reason it carries) or ok."""
         reviews = [*review, *(self.review[s] for s in sources if s in self.review)]
         if not children:  # a leaf also answers for its own output nodes
             reviews += [k.reason for k in nodes if k.status is Status.REVIEW]
@@ -218,10 +254,12 @@ class _Builder:
             flags=tuple(flags), **extra)
 
     def abstain(self, reason, nodes, sources, rules=(), children=(), flags=()):
+        """Make an Abstain node: the tool does not decide this region and says why."""
         return self.node("Abstain", rules, reason, nodes, sources, children, abstain=True, flags=flags)
 
     # ---- sequences of items
 
+    # Rules: R-I6 Sibling chain. Also sends each if to exit_if() (R-I8) or if_(), and each loop to loop().
     def items(self, items: list, top: bool = False, in_shell: bool = False) -> list[ComponentNode]:
         """`top`: these are the statements of a page's own top level; `in_shell`: they are a shell's children
         (see exit_if)."""
@@ -259,11 +297,14 @@ class _Builder:
                 i += 1
         return out
 
+    # Rules: R-I3 Attribute conditional (dynamic output inside an attribute value).
     def leaves(self, nodes: list[KeptNode]) -> list[ComponentNode]:
         """Plain output nodes: dynamic output that lands inside a tag is an AttributeExpression, the rest Static."""
         out, run, run_attribute = [], [], None
 
         def flush():
+            """Close the current run of plain output as one Static node, or as an AttributeExpression (R-I3) when it is
+            inside an attribute."""
             if run and run_attribute:
                 out.append(self.node("AttributeExpression", ("R-I3",), "attribute_output", list(run)))
             elif run:
@@ -271,6 +312,7 @@ class _Builder:
             run.clear()
 
         def flush_calls():
+            """Close a run of consecutive unresolved calls as one Abstain gap (spec section 8a)."""
             if unresolved:  # spec v0.7 section 8a: consecutive unresolved calls are one gap
                 out.append(self.abstain("unresolved_call", list(unresolved), tuple(k.node_id for k in unresolved)))
             unresolved.clear()
@@ -303,6 +345,7 @@ class _Builder:
         flush_calls()
         return out
 
+    # Rules: R-F1 Function component; R-F2 Shell pair (the page's place inside a shell, unbalanced functions).
     def call(self, k: KeptNode) -> ComponentNode:
         """What stands at a call site (boundary-rules section 4, the call-entry table)."""
         entry, source = self.calls[k.node_id], (k.node_id,)
@@ -327,12 +370,14 @@ class _Builder:
             return self.abstain("tag_crosses_function", [k], source, ("R-F2",))
         return self.node("FunctionCall", ("R-F1",), "function_component", [k], source, callee=unit.node_id)
 
+    # Rules: R-F2 Shell pair (header + footer -> layout); R-I8 Exit-terminated arm outside the shell.
     def shell(self, items: list):
         """R-F2 condition 3 for this page: (ShellUse, the page's children) or (None, None).
 
         The page calls the header once and, later, the footer once, both at this level, and calls no other
         header or footer anywhere. What is printed before the header or after the footer abstains."""
         def callee(item):
+            """The function a call node calls."""
             return self.calls[item.node_id].callee
 
         tops = [(i, item) for i, item in enumerate(items) if _is_call(item)]
@@ -389,6 +434,8 @@ class _Builder:
     # ---- ifs
 
     def facts(self, region: _If) -> dict:
+        """What the if rules need to know about a region: its output nodes, element count, whether it starts inside a
+        tag, crosses tags, holds loops, has a blocking label or prints only JS."""
         branch_nodes = [_flat(b.items) for b in region.branches]
         nodes = [k for group in branch_nodes for k in group]
         runs = [self.run(group) for group in branch_nodes]
@@ -410,20 +457,26 @@ class _Builder:
             "only_js": tagtrack.only_inline_js(self.run(nodes)),
         }
 
+    # Rules: R-I6 Sibling chain (which ifs may join one).
     def chainable(self, region: _If) -> bool:
+        """True if a region can join an R-I6 sibling chain: small, inside one parent element, no loop, no blocking
+        label, no exit."""
         f = self.facts(region)
         return (not f["starts_in_tag"] and not f["crosses"] and not f["loops"] and not f["blocked"]
                 and not f["only_js"] and f["elements"] <= self.config.small_if_max_elements
                 and not any(b.enclosure.exits for b in region.branches))
 
     def parent_element(self, region: _If):
+        """The element a region prints into (the top of the open-tag stack before it)."""
         stack = self.tags[self.facts(region)["nodes"][0].node_id].stack_before
         return stack[-1].serial if stack else None
 
     def branch_children(self, region: _If) -> list[ComponentNode]:
+        """The tree nodes built from every branch of a region, in order."""
         return [child for branch in region.branches for child in self.items(branch.items)]
 
     def conditional(self, regions: list[_If], type_, rule, reason, review=()) -> ComponentNode:
+        """Make one conditional node (of `type_`, by `rule`) for one or more if regions."""
         facts = [self.facts(r) for r in regions]
         return self.node(
             type_, (rule,), reason, [k for f in facts for k in f["nodes"]], tuple(r.node_id for r in regions),
@@ -442,6 +495,7 @@ class _Builder:
     def redirect_only(self, region: _If) -> bool:
         """Everything the if prints is a redirect of an arm that exits, at any depth."""
         def silent(branch: _Branch) -> bool:
+            """True if a branch only redirects, or holds nothing but ifs that only redirect."""
             if self.redirect_arm(branch):
                 return True
             inner = [i for i in branch.items if not (isinstance(i, KeptNode) and _blank(i))]
@@ -454,6 +508,7 @@ class _Builder:
         return any(b.enclosure.exits and _flat(b.items) or any(
             isinstance(i, _If) and self.exits_inside(i) for i in b.items) for b in region.branches)
 
+    # Rules: R-I8 Exit-terminated arm; R-I8c Exit arm in an included file or function.
     def exit_if(self, region: _If, rest: list, top: bool, in_shell: bool = False) -> ComponentNode | None:
         """R-I8 / R-I8c for an if with an arm that always ends in `exit` / `die`; None when the if has no such
         arm, or when the other rules judge it (its exiting arms then render nothing, Stage 5).
@@ -488,12 +543,17 @@ class _Builder:
 
     # ---- R-I3b: an if between the attributes of a start tag
 
+    # Rules: R-I3b Attribute-presence conditional (the check).
     def attribute_presence(self, region: _If) -> bool:
         """Every arm prints only complete literal attributes (`selected`, `class="nav-item"`)."""
         return all(tagtrack.literal_attributes(tagtrack.literal_text([k.output for k in _flat(branch.items)]))
                    is not None for branch in region.branches)
 
+    # Rules, in this order: R-I3 Attribute conditional, R-I3b Attribute-presence conditional, R-I7 No output left,
+    # R-L6 Tags crossing a branch, R-I2 List guard (via guarded_list), R-I2b Multi-loop list guard,
+    # R-I4 Small content if, R-I5 Fallback. No rule fits -> abstain.
     def if_(self, region: _If) -> ComponentNode:
+        """Classify one if region by the if rules (boundary-rules section 3), in order, or abstain."""
         f = self.facts(region)
         nodes, source = f["nodes"], (region.node_id,)
         if f["attribute_only"] and f["in_value"]:  # R-I3: never a boundary
@@ -536,6 +596,7 @@ class _Builder:
             return self.conditional([region], "ConditionalComponent", "R-I5", "fallback_size")
         return self.abstain("no_rule", nodes, source, (), self.branch_children(region))
 
+    # Rules: R-I2 List guard (the if's other arm becomes the List's Empty state).
     def guarded_list(self, region: _If, list_branch: _Branch, index: int) -> ComponentNode:
         """R-I2: the if is the List's empty-state condition."""
         nodes, source = self.facts(region)["nodes"], (region.node_id,)
@@ -555,6 +616,9 @@ class _Builder:
 
     # ---- loops
 
+    # Rules, in this order: R-L5 Loop with no output, R-I7 No output left, R-L7 Chunked loop, R-L6 Tags crossing,
+    # R-L2b Item with no wrapper / R-L2a Nearest open tag / R-F1b Caller-opened container (the container),
+    # then R-L3b Text-only body, R-L3 One-element body, else R-L1 List + Item.
     def list_parts(self, region: _Loop):
         """The pieces of a List for this loop, or the node to use instead when it cannot be one."""
         nodes, source = _flat(region.items), (region.enclosure.node_id,)
@@ -612,7 +676,9 @@ class _Builder:
         item = self.node("Item", ("R-L1",), "loop_body", nodes, (), self.items(region.items), root_tags=roots)
         return common | {"rules": ("R-L1", container_rule), "child": item}
 
+    # Rules: R-L1 Loop -> List + Item. R-L4 Nested loops: the Item's items() builds inner loops first.
     def loop(self, region: _Loop) -> ComponentNode:
+        """Make a List node (R-L1) for a loop, with its container and its Item or inline child."""
         parts = self.list_parts(region)
         if isinstance(parts, ComponentNode):
             return parts
@@ -633,6 +699,7 @@ class _Builder:
                         r.expr.replace(" ", "").lower().startswith("json_encode(") for r in n.reads)
                         for n in echoes))
 
+    # Rules: R-I1 Page guard (the v1.1 scope check).
     def other_path_leaves(self, guard: _If) -> bool:
         """Boundary rules v1.1, R-I1 scope (post-freeze change 1): the path that does not enter the guarded
         content leaves the page. It does when the statements after the if (in the same list) always exit or
@@ -649,7 +716,10 @@ class _Builder:
         has_else = any(branch == "else" for branch, _, _ in top.arms)
         return top.after_leaves or (has_else and all(others))
 
+    # Rules: R-I1 Page guard; R-F2 Shell pair (the Page wrapped in a layout).
     def page(self) -> ComponentNode:
+        """Build the Page root: a non-HTML response or AJAX endpoint abstains (section 5); otherwise the page's regions
+        become its children, after the page-guard check (R-I1)."""
         if self.content_type is not None and self.content_type not in HTML_MEDIA_TYPES:
             # Section 5: the unit is not an HTML response (RSS, a sitemap). It is an API route, owned by C1.
             return self.node("Page", (), "non_html_response", self.outputs, (), (), abstain=True)
@@ -676,6 +746,7 @@ class _Builder:
 
 
 def _walk(node: ComponentNode):
+    """Every node of a component tree, depth first."""
     yield node
     for child in node.children:
         yield from _walk(child)
@@ -722,6 +793,7 @@ def infer_boundaries(stage1_result: PresentationResult, timeline: Timeline, conf
 
 
 def leaves(tree: ComponentTree) -> list[ComponentNode]:
+    """The tree's leaf nodes."""
     return [n for n in _walk(tree.root) if not n.children]
 
 
@@ -734,6 +806,7 @@ def find(tree: ComponentTree, **where) -> list[ComponentNode]:
 
 
 def _node_dict(node: ComponentNode) -> dict:
+    """A component-tree node as JSON, with its children."""
     container = node.container
     return {
         "type": node.type,
@@ -758,6 +831,7 @@ def _node_dict(node: ComponentNode) -> dict:
 
 
 def tree_to_dict(tree: ComponentTree) -> dict:
+    """The whole Stage 2 tree as the JSON written to stage2.json."""
     return {
         "stage": 2,
         "entrypoint": tree.entrypoint,
@@ -773,11 +847,13 @@ def dumps(tree: ComponentTree) -> str:
 
 
 def write_tree(tree: ComponentTree, path: Path) -> None:
+    """Write the Stage 2 tree as JSON to `path` (LF line endings)."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="\n") as f:
         f.write(dumps(tree))
 
 
 def summary(tree: ComponentTree) -> str:
+    """One summary line: components, abstain and review counts."""
     c = tree.counts
     return f"[Stage 2] {c.components} components, {c.abstain} abstain, {c.review} review"

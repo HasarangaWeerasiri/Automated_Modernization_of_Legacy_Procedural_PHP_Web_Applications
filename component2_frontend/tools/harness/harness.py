@@ -209,6 +209,7 @@ class _N:
     __slots__ = ("id", "kind", "loc", "attrs", "fields", "kids")
 
     def __init__(self, node):
+        """Wrap an AST node (its id, kind, location and attributes); every node must have a location."""
         if node.loc is None:
             raise ValueError(f"{node.id}: the timeline builder needs loc on every AST node")
         self.id, self.kind, self.loc, self.attrs = node.id, node.kind, node.loc, node.attrs
@@ -222,14 +223,17 @@ class _N:
 
     @property
     def start(self) -> int:
+        """The node's first byte in the source."""
         return self.loc.start_byte
 
     @property
     def end(self) -> int:
+        """The node's end byte in the source."""
         return self.loc.end_byte
 
     @property
     def line(self) -> int:
+        """The node's first line in the source."""
         return self.loc.start_line
 
 
@@ -248,6 +252,7 @@ def node_views(ast) -> dict:
 
 
 def loc_dict(loc) -> dict:
+    """A source location as the timeline's JSON loc."""
     return {"startLine": loc.start_line, "endLine": loc.end_line, "startCol": loc.start_col, "endCol": loc.end_col,
             "startByte": loc.start_byte, "endByte": loc.end_byte}
 
@@ -286,6 +291,7 @@ class _Scope:
 
 
 def _is(node, *kinds) -> bool:
+    """True if `node` is an AST node of one of the given kinds."""
     return isinstance(node, _N) and node.kind in kinds
 
 
@@ -313,6 +319,7 @@ def _callee(node) -> str | None:
 
 
 def _args(node) -> list:
+    """The value nodes of a call's arguments."""
     return [a.get("value") for a in node.get("args") or [] if _is(a, "Arg")]
 
 
@@ -357,6 +364,7 @@ class FileHarness:
         return self.source[start:end].decode(self.encoding, errors="replace")
 
     def node_text(self, node: _N) -> str:
+        """The exact source text of a node."""
         return self.text(node.start, node.end)
 
     def quoted(self, node: _N) -> bool:
@@ -391,6 +399,7 @@ class FileHarness:
         return False
 
     def _top_if(self, node: _N, after: list, scope: _Scope) -> None:
+        """Record a top-level if (its arms and the output after it) for the topLevelIfs extension (rules v1.1, R-I1)."""
         arms = [("then", node.get("cond"), node.get("stmts"))]
         arms += [("elseif", e.get("cond"), e.get("stmts")) for e in node.get("elseifs") or []]
         if node.get("else"):
@@ -401,6 +410,7 @@ class FileHarness:
                               "afterLeaves": self._leaves(after)})
 
     def _walk_list(self, nodes, scope: _Scope, chain: tuple, enclosures: list) -> None:
+        """Walk a statement list in order, normalising `X or die()` exits and recording top-level ifs."""
         previous = None
         for index, node in enumerate(nodes or []):
             if self.write_top_ifs and not chain and not enclosures and _is(node, "Stmt_If"):
@@ -428,6 +438,8 @@ class FileHarness:
             previous = node
 
     def _walk(self, node, scope: _Scope, chain: tuple, enclosures: list) -> None:
+        """Walk one AST node: outputs become timeline entries, ifs and loops become enclosures, assignments and calls
+        are recorded."""
         if isinstance(node, list):
             self._walk_list(node, scope, chain, enclosures)
             return
@@ -564,6 +576,7 @@ class FileHarness:
         return False
 
     def _define(self, scope: _Scope, name: str | None, node: _N, chain: tuple, kind: str, rhs=None) -> None:
+        """Record a definition of a variable in the scope (for copy propagation and reaching definitions)."""
         if name:
             scope.defs.setdefault(name, []).append(_Def(node.start, chain, kind, rhs if kind == "assign" else node))
 
@@ -619,6 +632,7 @@ class FileHarness:
                             "detail": self.node_text(node)[:80]})
 
     def _if(self, node: _N, scope: _Scope, chain: tuple, enclosures: list) -> None:
+        """Walk an if: its condition, then each arm (then, elseif, else) as a branch enclosure."""
         if_id, cond = node.id, node.get("cond")
         if self.write_top_ifs:
             self._count_ifs.append((node, scope, chain))
@@ -657,6 +671,7 @@ class FileHarness:
                                 "detail": self.node_text(cond)[:80]})
 
     def _loop(self, node: _N, scope: _Scope, chain: tuple, enclosures: list) -> None:
+        """Walk a loop as an iteration enclosure, with what it iterates and the row variable it fills."""
         kind, loop_id = node.kind, node.id
         inner = chain + ((loop_id, "loop"),)
         enclosure = {"nodeId": loop_id, "kind": kind, "role": "iteration", "iterExpr": "",
@@ -688,6 +703,7 @@ class FileHarness:
         self._walk_list(node.get("stmts"), scope, inner, enclosures + [enclosure])
 
     def _function(self, node: _N, kind: str, outer: _Scope) -> None:
+        """Walk a function, method or closure in its own scope (its timeline is a separate unit)."""
         if kind == "Stmt_Function":
             name = _name(node.get("name"))
         elif kind == "Stmt_ClassMethod":
@@ -730,6 +746,7 @@ class FileHarness:
         return _variable(args[0]) if len(args) == 1 else None
 
     def _row_counts(self, node: _N, scope: _Scope, chain: tuple) -> None:
+        """Find row counts (mysqli_num_rows) in an if's conditions, for the rowCounts extension (spec v0.17)."""
         arms = [("then", node.get("cond"))] + [("elseif", e.get("cond")) for e in node.get("elseifs") or []]
         for branch, cond in arms:
             found, todo = [], [cond]
@@ -766,6 +783,8 @@ class FileHarness:
                                          "loops": loops})
 
     def _count_loop(self, scope: _Scope, record: dict, loop: _N) -> dict:
+        """What happens to the counted result between the count and a loop: fetches, seeks or reassignments (condition b
+        of spec v0.17)."""
         start, end = record["_from"], loop.start
         result, variables = record["result"], record["_vars"]
         between = []
@@ -1010,6 +1029,7 @@ class FileHarness:
                 "confidence": inner["confidence"], "source": None, "derivedFrom": [inner]}
 
     def _opaque(self, node: _N) -> dict:
+        """An unresolved read standing for an expression the harness does not follow."""
         text = self.node_text(node)
         return {"expr": text, "var": text, "path": [], "sourceKind": "unresolved", "confidence": "unresolved",
                 "source": None}
@@ -1105,6 +1125,7 @@ class FileHarness:
     # ---- timelines
 
     def scopes(self) -> list[_Scope]:
+        """The file's top-level scope, then its functions by name."""
         return [self.top] + [self.functions[name] for name in sorted(self.functions)]
 
     def loop_enclosure(self, enclosure: dict) -> dict:
@@ -1249,6 +1270,7 @@ class FileHarness:
 
 
 def _connection(rhs) -> bool:
+    """True if an expression opens a MySQL connection (new mysqli(...) or mysqli_connect(...))."""
     while _is(rhs, "Expr_ErrorSuppress"):
         rhs = rhs.get("expr")
     return (_is(rhs, "Expr_New") and (_name(rhs.get("class")) or "").lower() in ("mysqli", "\\mysqli")
@@ -1391,16 +1413,19 @@ def function_resolver(harnesses: dict):
         return found
 
     def together(found: list) -> bool | str:
+        """The output state shared by every function found ('unknown' if they differ)."""
         values = {state[id(scope)] for _, _, scope in found}
         return values.pop() if len(values) == 1 else "unknown"
 
     def called(call: dict, key: str) -> bool | str:
+        """Whether a call prints: the state of the function it reaches, False for a known built-in, else 'unknown'."""
         found = targets(call["name"], key) if call["name"] else []
         if found:
             return together(found)
         return False if call["plain"] else "unknown"
 
     def included(include: dict, key: str) -> bool | str:
+        """Whether an include prints: the included file's state ('unknown' if the file cannot be resolved)."""
         target = include_target(include, key)
         return "unknown" if target is None else state[id(harnesses[target].top)]
 
@@ -1422,6 +1447,7 @@ def function_resolver(harnesses: dict):
                 exits[id(scope)], grown = reached, True
 
     def listed(found: set) -> list:
+        """Places as a sorted list of {file, line}."""
         return [{"file": file, "line": line} for file, line in sorted(found)]
 
     changed = True
@@ -1435,17 +1461,20 @@ def function_resolver(harnesses: dict):
                 changed = True
 
     def resolve(name: str, harness):
+        """A call's callee node id (only if exactly one function is reachable) and whether it prints."""
         found = targets(name, key_of[id(harness)])
         if not found:
             return None
         return (found[0][2].node_id if len(found) == 1 else None), together(found)
 
     def resolve_include(include: dict, harness):
+        """An include's target entrypoint (None if unresolved) and whether it prints."""
         key = key_of[id(harness)]
         target = include_target(include, key)
         return (None if target is None else harnesses[target].entrypoint), included(include, key)
 
     def resolve_exits(name: str, harness) -> list:
+        """The exit arms inside the functions a call can reach (for R-I8c)."""
         found = targets(name, key_of[id(harness)])
         return listed(set().union(*(exits[id(scope)] for _, _, scope in found))) if found else []
 
@@ -1465,10 +1494,12 @@ def function_resolver(harnesses: dict):
         return "".join(text for _, text in sorted(pieces, key=lambda p: p[0]))
 
     def resolve_include_whitespace(include: dict, harness) -> str:
+        """The whitespace-only output of an included file ('' if none or unresolved)."""
         target = include_target(include, key_of[id(harness)])
         return "" if target is None else whitespace(target)
 
     def resolve_include_exits(include: dict, harness) -> list:
+        """The exit arms in an included file's top level (for R-I8c)."""
         target = include_target(include, key_of[id(harness)])
         return [] if target is None else listed(exits[id(harnesses[target].top)])
 
